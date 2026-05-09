@@ -1,0 +1,10 @@
+{
+  "name": "Metronome",
+  "short_name": "Metronome",
+  "icons": [
+    { "src": "favicon.png", "sizes": "128x128", "type": "image/png" }
+  ],
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "display": "standalone"
+}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Metronome</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="home" class="screen">
+
+      <!-- Header: title + beat indicator dots -->
+      <div class="metro-header">
+        <span class="metro-title">METRONOME</span>
+        <div class="beat-dots" id="beat-dots"></div>
+      </div>
+
+      <!-- BPM display -->
+      <div class="bpm-display">
+        <span class="note-value-icon" id="note-icon">&#9833;</span>
+        <span class="bpm-equals">=</span>
+        <span class="bpm-number" id="bpm-number">080</span>
+        <span class="bpm-unit">BPM</span>
+      </div>
+
+      <!-- Tempo controls -->
+      <div class="control-row">
+        <button class="ctrl-btn focusable" data-action="bpm-minus-10">&#8722;10</button>
+        <button class="ctrl-btn focusable" data-action="bpm-minus-1">&#8722;1</button>
+        <button class="ctrl-btn tap-btn focusable" data-action="tap" id="tap-btn">TAP</button>
+        <button class="ctrl-btn focusable" data-action="bpm-plus-1">+1</button>
+        <button class="ctrl-btn focusable" data-action="bpm-plus-10">+10</button>
+      </div>
+
+      <!-- Time signature row -->
+      <div class="setting-row">
+        <span class="setting-label">TIME</span>
+        <div class="option-group" id="time-sig-group">
+          <button class="opt-btn focusable" data-action="timesig-2" data-value="2">2</button>
+          <button class="opt-btn focusable" data-action="timesig-3" data-value="3">3</button>
+          <button class="opt-btn focusable active" data-action="timesig-4" data-value="4">4</button>
+          <button class="opt-btn focusable" data-action="timesig-5" data-value="5">5</button>
+          <button class="opt-btn focusable" data-action="timesig-6" data-value="6">6</button>
+          <button class="opt-btn focusable" data-action="timesig-7" data-value="7">7</button>
+        </div>
+      </div>
+
+      <!-- Note value row -->
+      <div class="setting-row">
+        <span class="setting-label">NOTE</span>
+        <div class="option-group" id="note-val-group">
+          <button class="opt-btn focusable active" data-action="note-quarter" data-value="quarter">&#9833;</button>
+          <button class="opt-btn focusable" data-action="note-eighth" data-value="eighth">&#9834;&#9834;</button>
+          <button class="opt-btn focusable" data-action="note-triplet" data-value="triplet">&#9833;&#xb3;</button>
+          <button class="opt-btn focusable" data-action="note-dotted" data-value="dotted">&#9833;.</button>
+          <button class="opt-btn focusable" data-action="note-sixteenth" data-value="sixteenth">&#9835;&#9835;</button>
+        </div>
+      </div>
+
+      <!-- Volume + Accent row -->
+      <div class="setting-row">
+        <span class="setting-label">VOL</span>
+        <div class="vol-controls">
+          <button class="ctrl-btn sm focusable" data-action="vol-down">&#8722;</button>
+          <div class="vol-bar"><div class="vol-fill" id="vol-fill"></div></div>
+          <button class="ctrl-btn sm focusable" data-action="vol-up">+</button>
+        </div>
+        <button class="accent-btn focusable active" data-action="toggle-accent" id="accent-btn">ACC</button>
+      </div>
+
+      <!-- Start / Stop -->
+      <div class="start-stop-row">
+        <button class="start-btn focusable" data-action="toggle-play" id="start-btn">
+          <span id="play-icon">&#9654; START</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
