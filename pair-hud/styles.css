@@ -1,0 +1,297 @@
+/*
+ * pair-hud — Glasses HUD theme.
+ *
+ * Additive-display rules:
+ *   - Background is #0a0a0f (dark gray, never #000 which is transparent).
+ *   - Foreground text is pure #fff at 100% opacity for max photonic output.
+ *   - No SVGs. Spinner is CSS, PIN digits are plain type.
+ *   - 8 px safe margin on every screen (rubberbanding clips the edge).
+ *   - 88 px minimum tap target on every .focusable.
+ *   - Focus state = cyan outline + soft glow. Animation curves from the
+ *     display guidelines.
+ */
+
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #14141f;
+  --bg-tertiary: #1e1e2e;
+  --bg-card: #1a1a2e;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0b0;
+  --text-muted: #606070;
+  --accent-primary: #00d4ff;
+  --accent-secondary: #00ff88;
+  --danger: #ff4466;
+  --focus-ring: #00d4ff;
+  --focus-glow: rgba(0, 212, 255, 0.4);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'tnum' 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  padding: 8px; /* 8 dp safe margin */
+}
+
+/* ---------- Screens ---------- */
+
+.screen {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px;
+}
+
+.screen.hidden {
+  display: none;
+}
+
+.screen-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.screen-subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 520px;
+  line-height: 1.4;
+}
+
+/* ---------- Focusable / buttons ---------- */
+
+.focusable {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 88px;
+  min-width: 160px;
+  padding: 20px 28px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 500;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    transform 475ms cubic-bezier(0.6, 0, 0.4, 1),
+    border-color 300ms cubic-bezier(0.4, 0.04, 0.5, 1),
+    box-shadow 300ms cubic-bezier(0.4, 0.04, 0.5, 1),
+    background 300ms cubic-bezier(0.4, 0.04, 0.5, 1);
+  user-select: none;
+}
+
+.focusable:focus {
+  outline: none;
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 24px var(--focus-glow);
+  background: var(--bg-card);
+}
+
+.focusable.primary {
+  background: transparent;
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.focusable.primary:focus {
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--text-primary);
+}
+
+.focusable.danger {
+  color: var(--danger);
+  border-color: transparent;
+}
+
+.focusable.danger:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 24px rgba(255, 68, 102, 0.4);
+}
+
+/* ---------- #connecting ---------- */
+
+.spinner {
+  width: 72px;
+  height: 72px;
+  border: 6px solid var(--bg-tertiary);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- #pairing ---------- */
+
+.pin-display {
+  font-size: 160px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  /* Soft cyan halo so the digits feel "lit" but stay pure white. */
+  text-shadow:
+    0 0 18px rgba(0, 212, 255, 0.35),
+    0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+.pin-hint {
+  font-size: 18px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.pin-hint .url {
+  color: var(--accent-primary);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.pin-ttl {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- #paired ---------- */
+
+.big-state {
+  font-size: 72px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
+.big-state .glyph {
+  font-size: 56px;
+  margin-right: 12px;
+  color: var(--accent-secondary);
+}
+
+/* ---------- #content ---------- */
+
+.content-payload {
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+  text-align: center;
+  max-width: 540px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  transition: opacity 300ms cubic-bezier(0.4, 0.04, 0.5, 1);
+}
+
+.content-payload.auto-shrink-md {
+  font-size: 44px;
+}
+
+.content-payload.auto-shrink-sm {
+  font-size: 32px;
+}
+
+.content-meta {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.content-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: auto;
+}
+
+/* ---------- #disconnected / #error ---------- */
+
+.status-glyph {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.status-glyph.danger {
+  color: var(--danger);
+}
+
+.status-message {
+  font-size: 24px;
+  color: var(--text-primary);
+  text-align: center;
+  max-width: 520px;
+}
+
+/* ---------- utility ---------- */
+
+.hidden {
+  display: none !important;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Respect reduced-motion preference (accessibility). */
+@media (prefers-reduced-motion: reduce) {
+  .focusable,
+  .content-payload {
+    transition: none;
+  }
+  .spinner {
+    animation-duration: 2s;
+  }
+}

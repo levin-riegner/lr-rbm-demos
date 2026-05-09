@@ -1,0 +1,17 @@
+{
+  "name": "pong",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Two-player real-time Pong over WebSocket for Meta Display Glasses. One player creates a 4-digit room, the other joins, and a Node server runs server-authoritative physics. Example for the Meta wearables web app toolkit.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

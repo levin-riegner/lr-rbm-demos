@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Target App</title>
+  <style>
+    :root {
+      --bg-primary: #000000;
+      --bg-secondary: #0a0a0f;
+      --bg-tertiary: #1e1e2e;
+      --bg-card: #1a1a2e;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0b0;
+      --text-muted: #606070;
+      --accent: #00d4ff;
+      --accent-glow: rgba(0, 212, 255, 0.4);
+      --success: #00ff88;
+      --radius-md: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 600px;
+      height: 600px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .screen.hidden { display: none; }
+    header {
+      padding: 24px 32px;
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      flex: 1;
+    }
+    .badge {
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(0, 212, 255, 0.15);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .content {
+      flex: 1;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+    }
+    .screen-title {
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .screen-body {
+      font-size: 17px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .arrived {
+      font-size: 13px;
+      color: var(--success);
+      margin-top: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      word-break: break-all;
+      white-space: pre-line;
+    }
+    nav {
+      padding: 20px 28px;
+      background: var(--bg-secondary);
+    }
+    .focusable {
+      width: 100%;
+      padding: 16px 18px;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 2px solid transparent;
+      border-radius: var(--radius-md);
+      font-size: 16px;
+      font-weight: 500;
+      min-height: 44px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+    .focusable:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 20px var(--accent-glow);
+      background: var(--bg-card);
+    }
+  </style>
+</head>
+<body>
+  <div class="screen hidden" id="screen-home">
+    <header><h1>Home</h1><span class="badge">Target</span></header>
+    <div class="content">
+      <div class="screen-title">Welcome</div>
+      <div class="screen-body">Default landing screen of the target app.</div>
+      <div class="arrived" id="arrived-home"></div>
+    </div>
+    <nav><button class="focusable" data-action="back">Back</button></nav>
+  </div>
+
+  <div class="screen hidden" id="screen-settings">
+    <header><h1>Settings</h1><span class="badge">Target</span></header>
+    <div class="content">
+      <div class="screen-title">Settings</div>
+      <div class="screen-body">Preferences, notifications, account controls would live here.</div>
+      <div class="arrived" id="arrived-settings"></div>
+    </div>
+    <nav><button class="focusable" data-action="back">Back</button></nav>
+  </div>
+
+  <div class="screen hidden" id="screen-profile">
+    <header><h1>Profile</h1><span class="badge">Target</span></header>
+    <div class="content">
+      <div class="screen-title">Your Profile</div>
+      <div class="screen-body">Name, avatar, stats, recent activity.</div>
+      <div class="arrived" id="arrived-profile"></div>
+    </div>
+    <nav><button class="focusable" data-action="back">Back</button></nav>
+  </div>
+
+  <div class="screen hidden" id="screen-about">
+    <header><h1>About</h1><span class="badge">Target</span></header>
+    <div class="content">
+      <div class="screen-title">About</div>
+      <div class="screen-body">Version, credits, build info, licensing.</div>
+      <div class="arrived" id="arrived-about"></div>
+    </div>
+    <nav><button class="focusable" data-action="back">Back</button></nav>
+  </div>
+
+  <script>
+    const VALID = ['home', 'settings', 'profile', 'about'];
+    const params = new URLSearchParams(window.location.search);
+    const requested = params.get('screen');
+    const target = VALID.includes(requested) ? requested : 'home';
+
+    document.getElementById('screen-' + target).classList.remove('hidden');
+
+    const arrivedEl = document.getElementById('arrived-' + target);
+    const referrer = document.referrer || '(direct)';
+    arrivedEl.textContent = requested
+      ? 'Deep-linked -> screen=' + requested + '\nFrom: ' + referrer
+      : 'Opened directly (no screen param)';
+
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('[data-action="back"]')) {
+        if (document.referrer) {
+          window.location.href = document.referrer;
+        } else {
+          history.back();
+        }
+      }
+    });
+
+    function visibleFocusables() {
+      return Array.from(document.querySelectorAll('.focusable')).filter(el => el.offsetParent !== null);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      const items = visibleFocusables();
+      if (items.length === 0) return;
+      const idx = items.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        items[(idx + 1 + items.length) % items.length].focus();
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        items[(idx - 1 + items.length) % items.length].focus();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (document.activeElement && document.activeElement.click) {
+          document.activeElement.click();
+        }
+      }
+    });
+
+    const first = visibleFocusables()[0];
+    if (first) first.focus();
+  </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Weather Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ==================== HOME SCREEN ==================== -->
+    <div id="home" class="screen">
+      <header class="header">
+        <h1>Weather</h1>
+        <span class="header-meta" id="status-indicator">Loading&hellip;</span>
+      </header>
+
+      <div class="content" id="home-content">
+
+        <!-- Current weather block -->
+        <div class="current-block" id="current-block">
+          <div class="current-city" id="current-city">&mdash;</div>
+          <div class="current-row">
+            <div class="current-icon" id="current-icon">&#9729;</div>
+            <div class="current-temp" id="current-temp">--&deg;</div>
+          </div>
+          <div class="current-condition" id="current-condition">&mdash;</div>
+          <div class="current-meta">
+            <span id="current-wind">Wind --</span>
+            <span class="sep">&middot;</span>
+            <span id="current-winddir">--</span>
+          </div>
+        </div>
+
+        <!-- 5-day forecast -->
+        <div class="forecast-title">5-day forecast</div>
+        <div class="forecast-row" id="forecast-row">
+          <!-- forecast cards injected here -->
+        </div>
+
+        <!-- Loading / error states (hidden by default) -->
+        <div id="loading" class="loading-container hidden">
+          <div class="loading-spinner"></div>
+          <div class="loading-text">Fetching weather&hellip;</div>
+        </div>
+
+        <div id="error" class="error-container hidden">
+          <div class="error-icon">&#9888;</div>
+          <div class="error-message">Could not load weather</div>
+          <button class="nav-item focusable" data-action="refresh">Try Again</button>
+        </div>
+
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable primary" data-action="open-cities">&#127760; Change City</button>
+        <button class="nav-item focusable" data-action="refresh">&#8635; Refresh</button>
+      </nav>
+    </div>
+
+    <!-- ==================== CITIES SCREEN ==================== -->
+    <div id="cities" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>Select City</h1>
+      </header>
+
+      <div class="content">
+        <div class="list-container" id="city-list">
+          <!-- city list items injected here -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

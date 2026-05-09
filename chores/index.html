@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>Chore Navigator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="stage">
+    <!-- Intro -->
+    <section id="intro" class="screen">
+      <header class="bar">
+        <span class="tag">CHORES</span>
+      </header>
+      <h1 class="title">Chore Navigator</h1>
+      <p class="explainer">
+        Step through today's chores one at a time. Each card shows what's
+        required and how long it takes. Mark it complete or request supplies
+        when you're running low.
+      </p>
+      <div class="actions">
+        <button class="btn primary" data-focusable data-action="start">Start</button>
+      </div>
+      <div class="hints">
+        <span class="hint">▲▼ NAV</span>
+        <span class="hint">● SELECT</span>
+      </div>
+    </section>
+
+    <!-- Chore -->
+    <section id="chore" class="screen hidden">
+      <header class="bar">
+        <span class="tag" id="choreProgress">CHORE 1 / 5</span>
+        <span class="tag accent" id="choreTime">~ —</span>
+      </header>
+      <h2 class="chore-title" id="choreTitle"></h2>
+      <ul class="requirements" id="requirements"></ul>
+      <div class="actions" id="choreActions"></div>
+      <div class="toast" id="toast"></div>
+    </section>
+
+    <!-- Done -->
+    <section id="done" class="screen hidden">
+      <header class="bar">
+        <span class="tag">CHORES · COMPLETE</span>
+      </header>
+      <div class="big-check">✓</div>
+      <h2 class="title">All chores complete</h2>
+      <p class="explainer" id="doneSummary"></p>
+      <div class="actions">
+        <button class="btn primary" data-focusable data-action="restart">Start over</button>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

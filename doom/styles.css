@@ -1,0 +1,225 @@
+:root {
+  --bg: #1C1E21;
+  --fg: #FFFFFF;
+  --muted: #B0B3B8;
+  --accent: #ff5b3a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.screen.hidden { display: none; }
+
+.boot-title {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--accent);
+}
+.boot-status {
+  font-size: 16px;
+  color: var(--muted);
+}
+.boot-progress {
+  width: 80%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.boot-progress-bar {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 200ms ease;
+}
+.boot-hint {
+  position: absolute;
+  bottom: 24px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  padding: 0 24px;
+}
+
+.boot-btn {
+  background: var(--accent);
+  color: var(--fg);
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 16px 40px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.boot-btn.hidden { display: none; }
+.boot-btn:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 4px;
+}
+
+#game.screen {
+  padding: 0;
+}
+
+.dos-wrap {
+  width: 600px;
+  height: 600px;
+  background: var(--bg);
+  filter: brightness(1.25) contrast(0.92);
+  position: relative;
+  overflow: hidden;
+}
+
+#dos-mount {
+  width: 600px;
+  height: 600px;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+#dos-mount .jsdos-rso {
+  width: 600px !important;
+  height: 600px !important;
+  position: relative !important;
+  background: var(--bg) !important;
+  overflow: hidden !important;
+}
+
+#dos-mount * {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#dos-mount canvas {
+  visibility: visible !important;
+  pointer-events: auto !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 600px !important;
+  height: 450px !important;
+  image-rendering: pixelated !important;
+  image-rendering: crisp-edges !important;
+  z-index: 100 !important;
+}
+
+body > .jsdos-rso:not(:first-of-type),
+body > [class*="jsdos"]:not(#dos-mount):not(#dos-mount *) {
+  display: none !important;
+}
+
+.hud-hint {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 10;
+}
+
+.touch-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 200;
+}
+
+.dpad {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  width: 164px;
+  height: 164px;
+  pointer-events: none;
+}
+.dpad .t-btn {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+}
+.t-up    { top: 0;       left: 56px;  }
+.t-left  { top: 56px;    left: 0;     }
+.t-right { top: 56px;    left: 112px; }
+.t-down  { top: 112px;   left: 56px;  }
+
+
+.t-btn {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--fg);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  width: 52px;
+  height: 52px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  pointer-events: auto;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.t-btn:active {
+  background: rgba(255, 255, 255, 0.34);
+  transform: scale(0.95);
+}
+.t-menu {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 56px;
+  height: 36px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.error-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.error-body {
+  font-size: 14px;
+  color: var(--fg);
+  text-align: center;
+  max-width: 480px;
+  line-height: 1.5;
+}
+.error-hint {
+  font-size: 12px;
+  color: var(--muted);
+}

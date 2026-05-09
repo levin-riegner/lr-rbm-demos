@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Meditation</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ==================== HOME SCREEN ==================== -->
+    <div id="home" class="screen">
+      <header class="header">
+        <h1>Meditation</h1>
+        <span class="header-meta" id="home-meta">Select duration</span>
+      </header>
+
+      <div class="content home-content">
+        <div class="home-subtitle">Box breathing &middot; 4&middot;4&middot;4&middot;4</div>
+        <div class="duration-grid" id="duration-grid">
+          <button class="duration-btn focusable" data-action="start" data-min="5">
+            <div class="duration-num">5</div>
+            <div class="duration-lbl">min</div>
+          </button>
+          <button class="duration-btn focusable" data-action="start" data-min="10">
+            <div class="duration-num">10</div>
+            <div class="duration-lbl">min</div>
+          </button>
+          <button class="duration-btn focusable" data-action="start" data-min="15">
+            <div class="duration-num">15</div>
+            <div class="duration-lbl">min</div>
+          </button>
+          <button class="duration-btn focusable" data-action="start" data-min="20">
+            <div class="duration-num">20</div>
+            <div class="duration-lbl">min</div>
+          </button>
+          <button class="duration-btn focusable" data-action="start" data-min="30">
+            <div class="duration-num">30</div>
+            <div class="duration-lbl">min</div>
+          </button>
+        </div>
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable" data-action="open-history">History</button>
+      </nav>
+    </div>
+
+    <!-- ==================== SESSION SCREEN ==================== -->
+    <div id="session" class="screen hidden">
+      <div class="session-stage">
+        <div class="ambient" id="ambient"></div>
+        <div class="breath-circle" id="breath-circle"></div>
+        <div class="session-overlay">
+          <div class="phase-label" id="phase-label">Inhale</div>
+          <div class="countdown" id="countdown">00:00</div>
+        </div>
+      </div>
+      <nav class="nav-bar">
+        <button class="nav-item focusable" id="pause-btn" data-action="pause">Pause</button>
+        <button class="nav-item focusable danger" data-action="end">End</button>
+      </nav>
+    </div>
+
+    <!-- ==================== COMPLETE SCREEN ==================== -->
+    <div id="complete" class="screen hidden">
+      <div class="complete-stage">
+        <div class="complete-circle" id="complete-circle"></div>
+        <div class="complete-overlay">
+          <div class="complete-title">Well done</div>
+          <div class="complete-sub" id="complete-sub">Session complete</div>
+          <div class="complete-stats" id="complete-stats">&mdash;</div>
+        </div>
+      </div>
+      <nav class="nav-bar">
+        <button class="nav-item focusable primary" data-action="go-home">Home</button>
+        <button class="nav-item focusable" data-action="open-history">History</button>
+      </nav>
+    </div>
+
+    <!-- ==================== HISTORY SCREEN ==================== -->
+    <div id="history" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>History</h1>
+        <span class="header-meta" id="history-meta">&mdash;</span>
+      </header>
+      <div class="content">
+        <div class="list-container" id="history-list"></div>
+        <div id="history-empty" class="empty-state hidden">
+          <div class="empty-icon">&#9675;</div>
+          <div class="empty-text">No sessions yet</div>
+        </div>
+      </div>
+      <nav class="nav-bar">
+        <button class="nav-item focusable" data-action="back">Back</button>
+      </nav>
+    </div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

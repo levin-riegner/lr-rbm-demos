@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Pomodoro</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ==================== HOME SCREEN ==================== -->
+    <div id="home" class="screen">
+      <header class="header">
+        <h1>Pomodoro</h1>
+        <span class="header-meta" id="session-counter">Session 1 of 4</span>
+      </header>
+
+      <div class="content home-content">
+        <div class="phase-badge" id="phase-badge">WORK</div>
+        <div class="timer-display" id="timer-display">25:00</div>
+        <div class="cycle-dots" id="cycle-dots"></div>
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable primary" id="start-pause-btn" data-action="toggle">Start</button>
+        <button class="nav-item focusable" data-action="skip">Skip</button>
+        <button class="nav-item focusable" data-action="stats">Stats</button>
+      </nav>
+    </div>
+
+    <!-- ==================== STATS SCREEN ==================== -->
+    <div id="stats" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>Statistics</h1>
+      </header>
+
+      <div class="content">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Sessions</div>
+            <div class="stat-value" id="stat-total">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Sessions Today</div>
+            <div class="stat-value" id="stat-today">0</div>
+          </div>
+          <div class="stat-card stat-card-wide">
+            <div class="stat-label">Total Focus Time</div>
+            <div class="stat-value" id="stat-focus">0h 0m</div>
+          </div>
+        </div>
+
+        <div class="stats-actions">
+          <button class="nav-item focusable" data-action="reset-stats">Reset Stats</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

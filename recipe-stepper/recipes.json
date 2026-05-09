@@ -1,0 +1,77 @@
+{
+  "recipes": [
+    {
+      "id": "lemon-garlic-chicken",
+      "title": "One-Pan Lemon Garlic Chicken",
+      "source": "https://www.example-recipes.com/lemon-garlic-chicken",
+      "totalTime": "30 min",
+      "servings": 4,
+      "steps": [
+        "Pat 4 chicken thighs dry with paper towels and season both sides with salt and pepper.",
+        "Heat 2 tablespoons of olive oil in a large skillet over medium-high heat.",
+        "Place chicken thighs skin-side down and sear for 6 minutes until golden.",
+        "Flip the chicken and cook for another 5 minutes, then remove from the pan.",
+        "Lower the heat to medium and add 4 minced garlic cloves to the pan.",
+        "Stir the garlic for 30 seconds until fragrant, taking care not to burn it.",
+        "Pour in half a cup of chicken broth and the juice of one lemon.",
+        "Scrape the browned bits from the bottom of the pan with a wooden spoon.",
+        "Return the chicken to the pan along with any resting juices.",
+        "Cover and simmer on low heat for 8 minutes until the chicken is cooked through.",
+        "Sprinkle chopped parsley over the top and serve immediately with the pan sauce."
+      ]
+    },
+    {
+      "id": "fluffy-pancakes",
+      "title": "Fluffy Buttermilk Pancakes",
+      "source": "https://www.example-recipes.com/fluffy-pancakes",
+      "totalTime": "20 min",
+      "servings": 3,
+      "steps": [
+        "Whisk together 1.5 cups of all purpose flour, 3 tablespoons of sugar, 1 teaspoon of baking powder, half a teaspoon of baking soda, and a pinch of salt in a large bowl until evenly combined.",
+        "In a separate bowl beat 2 eggs lightly, then whisk in 1.25 cups of buttermilk and 3 tablespoons of melted butter until smooth.",
+        "Pour the wet mixture into the dry mixture and gently fold with a spatula until just combined. A few small lumps are fine, do not overmix or the pancakes will be tough.",
+        "Let the batter rest for 5 minutes while you preheat a non-stick skillet over medium-low heat.",
+        "Lightly grease the skillet with butter and pour a quarter cup of batter for each pancake.",
+        "Cook until bubbles form across the surface and the edges look set, about 2 minutes.",
+        "Flip carefully and cook the other side for another minute or so until golden brown.",
+        "Stack on a warm plate and serve with maple syrup, fresh berries, or a dusting of powdered sugar."
+      ]
+    },
+    {
+      "id": "tomato-basil-pasta",
+      "title": "Tomato Basil Pasta",
+      "source": "https://www.example-recipes.com/tomato-basil-pasta",
+      "totalTime": "25 min",
+      "servings": 4,
+      "steps": [
+        "Bring a large pot of generously salted water to a rolling boil.",
+        "Add 12 ounces of spaghetti and cook to al dente per the package, usually 9 to 10 minutes.",
+        "While the pasta cooks, heat 3 tablespoons of olive oil in a wide skillet over medium heat.",
+        "Add 4 thinly sliced garlic cloves and a pinch of red pepper flakes, swirling for 30 seconds until fragrant.",
+        "Pour in a 28 ounce can of crushed tomatoes, a teaspoon of salt, and a pinch of sugar.",
+        "Simmer the sauce for 8 to 10 minutes, stirring occasionally, until slightly thickened.",
+        "Reserve half a cup of pasta water, then drain the pasta and add it directly to the sauce.",
+        "Toss for a minute, adding splashes of pasta water until the sauce clings nicely to every strand.",
+        "Tear in a generous handful of fresh basil leaves and stir to wilt.",
+        "Plate immediately and finish each bowl with grated parmesan and a drizzle of olive oil."
+      ]
+    },
+    {
+      "id": "miso-soup",
+      "title": "Quick Miso Soup",
+      "source": "https://www.example-recipes.com/miso-soup",
+      "totalTime": "10 min",
+      "servings": 2,
+      "steps": [
+        "Pour 3 cups of water into a small saucepan and add a 4 inch piece of kombu.",
+        "Bring to a gentle simmer over medium heat, do not let it boil hard.",
+        "Remove the kombu just before bubbles form and add a small handful of bonito flakes.",
+        "Steep for 30 seconds off heat, then strain through a fine sieve to make a clean dashi.",
+        "Return the dashi to the pan and add half a block of silken tofu cut into small cubes.",
+        "Whisk 2 tablespoons of miso paste in a ladle of warm dashi until fully dissolved.",
+        "Stir the miso back into the pot, keeping the heat below a simmer to preserve flavor.",
+        "Top each bowl with sliced scallions and a few rehydrated wakame pieces and serve."
+      ]
+    }
+  ]
+}

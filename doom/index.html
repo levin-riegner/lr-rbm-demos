@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>DOOM</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="boot" class="screen">
+      <div class="boot-title">DOOM</div>
+      <div class="boot-status" id="boot-status">Initialising...</div>
+      <div class="boot-progress"><div class="boot-progress-bar" id="boot-progress-bar"></div></div>
+      <button class="boot-btn focusable hidden" id="start-btn" type="button">Tap to start</button>
+      <div class="boot-hint" id="boot-hint"></div>
+    </div>
+
+    <div id="game" class="screen hidden">
+      <div class="dos-wrap">
+        <div id="dos-mount"></div>
+      </div>
+      <div class="touch-overlay" id="touch-overlay">
+        <button id="touch-menu" class="t-btn t-menu" type="button">ESC</button>
+        <div class="dpad">
+          <button id="touch-up" class="t-btn t-up" type="button">▲</button>
+          <button id="touch-left" class="t-btn t-left" type="button">◀</button>
+          <button id="touch-down" class="t-btn t-down" type="button">▼</button>
+          <button id="touch-right" class="t-btn t-right" type="button">▶</button>
+        </div>
+      </div>
+      <div class="hud-hint" id="hud-hint">tap=fire · hold=use · lean=strafe</div>
+    </div>
+
+    <div id="error" class="screen hidden">
+      <div class="error-title">Cannot start</div>
+      <div class="error-body" id="error-body"></div>
+      <div class="error-hint">See README for setup.</div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

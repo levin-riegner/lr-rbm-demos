@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Input Debug</title>
+  <style>
+    :root {
+      --bg: #1C1E21;
+      --fg: #FFFFFF;
+      --muted: #B0B3B8;
+      --accent: #ff5b3a;
+      --on: #00ff88;
+      --off: #ff4466;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 600px;
+      height: 600px;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .root {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 100%;
+    }
+    .title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+    .panel {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 8px 12px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 1px 0;
+    }
+    .label { color: var(--muted); }
+    .value { font-family: 'SF Mono', Menlo, Consolas, monospace; }
+    .on { color: var(--on); }
+    .off { color: var(--off); }
+    .log { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+    .log-head { display: flex; justify-content: space-between; padding: 0 0 4px 0; }
+    .log-list {
+      font-family: 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.35;
+      flex: 1;
+      overflow: hidden;
+    }
+    .log-row {
+      display: grid;
+      grid-template-columns: 80px 28px 110px 1fr;
+      gap: 6px;
+      padding: 1px 0;
+    }
+    .log-row.kd { color: var(--fg); }
+    .log-row.ku { color: var(--muted); }
+    .log-row.dm { color: #79c2ff; }
+    .ts { color: var(--muted); }
+    .actions { display: flex; gap: 8px; }
+    .btn {
+      flex: 1;
+      padding: 10px 12px;
+      background: var(--accent);
+      color: var(--fg);
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .footer {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="root">
+    <div class="title">DOOM input debug</div>
+
+    <div class="panel">
+      <div class="row"><span class="label">Held keys</span><span class="value" id="held">none</span></div>
+      <div class="row"><span class="label">Last release</span><span class="value" id="last-hold">-</span></div>
+      <div class="row"><span class="label">Last keydown repeat</span><span class="value" id="last-repeat">-</span></div>
+      <div class="row"><span class="label">Last isTrusted</span><span class="value" id="last-trusted">-</span></div>
+    </div>
+
+    <div class="panel">
+      <div class="row"><span class="label">Motion permission</span><span class="value" id="motion-perm">-</span></div>
+      <div class="row"><span class="label">Yaw rate (alpha)</span><span class="value" id="motion-alpha">-</span></div>
+      <div class="row"><span class="label">Pitch rate (beta)</span><span class="value" id="motion-beta">-</span></div>
+      <div class="row"><span class="label">Roll rate (gamma)</span><span class="value" id="motion-gamma">-</span></div>
+    </div>
+
+    <div class="panel log">
+      <div class="log-head">
+        <span class="label">Recent events</span>
+        <span class="value" id="event-count">0</span>
+      </div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="motion-btn">Enable motion</button>
+      <button class="btn secondary" id="clear-btn">Clear</button>
+    </div>
+
+    <div class="footer">
+      Watch <strong>Held keys</strong> while holding a swipe. If it stays held, walking will work.<br>
+      Watch <strong>Last release</strong> when releasing Enter. ≥ 250ms means hold-for-use will work.
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const MAX_EVENTS = 12;
+
+      const els = {
+        held: document.getElementById('held'),
+        lastHold: document.getElementById('last-hold'),
+        lastRepeat: document.getElementById('last-repeat'),
+        lastTrusted: document.getElementById('last-trusted'),
+        motionPerm: document.getElementById('motion-perm'),
+        motionAlpha: document.getElementById('motion-alpha'),
+        motionBeta: document.getElementById('motion-beta'),
+        motionGamma: document.getElementById('motion-gamma'),
+        eventCount: document.getElementById('event-count'),
+        logList: document.getElementById('log-list'),
+        motionBtn: document.getElementById('motion-btn'),
+        clearBtn: document.getElementById('clear-btn'),
+      };
+
+      const heldDownAt = new Map();
+      const events = [];
+      let totalCount = 0;
+
+      function fmtTime(ms) {
+        const d = new Date(ms);
+        return d.toTimeString().slice(0, 8) + '.' + String(d.getMilliseconds()).padStart(3, '0');
+      }
+
+      function logEvent(type, key, extra) {
+        events.unshift({
+          ts: fmtTime(Date.now()).slice(3),
+          type: type,
+          key: String(key || '?'),
+          extra: String(extra || ''),
+        });
+        if (events.length > MAX_EVENTS) events.pop();
+        totalCount++;
+        renderLog();
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+
+      function renderLog() {
+        els.eventCount.textContent = String(totalCount);
+        let html = '';
+        for (const e of events) {
+          const cls = e.type === 'KD' ? 'kd' : e.type === 'KU' ? 'ku' : 'dm';
+          html += '<div class="log-row ' + cls + '">'
+            + '<span class="ts">' + e.ts + '</span>'
+            + '<span>' + e.type + '</span>'
+            + '<span>' + escapeHtml(e.key) + '</span>'
+            + '<span>' + escapeHtml(e.extra) + '</span>'
+            + '</div>';
+        }
+        els.logList.innerHTML = html;
+      }
+
+      function renderHeld() {
+        const keys = Array.from(heldDownAt.keys());
+        els.held.textContent = keys.length ? keys.join(', ') : 'none';
+      }
+
+      window.addEventListener('keydown', function (e) {
+        const wasHeld = heldDownAt.has(e.key);
+        if (!wasHeld) heldDownAt.set(e.key, performance.now());
+        renderHeld();
+        els.lastRepeat.innerHTML = e.repeat
+          ? '<span class="on">YES (kbd auto-repeat fires)</span>'
+          : '<span class="off">no</span>';
+        els.lastTrusted.innerHTML = e.isTrusted
+          ? '<span class="on">trusted</span>'
+          : '<span class="off">synthetic</span>';
+        const flags = (e.repeat ? 'rep ' : '') + (e.isTrusted ? '' : '[syn] ');
+        logEvent('KD', e.key || e.code, flags.trim());
+      }, true);
+
+      window.addEventListener('keyup', function (e) {
+        const downAt = heldDownAt.get(e.key);
+        heldDownAt.delete(e.key);
+        renderHeld();
+        if (downAt != null) {
+          const dur = Math.round(performance.now() - downAt);
+          const cls = dur >= 250 ? 'on' : 'off';
+          els.lastHold.innerHTML = e.key + ' held <span class="' + cls + '">' + dur + 'ms</span>';
+          logEvent('KU', e.key || e.code, dur + 'ms');
+        } else {
+          els.lastHold.innerHTML = e.key + ' (no matching keydown)';
+          logEvent('KU', e.key || e.code, 'no kd');
+        }
+      }, true);
+
+      function setMotionStatus(state) {
+        if (state === true) els.motionPerm.innerHTML = '<span class="on">granted</span>';
+        else if (state === false) els.motionPerm.innerHTML = '<span class="off">denied</span>';
+        else if (state === 'auto') els.motionPerm.innerHTML = '<span class="on">auto (no prompt needed)</span>';
+        else els.motionPerm.textContent = '-';
+      }
+
+      let lastMotionLogAt = 0;
+      function onMotion(e) {
+        const rr = e.rotationRate || {};
+        const a = rr.alpha;
+        const b = rr.beta;
+        const g = rr.gamma;
+        els.motionAlpha.textContent = (a != null ? a.toFixed(1) : '-') + ' deg/s';
+        els.motionBeta.textContent = (b != null ? b.toFixed(1) : '-') + ' deg/s';
+        els.motionGamma.textContent = (g != null ? g.toFixed(1) : '-') + ' deg/s';
+        const now = performance.now();
+        if (now - lastMotionLogAt > 500 && a != null && Math.abs(a) > 5) {
+          lastMotionLogAt = now;
+          logEvent('DM', 'yaw', a.toFixed(1) + ' d/s');
+        }
+      }
+
+      function attachMotion() {
+        window.addEventListener('devicemotion', onMotion, true);
+      }
+
+      els.motionBtn.addEventListener('click', async function () {
+        if (typeof DeviceMotionEvent === 'undefined') {
+          setMotionStatus(false);
+          return;
+        }
+        if (typeof DeviceMotionEvent.requestPermission === 'function') {
+          try {
+            const r = await DeviceMotionEvent.requestPermission();
+            setMotionStatus(r === 'granted');
+            if (r === 'granted') attachMotion();
+          } catch (_) {
+            setMotionStatus(false);
+          }
+        } else {
+          setMotionStatus('auto');
+          attachMotion();
+        }
+      });
+
+      els.clearBtn.addEventListener('click', function () {
+        events.length = 0;
+        totalCount = 0;
+        heldDownAt.clear();
+        renderHeld();
+        renderLog();
+        els.lastHold.textContent = '-';
+        els.lastRepeat.textContent = '-';
+        els.lastTrusted.textContent = '-';
+      });
+
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission !== 'function') {
+        setMotionStatus('auto');
+        attachMotion();
+      }
+
+      renderHeld();
+      renderLog();
+    })();
+  </script>
+</body>
+</html>
