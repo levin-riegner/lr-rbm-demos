@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>GLIMMER · A Peripheral Companion</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- SPLASH -->
+    <div id="splash" class="splash">
+      <div class="splash-mark">
+        <span>LEVIN</span><span class="plus">+</span><span>RIEGNER</span>
+      </div>
+      <div class="splash-sub">presents</div>
+    </div>
+
+    <!-- WALKTHROUGH -->
+    <div id="walk" class="walk hidden" data-step="0">
+
+      <!-- STEP 0: WELCOME -->
+      <div class="walk-screen" data-step="0">
+        <div class="walk-eyebrow">L+R · PERIPHERAL COMPANION</div>
+        <div class="walk-title">GLIMMER</div>
+        <canvas class="welcome-creature" id="welcomeCanvas" width="220" height="160"></canvas>
+        <div class="walk-body">An original little creature that lives at the edge of your sight.</div>
+        <div class="walk-nav">
+          <button class="wbtn wbtn-primary focusable" data-walk="next">BEGIN ▸</button>
+        </div>
+        <div class="walk-dots"><i class="on"></i><i></i><i></i><i></i></div>
+      </div>
+
+      <!-- STEP 1: WHAT IT IS -->
+      <div class="walk-screen" data-step="1">
+        <div class="walk-eyebrow">01 · ABOUT</div>
+        <div class="walk-title">A LIFE IN VIEW</div>
+        <div class="walk-body">Feed it. Play with it. Let it rest.<br>Care for it and it will <span class="hl">grow</span> through five forms.</div>
+        <div class="walk-stages">
+          <div class="walk-stage"><span class="g">◇</span><span>EGG</span></div>
+          <div class="walk-stage"><span class="g">◯</span><span>SPRITE</span></div>
+          <div class="walk-stage"><span class="g">▣</span><span>DRONE</span></div>
+          <div class="walk-stage"><span class="g">✦</span><span>ORACLE</span></div>
+          <div class="walk-stage"><span class="g">♛</span><span>ARCHON</span></div>
+        </div>
+        <div class="walk-nav">
+          <button class="wbtn focusable" data-walk="back">◂ BACK</button>
+          <button class="wbtn wbtn-primary focusable" data-walk="next">NEXT ▸</button>
+        </div>
+        <div class="walk-dots"><i></i><i class="on"></i><i></i><i></i></div>
+      </div>
+
+      <!-- STEP 2: NAMING -->
+      <div class="walk-screen" data-step="2">
+        <div class="walk-eyebrow">02 · NAMING</div>
+        <div class="walk-title">GIVE IT A NAME</div>
+        <div class="name-display" id="nameDisplay">ORB-7</div>
+        <div class="name-status" id="nameStatus">tap a button below</div>
+        <div class="name-actions">
+          <button class="nbtn focusable" data-walk="dice">
+            <span class="ng">⚂</span><span>RANDOM</span>
+          </button>
+          <button class="nbtn focusable" data-walk="mic">
+            <span class="ng">◉</span><span>SPEAK</span>
+          </button>
+        </div>
+        <div class="walk-nav">
+          <button class="wbtn focusable" data-walk="back">◂ BACK</button>
+          <button class="wbtn wbtn-primary focusable" data-walk="next">NEXT ▸</button>
+        </div>
+        <div class="walk-dots"><i></i><i></i><i class="on"></i><i></i></div>
+      </div>
+
+      <!-- STEP 3: CHOOSE EGG -->
+      <div class="walk-screen" data-step="3">
+        <div class="walk-eyebrow">03 · CHOOSE</div>
+        <div class="walk-title">PICK YOUR EGG</div>
+        <div class="walk-body small">tap one to select · its colour follows your companion</div>
+        <div class="egg-cards">
+          <button class="egg-card focusable" data-walk="egg-amethyst" data-variant="amethyst">
+            <canvas class="egg-canvas" width="100" height="120"></canvas>
+            <span class="egg-label">AMETHYST</span>
+          </button>
+          <button class="egg-card focusable" data-walk="egg-jade" data-variant="jade">
+            <canvas class="egg-canvas" width="100" height="120"></canvas>
+            <span class="egg-label">JADE</span>
+          </button>
+          <button class="egg-card focusable" data-walk="egg-ember" data-variant="ember">
+            <canvas class="egg-canvas" width="100" height="120"></canvas>
+            <span class="egg-label">EMBER</span>
+          </button>
+        </div>
+        <div class="walk-nav">
+          <button class="wbtn focusable" data-walk="back">◂ BACK</button>
+          <button class="wbtn wbtn-primary focusable" id="hatchBtn" data-walk="start" disabled>HATCH ▸</button>
+        </div>
+        <div class="walk-dots"><i></i><i></i><i></i><i class="on"></i></div>
+      </div>
+
+    </div>
+
+    <!-- GAME -->
+    <div id="game" class="game hidden">
+
+      <div class="device">
+        <div class="device-frame">
+          <div class="device-screen">
+            <div class="crt">
+              <div class="scanlines"></div>
+              <div class="vignette"></div>
+
+              <header class="hud">
+                <div class="hud-left">
+                  <span class="dot"></span>
+                  <span class="hud-name" id="petName">ORB-7</span>
+                </div>
+                <div class="hud-right">
+                  <span class="time-glyph" id="timeGlyph">☀</span>
+                  <span id="ageLabel">DAY 1</span>
+                  <span class="sep">·</span>
+                  <span id="stageLabel">EGG</span>
+                </div>
+              </header>
+
+              <section class="stats">
+                <div class="stat" data-key="hunger">
+                  <div class="stat-row">
+                    <span class="stat-label">FUEL</span>
+                    <span class="stat-val" id="hungerVal">100</span>
+                  </div>
+                  <div class="bar"><div class="bar-fill" id="hungerBar"></div></div>
+                </div>
+                <div class="stat" data-key="happy">
+                  <div class="stat-row">
+                    <span class="stat-label">MOOD</span>
+                    <span class="stat-val" id="happyVal">100</span>
+                  </div>
+                  <div class="bar"><div class="bar-fill" id="happyBar"></div></div>
+                </div>
+                <div class="stat" data-key="energy">
+                  <div class="stat-row">
+                    <span class="stat-label">CHARGE</span>
+                    <span class="stat-val" id="energyVal">100</span>
+                  </div>
+                  <div class="bar"><div class="bar-fill" id="energyBar"></div></div>
+                </div>
+                <div class="stat" data-key="hygiene">
+                  <div class="stat-row">
+                    <span class="stat-label">CLEAN</span>
+                    <span class="stat-val" id="hygieneVal">100</span>
+                  </div>
+                  <div class="bar"><div class="bar-fill" id="hygieneBar"></div></div>
+                </div>
+              </section>
+
+              <section class="stage">
+                <div class="stage-floor"></div>
+                <div class="stage-grid"></div>
+                <canvas class="ambient" id="ambientCanvas" width="544" height="190"></canvas>
+                <canvas id="petCanvas" width="280" height="180"></canvas>
+                <canvas class="fx-canvas" id="fxCanvas" width="544" height="190"></canvas>
+                <div class="evo-flash" id="evoFlash"></div>
+                <div class="emote" id="emote"></div>
+                <div class="poop" id="poop"></div>
+                <div class="zzz" id="zzz">z<span>z</span><span>z</span></div>
+                <div class="food" id="food"></div>
+                <div class="ball" id="ball"></div>
+                <div class="bubbles" id="bubbles"></div>
+                <div class="bandage" id="bandage"></div>
+              </section>
+
+              <section class="ticker">
+                <span id="ticker">SYSTEM ONLINE</span>
+              </section>
+
+              <nav class="actions">
+                <button class="act focusable" data-action="feed"><span class="glyph">◇</span><span>FEED</span></button>
+                <button class="act focusable" data-action="play"><span class="glyph">△</span><span>PLAY</span></button>
+                <button class="act focusable" data-action="sleep"><span class="glyph">○</span><span>REST</span></button>
+                <button class="act focusable" data-action="clean"><span class="glyph">◈</span><span>WASH</span></button>
+                <button class="act focusable" data-action="heal"><span class="glyph">+</span><span>HEAL</span></button>
+                <button class="act act-menu focusable" data-action="menu"><span class="glyph">≡</span><span>MENU</span></button>
+              </nav>
+
+            </div>
+
+            <!-- PAUSE MENU -->
+            <div id="menu" class="menu hidden">
+              <div class="menu-card">
+                <div class="menu-title">MENU</div>
+                <button class="menu-item focusable" data-menu="resume">RESUME</button>
+                <button class="menu-item focusable" data-menu="rename">RENAME COMPANION</button>
+                <button class="menu-item focusable" data-menu="help">SHOW WALKTHROUGH</button>
+                <button class="menu-item focusable" data-menu="reset">NEW COMPANION</button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="device-foot">
+            <div class="brand">L+R · GLIMMER<span class="gen" id="genTag">GEN 01</span></div>
+            <div class="model" id="modelTag">ORB-7 / v1.0</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
