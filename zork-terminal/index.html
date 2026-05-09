@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>ZORK I — Great Underground Empire</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="crt">
+    <header id="statusbar">
+      <span id="status-loc">WEST OF HOUSE</span>
+      <span id="status-meta">SCORE: 0/350&nbsp;&nbsp;MOVES: 0</span>
+    </header>
+    <main id="screen">
+      <div id="output"></div>
+    </main>
+
+    <!-- Bottom action bar — single contextual button -->
+    <div id="actionbar">
+      <button id="action-btn" class="action-btn primary">
+        <span class="ab-icon" id="ab-icon">&#9654;</span>
+        <span class="ab-label" id="ab-label">BEGIN</span>
+      </button>
+    </div>
+
+    <!-- Listening overlay (shown when user taps SPEAK) -->
+    <div id="listen-modal" class="hidden">
+      <div class="lm-header">
+        <span class="lm-dot"></span>
+        <span class="lm-status" id="lm-status">LISTENING…</span>
+        <button class="lm-close" id="lm-close">&#10005;</button>
+      </div>
+
+      <div class="lm-transcript">
+        <span class="lm-prompt">&gt;</span>
+        <span class="lm-text" id="lm-text"></span><span class="lm-caret">&#9608;</span>
+      </div>
+
+      <div class="lm-sugs">
+        <div class="lm-sugs-title">TRY SAYING / TAP A COMMAND</div>
+        <div class="lm-sugs-list" id="lm-sugs-list"></div>
+      </div>
+
+      <div class="lm-controls">
+        <button class="lm-btn" id="lm-cancel">CANCEL</button>
+        <button class="lm-btn primary" id="lm-submit">&#8629; SUBMIT</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="world.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
