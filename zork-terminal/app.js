@@ -1,81 +1,259 @@
 // ──────────────────────────────────────────────────────────────────
-// ZORK I — engine, parser, CRT terminal UI, voice & button input
+// ZORK I — engine, parser, CRT terminal UI, typewriter, chip input
 // ──────────────────────────────────────────────────────────────────
 
 const $ = (sel) => document.querySelector(sel);
-const outputEl   = $("#output");
-const statusLoc  = $("#status-loc");
-const statusMeta = $("#status-meta");
-const actionBtn  = $("#action-btn");
-const abIcon     = $("#ab-icon");
-const abLabel    = $("#ab-label");
-const lmModal    = $("#listen-modal");
-const lmStatus   = $("#lm-status");
-const lmText     = $("#lm-text");
-const lmSugsList = $("#lm-sugs-list");
-const lmCancel   = $("#lm-cancel");
-const lmSubmit   = $("#lm-submit");
-const lmClose    = $("#lm-close");
+const outputEl    = $("#output");
+const statusLoc   = $("#status-loc");
+const statusMeta  = $("#status-meta");
+const chipBar     = $("#chipbar");
+const primaryRow  = $("#primary-row");
+const secondaryRow= $("#secondary-row");
+const morePanel   = $("#more-panel");
+const moreList    = $("#mp-list");
+const mpClose     = $("#mp-close");
 
 let state = makeInitialState();
 let lastCommand = "";
 
 
-// ── output helpers ─────────────────────────────────────────────
+// ── audio context (synthesized SFX, no audio files) ──────────
+
+let audioCtx = null;
+let masterGain = null;
+let audioMuted = false;
+let lastTickAt = 0;
+
+function ensureAudio() {
+  if (audioCtx) {
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    return;
+  }
+  try {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    audioCtx = new C();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.30;
+    masterGain.connect(audioCtx.destination);
+  } catch (e) { audioCtx = null; }
+}
+
+function setMute(m) {
+  audioMuted = m;
+  const btn = document.getElementById("mute-btn");
+  if (btn) {
+    btn.innerHTML = m ? "&#128263;" : "&#128266;"; // 🔇 / 🔊
+    btn.classList.toggle("muted", m);
+  }
+}
+
+function tone({ freq = 880, dur = 0.08, type = "sine", vol = 0.3, slide = null, attack = 0.005 } = {}) {
+  if (!audioCtx || audioMuted) return;
+  const t = audioCtx.currentTime;
+  const o = audioCtx.createOscillator();
+  o.type = type;
+  o.frequency.setValueAtTime(freq, t);
+  if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + attack);
+  g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+  o.connect(g).connect(masterGain);
+  o.start(t);
+  o.stop(t + dur + 0.02);
+}
+
+function noiseBurst({ dur = 0.12, freq = 600, q = 0.7, vol = 0.6 } = {}) {
+  if (!audioCtx || audioMuted) return;
+  const t = audioCtx.currentTime;
+  const buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) {
+    d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+  }
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const filt = audioCtx.createBiquadFilter();
+  filt.type = "bandpass";
+  filt.frequency.value = freq;
+  filt.Q.value = q;
+  const g = audioCtx.createGain();
+  g.gain.value = vol;
+  src.connect(filt).connect(g).connect(masterGain);
+  src.start(t);
+}
+
+function sfxTick() {
+  // Throttle so we don't queue too many oscillators per second.
+  const now = performance.now();
+  if (now - lastTickAt < 18) return;
+  lastTickAt = now;
+  tone({ freq: 1700 + Math.random() * 240, dur: 0.012, type: "square", vol: 0.07, attack: 0.001 });
+}
+function sfxChip() {
+  tone({ freq: 720, dur: 0.06, type: "square", vol: 0.22, slide: 540 });
+}
+function sfxBegin() {
+  tone({ freq: 440, dur: 0.10, type: "square", vol: 0.28 });
+  setTimeout(() => tone({ freq: 660, dur: 0.14, type: "square", vol: 0.28 }), 80);
+}
+function sfxBoot() {
+  tone({ freq: 80, dur: 0.45, type: "square", vol: 0.18, slide: 2400 });
+}
+function sfxAward() {
+  tone({ freq: 660, dur: 0.07, type: "triangle", vol: 0.28 });
+  setTimeout(() => tone({ freq: 990, dur: 0.13, type: "triangle", vol: 0.28 }), 70);
+}
+function sfxHit() {
+  noiseBurst({ dur: 0.18, freq: 380, q: 0.6, vol: 0.55 });
+  tone({ freq: 120, dur: 0.12, type: "square", vol: 0.25, slide: 60 });
+}
+function sfxMiss() {
+  noiseBurst({ dur: 0.10, freq: 1200, q: 1.2, vol: 0.18 });
+}
+function sfxDeath() {
+  tone({ freq: 440, dur: 1.1, type: "sawtooth", vol: 0.36, slide: 40 });
+  setTimeout(() => noiseBurst({ dur: 0.45, freq: 200, q: 0.5, vol: 0.4 }), 60);
+}
+function sfxVictory() {
+  const notes = [523, 659, 784, 1047];
+  notes.forEach((f, i) => setTimeout(() => tone({ freq: f, dur: 0.18, type: "triangle", vol: 0.32 }), i * 110));
+}
+function sfxOpen() { tone({ freq: 380, dur: 0.10, type: "triangle", vol: 0.28, slide: 540 }); }
+function sfxTake() { tone({ freq: 880, dur: 0.07, type: "triangle", vol: 0.22 }); }
+function sfxEnter() {
+  tone({ freq: 200, dur: 0.18, type: "square", vol: 0.22, slide: 480 });
+}
+
+
+// ── typewriter queue ──────────────────────────────────────────
+
+const printQueue = [];
+let printing = false;
+let pumpScheduled = false;
+let skipRequested = false;
+
+const TW_SPEED_FAST = 4;   // ms/char during normal output
+const TW_SPEED_TITLE = 0;  // titles are instant
 
 function println(text = "") {
-  const div = document.createElement("div");
-  div.className = "line";
-  div.textContent = text;
-  outputEl.appendChild(div);
-  scrollToBottom();
+  printQueue.push({ kind: "line", text: String(text) });
+  schedulePump();
 }
 
 function printlnHTML(html) {
-  const div = document.createElement("div");
-  div.className = "line";
-  div.innerHTML = html;
-  outputEl.appendChild(div);
-  scrollToBottom();
+  printQueue.push({ kind: "html", html });
+  schedulePump();
 }
 
 function printEcho(cmd) {
-  const div = document.createElement("div");
-  div.className = "line echo";
-  div.textContent = cmd;
-  outputEl.appendChild(div);
-  scrollToBottom();
+  printQueue.push({ kind: "echo", text: String(cmd) });
+  schedulePump();
 }
 
+// Batch synchronous queue pushes into a single pump cycle, so renderChips
+// only runs after the full burst of output has been printed.
+function schedulePump() {
+  if (printing || pumpScheduled) return;
+  pumpScheduled = true;
+  Promise.resolve().then(() => {
+    pumpScheduled = false;
+    pump();
+  });
+}
+
+function clearOutput() {
+  outputEl.innerHTML = "";
+}
+
+async function pump() {
+  if (printing) return;
+  printing = true;
+  chipBar.classList.add("disabled");
+
+  while (printQueue.length) {
+    const item = printQueue.shift();
+    if (item.kind === "html") {
+      const div = document.createElement("div");
+      div.className = "line";
+      div.innerHTML = item.html;
+      outputEl.appendChild(div);
+      scrollToBottom();
+    } else if (item.kind === "echo") {
+      const div = document.createElement("div");
+      div.className = "line echo";
+      div.textContent = item.text;
+      outputEl.appendChild(div);
+      scrollToBottom();
+    } else {
+      await typewriteLine(item.text);
+    }
+  }
+
+  printing = false;
+  skipRequested = false;
+  chipBar.classList.remove("disabled");
+  renderChips();
+}
+
+// Uses MessageChannel to dodge background-tab setTimeout throttling, and
+// progresses by elapsed real time rather than tick count — feels smooth at
+// any frame rate.
+function typewriteLine(text) {
+  const div = document.createElement("div");
+  div.className = "line typing";
+  outputEl.appendChild(div);
+  scrollToBottom();
+  const charsPerSec = 220;  // quick — about 4.5ms/char
+  const t0 = performance.now();
+  let i = 0;
+  return new Promise((resolve) => {
+    const ch = new MessageChannel();
+    ch.port1.onmessage = () => {
+      if (skipRequested) {
+        div.textContent = text;
+        div.classList.remove("typing");
+        scrollToBottom();
+        resolve();
+        return;
+      }
+      const elapsed = performance.now() - t0;
+      const newI = Math.min(text.length, Math.floor(elapsed * charsPerSec / 1000));
+      if (newI > i) sfxTick();
+      i = newI;
+      div.textContent = text.slice(0, i);
+      scrollToBottom();
+      if (i >= text.length) {
+        div.classList.remove("typing");
+        resolve();
+        return;
+      }
+      ch.port2.postMessage(0);
+    };
+    ch.port2.postMessage(0);
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function scrollToBottom() { outputEl.scrollTop = outputEl.scrollHeight; }
+
+
+// Tap-anywhere-to-skip the typewriter
+document.addEventListener("click", (e) => {
+  if (!printing) return;
+  // Don't treat clicks on chips/buttons as skip
+  if (e.target.closest(".chip") || e.target.closest(".mp-close")) return;
+  skipRequested = true;
+});
+
+
+// ── status bar ─────────────────────────────────────────────────
 
 function updateStatus() {
   const r = ROOMS[state.location];
   statusLoc.textContent = (r ? r.short : "—").toUpperCase();
   statusMeta.textContent = `SCORE: ${state.score}/350  MOVES: ${state.moves}`;
-  updateActionButton();
-}
-
-function updateActionButton() {
-  if (state.flags.awaitingStart) {
-    abIcon.innerHTML = "&#9654;";
-    abLabel.textContent = "BEGIN";
-    actionBtn.dataset.mode = "begin";
-    actionBtn.classList.add("primary");
-    actionBtn.classList.remove("listening");
-  } else if (state.flags.gameOver) {
-    abIcon.innerHTML = "&#x21bb;";
-    abLabel.textContent = "RESTART";
-    actionBtn.dataset.mode = "restart";
-    actionBtn.classList.add("primary");
-    actionBtn.classList.remove("listening");
-  } else {
-    abIcon.innerHTML = "&#127908;"; // 🎤
-    abLabel.textContent = "TAP TO SPEAK";
-    actionBtn.dataset.mode = "speak";
-    actionBtn.classList.remove("primary");
-    actionBtn.classList.remove("listening");
-  }
 }
 
 
@@ -83,7 +261,6 @@ function updateActionButton() {
 
 function room() { return ROOMS[state.location]; }
 function carrying(id) { return state.inventory.includes(id); }
-
 function canSee(id) {
   if (carrying(id)) return true;
   if ((room().items || []).includes(id)) return true;
@@ -168,11 +345,9 @@ const VERB_ALIASES = {
   verbose: "verbose", brief: "brief",
   diagnose: "diagnose",
   yes: "yes", y: "yes",
-  no: "no", n: "no",
+  no: "no",
   help: "help",
   about: "about",
-  xyzzy: "xyzzy", plugh: "plugh",
-  hello: "hello", hi: "hello",
 };
 
 const STOP_WORDS = new Set(["the", "a", "an", "to", "at", "on", "into"]);
@@ -194,29 +369,29 @@ function resolveItem(noun) {
   if (!noun) return null;
   if (ITEMS[noun]) return noun;
   const SYN = {
-    "box": "mailbox", "mail": "mailbox",
-    "letter": "leaflet", "advertisement": "leaflet", "pamphlet": "leaflet",
-    "case": "trophy_case", "trophy": "trophy_case",
-    "carpet": "rug",
-    "trap": "trapdoor", "trapdoor": "trapdoor", "door": "trapdoor",
-    "lamp": "lantern", "torch": "lantern", "light": "lantern",
-    "egg": "egg", "jewel": "egg", "jewels": "egg",
-    "bird": "nest", "nest": "nest",
-    "leaf": "leaves", "leaves": "leaves", "pile": "leaves",
-    "blade": "sword",
-    "knife": "knife", "dagger": "knife",
-    "rope": "rope", "coil": "rope",
-    "bottle": "bottle", "glass": "bottle",
-    "water": "water", "liquid": "water",
-    "sack": "sack", "bag": "sack",
-    "garlic": "garlic", "clove": "garlic",
-    "lunch": "lunch", "sandwich": "lunch", "food": "lunch",
-    "table": "table",
-    "window": "window", "windows": "window",
-    "axe": "axe",
-    "coins": "coins", "pouch": "coins", "gold": "coins", "money": "coins",
-    "painting": "painting", "art": "painting", "picture": "painting",
-    "troll": "troll",
+    "box":"mailbox","mail":"mailbox",
+    "letter":"leaflet","advertisement":"leaflet","pamphlet":"leaflet",
+    "case":"trophy_case","trophy":"trophy_case",
+    "carpet":"rug",
+    "trap":"trapdoor","trapdoor":"trapdoor","door":"trapdoor",
+    "lamp":"lantern","torch":"lantern","light":"lantern",
+    "egg":"egg","jewel":"egg","jewels":"egg",
+    "bird":"nest","nest":"nest",
+    "leaf":"leaves","leaves":"leaves","pile":"leaves",
+    "blade":"sword",
+    "knife":"knife","dagger":"knife",
+    "rope":"rope","coil":"rope",
+    "bottle":"bottle","glass":"bottle",
+    "water":"water","liquid":"water",
+    "sack":"sack","bag":"sack",
+    "garlic":"garlic","clove":"garlic",
+    "lunch":"lunch","sandwich":"lunch","food":"lunch",
+    "table":"table",
+    "window":"window","windows":"window",
+    "axe":"axe",
+    "coins":"coins","pouch":"coins","gold":"coins","money":"coins",
+    "painting":"painting","art":"painting","picture":"painting",
+    "troll":"troll",
   };
   if (SYN[noun]) return SYN[noun];
   for (const id in ITEMS) {
@@ -254,10 +429,8 @@ function parseAndExecute(rawInput) {
     println("I don't know the word \"" + t + "\".");
     return;
   }
-
   const v0 = VERB_ALIASES[tokens[0]] || tokens[0];
   if (DIRS[tokens[0]] && tokens.length === 1) return doMove(DIRS[tokens[0]]);
-
   let preposition = null, noun2 = null;
   let nounTokens = tokens.slice(1);
   for (let i = 0; i < nounTokens.length; i++) {
@@ -274,7 +447,7 @@ function parseAndExecute(rawInput) {
 
 // ── verb dispatcher ────────────────────────────────────────────
 
-function doVerb(verb, args, _tokens) {
+function doVerb(verb, args) {
   switch (verb) {
     case "look":   return cmdLook(args);
     case "examine":return cmdExamine(args);
@@ -295,16 +468,11 @@ function doVerb(verb, args, _tokens) {
     case "put":    return cmdPut(args);
     case "wait":   return cmdWait();
     case "score":  return cmdScore();
-    case "save":   println("[Save not supported in this build.]"); return;
-    case "restore":println("[Restore not supported in this build.]"); return;
     case "quit":   return cmdQuit();
     case "restart":return cmdRestart();
     case "verbose":state.flags.verbose = true; println("Maximum verbosity."); return;
     case "brief":  state.flags.verbose = false; println("Brief descriptions."); return;
     case "diagnose": return cmdDiagnose();
-    case "xyzzy":  println("A hollow voice says \"Fool.\""); return;
-    case "plugh":  println("A hollow voice says \"Fool.\""); return;
-    case "hello":  println("Hello yourself, brave adventurer."); return;
     case "yes":    println("That was a rhetorical question."); return;
     case "no":     println("Suit yourself."); return;
     case "help":   return cmdHelp();
@@ -322,6 +490,7 @@ function doMove(dir) {
   if (r.dark && !(carrying("lantern") && state.flags.lanternOn)) {
     state.flags.darkMoves++;
     if (state.flags.darkMoves >= 2) {
+      sfxDeath();
       println("Oh, no! You have walked into the slavering fangs of a lurking grue!");
       println("");
       println("    *** You have died ***");
@@ -373,13 +542,6 @@ function cmdInventory() {
     const it = ITEMS[id];
     let line = "  " + capitalize(it.article) + " " + it.short;
     if (id === "lantern" && state.flags.lanternOn) line += " (providing light)";
-    if (id === "bottle" && state.items.bottle.contains && state.items.bottle.contains.length) {
-      line += "\n    The glass bottle contains:\n      A quantity of water";
-    }
-    if (id === "sack" && !state.items.sack.closed && state.items.sack.contains.length) {
-      line += "\n    The brown sack contains:";
-      for (const sub of state.items.sack.contains) line += "\n      " + capitalize(ITEMS[sub].article) + " " + ITEMS[sub].short;
-    }
     println(line);
   }
 }
@@ -413,7 +575,7 @@ function cmdTake(args) {
     state.items.nest.contains = state.items.nest.contains.filter(x => x !== "egg");
     state.inventory.push("egg");
     if (!state.flags.a_tookEgg) award(5, "a_tookEgg");
-    println("Taken."); return;
+    sfxTake(); println("Taken."); return;
   }
   if (id === "axe" && state.flags.trollDead) { state.inventory.push("axe"); removeFromRoom("troll_room", "axe"); println("Taken."); return; }
   if (id === "axe" && !state.flags.trollDead) { println("The troll spits in your face, grunts contemptuously, and turns away."); return; }
@@ -421,13 +583,13 @@ function cmdTake(args) {
     if (!(room().items || []).includes("coins")) { println("You can't see any coins here."); return; }
     removeFromRoom(state.location, "coins"); state.inventory.push("coins");
     if (!state.flags.a_tookCoins) award(5, "a_tookCoins");
-    println("Taken."); return;
+    sfxTake(); println("Taken."); return;
   }
   if (id === "painting") {
     if (!(room().items || []).includes("painting")) { println("You can't see any painting here."); return; }
     removeFromRoom(state.location, "painting"); state.inventory.push("painting");
     if (!state.flags.a_tookPainting) award(5, "a_tookPainting");
-    println("Taken."); return;
+    sfxTake(); println("Taken."); return;
   }
   if (id === "leaflet" && state.items.mailbox.contains.includes("leaflet")) {
     state.items.mailbox.contains = state.items.mailbox.contains.filter(x => x !== "leaflet");
@@ -448,13 +610,13 @@ function cmdTake(args) {
     if (!(room().items || []).includes("sword")) { println("You can't see any sword here."); return; }
     removeFromRoom(state.location, "sword"); state.inventory.push("sword");
     if (!state.flags.a_tookSword) award(2, "a_tookSword");
-    println("Taken."); return;
+    sfxTake(); println("Taken."); return;
   }
   if (id === "lantern") {
     if (!(room().items || []).includes("lantern")) { println("You can't see any lantern here."); return; }
     removeFromRoom(state.location, "lantern"); state.inventory.push("lantern");
     if (!state.flags.a_tookLantern) award(2, "a_tookLantern");
-    println("Taken."); return;
+    sfxTake(); println("Taken."); return;
   }
   if ((room().items || []).includes(id)) {
     removeFromRoom(state.location, id); state.inventory.push(id); println("Taken."); return;
@@ -493,6 +655,7 @@ function cmdOpen(args) {
     if (!state.items.mailbox.closed) { println("It is already open."); return; }
     state.items.mailbox.closed = false;
     if (!state.flags.a_openMailbox) award(1, "a_openMailbox");
+    sfxOpen();
     if (state.items.mailbox.contains.length) println("Opening the small mailbox reveals a leaflet.");
     else println("Opened.");
     return;
@@ -500,6 +663,7 @@ function cmdOpen(args) {
   if (id === "window") {
     if (state.flags.windowOpen) { println("It is already open."); return; }
     state.flags.windowOpen = true;
+    sfxOpen();
     println("With great effort, you open the window far enough to allow entry.");
     return;
   }
@@ -507,6 +671,7 @@ function cmdOpen(args) {
     if (!state.flags.rugMoved) { println("You can't see any trap door here."); return; }
     if (state.flags.trapdoorOpen) { println("It is already open."); return; }
     state.flags.trapdoorOpen = true;
+    sfxOpen();
     if (!state.flags.a_openedTrap) award(5, "a_openedTrap");
     println("The door reluctantly opens to reveal a rickety staircase descending into darkness.");
     return;
@@ -590,6 +755,7 @@ function cmdAttack(args) {
   if (!carrying(weapon)) { println("You're not carrying the " + ITEMS[weapon].short + "."); return; }
   const lands = (weapon === "sword") ? true : Math.random() < 0.55;
   if (lands) {
+    sfxHit();
     state.trollHp--;
     if (state.trollHp <= 0) {
       state.flags.trollDead = true;
@@ -609,6 +775,7 @@ function cmdAttack(args) {
       "You connect solidly. The troll staggers.",
     ]));
   } else {
+    sfxMiss();
     println(pick([
       "The troll parries your blow with a deft twist of his axe.",
       "You miss; the troll roars and swings, also missing.",
@@ -717,23 +884,16 @@ function rankFor(s) {
 }
 function cmdQuit() { println("Tap RESTART to start a new game."); state.flags.gameOver = true; updateStatus(); }
 function cmdRestart() {
-  state = makeInitialState(); outputEl.innerHTML = "";
-  // Re-add dynamic items to rooms (rooms.items is shared module state — reset trophy/etc.)
+  state = makeInitialState();
+  outputEl.innerHTML = "";
   resetRoomItems();
   bootStart();
 }
 function cmdDiagnose() { println("You are in perfect health."); }
 function cmdHelp() {
-  println("Common verbs:");
-  println("  N S E W NE NW SE SW UP DOWN  — move");
-  println("  LOOK  EXAMINE <obj>");
-  println("  TAKE / DROP / INVENTORY");
-  println("  OPEN / CLOSE / READ <obj>");
-  println("  TURN ON LANTERN  /  TURN OFF LANTERN");
-  println("  MOVE <obj>  CLIMB <obj>  ENTER <obj>");
-  println("  ATTACK <foe> WITH <weapon>");
-  println("  PUT <obj> IN <container>");
-  println("  WAIT  AGAIN  SCORE  RESTART");
+  println("Tap a chip to act. Use MORE for the full list.");
+  println("Common verbs: LOOK, EXAMINE, TAKE, DROP, OPEN,");
+  println("CLOSE, READ, MOVE, ATTACK, PUT, GO <DIR>.");
 }
 function cmdAbout() {
   println("ZORK I: The Great Underground Empire");
@@ -744,6 +904,7 @@ function cmdAbout() {
 function checkVictory() {
   const c = state.items.trophy_case.contains;
   if (c.includes("egg") && c.includes("painting") && c.includes("coins")) {
+    sfxVictory();
     println("");
     println("As you place the last treasure in the case, the room hums with a soft golden light.");
     println("");
@@ -753,17 +914,15 @@ function checkVictory() {
     state.flags.gameOver = true; updateStatus();
   }
 }
-function gameOver(_won) { state.flags.gameOver = true; }
+function gameOver() { state.flags.gameOver = true; }
 
 function award(pts, flag) {
   if (flag) { if (state.flags[flag]) return; state.flags[flag] = true; }
   state.score += pts; updateStatus();
+  sfxAward();
 }
 
-function escapeHTML(s) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
+function escapeHTML(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
 
@@ -773,38 +932,25 @@ function intro() {
   println("ZORK I: The Great Underground Empire");
   println("Copyright (c) 1981, 1982, 1983 Infocom, Inc.");
   println("All rights reserved.");
-  println("ZORK is a registered trademark of Infocom, Inc.");
   println("Revision 88 / Serial number 840726");
   println("");
 }
 
 function showInstructions() {
   printlnHTML(`<span class="title-line">ZORK I — HOW TO PLAY</span>`);
-  println("");
-  println("Tap the speak button. Say what you want");
-  println("to do, or tap a suggested command.");
-  println("");
-  printlnHTML(`<span class="title-line">EXAMPLES</span>`);
-  println("  \"open mailbox\"      \"take leaflet\"");
-  println("  \"go north\"          \"examine sword\"");
-  println("  \"attack troll with sword\"");
+  println("Tap a chip to act. The bright chip");
+  println("is the suggested next move.");
   println("");
   printlnHTML(`<span class="title-line">GOAL</span>`);
-  println("  Find the treasures of the underground");
-  println("  empire and place them in the trophy");
-  println("  case in the living room.");
+  println("Find the treasures and place them in");
+  println("the trophy case. Beware the troll.");
   println("");
   printlnHTML(`<span class="bold">Tap BEGIN to enter the world.</span>`);
-  outputEl.scrollTop = 0;
 }
 
-// Original room item lists, so we can restore on restart.
 const ROOM_ITEMS_ORIGINAL = {};
 function snapshotRoomItems() {
-  for (const id in ROOMS) {
-    if (ROOMS[id].items) ROOM_ITEMS_ORIGINAL[id] = [...ROOMS[id].items];
-    else ROOM_ITEMS_ORIGINAL[id] = [];
-  }
+  for (const id in ROOMS) ROOM_ITEMS_ORIGINAL[id] = ROOMS[id].items ? [...ROOMS[id].items] : [];
 }
 function resetRoomItems() {
   for (const id in ROOM_ITEMS_ORIGINAL) ROOMS[id].items = [...ROOM_ITEMS_ORIGINAL[id]];
@@ -817,6 +963,8 @@ function bootStart() {
 }
 
 function startGame() {
+  ensureAudio();
+  sfxBegin();
   state.flags.awaitingStart = false;
   outputEl.innerHTML = "";
   intro();
@@ -825,181 +973,194 @@ function startGame() {
 }
 
 
-// ── speech recognition + listening modal ──────────────────────
+// ── chip command bar ───────────────────────────────────────────
 
-let recognition = null;
-let recognitionLive = "";
-let recognitionRunning = false;
-let recognitionSupported = false;
-try {
-  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (Rec) {
-    recognition = new Rec();
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.lang = "en-US";
-    recognition.onresult = (event) => {
-      let text = "";
-      for (let i = 0; i < event.results.length; i++) {
-        text += event.results[i][0].transcript;
-      }
-      recognitionLive = text;
-      lmText.textContent = recognitionLive;
-    };
-    recognition.onend = () => {
-      recognitionRunning = false;
-      lmStatus.textContent = recognitionLive ? "READY" : "TAP A COMMAND OR TAP SUBMIT";
-    };
-    recognition.onerror = (e) => {
-      recognitionRunning = false;
-      if (e.error === "not-allowed" || e.error === "service-not-allowed") {
-        lmStatus.textContent = "MIC BLOCKED — TAP A COMMAND";
-      } else if (e.error === "no-speech") {
-        lmStatus.textContent = "NO SPEECH — TRY AGAIN OR TAP";
-      } else {
-        lmStatus.textContent = "VOICE OFF — TAP A COMMAND";
-      }
-    };
-    recognitionSupported = true;
+function execChip(cmd) {
+  if (printing) return;
+  ensureAudio();
+  sfxChip();
+  parseAndExecute(cmd);
+}
+
+function makeChip(label, onClick, opts = {}) {
+  const btn = document.createElement("button");
+  btn.className = "chip";
+  if (opts.primary) btn.classList.add("primary");
+  if (opts.full)    btn.classList.add("full");
+  if (opts.big)     btn.classList.add("big");
+  if (opts.compact) btn.classList.add("compact");
+  btn.textContent = label;
+  btn.addEventListener("click", (e) => { e.stopPropagation(); onClick(); });
+  return btn;
+}
+
+function clearChips() {
+  primaryRow.innerHTML = "";
+  secondaryRow.innerHTML = "";
+}
+
+function renderChips() {
+  clearChips();
+  if (state.flags.awaitingStart) {
+    primaryRow.appendChild(makeChip("▶  BEGIN", startGame, { primary: true, full: true, big: true }));
+    return;
   }
-} catch (e) { recognitionSupported = false; }
+  if (state.flags.gameOver) {
+    primaryRow.appendChild(makeChip("↻  RESTART", cmdRestart, { primary: true, full: true, big: true }));
+    return;
+  }
 
-function buildSuggestions() {
-  const sugs = [];
+  const ctx = computeActions();
+
+  // Primary row: the most contextually obvious next move
+  if (ctx.primary) {
+    primaryRow.appendChild(makeChip(ctx.primary, () => execChip(ctx.primary), {
+      primary: true, full: true, big: true,
+    }));
+  }
+
+  // Secondary row: 5–6 chips: directions + look/inv + MORE
+  const secondary = ctx.secondary.slice(0, 5);
+  for (const s of secondary) secondaryRow.appendChild(makeChip(s, () => execChip(s), { compact: true }));
+  // Always include MORE
+  secondaryRow.appendChild(makeChip("MORE…", openMorePanel, { compact: true }));
+}
+
+
+// Compute the "smart" primary suggestion + secondary chip set.
+function computeActions() {
   const r = room();
   const items = r.items || [];
   const dark = r.dark && !(carrying("lantern") && state.flags.lanternOn);
 
-  // Always-available verbs
-  sugs.push("look", "inventory");
+  let primary = null;
+  const more = [];   // candidates for MORE panel
+  const secondary = [];
 
+  const push = (s, where = "more") => { if (!s) return; (where === "secondary" ? secondary : more).push(s); };
+
+  // ---- pick the smart "primary" action ----
+  if (dark) {
+    if (carrying("lantern") && !state.flags.lanternOn) primary = "turn on lantern";
+    else primary = "look";
+  } else {
+    if (state.location === "west_of_house" && state.items.mailbox.closed) primary = "open mailbox";
+    else if (state.location === "west_of_house" && !state.items.mailbox.closed && state.items.mailbox.contains.includes("leaflet")) primary = "take leaflet";
+    else if (carrying("leaflet") && !state.flags.a_readLeaflet) primary = "read leaflet";
+    else if (state.location === "behind_house" && !state.flags.windowOpen) primary = "open window";
+    else if (state.location === "behind_house" && state.flags.windowOpen) primary = "enter window";
+    else if (state.location === "kitchen" && !state.flags.visited.attic) primary = "go up";
+    else if (state.location === "attic" && !carrying("rope")) primary = "take rope";
+    else if (state.location === "attic" && !carrying("knife")) primary = "take knife";
+    else if (state.location === "attic") primary = "go down";
+    else if (state.location === "kitchen" && !state.flags.visited.living_room) primary = "go west";
+    else if (state.location === "living_room" && items.includes("sword")) primary = "take sword";
+    else if (state.location === "living_room" && items.includes("lantern")) primary = "take lantern";
+    else if (state.location === "living_room" && carrying("lantern") && !state.flags.lanternOn) primary = "turn on lantern";
+    else if (state.location === "living_room" && !state.flags.rugMoved) primary = "move rug";
+    else if (state.location === "living_room" && state.flags.rugMoved && !state.flags.trapdoorOpen) primary = "open trapdoor";
+    else if (state.location === "living_room" && state.flags.trapdoorOpen && !state.flags.enteredCellar) primary = "go down";
+    else if (state.location === "forest_path" && state.flags.visited.up_a_tree !== true) primary = "climb tree";
+    else if (state.location === "up_a_tree" && state.items.nest.contains.includes("egg")) primary = "take egg";
+    else if (state.location === "cellar" && !state.flags.visited.troll_room) primary = "go north";
+    else if (state.location === "troll_room" && !state.flags.trollDead && carrying("sword")) primary = "attack troll with sword";
+    else if (state.location === "troll_room" && state.flags.trollDead && (items.includes("axe") || items.includes("coins"))) primary = "take all";
+    else if (state.location === "troll_room" && state.flags.trollDead) primary = "go east";
+    else if (state.location === "east_west_passage") primary = "go east";
+    else if (state.location === "round_room") primary = "go northeast";
+    else if (state.location === "gallery" && items.includes("painting")) primary = "take painting";
+    else if (state.location === "gallery") primary = "go southwest";
+    else if (state.location === "living_room") {
+      // Deposit phase
+      const tres = state.inventory.filter(id => ITEMS[id].treasure);
+      if (tres.length) primary = "put " + lastWord(ITEMS[tres[0]].short) + " in case";
+    }
+  }
+
+  // ---- secondary row (the 5 most useful non-primary chips) ----
+  // Always: LOOK / INV
+  push("look", "secondary");
+  // Available exits as "GO <dir>"
+  for (const dir in (r.exits || {})) {
+    if (["in","out"].includes(dir)) continue;
+    if (primary === ("go " + dir)) continue;
+    push("go " + dir, "secondary");
+    if (secondary.length >= 4) break;
+  }
+  push("inventory", "secondary");
+
+  // ---- MORE panel candidates: every plausible action ----
   if (!dark) {
-    // Per-item suggestions in current room
     for (const id of items) {
       const def = ITEMS[id];
-      if (id === "mailbox" && state.items.mailbox.closed) sugs.push("open mailbox");
-      if (id === "mailbox" && !state.items.mailbox.closed && state.items.mailbox.contains.includes("leaflet")) sugs.push("take leaflet");
-      if (id === "window" && !state.flags.windowOpen) sugs.push("open window");
-      if (id === "window" && state.flags.windowOpen && state.location === "behind_house") sugs.push("enter window");
-      if (id === "rug" && !state.flags.rugMoved) sugs.push("move rug");
-      if (id === "trapdoor" && !state.flags.trapdoorOpen) sugs.push("open trapdoor");
+      if (id === "mailbox" && state.items.mailbox.closed) push("open mailbox");
+      if (id === "mailbox" && !state.items.mailbox.closed && state.items.mailbox.contains.includes("leaflet")) push("take leaflet");
+      if (id === "window" && !state.flags.windowOpen) push("open window");
+      if (id === "window" && state.flags.windowOpen) push("close window");
+      if (id === "rug" && !state.flags.rugMoved) push("move rug");
+      if (id === "trapdoor" && !state.flags.trapdoorOpen) push("open trapdoor");
+      if (id === "trapdoor" && state.flags.trapdoorOpen) push("close trapdoor");
       if (id === "trophy_case") {
         for (const inv of state.inventory) {
-          if (ITEMS[inv].treasure) sugs.push(`put ${ITEMS[inv].short.split(" ").slice(-1)[0]} in case`);
+          if (ITEMS[inv].treasure) push("put " + lastWord(ITEMS[inv].short) + " in case");
         }
       }
-      if (id === "troll" && !state.flags.trollDead && carrying("sword")) sugs.push("attack troll with sword");
-      if (id === "nest" && state.items.nest.contains.includes("egg")) sugs.push("take egg");
-      if (id === "leaves" && !state.flags.leavesMoved) sugs.push("move leaves");
-      if (!def.fixed) sugs.push("take " + lastWord(def.short));
-      if (def.examine) sugs.push("examine " + lastWord(def.short));
+      if (id === "troll" && !state.flags.trollDead && carrying("sword")) push("attack troll with sword");
+      if (id === "nest" && state.items.nest.contains.includes("egg")) push("take egg");
+      if (id === "leaves" && !state.flags.leavesMoved) push("move leaves");
+      if (!def.fixed) push("take " + lastWord(def.short));
+      if (def.examine) push("examine " + lastWord(def.short));
     }
-    // Inventory specials
-    if (carrying("leaflet")) sugs.push("read leaflet");
-    if (carrying("lantern") && !state.flags.lanternOn) sugs.push("turn on lantern");
-    if (carrying("lantern") && state.flags.lanternOn && !r.dark) sugs.push("turn off lantern");
-
-    // Exit suggestions
-    for (const dir in (r.exits || {})) {
-      if (["in","out"].includes(dir)) continue;
-      sugs.push("go " + dir);
-    }
+    if (carrying("leaflet")) push("read leaflet");
+    if (carrying("lantern") && !state.flags.lanternOn) push("turn on lantern");
+    if (carrying("lantern") && state.flags.lanternOn && !r.dark) push("turn off lantern");
+    for (const inv of state.inventory) push("examine " + lastWord(ITEMS[inv].short));
   } else {
-    if (carrying("lantern") && !state.flags.lanternOn) sugs.push("turn on lantern");
-    sugs.push("go back");
+    if (carrying("lantern") && !state.flags.lanternOn) push("turn on lantern");
   }
+  push("score");
+  push("inventory");
+  push("look");
+  push("help");
 
-  // Dedupe + cap
+  // dedupe across primary/secondary/more
   const seen = new Set();
-  const unique = [];
-  for (const s of sugs) {
+  const dedupe = (arr) => arr.filter(s => {
     const k = s.toLowerCase();
-    if (seen.has(k)) continue;
-    seen.add(k); unique.push(s);
-    if (unique.length >= 14) break;
-  }
-  return unique;
+    if (seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+  if (primary) seen.add(primary.toLowerCase());
+  const secondaryDedup = dedupe(secondary);
+  const moreDedup = dedupe(more);
+
+  return { primary, secondary: secondaryDedup, more: moreDedup };
 }
 
 function lastWord(s) { const parts = s.split(/\s+/); return parts[parts.length - 1]; }
 
-function renderSuggestions() {
-  const sugs = buildSuggestions();
-  lmSugsList.innerHTML = "";
-  for (const s of sugs) {
-    const btn = document.createElement("button");
-    btn.className = "lm-chip";
-    btn.textContent = s;
-    btn.addEventListener("click", () => {
-      stopRecognition();
-      lmText.textContent = s;
-      recognitionLive = s;
-      submitListening();
-    });
-    lmSugsList.appendChild(btn);
+
+// ── MORE panel ────────────────────────────────────────────────
+
+function openMorePanel() {
+  const ctx = computeActions();
+  moreList.innerHTML = "";
+  const all = [];
+  if (ctx.primary) all.push(ctx.primary);
+  for (const s of ctx.secondary) all.push(s);
+  for (const s of ctx.more) all.push(s);
+  // dedupe
+  const seen = new Set();
+  for (const s of all) {
+    const k = s.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    moreList.appendChild(makeChip(s, () => { closeMorePanel(); execChip(s); }));
   }
+  morePanel.classList.remove("hidden");
 }
-
-function openListenModal() {
-  recognitionLive = "";
-  lmText.textContent = "";
-  lmStatus.textContent = recognitionSupported ? "LISTENING…" : "TAP A COMMAND";
-  renderSuggestions();
-  lmModal.classList.remove("hidden");
-  actionBtn.classList.add("listening");
-  if (recognitionSupported) {
-    try { recognition.start(); recognitionRunning = true; }
-    catch (e) { /* already running or other; ignore */ }
-  }
-}
-
-function stopRecognition() {
-  if (recognitionRunning) {
-    try { recognition.stop(); } catch (e) {}
-    recognitionRunning = false;
-  }
-}
-
-function closeListenModal() {
-  stopRecognition();
-  lmModal.classList.add("hidden");
-  actionBtn.classList.remove("listening");
-}
-
-function submitListening() {
-  const text = (recognitionLive || lmText.textContent || "").trim();
-  closeListenModal();
-  if (text) parseAndExecute(text);
-}
-
-
-// ── wire up ───────────────────────────────────────────────────
-
-actionBtn.addEventListener("click", () => {
-  const mode = actionBtn.dataset.mode;
-  if (mode === "begin") { startGame(); return; }
-  if (mode === "restart") { cmdRestart(); return; }
-  // speak
-  openListenModal();
-});
-
-lmCancel.addEventListener("click", closeListenModal);
-lmClose.addEventListener("click", closeListenModal);
-lmSubmit.addEventListener("click", submitListening);
-
-// Tapping anywhere in the modal background outside controls also helps focus
-document.addEventListener("keydown", (e) => {
-  if (lmModal.classList.contains("hidden")) {
-    // Let the action button respond to Enter when at start/end states
-    if (e.key === "Enter" && (state.flags.awaitingStart || state.flags.gameOver)) {
-      e.preventDefault();
-      actionBtn.click();
-    }
-    return;
-  }
-  if (e.key === "Escape") closeListenModal();
-  if (e.key === "Enter") { e.preventDefault(); submitListening(); }
-});
+function closeMorePanel() { morePanel.classList.add("hidden"); }
+mpClose.addEventListener("click", closeMorePanel);
 
 
 // ── boot ──────────────────────────────────────────────────────
@@ -1016,6 +1177,24 @@ function boot() {
 
   snapshotRoomItems();
   bootStart();
+
+  // Mute toggle — also acts as the first user gesture to unlock audio.
+  const muteBtn = document.getElementById("mute-btn");
+  muteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    ensureAudio();
+    setMute(!audioMuted);
+    if (!audioMuted) sfxChip();
+  });
+  setMute(false);
+
+  // Boot zap on the first user gesture (autoplay policy compliance).
+  const onFirstGesture = () => {
+    ensureAudio();
+    sfxBoot();
+    document.removeEventListener("pointerdown", onFirstGesture);
+  };
+  document.addEventListener("pointerdown", onFirstGesture, { once: false });
 }
 
 boot();
