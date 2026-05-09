@@ -86,42 +86,6 @@ body::after {
   inset: 0;
   background: radial-gradient(80% 80% at 30% 50%, transparent 0%, rgba(0,0,0,0.6) 100%);
 }
-.amb-mark {
-  position: absolute;
-  left: 22px;
-  top: 50%;
-  transform: translateY(-50%) rotate(-90deg);
-  transform-origin: left center;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  font-family: "SF Mono", "JetBrains Mono", "Menlo", ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.5em;
-  color: rgba(255, 94, 26, 0.55);
-  white-space: nowrap;
-}
-.am-line { font-weight: 700; }
-.am-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--orange);
-  box-shadow: 0 0 10px var(--orange);
-  animation: ambDot 1.6s ease-in-out infinite;
-}
-@keyframes ambDot {
-  0%,100% { opacity: 1; }
-  50%     { opacity: 0.3; }
-}
-.amb-status {
-  position: absolute;
-  left: 22px;
-  bottom: 22px;
-  font-family: "SF Mono", monospace;
-  font-size: 10px;
-  letter-spacing: 0.4em;
-  color: rgba(255, 94, 26, 0.6);
-  font-weight: 700;
-}
 
 /* ─────────── Screen base (the bright panel) ─────────── */
 .screen {
