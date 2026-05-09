@@ -323,19 +323,21 @@ body {
 .start-stop-row {
   flex-shrink: 0;
   margin-top: auto;
+  display: flex;
+  justify-content: center;
 }
 
 .start-btn {
-  width: 100%;
-  padding: 16px;
+  width: 90px;
+  height: 90px;
+  padding: 0;
   background: var(--bg-secondary);
-  border-radius: var(--radius-md);
+  border-radius: 50%;
   color: var(--text-primary);
-  font-size: 17px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 3px;
   text-align: center;
-  min-height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
