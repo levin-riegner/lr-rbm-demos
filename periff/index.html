@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Periff</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- ─────────── WALKTHROUGH (default visible on first paint) ─────────── -->
+    <section id="walkthrough" class="screen">
+      <div class="wt-corner tl"></div>
+      <div class="wt-corner tr"></div>
+      <div class="wt-corner bl"></div>
+      <div class="wt-corner br"></div>
+
+      <div class="wt-step">
+        <div class="wt-eyebrow">WELCOME</div>
+        <div class="wt-glyph">
+          <span class="g-pulse"></span>
+          <span class="g-ring"></span>
+        </div>
+        <h1 class="wt-title">PERIFF</h1>
+        <p class="wt-body">Catch ideas as they pass through.<br>Each idea you save is a <em>Riff</em>.</p>
+      </div>
+
+      <div class="wt-step hidden">
+        <div class="wt-eyebrow">STEP 01</div>
+        <div class="wt-glyph">
+          <span class="g-mic"></span>
+        </div>
+        <h1 class="wt-title">SPEAK</h1>
+        <p class="wt-body">Tap <em>NEW RIFF</em>, then talk.<br>Periff transcribes as you go.</p>
+      </div>
+
+      <div class="wt-step hidden">
+        <div class="wt-eyebrow">STEP 02</div>
+        <div class="wt-glyph">
+          <span class="g-save"></span>
+        </div>
+        <h1 class="wt-title">SAVE</h1>
+        <p class="wt-body">When you're done, tap <em>SAVE</em>.<br>Your Riff is filed for later.</p>
+      </div>
+
+      <div class="wt-step hidden">
+        <div class="wt-eyebrow">STEP 03</div>
+        <div class="wt-glyph">
+          <span class="g-list"></span>
+        </div>
+        <h1 class="wt-title">REVISIT</h1>
+        <p class="wt-body">Open <em>MY RIFFS</em> any time<br>to scroll through your ideas.</p>
+      </div>
+
+      <div class="wt-bottom">
+        <div class="wt-progress">
+          <span class="wt-dot active"></span>
+          <span class="wt-dot"></span>
+          <span class="wt-dot"></span>
+          <span class="wt-dot"></span>
+        </div>
+        <div class="wt-actions">
+          <button class="btn ghost focusable" data-action="wt-skip">SKIP</button>
+          <button class="btn primary focusable" data-action="wt-next">NEXT &#8594;</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── HOME ─────────── -->
+    <section id="home" class="screen hidden">
+      <header class="page-head">
+        <div class="brand-mark">PERIFF</div>
+        <div class="brand-tag">CATCH THE THOUGHT</div>
+      </header>
+
+      <div class="home-meta">
+        <span id="home-count">00</span> RIFFS
+        <span class="dot-sep">·</span>
+        LAST <span id="home-last">—</span>
+      </div>
+
+      <div class="home-actions">
+        <button class="bigbtn focusable primary" data-action="go-record">
+          <span class="bb-label">+ NEW RIFF</span>
+          <span class="bb-sub">SPEAK YOUR IDEA</span>
+        </button>
+        <button class="bigbtn focusable" data-action="go-list">
+          <span class="bb-label">MY RIFFS</span>
+          <span class="bb-sub" id="bb-list-sub">VIEW SAVED</span>
+        </button>
+      </div>
+
+      <button class="ghost-link focusable" data-action="show-walkthrough">REPLAY TUTORIAL</button>
+    </section>
+
+    <!-- ─────────── RECORD (full-screen experience) ─────────── -->
+    <section id="record" class="screen hidden">
+      <header class="page-head">
+        <div class="page-title">NEW RIFF</div>
+        <div class="page-meta"><span class="rec-dot"></span><span id="rec-timer">0:00</span></div>
+      </header>
+
+      <div class="rec-state" id="rec-state">TAP MIC TO START</div>
+
+      <div class="rec-transcript" id="rec-transcript">
+        <span class="rec-placeholder">Your idea will appear<br>here as you speak…</span>
+      </div>
+
+      <div class="rec-mic-row">
+        <div class="viz-bars" id="viz-bars" aria-hidden="true"></div>
+        <button class="mic-btn focusable" id="mic-btn" data-action="mic-toggle">
+          <span class="mic-pulse"></span>
+          <span class="mic-pulse pulse-2"></span>
+          <span class="mic-icon"></span>
+        </button>
+      </div>
+
+      <div class="page-actions">
+        <button class="btn ghost focusable" data-action="record-cancel">CANCEL</button>
+        <button class="btn primary focusable" data-action="record-save" id="save-btn" disabled>SAVE RIFF</button>
+      </div>
+    </section>
+
+    <!-- ─────────── LIST ─────────── -->
+    <section id="list" class="screen hidden">
+      <header class="page-head">
+        <div class="page-title">MY RIFFS</div>
+        <div class="page-meta" id="list-count">0</div>
+      </header>
+
+      <div class="riff-list" id="riff-list"></div>
+
+      <div class="empty-state hidden" id="empty-state">
+        <div class="es-glyph"></div>
+        <div class="es-title">NO RIFFS YET</div>
+        <div class="es-body">Speak your first idea<br>to fill this space.</div>
+      </div>
+
+      <div class="page-actions">
+        <button class="btn ghost focusable" data-action="go-home">HOME</button>
+        <button class="btn primary focusable" data-action="go-record">+ NEW RIFF</button>
+      </div>
+    </section>
+
+    <!-- ─────────── DETAIL ─────────── -->
+    <section id="detail" class="screen hidden">
+      <header class="page-head">
+        <div class="page-title">RIFF</div>
+        <div class="page-meta" id="detail-time">—</div>
+      </header>
+
+      <div class="dm-eyebrow" id="detail-date">—</div>
+      <div class="dm-title" id="detail-title">—</div>
+
+      <div class="detail-body" id="detail-body">—</div>
+
+      <div class="page-actions three">
+        <button class="btn ghost focusable" data-action="go-list">&#8592; BACK</button>
+        <button class="btn ghost focusable" data-action="delete-riff">DELETE</button>
+        <button class="btn primary focusable" data-action="go-record">+ NEW</button>
+      </div>
+    </section>
+
+    <!-- ─────────── TOAST ─────────── -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- ─────────── CONFIRM (no border) ─────────── -->
+    <div id="confirm" class="overlay hidden">
+      <div class="confirm-card">
+        <div class="cc-eyebrow" id="confirm-eyebrow">CONFIRM</div>
+        <div class="cc-msg" id="confirm-msg">Are you sure?</div>
+        <div class="cc-actions">
+          <button class="btn ghost focusable" data-action="confirm-no">CANCEL</button>
+          <button class="btn primary focusable" data-action="confirm-yes" id="confirm-yes">CONFIRM</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
