@@ -61,8 +61,12 @@
           <button class="nbtn focusable" data-walk="dice">
             <span class="ng">⚂</span><span>RANDOM</span>
           </button>
-          <button class="nbtn focusable" data-walk="mic">
-            <span class="ng">◉</span><span>SPEAK</span>
+          <button class="nbtn nbtn-disabled" data-walk="mic" disabled>
+            <span class="ng">◉</span>
+            <div class="speak-label">
+              <span>SPEAK</span>
+              <span class="coming-soon">coming soon</span>
+            </div>
           </button>
         </div>
         <div class="walk-nav">
@@ -191,8 +195,24 @@
                 <div class="menu-title">MENU</div>
                 <button class="menu-item focusable" data-menu="resume">RESUME</button>
                 <button class="menu-item focusable" data-menu="rename">RENAME COMPANION</button>
-                <button class="menu-item focusable" data-menu="help">SHOW WALKTHROUGH</button>
+                <button class="menu-item focusable" data-menu="about">ABOUT</button>
                 <button class="menu-item focusable" data-menu="reset">NEW COMPANION</button>
+              </div>
+            </div>
+
+            <!-- ABOUT MODAL -->
+            <div id="about" class="about hidden">
+              <div class="about-card">
+                <div class="about-title">A LIFE IN VIEW</div>
+                <div class="about-body">Feed it. Play with it. Let it rest.<br>Care for it and it will <span class="hl">grow</span> through five forms.</div>
+                <div class="about-stages">
+                  <div class="about-stage"><span class="g">◇</span><span>EGG</span></div>
+                  <div class="about-stage"><span class="g">◯</span><span>SPRITE</span></div>
+                  <div class="about-stage"><span class="g">▣</span><span>DRONE</span></div>
+                  <div class="about-stage"><span class="g">✦</span><span>ORACLE</span></div>
+                  <div class="about-stage"><span class="g">♛</span><span>ARCHON</span></div>
+                </div>
+                <button class="about-close focusable" data-menu="resume">CLOSE</button>
               </div>
             </div>
 

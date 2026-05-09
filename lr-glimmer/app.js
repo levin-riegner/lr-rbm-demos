@@ -7,7 +7,7 @@
 
   const SPLASH_MS = 3600;
   const TICK_MS = 4000;
-  const FRAME_MS = 220;
+  const FRAME_MS = 33;
   const SAVE_KEY = 'lr.glimmer.save.v1';
   const WALK_KEY = 'lr.glimmer.walked.v1';
 
@@ -303,6 +303,9 @@
     document.querySelectorAll('.menu-item').forEach(btn => {
       btn.addEventListener('click', () => doMenu(btn.dataset.menu));
     });
+    document.querySelector('.about-close').addEventListener('click', () => {
+      doMenu('resume');
+    });
 
     refreshPalette();
     catchUpOffline();
@@ -385,8 +388,21 @@
     $('menu').classList.add('hidden');
     focusFirstAction();
   }
+  function closeAbout() {
+    $('about').classList.add('hidden');
+    openMenu();
+  }
   function doMenu(action) {
-    if (action === 'resume') return closeMenu();
+    if (action === 'resume') {
+      if ($('about').classList.contains('hidden')) return closeMenu();
+      return closeAbout();
+    }
+    if (action === 'about') {
+      closeMenu();
+      $('about').classList.remove('hidden');
+      document.querySelector('.about-close').focus();
+      return;
+    }
     if (action === 'rename') {
       closeMenu();
       $('game').classList.add('hidden');
@@ -406,12 +422,18 @@
       closeMenu();
       $('game').classList.add('hidden');
       walkStep = 0;
-      pendingName = state.name;
-      pendingEgg = state.eggVariant;
-      syncNamingScreen();
-      syncEggSelection();
       $('walk').dataset.step = '0';
       $('walk').classList.remove('hidden');
+      // Hide naming and egg selection screens (steps 2-3) when viewing from menu
+      document.querySelectorAll('.walk-screen').forEach((s, i) => {
+        s.classList.toggle('hidden', i > 1);
+      });
+      // Hide the next button on the about screen
+      const aboutScreen = document.querySelector('.walk-screen[data-step="1"]');
+      if (aboutScreen) {
+        const nextBtn = aboutScreen.querySelector('button[data-walk="next"]');
+        if (nextBtn) nextBtn.classList.add('hidden');
+      }
       bindWalkButtons();
       startWalkAnimations();
       focusFirstInWalk();
@@ -421,9 +443,14 @@
       const oldName = state.name;
       const oldVariant = state.eggVariant;
       const nextGen = (state.generation || 1) + 1;
+      const variants = ['amethyst', 'jade', 'ember'];
+      let newVariant = variants[Math.floor(Math.random() * variants.length)];
+      while (newVariant === oldVariant) {
+        newVariant = variants[Math.floor(Math.random() * variants.length)];
+      }
       state = defaultState();
       state.name = oldName;
-      state.eggVariant = oldVariant;
+      state.eggVariant = newVariant;
       state.generation = nextGen;
       save();
       render();

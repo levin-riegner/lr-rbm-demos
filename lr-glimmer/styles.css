@@ -300,6 +300,27 @@ body {
   color: var(--lav);
   text-shadow: 0 0 10px var(--lav-glow);
 }
+.nbtn-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.nbtn-disabled .ng {
+  color: var(--ink-2);
+  text-shadow: none;
+}
+.speak-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.coming-soon {
+  font-size: 9px;
+  color: var(--ink-2);
+  letter-spacing: 0.15em;
+  text-transform: lowercase;
+}
 
 /* ───────── EGG SELECT ───────── */
 .egg-cards {
@@ -798,5 +819,69 @@ body {
   border-radius: 4px;
   cursor: pointer;
   text-align: left;
+  transition: all 0.15s ease;
+}
+
+/* ───────── ABOUT MODAL ───────── */
+.about {
+  position: absolute; inset: 0;
+  background: rgba(5, 5, 7, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 7;
+  animation: walkIn 0.25s ease both;
+}
+.about-card {
+  background: var(--bg-1);
+  border: 1px solid var(--lav-dim);
+  border-radius: 10px;
+  padding: 26px 30px;
+  min-width: 380px;
+  display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 0 0 1px rgba(216, 200, 255, 0.05), 0 16px 50px rgba(0,0,0,0.6);
+}
+.about-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--ink-0);
+  text-align: center;
+}
+.about-body {
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--ink-1);
+  line-height: 1.5;
+  text-align: center;
+}
+.about-body .hl { color: var(--lav); text-shadow: 0 0 10px var(--lav-glow); }
+.about-stages {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin: 4px 0;
+}
+.about-stage {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--ink-1);
+}
+.about-stage .g {
+  font-size: 20px;
+  color: var(--lav);
+  text-shadow: 0 0 8px var(--lav-glow);
+}
+.about-close {
+  background: rgba(216, 200, 255, 0.04);
+  border: 1px solid var(--line);
+  color: var(--ink-0);
+  font-family: inherit;
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  padding: 12px 16px;
+  border-radius: 4px;
+  cursor: pointer;
   transition: all 0.15s ease;
 }

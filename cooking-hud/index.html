@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Cooking HUD</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- ─────────── AMBIENT (left side / world view) ─────────── -->
+    <div class="ambient" aria-hidden="true">
+      <div class="amb-grid"></div>
+      <div class="amb-vignette"></div>
+      <div class="amb-mark">
+        <span class="am-line">COOKING</span>
+        <span class="am-dot"></span>
+        <span class="am-line">HUD</span>
+      </div>
+      <div class="amb-status" id="amb-status">READY</div>
+    </div>
+
+    <!-- ─────────── TIMER RAIL (always-on, persists across screens) ─────────── -->
+    <div id="timer-rail" class="timer-rail hidden" aria-live="polite"></div>
+
+    <!-- ─────────── HOME ─────────── -->
+    <section id="home" class="screen">
+      <header class="page-head">
+        <div class="brand-row">
+          <div class="brand-mark">COOKING</div>
+          <div class="brand-mark2">HUD</div>
+        </div>
+        <div class="brand-tag">SELECT A RECIPE</div>
+      </header>
+
+      <div class="home-meta">
+        <span id="home-recipe-count">00</span> RECIPES
+        <span class="dot-sep">·</span>
+        HANDS-FREE COOK
+      </div>
+
+      <div class="home-list" id="home-list"></div>
+
+      <div class="page-actions" id="home-actions">
+        <button class="btn primary focusable" data-action="show-help">HOW TO</button>
+      </div>
+    </section>
+
+    <!-- ─────────── RECIPE (3 phases) ─────────── -->
+    <section id="recipe" class="screen hidden">
+      <header class="page-head recipe-head">
+        <div class="rh-eyebrow" id="rh-eyebrow">—</div>
+        <div class="rh-title" id="rh-title">—</div>
+        <div class="rh-meta">
+          <span id="rh-time">— MIN</span>
+          <span class="dot-sep">·</span>
+          SERVES <span id="rh-servings">—</span>
+        </div>
+      </header>
+
+      <!-- Phase tabs -->
+      <div class="phase-tabs" id="phase-tabs">
+        <div class="ph-tab" data-phase="shop">
+          <span class="pt-num">01</span>
+          <span class="pt-label">SHOP</span>
+          <span class="pt-prog" id="pt-prog-shop">0/0</span>
+        </div>
+        <div class="ph-tab" data-phase="prep">
+          <span class="pt-num">02</span>
+          <span class="pt-label">PREP</span>
+          <span class="pt-prog" id="pt-prog-prep">0/0</span>
+        </div>
+        <div class="ph-tab" data-phase="cook">
+          <span class="pt-num">03</span>
+          <span class="pt-label">COOK</span>
+          <span class="pt-prog" id="pt-prog-cook">0/0</span>
+        </div>
+      </div>
+
+      <!-- Phase stage -->
+      <div class="phase-stage" id="phase-stage">
+        <div class="phase phase-shop" id="phase-shop"></div>
+        <div class="phase phase-prep hidden" id="phase-prep"></div>
+        <div class="phase phase-cook hidden" id="phase-cook"></div>
+      </div>
+
+      <!-- Phase complete banner (shown when all items in current phase are done) -->
+      <div class="phase-banner hidden" id="phase-banner">
+        <span class="pb-tick">✓</span>
+        <span class="pb-text" id="pb-text">PHASE COMPLETE</span>
+      </div>
+
+      <!-- Footer hints + back -->
+      <div class="recipe-footer">
+        <button class="btn ghost focusable" data-action="go-home">&#8592; EXIT</button>
+        <button class="btn primary focusable hidden" data-action="next-phase" id="next-phase-btn">NEXT PHASE &#8594;</button>
+        <div class="phase-hint" id="phase-hint">
+          <span class="hint-arrow">&#8592;</span>
+          <span class="hint-arrow">&#8594;</span>
+          <span class="hint-text">SWIPE PHASE</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── HELP ─────────── -->
+    <section id="help" class="screen hidden">
+      <header class="page-head">
+        <div class="page-title">HOW TO</div>
+        <div class="page-meta">v1</div>
+      </header>
+
+      <div class="help-list">
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="key-glyph">&#8593;</span>
+            <span class="key-glyph">&#8595;</span>
+          </div>
+          <div class="help-body">
+            <div class="help-title">SCROLL ITEMS</div>
+            <div class="help-sub">Move focus within a phase</div>
+          </div>
+        </div>
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="key-glyph">&#8592;</span>
+            <span class="key-glyph">&#8594;</span>
+          </div>
+          <div class="help-body">
+            <div class="help-title">CHANGE PHASE</div>
+            <div class="help-sub">Shop · Prep · Cook</div>
+          </div>
+        </div>
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="key-glyph wide">TAP</span>
+          </div>
+          <div class="help-body">
+            <div class="help-title">CHECK / UNCHECK</div>
+            <div class="help-sub">Toggle the focused item</div>
+          </div>
+        </div>
+        <div class="help-row">
+          <div class="help-keys">
+            <span class="key-glyph timer-key">●</span>
+          </div>
+          <div class="help-body">
+            <div class="help-title">START A TIMER</div>
+            <div class="help-sub">Tap the timer chip on a cook step</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-actions">
+        <button class="btn primary focusable" data-action="go-home">GOT IT</button>
+      </div>
+    </section>
+
+    <!-- ─────────── TOAST ─────────── -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- ─────────── CONFIRM OVERLAY ─────────── -->
+    <div id="confirm" class="overlay hidden">
+      <div class="confirm-card">
+        <div class="cc-eyebrow" id="confirm-eyebrow">CONFIRM</div>
+        <div class="cc-msg" id="confirm-msg">Are you sure?</div>
+        <div class="cc-actions">
+          <button class="btn ghost focusable" data-action="confirm-no">CANCEL</button>
+          <button class="btn primary focusable" data-action="confirm-yes" id="confirm-yes">CONFIRM</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────── TIMER DONE OVERLAY ─────────── -->
+    <div id="timer-alert" class="overlay timer-alert hidden">
+      <div class="ta-card">
+        <div class="ta-pulse"></div>
+        <div class="ta-eyebrow">TIMER DONE</div>
+        <div class="ta-step" id="ta-step">—</div>
+        <div class="ta-recipe" id="ta-recipe">—</div>
+        <div class="cc-actions">
+          <button class="btn primary focusable" data-action="ta-dismiss">DISMISS</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
