@@ -15,7 +15,7 @@
       ],
       supplies: [
         { label: 'Charmin Strong Toilet Paper',  url: 'https://www.amazon.com/Charmin-Strong-Toilet-Family-Regular/dp/B09YKYV9N9/' },
-        { label: 'Lysol Bathroom Cleaner',       url: 'https://www.amazon.com/dp/B01N6KBXK9' },
+        { label: 'Lysol Bathroom Cleaner',       url: 'https://www.amazon.com/gp/aw/d/B0F3LRCMP9/' },
         { label: 'Scotch-Brite Sponges',         url: 'https://www.amazon.com/Scotch-Brite-Sponges-Washing-Dishes-Kitchen/dp/B0917DL2QG/' }
       ]
     },
@@ -32,7 +32,7 @@
       supplies: [
         { label: 'Laundry Detergent',      url: 'https://www.amazon.com/Askshy-Laundry-Detergent-Compatible-Pre-Treater/dp/B0B1PGR1LZ' },
         { label: 'Bounce Dryer Sheets',    url: 'https://www.amazon.com/Bounce-Outdoor-Softener-Reduces-Wrinkles/dp/B0FG9GRFYT' },
-        { label: 'OxiClean Stain Remover', url: 'https://www.amazon.com/s?k=oxiclean+max+force+stain+remover+spray' }
+        { label: 'OxiClean Stain Remover', url: 'https://www.amazon.com/OxiClean-Force-Laundry-Remover-3-Pack/dp/B0BVY2XKJX' }
       ]
     },
     {
@@ -45,8 +45,8 @@
         'Bring bags to the curb'
       ],
       supplies: [
-        { label: 'Glad ForceFlex 13-gal', url: 'https://www.amazon.com/dp/B00Z0WXKOW' },
-        { label: 'Hefty Ultra Strong',    url: 'https://www.amazon.com/s?k=hefty+ultra+strong+large+trash+bags+33+gallon' }
+        { label: 'Glad ForceFlex 13-gal', url: 'https://www.amazon.com/Glad-OdorShield-Kitchen-Drawstring-Trash/dp/B00D5YS4HE' },
+        { label: 'Hefty Ultra Strong',    url: 'https://www.amazon.com/Hefty-Strong-Kitchen-Gallon-Garbage/' }
       ]
     },
     {
@@ -76,7 +76,7 @@
       supplies: [
         { label: 'Dawn Platinum Powerwash',  url: 'https://www.amazon.com/Dawn-Platinum-Powerwash-Bundle-Starter/dp/B07YD3KQ5S' },
         { label: 'Cascade Complete Pods',    url: 'https://www.amazon.com/Cascade-Complete-All-Dishwasher-Detergent/dp/B00MB3JW44' },
-        { label: 'Scotch-Brite Non-Scratch', url: 'https://www.amazon.com/dp/B001BKZR5S' }
+        { label: 'Scotch-Brite Non-Scratch', url: 'https://www.amazon.com/Scotch-Brite-Non-Scratch-Sponge-Without-Scratching/dp/B0043P0GRA' }
       ]
     }
   ];
