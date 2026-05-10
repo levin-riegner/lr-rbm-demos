@@ -12,8 +12,12 @@
     selectedWork: null,
     selectedService: null,
     studioTab: 'about',
+    homeFocus: 0,
     rafHandle: null
   };
+
+  var WORK_FILTERS = ['all', 'spatial', 'brand', 'product'];
+  var STUDIO_TABS  = ['about', 'news', 'clients', 'awards'];
 
   var screens = {};
 
@@ -184,6 +188,13 @@
     }
 
     typewriteAll(id);
+
+    /* set initial focus per screen so arrow keys are immediately usable */
+    setTimeout(function () {
+      if (id === 'home')     updateHomeFocus();
+      if (id === 'work')     updateWorkFocus();
+      if (id === 'services') updateServiceFocus();
+    }, 30);
   }
 
   function back() {
@@ -475,6 +486,11 @@
         state.workIndex = nextIdx;
         openProject(state.workFiltered[nextIdx]);
         break;
+      case 'prev-project':
+        var prevIdx = (state.workIndex - 1 + state.workFiltered.length) % state.workFiltered.length;
+        state.workIndex = prevIdx;
+        openProject(state.workFiltered[prevIdx]);
+        break;
       case 'open-service':
         openService(LR_DATA.services[state.serviceIndex]);
         break;
@@ -489,12 +505,38 @@
     }
   }
 
-  /* ── keyboard ────────────────────────────────────────── */
+  /* ── keyboard ────────────────────────────────────────────
+     Unified arrow-key navigation:
+       Up / Down  → primary axis   (lists, button stack, scroll)
+       Left/Right → secondary axis (tabs, filters, prev/next)
+       Enter/Space → activate focused
+       Esc/Bksp    → back (still supported)
+  ──────────────────────────────────────────────────────── */
   function bindKeyboard() {
     document.addEventListener('keydown', function (e) {
       var key = e.key;
       if (key === 'Escape' || key === 'Backspace') { e.preventDefault(); back(); return; }
 
+      /* ── HOME — Up/Down between buttons, Enter activates ── */
+      if (state.screen === 'home') {
+        var btns = document.querySelectorAll('.home-btn');
+        if (!btns.length) return;
+        if (key === 'ArrowDown') {
+          e.preventDefault();
+          state.homeFocus = (state.homeFocus + 1) % btns.length;
+          updateHomeFocus();
+        } else if (key === 'ArrowUp') {
+          e.preventDefault();
+          state.homeFocus = (state.homeFocus - 1 + btns.length) % btns.length;
+          updateHomeFocus();
+        } else if (key === 'Enter' || key === ' ') {
+          e.preventDefault();
+          btns[state.homeFocus].click();
+        }
+        return;
+      }
+
+      /* ── WORK — Up/Down items, Left/Right filters, Enter opens ── */
       if (state.screen === 'work') {
         if (key === 'ArrowDown') {
           e.preventDefault();
@@ -504,17 +546,25 @@
           e.preventDefault();
           state.workIndex = Math.max(state.workIndex - 1, 0);
           updateWorkFocus();
-        } else if (key === 'Enter') {
+        } else if (key === 'ArrowRight') {
+          e.preventDefault();
+          cycleFilter(1);
+        } else if (key === 'ArrowLeft') {
+          e.preventDefault();
+          cycleFilter(-1);
+        } else if (key === 'Enter' || key === ' ') {
           e.preventDefault();
           if (state.workFiltered.length) openProject(state.workFiltered[state.workIndex]);
         }
         return;
       }
 
+      /* ── SERVICES — 4-way grid nav, Enter opens ── */
       if (state.screen === 'services') {
+        var sLast = LR_DATA.services.length - 1;
         if (key === 'ArrowRight') {
           e.preventDefault();
-          state.serviceIndex = Math.min(state.serviceIndex + 1, LR_DATA.services.length - 1);
+          state.serviceIndex = Math.min(state.serviceIndex + 1, sLast);
           updateServiceFocus();
         } else if (key === 'ArrowLeft') {
           e.preventDefault();
@@ -522,37 +572,72 @@
           updateServiceFocus();
         } else if (key === 'ArrowDown') {
           e.preventDefault();
-          state.serviceIndex = Math.min(state.serviceIndex + 2, LR_DATA.services.length - 1);
+          state.serviceIndex = Math.min(state.serviceIndex + 2, sLast);
           updateServiceFocus();
         } else if (key === 'ArrowUp') {
           e.preventDefault();
           state.serviceIndex = Math.max(state.serviceIndex - 2, 0);
           updateServiceFocus();
-        } else if (key === 'Enter') {
+        } else if (key === 'Enter' || key === ' ') {
           e.preventDefault();
           openService(LR_DATA.services[state.serviceIndex]);
         }
         return;
       }
 
+      /* ── WORK DETAIL — Left/Right cycle projects, Enter = next ── */
       if (state.screen === 'work-detail') {
         if (key === 'ArrowRight' || key === 'ArrowDown') {
+          e.preventDefault(); handleAction('next-project');
+        } else if (key === 'ArrowLeft' || key === 'ArrowUp') {
+          e.preventDefault(); handleAction('prev-project');
+        } else if (key === 'Enter' || key === ' ') {
           e.preventDefault(); handleAction('next-project');
         }
         return;
       }
 
-      if (state.screen === 'studio') {
-        var tabs = ['about', 'news', 'clients', 'awards'];
-        var cur = tabs.indexOf(state.studioTab);
-        if (key === 'ArrowRight') { e.preventDefault(); renderStudio(tabs[Math.min(cur + 1, tabs.length - 1)]); }
-        if (key === 'ArrowLeft')  { e.preventDefault(); renderStudio(tabs[Math.max(cur - 1, 0)]); }
+      /* ── SERVICE DETAIL — Enter = contact us ── */
+      if (state.screen === 'service-detail') {
+        if (key === 'Enter' || key === ' ') {
+          e.preventDefault(); handleAction('contact-service');
+        }
         return;
       }
 
-      if (state.screen === 'home') {
-        if (key === 'Enter' || key === ' ') { e.preventDefault(); filterWork('all'); go('work'); }
+      /* ── STUDIO (About) — Left/Right tabs, Enter = see work ── */
+      if (state.screen === 'studio') {
+        var cur = STUDIO_TABS.indexOf(state.studioTab);
+        if (key === 'ArrowRight') {
+          e.preventDefault();
+          renderStudio(STUDIO_TABS[Math.min(cur + 1, STUDIO_TABS.length - 1)]);
+          FX_AUDIO.tabSwitch();
+        } else if (key === 'ArrowLeft') {
+          e.preventDefault();
+          renderStudio(STUDIO_TABS[Math.max(cur - 1, 0)]);
+          FX_AUDIO.tabSwitch();
+        } else if (key === 'Enter' || key === ' ') {
+          e.preventDefault(); handleAction('go-work-from-studio');
+        }
+        return;
       }
+    });
+  }
+
+  function cycleFilter(dir) {
+    var cur = WORK_FILTERS.indexOf(state.workFilter);
+    var next = (cur + dir + WORK_FILTERS.length) % WORK_FILTERS.length;
+    var newFilter = WORK_FILTERS[next];
+    document.querySelectorAll('.filter-chip').forEach(function (c) {
+      c.classList.toggle('active', c.dataset.filter === newFilter);
+    });
+    filterWork(newFilter);
+    FX_AUDIO.tick();
+  }
+
+  function updateHomeFocus() {
+    document.querySelectorAll('.home-btn').forEach(function (el, i) {
+      el.classList.toggle('focused', i === state.homeFocus);
     });
   }
 
@@ -1382,6 +1467,9 @@
         FX.swirl(x, y);
         FX_AUDIO.backChirp();
       } else if (btn.classList.contains('home-btn')) {
+        /* track which home button is focused for return-from-screen */
+        var idx = Array.prototype.indexOf.call(document.querySelectorAll('.home-btn'), btn);
+        if (idx >= 0) state.homeFocus = idx;
         FX.ring(x, y, { count: 32, speed: 3.2 });
         setTimeout(function () { FX.rainbowBurst(x, y, { count: 18, speed: 2.5 }); }, 60);
         FX_AUDIO.homeBtn();
@@ -1438,6 +1526,7 @@
       state.screen = 'home';
       setupCanvas();
       typewriteAll('home');
+      updateHomeFocus();
     });
   }
 
