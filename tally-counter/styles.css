@@ -98,7 +98,7 @@ body::after {
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  font-size: 13px;
+  font-size: 16px;
   letter-spacing: 0.18em;
   color: var(--ink-soft);
   text-transform: uppercase;
@@ -122,7 +122,7 @@ body::after {
   color: var(--ink-dim);
   letter-spacing: 0.08em;
   font-weight: 400;
-  font-size: 12px;
+  font-size: 15px;
   margin-left: 4px;
 }
 
@@ -138,7 +138,7 @@ body::after {
   justify-content: flex-end;
   align-items: baseline;
   gap: 10px;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--ink-dim);
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -148,7 +148,7 @@ body::after {
   font-family: "Share Tech Mono", monospace;
   color: var(--ink-soft);
   letter-spacing: 0.1em;
-  font-size: 12px;
+  font-size: 15px;
 }
 
 /* ────────── Main display ────────── */
@@ -218,7 +218,7 @@ body::after {
 
 .display-caption {
   margin-top: 8px;
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.32em;
   color: var(--ink-dim);
   text-transform: uppercase;
@@ -319,7 +319,7 @@ body::after {
     0 0 10px rgba(255,255,255,0.5);
 }
 .bump-hint {
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 0.32em;
   color: var(--ink-soft);
   text-transform: uppercase;
@@ -342,12 +342,12 @@ body::after {
 /* ────────── Secondary controls ────────── */
 .ctrl {
   width: 100%;
-  min-height: 52px;
+  min-height: 56px;
   border-radius: 10px;
   background: linear-gradient(180deg, #1f1f24 0%, #14141a 100%);
   border: 1.5px solid var(--chrome-2);
   color: #ffffff;
-  font-size: 14px;
+  font-size: 17px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 600;
@@ -392,9 +392,9 @@ body::after {
   display: flex;
   justify-content: flex-end;
   gap: 14px;
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  color: var(--ink-faint);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: var(--ink-soft);
   text-transform: uppercase;
 }
 .hints .key {
@@ -430,7 +430,7 @@ body::after {
   gap: 14px;
 }
 .confirm-title {
-  font-size: 13px;
+  font-size: 16px;
   letter-spacing: 0.32em;
   color: #ffb0b0;
   text-transform: uppercase;
