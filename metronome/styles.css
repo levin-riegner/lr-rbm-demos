@@ -1,29 +1,31 @@
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #14141f;
-  --bg-tertiary: #1e1e2e;
-  --bg-card: #1a1a2e;
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0b0;
-  --text-muted: #606070;
-  --accent-primary: #00d4ff;
-  --accent-warm: #ff9f43;
-  --danger: #ff4466;
-  --focus-ring: #00d4ff;
-  --focus-glow: rgba(0, 212, 255, 0.4);
-  --radius-sm: 8px;
-  --radius-md: 12px;
+  --bg-0: #05060a;
+  --bg-1: #0e1018;
+  --bg-2: #161a26;
+  --bg-3: #1f2435;
+  --line: #262c40;
+  --text: #f5f7fb;
+  --text-2: #a4adc4;
+  --text-3: #5b6483;
+  --accent: #00d4ff;
+  --accent-2: #6ee7ff;
+  --accent-glow: rgba(0, 212, 255, 0.55);
+  --warm: #ff9f43;
+  --warm-glow: rgba(255, 159, 67, 0.7);
+  --danger: #ff4f6e;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+html, body {
   width: 600px;
   height: 600px;
   overflow: hidden;
+  background: radial-gradient(ellipse at top, #0e1424 0%, #05060a 65%);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
 }
 
 #app {
@@ -33,332 +35,519 @@ body {
 }
 
 .screen {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  position: absolute;
-  top: 0; left: 0;
-  padding: 8px;
-  gap: 6px;
+  padding: 28px;
+  gap: 18px;
 }
 .screen.hidden { display: none; }
 
-/* --- Focus states (critical for D-pad) --- */
+/* ============================================================
+   FOCUS RING — critical for d-pad clarity
+   ============================================================ */
 .focusable {
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.15s ease;
+  outline: none;
+  border: 3px solid transparent;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
 }
 .focusable:focus {
-  outline: none;
-  border-color: var(--focus-ring);
-  box-shadow: 0 0 16px var(--focus-glow);
+  border-color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+  transform: translateY(-1px);
 }
 
 /* ============================================================
-   HEADER
+   HOME
    ============================================================ */
-.metro-header {
+.brand-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 4px;
+}
+.brand-mark {
+  font-size: 38px;
+  color: var(--accent);
+  text-shadow: 0 0 14px var(--accent-glow);
+  line-height: 1;
+}
+.brand-text {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--text-2);
+}
+
+.summary-card {
+  flex: 1;
+  background: linear-gradient(180deg, rgba(0,212,255,0.06), rgba(0,212,255,0.02));
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 28px 24px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+}
+.summary-bpm {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 14px;
+}
+.summary-num {
+  font-size: 140px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -6px;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  font-family: 'Courier New', 'SF Mono', monospace;
+  text-shadow: 0 0 30px rgba(0, 212, 255, 0.25);
+}
+.summary-unit {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--text-3);
+}
+.summary-meta {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+.summary-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 18px;
+}
+.chip-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-3);
+}
+.chip-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.home-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ============================================================
+   SHARED BUTTONS
+   ============================================================ */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  border-radius: 18px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  padding: 20px;
+  min-height: 70px;
+  background: var(--bg-2);
+  color: var(--text);
+}
+.btn-icon { font-size: 22px; line-height: 1; }
+.btn-label { line-height: 1; }
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--accent), #0093b8);
+  color: #00141a;
+  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.25);
+}
+.btn-primary:focus {
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+}
+.btn-ghost {
+  background: transparent;
+  border: 2px solid var(--line);
+  color: var(--text-2);
+  font-size: 14px;
+  letter-spacing: 4px;
+  min-height: 50px;
+  padding: 14px;
+}
+.btn-ghost:focus {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
+/* ============================================================
+   STEP HEADER (back, title, pips)
+   ============================================================ */
+.step-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
+  padding: 4px 6px 0;
   flex-shrink: 0;
-  height: 52px;
+}
+.step-back {
+  font-size: 32px;
+  color: var(--text-2);
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-2);
+}
+.step-back:focus {
+  background: var(--bg-3);
+  color: var(--accent);
+}
+.step-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--text);
+}
+.step-pips {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 50px;
+  justify-content: flex-end;
+}
+.pip {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+}
+.pip.on {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+  border-color: var(--accent);
 }
 
-.metro-title {
+.step-foot {
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   STEP 1 — TEMPO PICKER
+   ============================================================ */
+.picker-tempo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+}
+.bpm-stage {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 24px 16px 18px;
+  text-align: center;
+}
+.bpm-big {
+  font-size: 152px;
+  font-weight: 800;
+  letter-spacing: -8px;
+  line-height: 0.9;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-family: 'Courier New', 'SF Mono', monospace;
+  text-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+}
+.bpm-sub {
+  margin-top: 8px;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 4px;
-  color: var(--text-muted);
+  color: var(--text-3);
+}
+.bpm-controls {
+  display: flex;
+  gap: 8px;
+}
+.step-btn {
+  flex: 1;
+  background: var(--bg-2);
+  border-radius: 16px;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-btn:focus {
+  background: var(--bg-3);
+}
+.step-btn-tap {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--accent);
+  letter-spacing: 3px;
+}
+.step-btn-tap.tapping {
+  background: var(--accent);
+  color: #00141a;
+}
+
+/* ============================================================
+   STEP 2 — TIME SIGNATURE
+   ============================================================ */
+.picker-time {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.time-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 12px;
+  height: 100%;
+}
+.big-tile {
+  background: var(--bg-2);
+  border-radius: 18px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px;
+  color: var(--text);
+}
+.big-tile:focus {
+  background: var(--bg-3);
+}
+.big-tile.active {
+  background: rgba(0, 212, 255, 0.14);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+.tile-num {
+  font-size: 78px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-family: 'Courier New', 'SF Mono', monospace;
+}
+.tile-sub {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+.big-tile.active .tile-sub { color: var(--accent); opacity: 0.7; }
+
+/* ============================================================
+   STEP 3 — NOTE VALUE
+   ============================================================ */
+.picker-note {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.note-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 14px;
+  height: 100%;
+}
+.note-tile {
+  background: var(--bg-2);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text);
+}
+.note-tile:focus { background: var(--bg-3); }
+.note-tile.active {
+  background: rgba(0, 212, 255, 0.14);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+.note-glyph {
+  font-size: 64px;
+  line-height: 1;
+}
+.note-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--text-3);
+}
+.note-tile.active .note-name { color: var(--accent); }
+
+.btn-go {
+  background: linear-gradient(180deg, #2dd4bf, #0d9488);
+  color: #002420;
+  box-shadow: 0 8px 24px rgba(45, 212, 191, 0.3);
+}
+.btn-go:focus {
+  background: linear-gradient(180deg, #5eead4, #2dd4bf);
+}
+
+/* ============================================================
+   PLAYING SCREEN
+   ============================================================ */
+#playing { padding: 24px; }
+
+.play-header {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.play-tag {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  min-width: 72px;
+  text-align: center;
+}
+
+.play-stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
 }
 
 .beat-dots {
   display: flex;
-  gap: 7px;
+  gap: 14px;
   align-items: center;
-  flex-wrap: nowrap;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 540px;
+  z-index: 2;
 }
-
 .beat-dot {
-  width: 13px;
-  height: 13px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: var(--bg-tertiary);
-  border: 2px solid var(--text-muted);
-  flex-shrink: 0;
-  transition: background 0.04s, border-color 0.04s, box-shadow 0.04s;
+  background: var(--bg-2);
+  border: 3px solid var(--bg-3);
+  transition: background 0.04s, border-color 0.04s, box-shadow 0.04s, transform 0.06s;
 }
-
 .beat-dot.active {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.7);
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 28px var(--accent-glow);
+  transform: scale(1.18);
 }
-
 .beat-dot.accent {
-  background: var(--accent-warm);
-  border-color: var(--accent-warm);
-  box-shadow: 0 0 14px rgba(255, 159, 67, 0.8);
+  background: var(--warm);
+  border-color: var(--warm);
+  box-shadow: 0 0 32px var(--warm-glow);
+  transform: scale(1.25);
 }
 
-/* ============================================================
-   BPM DISPLAY
-   ============================================================ */
-.bpm-display {
+.play-bpm {
   display: flex;
   align-items: baseline;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 20px 6px;
-  flex-shrink: 0;
+  gap: 10px;
+  z-index: 2;
 }
-
-.note-value-icon {
-  font-size: 34px;
-  color: var(--accent-primary);
-  line-height: 1;
-  min-width: 36px;
-  text-align: center;
-}
-
-.bpm-equals {
-  font-size: 26px;
-  color: var(--text-muted);
-  font-weight: 300;
-}
-
-.bpm-number {
-  font-size: 80px;
-  font-weight: 700;
-  color: var(--text-primary);
+.play-bpm-num {
+  font-size: 130px;
+  font-weight: 800;
+  letter-spacing: -6px;
+  line-height: 0.9;
   font-variant-numeric: tabular-nums;
-  line-height: 1;
-  letter-spacing: -3px;
   font-family: 'Courier New', 'SF Mono', monospace;
-  transition: color 0.06s;
-  min-width: 190px;
-  text-align: center;
+  color: var(--text);
+  text-shadow: 0 0 24px rgba(0, 212, 255, 0.25);
+  transition: color 0.06s, text-shadow 0.06s;
 }
-
-.bpm-number.flash-accent {
-  color: var(--accent-warm);
+.play-bpm-num.flash-beat {
+  color: var(--accent);
+  text-shadow: 0 0 36px var(--accent-glow);
 }
-
-.bpm-number.flash-beat {
-  color: var(--accent-primary);
+.play-bpm-num.flash-accent {
+  color: var(--warm);
+  text-shadow: 0 0 36px var(--warm-glow);
 }
-
-.bpm-unit {
-  font-size: 13px;
-  color: var(--text-muted);
-  align-self: flex-end;
-  padding-bottom: 10px;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
-
-/* ============================================================
-   TEMPO CONTROLS
-   ============================================================ */
-.control-row {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.ctrl-btn {
-  flex: 1;
-  padding: 9px 4px;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 600;
-  text-align: center;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ctrl-btn:focus {
-  background: var(--bg-card);
-}
-
-.ctrl-btn.sm {
-  flex: 0 0 42px;
-  min-width: 42px;
+.play-bpm-unit {
   font-size: 18px;
   font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--text-3);
 }
 
-.tap-btn {
-  background: var(--bg-card);
-  color: var(--accent-primary);
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 2px;
-}
-
-.tap-btn.tapping {
-  background: var(--accent-primary);
-  color: var(--bg-primary);
-  border-color: var(--accent-primary);
-}
-
-/* ============================================================
-   SETTING ROWS (time sig, note val, volume)
-   ============================================================ */
-.setting-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  min-height: 48px;
-}
-
-.setting-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
-  width: 34px;
-  flex-shrink: 0;
-  text-align: right;
-}
-
-.option-group {
-  display: flex;
-  gap: 5px;
-  flex: 1;
-}
-
-.opt-btn {
-  flex: 1;
-  padding: 8px 2px;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  font-size: 15px;
-  font-weight: 500;
-  text-align: center;
-  min-height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
-}
-
-.opt-btn.active {
-  background: rgba(0, 212, 255, 0.12);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-  font-weight: 700;
-}
-
-.opt-btn:focus {
-  background: var(--bg-card);
-  color: var(--text-primary);
-}
-
-/* ============================================================
-   VOLUME
-   ============================================================ */
-.vol-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-
-.vol-bar {
-  flex: 1;
-  height: 8px;
-  background: var(--bg-tertiary);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.vol-fill {
-  height: 100%;
-  background: var(--accent-primary);
-  border-radius: 4px;
-  transition: width 0.12s ease;
-}
-
-.accent-btn {
-  padding: 8px 10px;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  min-height: 42px;
-  flex-shrink: 0;
-  width: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.accent-btn.active {
-  background: rgba(255, 159, 67, 0.15);
-  border-color: var(--accent-warm);
-  color: var(--accent-warm);
-}
-
-.accent-btn:focus {
-  background: var(--bg-card);
-}
-
-/* ============================================================
-   START / STOP
-   ============================================================ */
-.start-stop-row {
-  flex-shrink: 0;
-  margin-top: auto;
-  display: flex;
-  justify-content: center;
-}
-
-.start-btn {
-  width: 90px;
-  height: 90px;
-  padding: 0;
-  background: var(--bg-secondary);
+.pulse-ring {
+  position: absolute;
+  width: 360px;
+  height: 360px;
   border-radius: 50%;
-  color: var(--text-primary);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-align: center;
+  border: 2px solid rgba(0, 212, 255, 0.0);
+  pointer-events: none;
+  z-index: 1;
+  transition: border-color 0.05s, transform 0.18s ease-out, opacity 0.4s ease-out;
+  opacity: 0;
+}
+.pulse-ring.pulse {
+  opacity: 1;
+  border-color: rgba(0, 212, 255, 0.6);
+  transform: scale(1.06);
+}
+.pulse-ring.pulse-accent {
+  opacity: 1;
+  border-color: rgba(255, 159, 67, 0.7);
+  transform: scale(1.1);
+}
+
+.play-foot {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
 }
-
-.start-btn.playing {
-  background: rgba(255, 68, 102, 0.15);
-  border-color: var(--danger);
-  color: var(--danger);
+.btn-stop {
+  background: linear-gradient(180deg, var(--danger), #c8243f);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(255, 79, 110, 0.3);
 }
-
-.start-btn:focus {
-  border-color: var(--focus-ring);
-  box-shadow: 0 0 20px var(--focus-glow);
-  background: var(--bg-card);
+.btn-stop:focus {
+  background: linear-gradient(180deg, #ff7a92, var(--danger));
 }
-
-.start-btn.playing:focus {
-  border-color: var(--danger);
-  box-shadow: 0 0 20px rgba(255, 68, 102, 0.4);
+.btn-edit {
+  font-size: 12px;
+  letter-spacing: 5px;
+  min-height: 42px;
+  padding: 10px;
 }
 
 /* ============================================================

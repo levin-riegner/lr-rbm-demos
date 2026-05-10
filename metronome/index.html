@@ -9,77 +9,170 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="app">
-    <div id="home" class="screen">
+<div id="app">
 
-      <!-- Header: title + beat indicator dots -->
-      <div class="metro-header">
-        <span class="metro-title">METRONOME</span>
-        <div class="beat-dots" id="beat-dots"></div>
+  <!-- ============================================================
+       HOME — saved settings summary + big START
+       ============================================================ -->
+  <section id="home" class="screen">
+    <div class="brand-bar">
+      <span class="brand-mark">♩</span>
+      <span class="brand-text">METRONOME</span>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-row summary-bpm">
+        <span class="summary-num" id="home-bpm">080</span>
+        <span class="summary-unit">BPM</span>
       </div>
-
-      <!-- BPM display -->
-      <div class="bpm-display">
-        <span class="note-value-icon" id="note-icon">&#9833;</span>
-        <span class="bpm-equals">=</span>
-        <span class="bpm-number" id="bpm-number">080</span>
-        <span class="bpm-unit">BPM</span>
+      <div class="summary-row summary-meta">
+        <span class="summary-chip"><span class="chip-label">TIME</span><span class="chip-value" id="home-time">4/4</span></span>
+        <span class="summary-chip"><span class="chip-label">NOTE</span><span class="chip-value" id="home-note">♩</span></span>
       </div>
+    </div>
 
-      <!-- Tempo controls -->
-      <div class="control-row">
-        <button class="ctrl-btn focusable" data-action="bpm-minus-10">&#8722;10</button>
-        <button class="ctrl-btn focusable" data-action="bpm-minus-1">&#8722;1</button>
-        <button class="ctrl-btn tap-btn focusable" data-action="tap" id="tap-btn">TAP</button>
-        <button class="ctrl-btn focusable" data-action="bpm-plus-1">+1</button>
-        <button class="ctrl-btn focusable" data-action="bpm-plus-10">+10</button>
+    <div class="home-actions">
+      <button class="btn btn-primary focusable" data-action="quick-start" id="home-start">
+        <span class="btn-icon">▶</span><span class="btn-label">START</span>
+      </button>
+      <button class="btn btn-ghost focusable" data-action="setup-begin">
+        <span class="btn-label">CHANGE TEMPO</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       STEP 1 — TEMPO (BPM)
+       ============================================================ -->
+  <section id="step-tempo" class="screen hidden">
+    <div class="step-header">
+      <span class="step-back focusable" data-action="step-back">‹</span>
+      <span class="step-title">TEMPO</span>
+      <span class="step-pips"><i class="pip on"></i><i class="pip"></i><i class="pip"></i></span>
+    </div>
+
+    <div class="picker-tempo">
+      <div class="bpm-stage">
+        <div class="bpm-big" id="bpm-big">080</div>
+        <div class="bpm-sub">BEATS&nbsp;PER&nbsp;MINUTE</div>
       </div>
-
-      <!-- Time signature row -->
-      <div class="setting-row">
-        <span class="setting-label">TIME</span>
-        <div class="option-group" id="time-sig-group">
-          <button class="opt-btn focusable" data-action="timesig-2" data-value="2">2</button>
-          <button class="opt-btn focusable" data-action="timesig-3" data-value="3">3</button>
-          <button class="opt-btn focusable active" data-action="timesig-4" data-value="4">4</button>
-          <button class="opt-btn focusable" data-action="timesig-5" data-value="5">5</button>
-          <button class="opt-btn focusable" data-action="timesig-6" data-value="6">6</button>
-          <button class="opt-btn focusable" data-action="timesig-7" data-value="7">7</button>
-        </div>
+      <div class="bpm-controls">
+        <button class="step-btn focusable" data-action="bpm-minus-10">−10</button>
+        <button class="step-btn focusable" data-action="bpm-minus-1">−1</button>
+        <button class="step-btn step-btn-tap focusable" data-action="tap" id="tap-btn">TAP</button>
+        <button class="step-btn focusable" data-action="bpm-plus-1">+1</button>
+        <button class="step-btn focusable" data-action="bpm-plus-10">+10</button>
       </div>
+    </div>
 
-      <!-- Note value row -->
-      <div class="setting-row">
-        <span class="setting-label">NOTE</span>
-        <div class="option-group" id="note-val-group">
-          <button class="opt-btn focusable active" data-action="note-quarter" data-value="quarter">&#9833;</button>
-          <button class="opt-btn focusable" data-action="note-eighth" data-value="eighth">&#9834;&#9834;</button>
-          <button class="opt-btn focusable" data-action="note-triplet" data-value="triplet">&#9833;&#xb3;</button>
-          <button class="opt-btn focusable" data-action="note-dotted" data-value="dotted">&#9833;.</button>
-          <button class="opt-btn focusable" data-action="note-sixteenth" data-value="sixteenth">&#9835;&#9835;</button>
-        </div>
-      </div>
+    <div class="step-foot">
+      <button class="btn btn-primary focusable" data-action="step-next">
+        <span class="btn-label">NEXT</span><span class="btn-icon">›</span>
+      </button>
+    </div>
+  </section>
 
-      <!-- Volume + Accent row -->
-      <div class="setting-row">
-        <span class="setting-label">VOL</span>
-        <div class="vol-controls">
-          <button class="ctrl-btn sm focusable" data-action="vol-down">&#8722;</button>
-          <div class="vol-bar"><div class="vol-fill" id="vol-fill"></div></div>
-          <button class="ctrl-btn sm focusable" data-action="vol-up">+</button>
-        </div>
-        <button class="accent-btn focusable active" data-action="toggle-accent" id="accent-btn">ACC</button>
-      </div>
+  <!-- ============================================================
+       STEP 2 — TIME SIGNATURE
+       ============================================================ -->
+  <section id="step-time" class="screen hidden">
+    <div class="step-header">
+      <span class="step-back focusable" data-action="step-back">‹</span>
+      <span class="step-title">TIME SIGNATURE</span>
+      <span class="step-pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span>
+    </div>
 
-      <!-- Start / Stop -->
-      <div class="start-stop-row">
-        <button class="start-btn focusable" data-action="toggle-play" id="start-btn">
-          <span id="play-icon">&#9654; START</span>
+    <div class="picker-time">
+      <div class="time-grid" id="time-grid">
+        <button class="big-tile focusable" data-action="set-time" data-value="2">
+          <span class="tile-num">2</span><span class="tile-sub">/4</span>
+        </button>
+        <button class="big-tile focusable" data-action="set-time" data-value="3">
+          <span class="tile-num">3</span><span class="tile-sub">/4</span>
+        </button>
+        <button class="big-tile focusable active" data-action="set-time" data-value="4">
+          <span class="tile-num">4</span><span class="tile-sub">/4</span>
+        </button>
+        <button class="big-tile focusable" data-action="set-time" data-value="5">
+          <span class="tile-num">5</span><span class="tile-sub">/4</span>
+        </button>
+        <button class="big-tile focusable" data-action="set-time" data-value="6">
+          <span class="tile-num">6</span><span class="tile-sub">/8</span>
+        </button>
+        <button class="big-tile focusable" data-action="set-time" data-value="7">
+          <span class="tile-num">7</span><span class="tile-sub">/8</span>
         </button>
       </div>
-
     </div>
-  </div>
-  <script src="app.js"></script>
+
+    <div class="step-foot">
+      <button class="btn btn-primary focusable" data-action="step-next">
+        <span class="btn-label">NEXT</span><span class="btn-icon">›</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       STEP 3 — SUBDIVISION (NOTE VALUE)
+       ============================================================ -->
+  <section id="step-note" class="screen hidden">
+    <div class="step-header">
+      <span class="step-back focusable" data-action="step-back">‹</span>
+      <span class="step-title">SUBDIVISION</span>
+      <span class="step-pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span>
+    </div>
+
+    <div class="picker-note">
+      <div class="note-grid" id="note-grid">
+        <button class="note-tile focusable active" data-action="set-note" data-value="quarter">
+          <span class="note-glyph">♩</span><span class="note-name">QUARTER</span>
+        </button>
+        <button class="note-tile focusable" data-action="set-note" data-value="eighth">
+          <span class="note-glyph">♪♪</span><span class="note-name">EIGHTH</span>
+        </button>
+        <button class="note-tile focusable" data-action="set-note" data-value="triplet">
+          <span class="note-glyph">♩³</span><span class="note-name">TRIPLET</span>
+        </button>
+        <button class="note-tile focusable" data-action="set-note" data-value="sixteenth">
+          <span class="note-glyph">♫♫</span><span class="note-name">SIXTEENTH</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="step-foot">
+      <button class="btn btn-primary btn-go focusable" data-action="step-finish">
+        <span class="btn-icon">▶</span><span class="btn-label">START</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       PLAYING — beat indicator + stop
+       ============================================================ -->
+  <section id="playing" class="screen hidden">
+    <div class="play-header">
+      <span class="play-tag" id="play-time-tag">4/4</span>
+      <span class="play-tag" id="play-note-tag">♩</span>
+    </div>
+
+    <div class="play-stage">
+      <div class="beat-dots" id="beat-dots"></div>
+      <div class="play-bpm">
+        <span class="play-bpm-num" id="play-bpm">080</span>
+        <span class="play-bpm-unit">BPM</span>
+      </div>
+      <div class="pulse-ring" id="pulse-ring"></div>
+    </div>
+
+    <div class="play-foot">
+      <button class="btn btn-stop focusable" data-action="toggle-play" id="stop-btn">
+        <span class="btn-icon">■</span><span class="btn-label">STOP</span>
+      </button>
+      <button class="btn btn-ghost btn-edit focusable" data-action="setup-begin">EDIT</button>
+    </div>
+  </section>
+
+</div>
+<script src="app.js"></script>
 </body>
 </html>
