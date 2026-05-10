@@ -229,16 +229,16 @@
     var bpmEl = document.getElementById('home-bpm');
     var tEl = document.getElementById('home-time');
     var nEl = document.getElementById('home-note');
-    if (bpmEl) bpmEl.textContent = String(state.bpm).padStart(3, '0');
+    if (bpmEl) bpmEl.textContent = String(state.bpm);
     if (tEl) tEl.textContent = state.beatsPerMeasure + (state.beatsPerMeasure >= 6 ? '/8' : '/4');
     if (nEl) nEl.textContent = NOTE_VALUES[state.noteValue].glyph;
   }
 
   function renderBpm() {
     var big = document.getElementById('bpm-big');
-    if (big) big.textContent = String(state.bpm).padStart(3, '0');
+    if (big) big.textContent = String(state.bpm);
     var play = document.getElementById('play-bpm');
-    if (play) play.textContent = String(state.bpm).padStart(3, '0');
+    if (play) play.textContent = String(state.bpm);
     renderHome();
   }
 
@@ -383,6 +383,21 @@
     var active = els.find(function (e) { return e.classList.contains('active'); });
     (active || els[0]).focus();
   }
+  function focusTempoDown() {
+    // From the BPM control row or back arrow, jump to NEXT.
+    var next = document.querySelector('#step-tempo [data-action="step-next"]');
+    if (next) next.focus();
+  }
+  function focusTempoUp() {
+    // From NEXT, return to the middle of the BPM control row (TAP).
+    var active = document.activeElement;
+    if (active && active.dataset && active.dataset.action === 'step-next') {
+      var tap = document.getElementById('tap-btn');
+      if (tap) { tap.focus(); return; }
+    }
+    moveFocus('up');
+  }
+
   function moveFocus(dir) {
     var els = focusables();
     if (!els.length) return;
@@ -440,8 +455,14 @@
     document.addEventListener('keydown', function (e) {
       var bpmScreen = (state.screen === 'home' || state.screen === 'playing');
       switch (e.key) {
-        case 'ArrowUp':    moveFocus('up');    e.preventDefault(); break;
-        case 'ArrowDown':  moveFocus('down');  e.preventDefault(); break;
+        case 'ArrowUp':
+          if (state.screen === 'step-tempo') focusTempoUp();
+          else moveFocus('up');
+          e.preventDefault(); break;
+        case 'ArrowDown':
+          if (state.screen === 'step-tempo') focusTempoDown();
+          else moveFocus('down');
+          e.preventDefault(); break;
         case 'ArrowLeft':
           if (bpmScreen) adjustBpm(-1); else moveFocus('left');
           e.preventDefault(); break;
