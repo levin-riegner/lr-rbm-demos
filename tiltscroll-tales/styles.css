@@ -13,6 +13,7 @@
   --topbar-h: 38px;
   --bottombar-h: 26px;
   --rail-w: 22px;
+  --text-scale: 1;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -92,6 +93,23 @@ html, body {
   padding: 3px 8px;
   border-radius: 3px;
   background: #43c47a14;
+}
+.size-pill {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: #b5c5dd;
+  border: 1px solid #b5c5dd33;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: #b5c5dd0e;
+  margin-right: 8px;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+.size-pill.flash {
+  color: var(--accent-glow);
+  border-color: var(--accent-glow);
+  background: #43c47a22;
 }
 
 /* ─── bottombar ─────────────────────────────────────────────── */
@@ -202,24 +220,24 @@ kbd {
 
 .chapter-num {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 11px;
+  font-size: calc(13px * var(--text-scale));
   letter-spacing: 0.32em;
   color: var(--accent);
   font-weight: 700;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 .chapter-title {
   font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  font-size: 26px;
-  line-height: 1.15;
+  font-size: calc(34px * var(--text-scale));
+  line-height: 1.1;
   font-weight: 600;
   font-style: italic;
   color: var(--ink);
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   letter-spacing: -0.01em;
   border-bottom: 1px solid var(--rule);
-  padding-bottom: 12px;
+  padding-bottom: 14px;
 }
 
 .illustration {
@@ -239,9 +257,9 @@ kbd {
 }
 
 .page p {
-  font-size: 15px;
-  line-height: 1.6;
-  margin-bottom: 12px;
+  font-size: calc(20px * var(--text-scale));
+  line-height: 1.5;
+  margin-bottom: 16px;
   color: var(--ink);
   text-align: left;
   hyphens: auto;
@@ -255,40 +273,41 @@ kbd {
   color: var(--ink-2);
 }
 .page p.callout {
-  font-size: 17px;
+  font-size: calc(23px * var(--text-scale));
   font-style: italic;
   text-align: center;
-  margin: 14px 24px;
+  margin: 18px 16px;
   color: var(--ink);
-  border-left: 2px solid var(--accent-glow);
-  padding-left: 12px;
+  border-left: 3px solid var(--accent-glow);
+  padding-left: 14px;
+  line-height: 1.35;
 }
 .page p.whisper {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 13px;
+  font-size: calc(17px * var(--text-scale));
   letter-spacing: 0.16em;
   text-align: center;
   color: var(--accent);
-  margin: 12px 0 16px 0;
-  opacity: 0.85;
+  margin: 16px 0 20px 0;
+  opacity: 0.9;
 }
 .page p.fin {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 12px;
+  font-size: calc(15px * var(--text-scale));
   letter-spacing: 0.4em;
   text-align: center;
   color: var(--dim);
-  margin: 22px 0 8px 0;
+  margin: 26px 0 10px 0;
   text-transform: uppercase;
 }
 
 .morse {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 13px;
+  font-size: calc(17px * var(--text-scale));
   letter-spacing: 0.3em;
   color: var(--accent);
   background: #43c47a14;
-  padding: 1px 6px;
+  padding: 2px 8px;
   border-radius: 2px;
   border: 1px solid #43c47a33;
 }
@@ -298,36 +317,37 @@ kbd {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-style: normal;
-  font-size: 14px;
-  padding: 1px 4px;
+  font-size: calc(18px * var(--text-scale));
+  padding: 2px 6px;
   background: #43c47a14;
   border-radius: 2px;
 }
 
 /* ─── page-end / next button ───────────────────────────────── */
 .page-end {
-  margin-top: 18px;
-  padding-top: 16px;
+  margin-top: 22px;
+  padding-top: 18px;
   border-top: 1px dashed var(--rule);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding-bottom: 12px;
+  gap: 12px;
+  padding-bottom: 14px;
 }
 .end-cue {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 10px;
+  font-size: calc(12px * var(--text-scale));
   letter-spacing: 0.18em;
   color: var(--dim);
   text-transform: uppercase;
+  text-align: center;
 }
 .next-btn {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 13px;
+  font-size: calc(16px * var(--text-scale));
   letter-spacing: 0.22em;
   font-weight: 700;
-  padding: 12px 24px;
+  padding: 14px 28px;
   background: var(--ink);
   color: var(--paper);
   border: 2px solid var(--ink);

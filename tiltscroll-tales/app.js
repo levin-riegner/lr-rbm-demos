@@ -11,15 +11,38 @@
   const pages = Array.from(document.querySelectorAll('.page'));
   const startOverlay = document.getElementById('start-overlay');
   const startBtn = document.getElementById('start-btn');
+  const sizePill = document.getElementById('size-pill');
+  const sizeNum = document.getElementById('size-num');
 
   pageTotalEl.textContent = String(pages.length);
 
+  // ─── Text size ─────────────────────────────────────────────────
+  // 5 levels: 0..4. Index 2 = 1.0x. Each step = +20%.
+  const SIZE_LEVELS = [0.8, 0.92, 1.0, 1.18, 1.4, 1.65];
+  const SIZE_KEY = 'tiltscroll_size';
+  let sizeIdx = clampInt(parseInt(localStorage.getItem(SIZE_KEY) ?? '3', 10), 0, SIZE_LEVELS.length - 1);
+  applySize();
+  function applySize() {
+    document.documentElement.style.setProperty('--text-scale', String(SIZE_LEVELS[sizeIdx]));
+    sizeNum.textContent = String(sizeIdx + 1);
+    localStorage.setItem(SIZE_KEY, String(sizeIdx));
+  }
+  function flashSize() {
+    sizePill.classList.add('flash');
+    clearTimeout(flashSize._t);
+    flashSize._t = setTimeout(() => sizePill.classList.remove('flash'), 500);
+  }
+  function clampInt(n, lo, hi) {
+    if (Number.isNaN(n)) return lo;
+    return Math.max(lo, Math.min(hi, n));
+  }
+
   // ─── Tilt state ────────────────────────────────────────────────
-  // beta: device front-back tilt in degrees (0..180, neutral ~90 when worn)
-  // We calibrate: first reading after BEGIN becomes neutral. Then beta-neutral
-  // is mapped over [-RANGE, +RANGE] to scroll fraction [0, 1].
-  // beta increases when device tilts forward (head down) → fraction → 1
-  // beta decreases when device tilts back     (head up)   → fraction → 0
+  // beta: device front-back tilt in degrees (0..180, neutral ~90 when worn).
+  // Calibrate: first reading after BEGIN becomes neutral. Then (beta - neutral)
+  // is mapped over [-RANGE, +RANGE] to scroll fraction [0, 1] — INVERTED:
+  //   head UP   (beta decreases) → fraction → 1 (bottom of page)
+  //   head DOWN (beta increases) → fraction → 0 (top of page)
   const RANGE_DEG = 22;   // ±22° from neutral spans full scroll
   const SMOOTH = 0.18;    // EMA factor (higher = snappier, lower = calmer)
 
@@ -85,7 +108,9 @@
       status.textContent = `NEUTRAL ${beta.toFixed(1)}°`;
     }
     const off = beta - neutralBeta;
-    let f = (off + RANGE_DEG) / (RANGE_DEG * 2);
+    // Flipped mapping: head DOWN (beta increases) → frac → 0 (top of page).
+    //                  head UP   (beta decreases) → frac → 1 (bottom).
+    let f = (RANGE_DEG - off) / (RANGE_DEG * 2);
     if (f < 0) f = 0; else if (f > 1) f = 1;
     targetFrac = f;
     tiltActive = true;
@@ -195,10 +220,15 @@
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       kbFrac = Math.max(0, (kbFrac ?? smoothedFrac) - 0.08);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (sizeIdx < SIZE_LEVELS.length - 1) { sizeIdx++; applySize(); flashSize(); }
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (sizeIdx > 0) { sizeIdx--; applySize(); flashSize(); }
     } else if (e.key === 'c' || e.key === 'C') {
       recalibrate();
     } else if (e.key === 'Escape') {
-      // jump to top of current page
       kbFrac = 0;
     }
   });
