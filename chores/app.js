@@ -170,7 +170,7 @@
   }
 
   // ─────────── Chore render ───────────
-  function renderChore() {
+  function renderChore(focusIndex) {
     const chore = CHORES[state.index];
     const complete = isChoreComplete(chore);
     stepEl.textContent  = `Chore ${state.index + 1} of ${CHORES.length}`;
@@ -195,7 +195,7 @@
         e.preventDefault();
         if (checkedSet.has(i)) checkedSet.delete(i);
         else checkedSet.add(i);
-        renderChore();
+        renderChore(i);
       });
       tasksEl.appendChild(li);
     });
@@ -246,7 +246,13 @@
       actionsEl.appendChild(prev);
     }
 
-    focusFirst();
+    if (focusIndex !== undefined) {
+      const taskItems = tasksEl.querySelectorAll('li[data-focusable]');
+      const target = taskItems[focusIndex];
+      if (target) target.focus();
+    } else {
+      focusFirst();
+    }
   }
 
   function mkBtn(label, glyph, kind) {
