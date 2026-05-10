@@ -30,8 +30,7 @@
         Counts your strokes from head-motion telemetry. First we'll calibrate by having you brush <b>10 times</b>, then guide you through <b>8 zones</b> at <b>18 strokes each</b>.
       </p>
       <div class="cta-row">
-        <button class="primary" id="intro-begin" data-action="begin">BEGIN  ⏎</button>
-        <span class="cta-hint">⏎ Enter · ␣ Space (manual stroke) · N skip</span>
+        <button class="primary focused" id="intro-begin" data-action="begin">BEGIN  ⏎</button>
       </div>
     </div>
   </section>
@@ -49,7 +48,7 @@
         <ul class="tips">
           <li>Hold the brush like normal — head motion follows.</li>
           <li>Steady tempo · one stroke per second is great.</li>
-          <li>Press <b>R</b> to restart calibration.</li>
+          <li><b>↑</b> resets · <b>↓</b> simulates a stroke.</li>
         </ul>
       </div>
       <div class="train-right">
@@ -78,7 +77,7 @@
         Detection threshold <b id="thr-readout">—</b> · Dominant axis <b id="axis-readout">—</b>
       </div>
       <div class="cta-row">
-        <button class="primary" id="ready-start" data-action="start">START BRUSHING  ⏎</button>
+        <button class="primary focused" id="ready-start" data-action="start">START BRUSHING  ⏎</button>
       </div>
     </div>
   </section>
@@ -168,8 +167,8 @@
           <div class="result-v" id="done-pace">— /s</div>
         </div>
       </div>
-      <div class="cta-row">
-        <button class="primary" data-action="restart">BRUSH AGAIN  ⏎</button>
+      <div class="cta-row" id="done-cta">
+        <button class="primary focused" data-action="restart">BRUSH AGAIN</button>
         <button class="secondary" data-action="recalibrate">RE-CALIBRATE</button>
       </div>
     </div>
@@ -180,18 +179,13 @@
     <div class="overlay-card">
       <div class="eyebrow">PERMISSION</div>
       <h2 class="med-title">Motion access</h2>
-      <p class="muted">Brusher uses head-motion telemetry from your glasses to count brushstrokes. Tap to allow.</p>
-      <button class="primary" id="perm-grant">GRANT ACCESS</button>
+      <p class="muted">Brusher uses head-motion telemetry from your glasses to count brushstrokes. Press <b>Enter</b> to allow.</p>
+      <button class="primary focused" id="perm-grant">GRANT ACCESS  ⏎</button>
     </div>
   </div>
 
-  <!-- ─── BOTTOM HINT BAR ─────────────────────────────── -->
-  <footer class="hintbar" id="hintbar">
-    <span><kbd>⏎</kbd> advance</span>
-    <span><kbd>␣</kbd> stroke (test)</span>
-    <span><kbd>N</kbd> skip zone</span>
-    <span><kbd>R</kbd> restart</span>
-  </footer>
+  <!-- ─── BOTTOM HINT BAR (filled by JS per phase) ────── -->
+  <footer class="hintbar" id="hintbar"></footer>
 
 </div>
 <script src="app.js"></script>

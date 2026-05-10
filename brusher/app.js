@@ -128,6 +128,57 @@
     phase = next;
     Object.entries(screens).forEach(([k, el]) => el.classList.toggle('hidden', k !== next));
     phasePill.textContent = next.toUpperCase();
+    renderHintbar();
+    if (next === 'done') {
+      doneFocusIdx = 0;
+      const btns = getDoneButtons();
+      btns.forEach((b, i) => b.classList.toggle('focused', i === 0));
+    }
+  }
+
+  // ─── Hintbar (per-phase) ───────────────────────────────────────
+  const HINTS = {
+    intro: [['⏎', 'begin']],
+    train: [['↑', 'reset'], ['↓', 'stroke (test)']],
+    ready: [['⏎', 'start'], ['↑', 'recalibrate']],
+    brush: [['←', 'prev zone'], ['→', 'next zone'], ['↓', 'stroke (test)'], ['↑', 'recalibrate']],
+    done:  [['← →', 'choose'], ['⏎', 'confirm']],
+  };
+  function renderHintbar() {
+    const items = HINTS[phase] || [];
+    hintbar.innerHTML = items
+      .map(([key, label]) => `<span><kbd>${key}</kbd> ${label}</span>`)
+      .join('');
+  }
+
+  // ─── Done-screen focus toggle ──────────────────────────────────
+  let doneFocusIdx = 0;
+  function getDoneButtons() {
+    return Array.from(document.querySelectorAll('#done-cta button'));
+  }
+  function focusDoneOption(delta) {
+    const btns = getDoneButtons();
+    if (!btns.length) return;
+    doneFocusIdx = (doneFocusIdx + delta + btns.length) % btns.length;
+    btns.forEach((b, i) => b.classList.toggle('focused', i === doneFocusIdx));
+    beeps.nav();
+  }
+  function confirmDoneOption() {
+    const btns = getDoneButtons();
+    const btn = btns[doneFocusIdx];
+    if (btn) handleAction(btn.dataset.action);
+  }
+
+  // ─── Previous zone (← during brushing) ─────────────────────────
+  function prevZone() {
+    if (phase !== 'brush') return;
+    if (zoneIdx === 0) return;
+    zoneIdx -= 1;
+    strokeCount = 0;
+    brushCount.textContent = '0';
+    brushFill.style.width = '0%';
+    renderZone();
+    beeps.nav();
   }
 
   // ─── Sensor setup ──────────────────────────────────────────────
@@ -439,28 +490,41 @@
 
   permGrant.addEventListener('click', requestSensorPermission);
 
+  // Five-key navigation: ↑ ↓ ← → ⏎. No other inputs (matches glasses remote).
   document.addEventListener('keydown', (e) => {
+    const permOpen = !permOverlay.classList.contains('hidden');
+
     if (e.key === 'Enter') {
       e.preventDefault();
       ensureAudio();
-      if (phase === 'intro') handleAction('begin');
+      if (permOpen) { requestSensorPermission(); return; }
+      if (phase === 'intro')      handleAction('begin');
       else if (phase === 'ready') handleAction('start');
-      else if (phase === 'done') handleAction('restart');
-    } else if (e.key === ' ' || e.code === 'Space') {
+      else if (phase === 'brush') advanceZone(/*manual=*/true);
+      else if (phase === 'done')  confirmDoneOption();
+    } else if (e.key === 'ArrowDown') {
       e.preventDefault();
       ensureAudio();
-      if (phase === 'train') manualTrainStroke();
+      if (phase === 'train')      manualTrainStroke();
       else if (phase === 'brush') manualBrushStroke();
-    } else if (e.key === 'n' || e.key === 'N') {
-      ensureAudio();
-      if (phase === 'brush') advanceZone(/*manual=*/true);
-    } else if (e.key === 'r' || e.key === 'R') {
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
       ensureAudio();
       if (phase === 'train') { resetTrainState(); beeps.nav(); }
-      else if (phase === 'brush' || phase === 'ready') { resetTrainState(); setPhase('train'); }
-    } else if (e.key === 'Escape') {
+      else if (phase === 'ready' || phase === 'brush') {
+        resetTrainState();
+        setPhase('train');
+      }
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
       ensureAudio();
-      setPhase('intro');
+      if (phase === 'brush')      advanceZone(/*manual=*/true);
+      else if (phase === 'done')  focusDoneOption(+1);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      ensureAudio();
+      if (phase === 'brush')      prevZone();
+      else if (phase === 'done')  focusDoneOption(-1);
     }
   });
 

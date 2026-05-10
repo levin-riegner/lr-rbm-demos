@@ -246,10 +246,12 @@ kbd {
   transition: background 120ms, color 120ms, transform 120ms;
 }
 .primary:hover,
-.primary:focus-visible {
+.primary:focus-visible,
+.primary.focused {
   background: var(--accent);
   color: var(--bg);
   outline: none;
+  box-shadow: 0 0 22px var(--accent-lo);
 }
 .primary:active { transform: translateY(1px); }
 .secondary {
@@ -260,8 +262,14 @@ kbd {
   padding: 11px 16px;
   border: 1px solid var(--ink-faint);
   border-radius: 2px;
+  transition: color 120ms, background 120ms, border-color 120ms;
 }
-.secondary:hover { color: var(--ink); border-color: var(--ink-dim); }
+.secondary:hover,
+.secondary.focused {
+  color: var(--bg);
+  background: var(--ink);
+  border-color: var(--ink);
+}
 
 /* ─────────── Training screen ─────────── */
 .train-grid {
