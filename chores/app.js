@@ -1,6 +1,10 @@
 (function () {
   'use strict';
 
+  // ─────────── Helpers ───────────
+  // Force mobile Amazon page on the glasses browser.
+  const mob = (url) => url.replace(/^https?:\/\/(www\.)?amazon\.com/, 'https://m.amazon.com');
+
   // ─────────── Data ───────────
   const CHORES = [
     {
@@ -14,9 +18,9 @@
         'Restock toilet paper'
       ],
       supplies: [
-        { label: 'Charmin Strong Toilet Paper',  url: 'https://www.amazon.com/Charmin-Strong-Toilet-Family-Regular/dp/B09YKYV9N9/' },
-        { label: 'Lysol Bathroom Cleaner',       url: 'https://www.amazon.com/gp/aw/d/B0F3LRCMP9/' },
-        { label: 'Scotch-Brite Sponges',         url: 'https://www.amazon.com/Scotch-Brite-Sponges-Washing-Dishes-Kitchen/dp/B0917DL2QG/' }
+        { label: 'Charmin Strong Toilet Paper',  url: mob('https://www.amazon.com/Charmin-Strong-Toilet-Family-Regular/dp/B09YKYV9N9/') },
+        { label: 'Lysol Bathroom Cleaner',       url: mob('https://www.amazon.com/gp/aw/d/B0F3LRCMP9/') },
+        { label: 'Scotch-Brite Sponges',         url: mob('https://www.amazon.com/Scotch-Brite-Sponges-Washing-Dishes-Kitchen/dp/B0917DL2QG/') }
       ]
     },
     {
@@ -30,9 +34,9 @@
         'Fold and put away'
       ],
       supplies: [
-        { label: 'Laundry Detergent',      url: 'https://www.amazon.com/Askshy-Laundry-Detergent-Compatible-Pre-Treater/dp/B0B1PGR1LZ' },
-        { label: 'Bounce Dryer Sheets',    url: 'https://www.amazon.com/Bounce-Outdoor-Softener-Reduces-Wrinkles/dp/B0FG9GRFYT' },
-        { label: 'OxiClean Stain Remover', url: 'https://www.amazon.com/OxiClean-Force-Laundry-Remover-3-Pack/dp/B0BVY2XKJX' }
+        { label: 'Laundry Detergent',      url: mob('https://www.amazon.com/Askshy-Laundry-Detergent-Compatible-Pre-Treater/dp/B0B1PGR1LZ') },
+        { label: 'Bounce Dryer Sheets',    url: mob('https://www.amazon.com/Bounce-Outdoor-Softener-Reduces-Wrinkles/dp/B0FG9GRFYT') },
+        { label: 'OxiClean Stain Remover', url: mob('https://www.amazon.com/OxiClean-Force-Laundry-Remover-3-Pack/dp/B0BVY2XKJX') }
       ]
     },
     {
@@ -45,8 +49,8 @@
         'Bring bags to the curb'
       ],
       supplies: [
-        { label: 'Glad ForceFlex 13-gal', url: 'https://www.amazon.com/Glad-OdorShield-Kitchen-Drawstring-Trash/dp/B00D5YS4HE' },
-        { label: 'Hefty Ultra Strong',    url: 'https://www.amazon.com/Hefty-Strong-Kitchen-Gallon-Garbage/' }
+        { label: 'Glad ForceFlex 13-gal', url: mob('https://www.amazon.com/Glad-OdorShield-Kitchen-Drawstring-Trash/dp/B00D5YS4HE') },
+        { label: 'Hefty Ultra Strong',    url: mob('https://www.amazon.com/Hefty-Strong-Kitchen-Gallon-Garbage/') }
       ]
     },
     {
@@ -59,8 +63,8 @@
         'Vacuum rug and floor'
       ],
       supplies: [
-        { label: 'Vacuum Bags',              url: 'https://www.amazon.com/Type-Compatible-Platinum-Canister-Cleaner/dp/B0DMW2LZTQ' },
-        { label: 'Scotch-Brite Lint Roller', url: 'https://www.amazon.com/Scotch-Brite-Roller-3-Rollers-100-Sheets-Sheets/dp/B07CQ2PQW4' }
+        { label: 'Vacuum Bags',              url: mob('https://www.amazon.com/Type-Compatible-Platinum-Canister-Cleaner/dp/B0DMW2LZTQ') },
+        { label: 'Scotch-Brite Lint Roller', url: mob('https://www.amazon.com/Scotch-Brite-Roller-3-Rollers-100-Sheets-Sheets/dp/B07CQ2PQW4') }
       ]
     },
     {
@@ -74,9 +78,9 @@
         'Dry and put away'
       ],
       supplies: [
-        { label: 'Dawn Platinum Powerwash',  url: 'https://www.amazon.com/Dawn-Platinum-Powerwash-Bundle-Starter/dp/B07YD3KQ5S' },
-        { label: 'Cascade Complete Pods',    url: 'https://www.amazon.com/Cascade-Complete-All-Dishwasher-Detergent/dp/B00MB3JW44' },
-        { label: 'Scotch-Brite Non-Scratch', url: 'https://www.amazon.com/Scotch-Brite-Non-Scratch-Sponge-Without-Scratching/dp/B0043P0GRA' }
+        { label: 'Dawn Platinum Powerwash',  url: mob('https://www.amazon.com/Dawn-Platinum-Powerwash-Bundle-Starter/dp/B07YD3KQ5S') },
+        { label: 'Cascade Complete Pods',    url: mob('https://www.amazon.com/Cascade-Complete-All-Dishwasher-Detergent/dp/B00MB3JW44') },
+        { label: 'Scotch-Brite Non-Scratch', url: mob('https://www.amazon.com/Scotch-Brite-Non-Scratch-Sponge-Without-Scratching/dp/B0043P0GRA') }
       ]
     }
   ];
@@ -92,6 +96,36 @@
 
   function isChoreComplete(chore) {
     return state.checked[chore.id].size === chore.tasks.length;
+  }
+
+  // ─────────── Session persistence ───────────
+  const SESSION_KEY = 'choreSession';
+
+  function saveSession() {
+    const checked = {};
+    CHORES.forEach(c => { checked[c.id] = Array.from(state.checked[c.id]); });
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      index:   state.index,
+      checked,
+      ordered: Array.from(state.ordered)
+    }));
+  }
+
+  function loadSession() {
+    try {
+      const data = JSON.parse(localStorage.getItem(SESSION_KEY));
+      if (!data || typeof data.index !== 'number') return false;
+      if (data.index < 0 || data.index >= CHORES.length) return false;
+      state.index = data.index;
+      if (data.checked) {
+        CHORES.forEach(c => {
+          if (Array.isArray(data.checked[c.id]))
+            state.checked[c.id] = new Set(data.checked[c.id]);
+        });
+      }
+      if (Array.isArray(data.ordered)) state.ordered = new Set(data.ordered);
+      return true;
+    } catch (_) { return false; }
   }
 
   // ─────────── DOM refs ───────────
@@ -197,6 +231,7 @@
         e.preventDefault();
         if (checkedSet.has(i)) checkedSet.delete(i);
         else checkedSet.add(i);
+        saveSession();
         renderChore(i);
       });
       tasksEl.appendChild(li);
@@ -221,6 +256,7 @@
         li.addEventListener('click', (e) => {
           e.preventDefault();
           state.ordered.add(key);
+          saveSession();
           renderChore();
           openWithLoader(item.label, item.url);
         });
@@ -334,12 +370,14 @@
   function gotoNext() {
     if (state.index < CHORES.length - 1) {
       state.index += 1;
+      saveSession();
       renderChore();
     }
   }
   function gotoPrev() {
     if (state.index > 0) {
       state.index -= 1;
+      saveSession();
       renderChore();
     }
   }
@@ -355,6 +393,7 @@
       state.index = 0;
       state.ordered.clear();
       CHORES.forEach(c => { state.checked[c.id] = new Set(); });
+      localStorage.removeItem(SESSION_KEY);
       setScreen('intro');
       return;
     }
@@ -376,5 +415,10 @@
   }
 
   // ─────────── Init ───────────
-  setScreen('intro');
+  if (loadSession()) {
+    setScreen('chore');
+    renderChore();
+  } else {
+    setScreen('intro');
+  }
 })();
