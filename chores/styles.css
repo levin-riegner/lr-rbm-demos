@@ -401,6 +401,70 @@ body::after {
 }
 .hints .key { color: var(--ink-soft); }
 
+/* ────────── Amazon loader overlay ────────── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  width: 600px;
+  height: 600px;
+  background: var(--bg);
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  z-index: 50;
+  animation: screenIn 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+.overlay.hidden { display: none !important; }
+
+.loader-dot {
+  animation: loaderPulse 0.9s cubic-bezier(0.2, 0, 0, 1) infinite;
+}
+@keyframes loaderPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50%       { opacity: 1;   transform: scale(1.15); }
+}
+
+.loader-item {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 42px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.0;
+  color: var(--ink);
+  margin-top: 28px;
+  max-width: 380px;
+  margin-left: auto;
+}
+
+.loader-msg {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-top: 24px;
+  transition: opacity 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.loader-track {
+  margin-top: 14px;
+  height: 2px;
+  background: var(--ink-faint);
+  position: relative;
+  overflow: hidden;
+  border-radius: 1px;
+}
+
+.loader-bar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
 /* ────────── Done screen ────────── */
 .done-summary {
   font-size: 22px;

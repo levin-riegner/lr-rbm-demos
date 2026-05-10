@@ -2,7 +2,9 @@
   'use strict';
 
   // ─────────── Data ───────────
-  const amazon = (q) => `https://www.amazon.com/s?k=${encodeURIComponent(q)}`;
+  // Direct dp/ product links for specific popular items; search fallback for model-specific ones.
+  const dp  = (asin)  => `https://www.amazon.com/dp/${asin}`;
+  const srch = (q)    => `https://www.amazon.com/s?k=${encodeURIComponent(q)}`;
 
   const CHORES = [
     {
@@ -16,9 +18,9 @@
         'Restock toilet paper'
       ],
       supplies: [
-        { label: 'Toilet paper',     url: amazon('toilet paper 12 pack') },
-        { label: 'Bathroom cleaner', url: amazon('bathroom cleaner spray') },
-        { label: 'Sponges',          url: amazon('cleaning sponges pack') }
+        { label: 'Charmin Ultra Soft 18-pack', url: dp('B00NJCVV0I') },
+        { label: 'Lysol Bathroom Cleaner',     url: dp('B01N6KBXK9') },
+        { label: 'Scotch-Brite Sponges 6-pk',  url: dp('B004NNG0AC') }
       ]
     },
     {
@@ -32,9 +34,9 @@
         'Fold and put away'
       ],
       supplies: [
-        { label: 'Laundry detergent', url: amazon('laundry detergent') },
-        { label: 'Dryer sheets',      url: amazon('dryer sheets') },
-        { label: 'Stain remover',     url: amazon('stain remover spray') }
+        { label: 'Tide Original Liquid 64oz',  url: dp('B01M0EB9QD') },
+        { label: 'Bounce Dryer Sheets 240-ct', url: dp('B003QWFPHA') },
+        { label: 'OxiClean Stain Remover',     url: srch('oxiclean max force stain remover spray') }
       ]
     },
     {
@@ -47,8 +49,8 @@
         'Bring bags to the curb'
       ],
       supplies: [
-        { label: 'Kitchen trash bags', url: amazon('kitchen trash bags 13 gallon') },
-        { label: 'Outdoor trash bags', url: amazon('outdoor trash bags heavy duty') }
+        { label: 'Glad ForceFlex 13-gal 40-ct', url: dp('B00Z0WXKOW') },
+        { label: 'Hefty Ultra Strong 33-gal',   url: srch('hefty ultra strong large trash bags 33 gallon') }
       ]
     },
     {
@@ -61,8 +63,8 @@
         'Vacuum rug and floor'
       ],
       supplies: [
-        { label: 'Vacuum bags', url: amazon('vacuum bags universal') },
-        { label: 'Lint roller', url: amazon('lint roller pack') }
+        { label: 'Vacuum bags',              url: srch('vacuum cleaner bags universal') },
+        { label: 'Scotch-Brite Lint Roller', url: dp('B00006IFHP') }
       ]
     },
     {
@@ -76,9 +78,9 @@
         'Dry and put away'
       ],
       supplies: [
-        { label: 'Dish soap',       url: amazon('dish soap') },
-        { label: 'Dishwasher pods', url: amazon('dishwasher pods') },
-        { label: 'Dish sponges',    url: amazon('dish sponges') }
+        { label: 'Dawn Ultra Dish Soap 32oz',     url: dp('B00GK8FLAM') },
+        { label: 'Cascade Complete Pods 78-ct',   url: dp('B00H20GIQY') },
+        { label: 'Scotch-Brite Non-Scratch 9-pk', url: dp('B001BKZR5S') }
       ]
     }
   ];
@@ -218,10 +220,9 @@
           `<span class="arrow">${isOrdered ? '✓' : '↗'}</span>`;
         li.addEventListener('click', (e) => {
           e.preventDefault();
-          window.open(item.url, '_blank', 'noopener');
           state.ordered.add(key);
-          toast(`Opened: ${item.label}`);
           renderChore();
+          openWithLoader(item.label, item.url);
         });
         ordersEl.appendChild(li);
       });
@@ -267,6 +268,57 @@
     return String(s).replace(/[&<>"']/g, (c) => ({
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
     })[c]);
+  }
+
+  // ─────────── Amazon loader ───────────
+  const LOAD_MSGS = [
+    'Searching Amazon…',
+    'Finding the best product…',
+    'Checking availability…',
+    'Comparing options…',
+    'Almost there…',
+    'Opening now…'
+  ];
+  const LOAD_MS = 3600;
+
+  const loaderEl   = document.getElementById('loader');
+  const loadItemEl = document.getElementById('loaderItem');
+  const loadMsgEl  = document.getElementById('loaderMsg');
+  const loadBarEl  = document.getElementById('loaderBar');
+
+  function openWithLoader(label, url) {
+    loadItemEl.textContent = label;
+    loadMsgEl.textContent  = LOAD_MSGS[0];
+    loadMsgEl.style.opacity = '1';
+    loadBarEl.style.transition = 'none';
+    loadBarEl.style.width = '0%';
+
+    loaderEl.classList.remove('hidden');
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      loadBarEl.style.transition = `width ${LOAD_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+      loadBarEl.style.width = '100%';
+    }));
+
+    let step = 0;
+    const stepMs = LOAD_MS / LOAD_MSGS.length;
+    const ticker = setInterval(() => {
+      step++;
+      if (step >= LOAD_MSGS.length) { clearInterval(ticker); return; }
+      loadMsgEl.style.opacity = '0';
+      setTimeout(() => {
+        loadMsgEl.textContent = LOAD_MSGS[step];
+        loadMsgEl.style.opacity = '1';
+      }, 180);
+    }, stepMs);
+
+    setTimeout(() => {
+      clearInterval(ticker);
+      window.open(url, '_blank', 'noopener');
+      loaderEl.classList.add('hidden');
+      loadBarEl.style.transition = 'none';
+      loadBarEl.style.width = '0%';
+    }, LOAD_MS);
   }
 
   // ─────────── Navigation ───────────
