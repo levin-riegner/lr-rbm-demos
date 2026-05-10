@@ -240,6 +240,27 @@ kbd {
   padding-bottom: 14px;
 }
 
+.byline {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: calc(12px * var(--text-scale));
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: -6px 0 14px 0;
+  text-align: left;
+  opacity: 0.85;
+}
+.byline strong {
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.byline-end {
+  text-align: center;
+  margin: 4px 0 18px 0;
+  opacity: 1;
+}
+
 .illustration {
   margin: 8px 0 16px 0;
   background: #1a233008;
@@ -403,7 +424,15 @@ kbd {
   font-style: italic;
   font-size: 14px;
   color: var(--dim);
-  margin-bottom: 14px;
+  margin-bottom: 6px;
+}
+.overlay-byline {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
 }
 .overlay-body {
   font-size: 13px;

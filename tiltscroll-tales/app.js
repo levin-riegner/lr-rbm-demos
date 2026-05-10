@@ -52,6 +52,10 @@
   let lastBeta = null;
   let tiltActive = false;
   let armedTimer = null;
+  // After a chapter advance the reader is still at frac~1, which would
+  // immediately re-arm the new chapter's next button. Lock it out until
+  // they've scrolled back into the page at least once.
+  let armingAllowed = true;
 
   // Keyboard fallback: arrow keys nudge an internal frac instead of tilt.
   let kbFrac = null; // when non-null, kb takes over
@@ -150,13 +154,15 @@
         book.scrollTop = smoothedFrac * max;
       }
 
+      // Re-enable arming once the reader has scrolled into the page
+      if (!armingAllowed && smoothedFrac < 0.5) armingAllowed = true;
+
       // Arm the next-button when reader is near the bottom
       const nextBtn = activePage.querySelector('.next-btn');
       if (nextBtn) {
-        const armed = smoothedFrac > 0.92;
+        const armed = armingAllowed && smoothedFrac > 0.92;
         nextBtn.classList.toggle('armed', armed);
         if (armed && document.activeElement !== nextBtn) {
-          // give it focus so Enter advances
           nextBtn.focus({ preventScroll: true });
         }
       }
@@ -182,13 +188,14 @@
     if (i < 0 || i >= pages.length) return;
     pages.forEach((p, idx) => p.classList.toggle('active', idx === i));
     pageNumEl.textContent = String(i + 1);
-    // Reset scroll position to top of new page
-    smoothedFrac = 0;
-    targetFrac = 0;
-    kbFrac = 0;            // hold at top until sensor next fires
-    book.scrollTop = 0;
-    // Recalibrate so user must tilt down again from here
-    if (lastBeta != null) neutralBeta = lastBeta;
+    // Preserve scroll mapping: do NOT reset smoothedFrac, kbFrac, or neutralBeta.
+    // The animate loop projects the current frac onto the new page next frame.
+    armingAllowed = false; // require reader to scroll into the new chapter first
+    const activeBtn = pages[i].querySelector('.next-btn');
+    if (activeBtn) activeBtn.classList.remove('armed');
+    if (document.activeElement?.classList.contains('next-btn')) {
+      document.activeElement.blur();
+    }
   };
 
   const restart = () => goToPage(0);
