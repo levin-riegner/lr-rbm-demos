@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=600, initial-scale=1" />
+<title>Brusher · Brush Coach</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ─── TOP BAR ─────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">BRUSHER</span>
+    </div>
+    <div class="topbar-right">
+      <span class="phase-pill" id="phase-pill">INTRO</span>
+      <span class="sensor-pill" id="sensor-pill">SENSOR <em>—</em></span>
+    </div>
+  </header>
+
+  <!-- ─── INTRO SCREEN ────────────────────────────────── -->
+  <section class="screen" id="screen-intro">
+    <div class="intro-block">
+      <div class="eyebrow">DAILY DENTAL · v1</div>
+      <h1 class="big-title">Brush Coach<br/><span class="thin">for your glasses</span></h1>
+      <p class="lede">
+        Counts your strokes from head-motion telemetry. First we'll calibrate by having you brush <b>10 times</b>, then guide you through <b>8 zones</b> at <b>18 strokes each</b>.
+      </p>
+      <div class="cta-row">
+        <button class="primary" id="intro-begin" data-action="begin">BEGIN  ⏎</button>
+        <span class="cta-hint">⏎ Enter · ␣ Space (manual stroke) · N skip</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TRAINING SCREEN ─────────────────────────────── -->
+  <section class="screen hidden" id="screen-train">
+    <div class="train-grid">
+      <div class="train-left">
+        <div class="step-label">STEP 01 · CALIBRATION</div>
+        <h2 class="med-title">Brush <span class="hot">10 strokes</span></h2>
+        <p class="muted">
+          Use the same back-and-forth motion you'd use on your teeth.
+          Count out loud as you go. We're listening for the rhythm of your head bobbing along.
+        </p>
+        <ul class="tips">
+          <li>Hold the brush like normal — head motion follows.</li>
+          <li>Steady tempo · one stroke per second is great.</li>
+          <li>Press <b>R</b> to restart calibration.</li>
+        </ul>
+      </div>
+      <div class="train-right">
+        <div class="count-card">
+          <div class="count-card-head">STROKES</div>
+          <div class="count-card-num"><span id="train-count">0</span><span class="of">/10</span></div>
+          <div class="count-bar"><div class="count-bar-fill" id="train-fill"></div></div>
+          <div class="signal-row">
+            <div class="signal-label">SIGNAL</div>
+            <div class="signal-meter"><div class="signal-meter-fill" id="signal-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── READY SCREEN ────────────────────────────────── -->
+  <section class="screen hidden" id="screen-ready">
+    <div class="intro-block">
+      <div class="eyebrow good">CALIBRATED</div>
+      <h1 class="big-title">All set.<br/><span class="thin">Wet the bristles.</span></h1>
+      <p class="lede">
+        I'll guide you through <b id="ready-zones">8</b> zones. Each gets <b id="ready-target">18</b> back-and-forth strokes, then I'll advance you to the next area.
+      </p>
+      <div class="threshold-line" id="threshold-line">
+        Detection threshold <b id="thr-readout">—</b> · Dominant axis <b id="axis-readout">—</b>
+      </div>
+      <div class="cta-row">
+        <button class="primary" id="ready-start" data-action="start">START BRUSHING  ⏎</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── BRUSHING SCREEN ─────────────────────────────── -->
+  <section class="screen hidden" id="screen-brush">
+    <div class="brush-grid">
+
+      <!-- Left: mouth diagram -->
+      <div class="mouth-col">
+        <div class="zone-eyebrow"><span id="zone-num">1</span>/<span id="zone-total">8</span></div>
+        <svg class="mouth" viewBox="0 0 260 320" id="mouth-svg" aria-hidden="true">
+          <!-- Upper arch zones -->
+          <path id="z-u-r-out" class="arch outer" d="M 30 100 Q 50 60 110 50" />
+          <path id="z-u-f-out" class="arch outer" d="M 110 50 Q 130 46 150 50" />
+          <path id="z-u-l-out" class="arch outer" d="M 150 50 Q 210 60 230 100" />
+          <path id="z-u-in"    class="arch inner" d="M 60 110 Q 130 78 200 110" />
+
+          <!-- Tongue / gap -->
+          <path class="tongue" d="M 60 168 Q 130 196 200 168 Q 130 192 60 168 Z" />
+
+          <!-- Lower arch zones -->
+          <path id="z-l-l-out" class="arch outer" d="M 30 230 Q 50 270 110 280" />
+          <path id="z-l-f-out" class="arch outer" d="M 110 280 Q 130 284 150 280" />
+          <path id="z-l-r-out" class="arch outer" d="M 150 280 Q 210 270 230 230" />
+          <path id="z-l-in"    class="arch inner" d="M 60 220 Q 130 254 200 220" />
+
+          <!-- Center reference dot -->
+          <circle class="mid-dot" cx="130" cy="165" r="2.5" />
+        </svg>
+        <div class="mouth-legend">
+          <span class="lg-outer">— OUTER</span>
+          <span class="lg-inner">— INNER · TOPS</span>
+        </div>
+      </div>
+
+      <!-- Right: stroke counter + timer -->
+      <div class="brush-col">
+        <div class="zone-name">
+          <div class="zone-label" id="zone-label">UPPER · BACK RIGHT</div>
+          <div class="zone-sub" id="zone-sub">OUTER SURFACE</div>
+        </div>
+
+        <div class="big-count">
+          <span class="big-count-num" id="brush-count">0</span>
+          <span class="big-count-of">/<span id="brush-target">18</span></span>
+        </div>
+        <div class="count-bar tall"><div class="count-bar-fill" id="brush-fill"></div></div>
+
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-k">TIME</div>
+            <div class="metric-v" id="brush-time">0:00</div>
+          </div>
+          <div class="metric">
+            <div class="metric-k">TOTAL</div>
+            <div class="metric-v" id="brush-total">0</div>
+          </div>
+          <div class="metric">
+            <div class="metric-k">PACE</div>
+            <div class="metric-v" id="brush-pace">— /s</div>
+          </div>
+        </div>
+
+        <div class="brush-hint" id="brush-hint">Brush this zone. I'll bump you over at <b>18</b>.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── DONE SCREEN ─────────────────────────────────── -->
+  <section class="screen hidden" id="screen-done">
+    <div class="intro-block">
+      <div class="eyebrow good">BRUSH COMPLETE</div>
+      <h1 class="big-title">Nice work.<br/><span class="thin">Rinse and spit.</span></h1>
+      <div class="result-grid">
+        <div class="result">
+          <div class="result-k">STROKES</div>
+          <div class="result-v" id="done-strokes">144</div>
+        </div>
+        <div class="result">
+          <div class="result-k">TIME</div>
+          <div class="result-v" id="done-time">0:00</div>
+        </div>
+        <div class="result">
+          <div class="result-k">PACE</div>
+          <div class="result-v" id="done-pace">— /s</div>
+        </div>
+      </div>
+      <div class="cta-row">
+        <button class="primary" data-action="restart">BRUSH AGAIN  ⏎</button>
+        <button class="secondary" data-action="recalibrate">RE-CALIBRATE</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PERMISSION OVERLAY (iOS) ────────────────────── -->
+  <div class="overlay hidden" id="perm-overlay">
+    <div class="overlay-card">
+      <div class="eyebrow">PERMISSION</div>
+      <h2 class="med-title">Motion access</h2>
+      <p class="muted">Brusher uses head-motion telemetry from your glasses to count brushstrokes. Tap to allow.</p>
+      <button class="primary" id="perm-grant">GRANT ACCESS</button>
+    </div>
+  </div>
+
+  <!-- ─── BOTTOM HINT BAR ─────────────────────────────── -->
+  <footer class="hintbar" id="hintbar">
+    <span><kbd>⏎</kbd> advance</span>
+    <span><kbd>␣</kbd> stroke (test)</span>
+    <span><kbd>N</kbd> skip zone</span>
+    <span><kbd>R</kbd> restart</span>
+  </footer>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
