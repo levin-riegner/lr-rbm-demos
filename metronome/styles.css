@@ -347,10 +347,10 @@ html, body {
   background: var(--bg-3);
 }
 .big-tile.active {
-  background: rgba(0, 212, 255, 0.14);
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: 0 0 24px var(--accent-glow);
+  background: rgba(255, 159, 67, 0.14);
+  border-color: var(--warm);
+  color: var(--warm);
+  box-shadow: 0 0 24px var(--warm-glow);
 }
 .tile-num {
   font-size: 78px;
@@ -364,7 +364,7 @@ html, body {
   font-weight: 600;
   color: var(--text-3);
 }
-.big-tile.active .tile-sub { color: var(--accent); opacity: 0.7; }
+.big-tile.active .tile-sub { color: var(--warm); opacity: 0.7; }
 
 /* ============================================================
    STEP 3 — NOTE VALUE
@@ -394,10 +394,10 @@ html, body {
 }
 .note-tile:focus { background: var(--bg-3); }
 .note-tile.active {
-  background: rgba(0, 212, 255, 0.14);
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: 0 0 24px var(--accent-glow);
+  background: rgba(255, 159, 67, 0.14);
+  border-color: var(--warm);
+  color: var(--warm);
+  box-shadow: 0 0 24px var(--warm-glow);
 }
 .note-glyph {
   font-size: 64px;
@@ -409,7 +409,7 @@ html, body {
   letter-spacing: 3px;
   color: var(--text-2);
 }
-.note-tile.active .note-name { color: var(--accent); }
+.note-tile.active .note-name { color: var(--warm); }
 
 .btn-go {
   background: linear-gradient(180deg, #2dd4bf, #0d9488);
