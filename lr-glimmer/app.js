@@ -455,6 +455,7 @@
       return;
     }
     if (action === 'reset') {
+      closeMenu();
       const oldName = state.name;
       const oldVariant = state.eggVariant;
       const nextGen = (state.generation || 1) + 1;
