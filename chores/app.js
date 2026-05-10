@@ -98,36 +98,6 @@
     return state.checked[chore.id].size === chore.tasks.length;
   }
 
-  // ─────────── Session persistence ───────────
-  const SESSION_KEY = 'choreSession';
-
-  function saveSession() {
-    const checked = {};
-    CHORES.forEach(c => { checked[c.id] = Array.from(state.checked[c.id]); });
-    localStorage.setItem(SESSION_KEY, JSON.stringify({
-      index:   state.index,
-      checked,
-      ordered: Array.from(state.ordered)
-    }));
-  }
-
-  function loadSession() {
-    try {
-      const data = JSON.parse(localStorage.getItem(SESSION_KEY));
-      if (!data || typeof data.index !== 'number') return false;
-      if (data.index < 0 || data.index >= CHORES.length) return false;
-      state.index = data.index;
-      if (data.checked) {
-        CHORES.forEach(c => {
-          if (Array.isArray(data.checked[c.id]))
-            state.checked[c.id] = new Set(data.checked[c.id]);
-        });
-      }
-      if (Array.isArray(data.ordered)) state.ordered = new Set(data.ordered);
-      return true;
-    } catch (_) { return false; }
-  }
-
   // ─────────── DOM refs ───────────
   const screens = {
     intro: document.getElementById('intro'),
@@ -231,7 +201,6 @@
         e.preventDefault();
         if (checkedSet.has(i)) checkedSet.delete(i);
         else checkedSet.add(i);
-        saveSession();
         renderChore(i);
       });
       tasksEl.appendChild(li);
@@ -256,7 +225,6 @@
         li.addEventListener('click', (e) => {
           e.preventDefault();
           state.ordered.add(key);
-          saveSession();
           renderChore();
           openWithLoader(item.label, item.url);
         });
@@ -370,14 +338,12 @@
   function gotoNext() {
     if (state.index < CHORES.length - 1) {
       state.index += 1;
-      saveSession();
       renderChore();
     }
   }
   function gotoPrev() {
     if (state.index > 0) {
       state.index -= 1;
-      saveSession();
       renderChore();
     }
   }
@@ -393,7 +359,6 @@
       state.index = 0;
       state.ordered.clear();
       CHORES.forEach(c => { state.checked[c.id] = new Set(); });
-      localStorage.removeItem(SESSION_KEY);
       setScreen('intro');
       return;
     }
@@ -415,10 +380,5 @@
   }
 
   // ─────────── Init ───────────
-  if (loadSession()) {
-    setScreen('chore');
-    renderChore();
-  } else {
-    setScreen('intro');
-  }
+  setScreen('intro');
 })();
