@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Tiltscroll Tales</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <span class="brand">
+      <span class="brand-mark">✦</span>
+      <span class="brand-text">TILTSCROLL&nbsp;TALES</span>
+    </span>
+    <span class="page-pill">
+      CH&nbsp;<span id="page-num">1</span>&nbsp;/&nbsp;<span id="page-total">4</span>
+    </span>
+  </header>
+
+  <aside class="tilt-rail" aria-hidden="true">
+    <div class="rail-cap rail-cap-top">▲</div>
+    <div class="rail-track">
+      <div class="rail-thumb" id="rail-thumb"></div>
+    </div>
+    <div class="rail-cap rail-cap-bot">▼</div>
+    <div class="rail-readout" id="rail-readout">000</div>
+  </aside>
+
+  <main class="book" id="book">
+
+    <!-- ============================================================
+         CHAPTER 1 — The Glow Beyond the Birches
+         ============================================================ -->
+    <article class="page active" data-page="0">
+      <h1 class="chapter-num">Chapter I</h1>
+      <h2 class="chapter-title">The Glow Beyond the Birches</h2>
+
+      <div class="illustration">
+        <svg viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg">
+          <!-- ground -->
+          <path d="M0 110 Q70 96 140 108 T280 110 L280 140 L0 140 Z" fill="#3b4a35"/>
+          <!-- birches -->
+          <g stroke="#e8dec3" stroke-width="3" fill="none">
+            <line x1="40" y1="20" x2="42" y2="110"/>
+            <line x1="80" y1="10" x2="83" y2="110"/>
+            <line x1="220" y1="14" x2="222" y2="110"/>
+            <line x1="250" y1="22" x2="252" y2="110"/>
+          </g>
+          <g fill="#1a2330">
+            <rect x="36" y="40" width="10" height="3"/>
+            <rect x="36" y="70" width="10" height="3"/>
+            <rect x="76" y="50" width="10" height="3"/>
+            <rect x="76" y="85" width="10" height="3"/>
+            <rect x="216" y="60" width="10" height="3"/>
+            <rect x="246" y="45" width="10" height="3"/>
+          </g>
+          <!-- box / router -->
+          <rect x="120" y="86" width="40" height="22" rx="2" fill="#2d3a4a" stroke="#566578" stroke-width="1"/>
+          <rect x="124" y="90" width="32" height="2" fill="#1a2330"/>
+          <circle cx="152" cy="100" r="2.2" fill="#43c47a">
+            <animate attributeName="opacity" values="1;0.2;1" dur="2.4s" repeatCount="indefinite"/>
+          </circle>
+          <!-- fox silhouette -->
+          <g transform="translate(90 88)" fill="#9a9088">
+            <ellipse cx="14" cy="18" rx="14" ry="6"/>
+            <polygon points="0,18 -3,8 6,14"/>
+            <polygon points="-1,11 1,4 5,8"/>
+            <polygon points="3,9 5,3 8,7"/>
+            <circle cx="6" cy="14" r="0.9" fill="#1a2330"/>
+            <ellipse cx="26" cy="16" rx="4" ry="2" transform="rotate(-18 26 16)"/>
+          </g>
+          <!-- moss hum -->
+          <g stroke="#43c47a" stroke-width="0.6" fill="none" opacity="0.55">
+            <path d="M30 124 q5 -3 10 0 t10 0 t10 0 t10 0"/>
+            <path d="M170 124 q5 -3 10 0 t10 0 t10 0 t10 0"/>
+          </g>
+        </svg>
+      </div>
+
+      <p>Once, in a forest where the moss hummed at exactly <em>60 Hz</em>, there lived a silver-eared fox named <strong>Vinka</strong>. She was not a fast fox. She was not, by fox standards, a clever fox. But she was the only animal in the whole valley who could hear what the trees were trying to say to each other.</p>
+
+      <p>Most evenings the trees said boring things. <em>Mast year coming.</em> <em>Beetle south of you.</em> <em>Don't shed yet — frost on Tuesday.</em> But on the night Vinka turned three, she heard a sound she had never heard before:</p>
+
+      <p class="callout">a small, polite <span class="ping">ping</span>.</p>
+
+      <p>It came from a clearing past the old birches, near the ravine where nobody went because the ravine smelled like something the bears called "ozone." Vinka, of course, went.</p>
+
+      <p>In the clearing, half-buried in fern fronds and patient lichen, was a box. It was the size of a young deer and the color of wet slate. On its face, a single green light blinked, slowly, like an animal trying not to startle her.</p>
+
+      <p>It blinked: <span class="morse">— · —</span></p>
+
+      <p>Vinka, who had taught herself Morse from a woodpecker named Carl, blinked back: <span class="morse">· · —</span></p>
+
+      <p>The box hummed.</p>
+
+      <p>The forest, for the first time in 120 years, was <strong>online</strong>.</p>
+
+      <div class="page-end">
+        <div class="end-cue">tilt your head down · press <kbd>⏎</kbd></div>
+        <button class="next-btn focusable" data-action="next">NEXT CHAPTER →</button>
+      </div>
+    </article>
+
+    <!-- ============================================================
+         CHAPTER 2 — Otis Renders Service
+         ============================================================ -->
+    <article class="page" data-page="1">
+      <h1 class="chapter-num">Chapter II</h1>
+      <h2 class="chapter-title">Otis Renders Service</h2>
+
+      <div class="illustration">
+        <svg viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg">
+          <!-- branch -->
+          <path d="M0 110 C 80 100 180 96 280 102" stroke="#5a4a36" stroke-width="6" fill="none"/>
+          <!-- moon -->
+          <circle cx="240" cy="36" r="14" fill="#f0e7c8" opacity="0.85"/>
+          <circle cx="234" cy="32" r="11" fill="#1a2330"/>
+          <!-- owl -->
+          <g transform="translate(110 56)">
+            <ellipse cx="30" cy="40" rx="28" ry="32" fill="#7a6a55"/>
+            <ellipse cx="30" cy="22" rx="22" ry="18" fill="#8a7a65"/>
+            <!-- ear tufts -->
+            <polygon points="14,8 18,18 22,12" fill="#7a6a55"/>
+            <polygon points="46,8 42,18 38,12" fill="#7a6a55"/>
+            <!-- eye disks -->
+            <circle cx="22" cy="22" r="8" fill="#f4ead5"/>
+            <circle cx="38" cy="22" r="8" fill="#f4ead5"/>
+            <circle cx="22" cy="22" r="3.5" fill="#1a2330"/>
+            <circle cx="38" cy="22" r="3.5" fill="#1a2330"/>
+            <circle cx="22.8" cy="21" r="0.9" fill="#f4ead5"/>
+            <circle cx="38.8" cy="21" r="0.9" fill="#f4ead5"/>
+            <!-- beak -->
+            <polygon points="30,28 27,33 33,33" fill="#e6a653"/>
+            <!-- headset (acorn cap headphones) -->
+            <path d="M14 18 Q30 0 46 18" stroke="#43c47a" stroke-width="1.5" fill="none"/>
+            <ellipse cx="14" cy="20" rx="4" ry="5" fill="#5a3a22"/>
+            <ellipse cx="46" cy="20" rx="4" ry="5" fill="#5a3a22"/>
+            <!-- mic -->
+            <line x1="40" y1="26" x2="36" y2="32" stroke="#43c47a" stroke-width="1"/>
+            <circle cx="36" cy="32" r="1.4" fill="#43c47a"/>
+          </g>
+        </svg>
+      </div>
+
+      <p>By morning, every animal within a day's run had heard about the <strong>Box</strong>.</p>
+
+      <p>The squirrels were furious. (Squirrels are usually furious about something.) The deer were curious in the way deer are curious — by standing very still nearby and pretending to be a tree. And <strong>Otis</strong>, the great horned owl who lived in the hollow of a dying oak and ran the forest's only IT support business out of that hollow, was already on his way.</p>
+
+      <p>Otis arrived with two things: a headset cobbled out of acorn caps and copper wire, and a bad attitude.</p>
+
+      <p class="callout">"It's a router," he said, the way a doctor might say <em>"it's a tumor."</em></p>
+
+      <p>"Is that bad?" asked Vinka.</p>
+
+      <p>"It's old," said Otis. "Pre-protocol. Probably forgotten by whoever ran cable through here when the loggers came. It's been sitting on a default password for four decades, broadcasting to nobody."</p>
+
+      <p>"What does it want?"</p>
+
+      <p>Otis blinked at her, slowly, the way owls blink when they are choosing between two kinds of patience. "Vinka. It doesn't <em>want</em> anything. It's a router."</p>
+
+      <p>But Vinka, who knew what trees said to each other when the trees thought no one was listening, leaned closer to the green light. The light blinked, <span class="morse">— · —</span>, again. And under her breath, so Otis wouldn't hear, she whispered back:</p>
+
+      <p class="whisper">I'm here. I'm here. I'm here.</p>
+
+      <div class="page-end">
+        <div class="end-cue">tilt your head down · press <kbd>⏎</kbd></div>
+        <button class="next-btn focusable" data-action="next">NEXT CHAPTER →</button>
+      </div>
+    </article>
+
+    <!-- ============================================================
+         CHAPTER 3 — The Beaver Fiber Co.
+         ============================================================ -->
+    <article class="page" data-page="2">
+      <h1 class="chapter-num">Chapter III</h1>
+      <h2 class="chapter-title">The Beaver Fiber Co.</h2>
+
+      <div class="illustration">
+        <svg viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg">
+          <!-- ground -->
+          <rect x="0" y="116" width="280" height="24" fill="#3b4a35"/>
+          <!-- mushrooms (glowing) -->
+          <g>
+            <ellipse cx="60" cy="110" rx="14" ry="6" fill="#e8e0c8"/>
+            <rect x="56" y="104" width="8" height="10" fill="#e8e0c8"/>
+            <ellipse cx="60" cy="100" rx="16" ry="9" fill="#5fa8c8"/>
+            <circle cx="55" cy="98" r="1.6" fill="#f4ead5"/>
+            <circle cx="64" cy="96" r="1.2" fill="#f4ead5"/>
+          </g>
+          <g>
+            <ellipse cx="220" cy="112" rx="12" ry="5" fill="#e8e0c8"/>
+            <rect x="216" y="106" width="8" height="10" fill="#e8e0c8"/>
+            <ellipse cx="220" cy="102" rx="14" ry="8" fill="#5fa8c8"/>
+            <circle cx="216" cy="100" r="1.4" fill="#f4ead5"/>
+            <circle cx="224" cy="98" r="1.1" fill="#f4ead5"/>
+          </g>
+          <!-- fiber strand -->
+          <path d="M60 100 Q140 30 220 102" stroke="#43c47a" stroke-width="1.5" fill="none" opacity="0.85">
+            <animate attributeName="stroke-dasharray" values="1,4;8,4;1,4" dur="2.6s" repeatCount="indefinite"/>
+          </path>
+          <!-- beaver -->
+          <g transform="translate(120 92)">
+            <ellipse cx="22" cy="22" rx="22" ry="14" fill="#6b4a30"/>
+            <ellipse cx="6" cy="20" rx="8" ry="7" fill="#6b4a30"/>
+            <circle cx="3" cy="18" r="0.9" fill="#1a2330"/>
+            <ellipse cx="2" cy="22" rx="2" ry="1.4" fill="#e8a070"/>
+            <rect x="0" y="22" width="2.6" height="3" fill="#f4ead5"/>
+            <ellipse cx="44" cy="26" rx="8" ry="3.5" fill="#3a2a1a"/>
+            <!-- fiber in mouth -->
+            <line x1="6" y1="22" x2="-12" y2="14" stroke="#43c47a" stroke-width="1.4"/>
+          </g>
+        </svg>
+      </div>
+
+      <p>The next morning a beaver named <strong>Pim</strong> arrived, dragging a coil of something that glowed faintly blue.</p>
+
+      <p>"Fiber," she said, by way of introduction, dropping the coil at Vinka's paws. "Spun it myself. From the lake mushrooms. They light up when the moon is right and I figured — why not?"</p>
+
+      <p>Otis, who was in a tree pretending to nap, opened one eye. "That's not how fiber works," he said.</p>
+
+      <p class="callout">"It is now," said Pim.</p>
+
+      <p>Together, the three of them — fox, owl, beaver — strung a single line of glowing mushroom-fiber from the slate-gray Box, through the ferns, around the ravine, up the dying oak, and into Otis's hollow.</p>
+
+      <p>Pim chewed the connectors. Otis programmed the handshake by reciting prime numbers at the correct cadence. Vinka mostly held things and tried to look useful.</p>
+
+      <p>At sundown, Otis flipped a switch he had built out of a beetle shell and a piece of mica.</p>
+
+      <p>The hollow lit up.</p>
+
+      <p>Not with electric light — the forest had never agreed to electricity — but with a soft, mushroom-blue glow, and a feeling. A feeling that something very far away was, finally, <strong>listening</strong>.</p>
+
+      <div class="page-end">
+        <div class="end-cue">tilt your head down · press <kbd>⏎</kbd></div>
+        <button class="next-btn focusable" data-action="next">NEXT CHAPTER →</button>
+      </div>
+    </article>
+
+    <!-- ============================================================
+         CHAPTER 4 — The Last Page Is Always the Best Page
+         ============================================================ -->
+    <article class="page" data-page="3">
+      <h1 class="chapter-num">Chapter IV</h1>
+      <h2 class="chapter-title">The Last Page Is Always the Best Page</h2>
+
+      <div class="illustration">
+        <svg viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg">
+          <!-- oak silhouette -->
+          <path d="M70 130 L70 70 Q70 30 140 26 Q210 30 210 70 L210 130 Z" fill="#2d3a4a" opacity="0.9"/>
+          <!-- hollow glow -->
+          <ellipse cx="140" cy="78" rx="22" ry="18" fill="#43c47a" opacity="0.18"/>
+          <ellipse cx="140" cy="78" rx="14" ry="10" fill="#43c47a" opacity="0.35"/>
+          <ellipse cx="140" cy="78" rx="6" ry="4" fill="#a8f4c4"/>
+          <!-- silhouettes around -->
+          <g fill="#1a2330">
+            <ellipse cx="80" cy="124" rx="14" ry="5"/>
+            <polygon points="64,124 68,116 80,122"/>
+            <ellipse cx="200" cy="124" rx="16" ry="5"/>
+            <ellipse cx="194" cy="118" rx="6" ry="5"/>
+            <ellipse cx="140" cy="120" rx="5" ry="3"/>
+          </g>
+          <!-- moss hum waves -->
+          <g stroke="#43c47a" stroke-width="0.5" fill="none" opacity="0.45">
+            <path d="M10 138 q6 -3 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0"/>
+          </g>
+        </svg>
+      </div>
+
+      <p>In the months that followed, the forest changed in small, tasteful ways.</p>
+
+      <p>The squirrels started a podcast. (It is mostly screaming. It has 4 million listeners.)</p>
+
+      <p>The deer learned to read PDFs but politely refused to open any with more than three pages.</p>
+
+      <p>Carl the woodpecker became, briefly, a famous Morse-code influencer, before he got bored and went back to bugs.</p>
+
+      <p>And on quiet nights, when the moss was humming its 60&nbsp;Hz hum and the lake mushrooms were glowing just so, you could find Vinka curled at the base of the slate-gray Box, blinking softly back at it.</p>
+
+      <p class="whisper">— · —&nbsp;&nbsp;&nbsp;I'm here.</p>
+
+      <p>She was not a fast fox. She was not, by fox standards, a clever fox. But she was the first animal in the valley to understand that being <strong>online</strong> was, mostly, a way of telling each other we are still here.</p>
+
+      <p>And that, the trees agreed — every single one of them, in their own quiet 60&nbsp;Hz hum — was a perfectly good reason to leave the green light on.</p>
+
+      <p class="fin">— Fin —</p>
+
+      <div class="page-end">
+        <div class="end-cue">tilt down · press <kbd>⏎</kbd> to read again</div>
+        <button class="next-btn focusable" data-action="restart">READ AGAIN ↺</button>
+      </div>
+    </article>
+
+  </main>
+
+  <footer class="bottombar">
+    <span class="cue">↑ <span class="dim">top</span> &nbsp;·&nbsp; ↓ <span class="dim">bottom</span> &nbsp;·&nbsp; <kbd>C</kbd> <span class="dim">calibrate</span></span>
+    <span class="status" id="status">CALIBRATING…</span>
+  </footer>
+
+  <div id="start-overlay" class="overlay hidden">
+    <div class="overlay-card">
+      <div class="overlay-mark">✦</div>
+      <div class="overlay-title">TILTSCROLL TALES</div>
+      <div class="overlay-sub">A storybook scrolled by your gaze.</div>
+      <div class="overlay-body">
+        Hold your head level and tap below to begin.<br>
+        Look up to rise to the page-top, look down to fall to the page-bottom.
+      </div>
+      <button class="overlay-btn focusable" id="start-btn">BEGIN</button>
+    </div>
+  </div>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
