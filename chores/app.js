@@ -362,7 +362,7 @@
 
     loaderTimeout = setTimeout(() => {
       dismissLoader();
-      window.open(url, '_blank', 'noopener');
+      window.location.href = url;
     }, LOAD_MS);
   }
 
