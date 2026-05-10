@@ -522,11 +522,11 @@
       e.preventDefault();
       ensureAudio();
       if (permOpen) { requestSensorPermission(); return; }
-      if (phase === 'intro')        handleAction('begin');
-      else if (phase === 'ready')   handleAction('start');
-      else if (phase === 'brush')   advanceZone(/*manual=*/true);
-      else if (phase === 'between') commitNextZone();
-      else if (phase === 'done')    confirmDoneOption();
+      if (phase === 'intro')      handleAction('begin');
+      else if (phase === 'ready') handleAction('start');
+      else if (phase === 'done')  confirmDoneOption();
+      // brush / between: ⏎ does nothing — zones only advance via target
+      // count or → (skip). Popover auto-advances on its timer.
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
       ensureAudio();
