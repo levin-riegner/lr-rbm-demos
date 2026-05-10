@@ -43,8 +43,6 @@
   const trainFill  = $('train-fill');
   const signalFill = $('signal-fill');
 
-  const thrReadout = $('thr-readout');
-  const axisReadout = $('axis-readout');
   const readyZones = $('ready-zones');
   const readyTarget = $('ready-target');
 
@@ -58,11 +56,15 @@
   const brushTime = $('brush-time');
   const brushTotal = $('brush-total');
   const brushPace = $('brush-pace');
-  const brushHint = $('brush-hint');
 
   const doneStrokes = $('done-strokes');
   const doneTime    = $('done-time');
   const donePace    = $('done-pace');
+
+  const zoneCompleteOverlay = $('zone-complete-overlay');
+  const completeZoneNum   = $('complete-zone-num');
+  const completeNextName  = $('complete-next-name');
+  const completeNextSub   = $('complete-next-sub');
 
   readyZones.textContent = String(ZONES.length);
   readyTarget.textContent = String(ZONE_STROKES);
@@ -322,8 +324,6 @@
     if (thr < SAFETY_THR_MIN) thr = SAFETY_THR_MIN;
     if (thr > SAFETY_THR_MAX) thr = SAFETY_THR_MAX;
     detectionThr = thr;
-    thrReadout.textContent = thr.toFixed(2);
-    axisReadout.textContent = axis.toUpperCase();
     beeps.calibrated();
     setPhase('ready');
   }
@@ -337,8 +337,6 @@
       // Without sensor data we can't pick an axis; use default.
       detectionThr = DEFAULT_THR;
       dominantAxis = 'x';
-      thrReadout.textContent = detectionThr.toFixed(2);
-      axisReadout.textContent = 'KEYS';
       beeps.calibrated();
       setPhase('ready');
     }
@@ -377,7 +375,6 @@
     document.querySelectorAll('#mouth-svg .arch').forEach((p) => p.classList.remove('active'));
     const target = document.getElementById(z.id);
     if (target) target.classList.add('active');
-    brushHint.innerHTML = `Brush this zone. I'll bump you over at <b>${ZONE_STROKES}</b>.`;
   }
 
   function handleBrushSample(axisVal) {
@@ -424,16 +421,43 @@
 
   function advanceZone(manual = false) {
     if (phase !== 'brush') return;
-    if (!manual) beeps.zoneDone();
     if (zoneIdx + 1 >= ZONES.length) {
       finishBrushing();
       return;
     }
-    zoneIdx += 1;
+    showZoneCompleteOverlay(zoneIdx, zoneIdx + 1);
+  }
+
+  // ─── Zone-complete popover ────────────────────────────────────
+  // Pauses stroke counting; auto-dismisses after `OVERLAY_MS`, or Enter
+  // dismisses immediately. Then transitions to the next zone.
+  const OVERLAY_MS = 1700;
+  let overlayTimer = null;
+  let pendingNextIdx = -1;
+
+  function showZoneCompleteOverlay(currentIdx, nextIdx) {
+    phase = 'between';
+    pendingNextIdx = nextIdx;
+    const z = ZONES[nextIdx];
+    completeZoneNum.textContent = String(currentIdx + 1);
+    completeNextName.textContent = z.label;
+    completeNextSub.textContent = z.sub;
+    zoneCompleteOverlay.classList.remove('hidden');
+    beeps.zoneDone();
+    overlayTimer = setTimeout(commitNextZone, OVERLAY_MS);
+  }
+
+  function commitNextZone() {
+    if (overlayTimer) { clearTimeout(overlayTimer); overlayTimer = null; }
+    zoneCompleteOverlay.classList.add('hidden');
+    if (pendingNextIdx < 0) return;
+    zoneIdx = pendingNextIdx;
+    pendingNextIdx = -1;
     strokeCount = 0;
     brushCount.textContent = '0';
     brushFill.style.width = '0%';
     renderZone();
+    phase = 'brush';
   }
 
   function finishBrushing() {
@@ -498,10 +522,11 @@
       e.preventDefault();
       ensureAudio();
       if (permOpen) { requestSensorPermission(); return; }
-      if (phase === 'intro')      handleAction('begin');
-      else if (phase === 'ready') handleAction('start');
-      else if (phase === 'brush') advanceZone(/*manual=*/true);
-      else if (phase === 'done')  confirmDoneOption();
+      if (phase === 'intro')        handleAction('begin');
+      else if (phase === 'ready')   handleAction('start');
+      else if (phase === 'brush')   advanceZone(/*manual=*/true);
+      else if (phase === 'between') commitNextZone();
+      else if (phase === 'done')    confirmDoneOption();
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
       ensureAudio();
