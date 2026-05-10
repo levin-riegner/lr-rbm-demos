@@ -398,6 +398,28 @@
     moveFocus('up');
   }
 
+  // Spatial grid nav for the time-sig / subdivision steps.
+  // dy = +1 (down) or -1 (up). cols = grid column count.
+  function focusGridVertical(gridSel, cols, dy) {
+    var grid = document.querySelector(gridSel);
+    if (!grid) { moveFocus(dy > 0 ? 'down' : 'up'); return; }
+    var tiles = Array.from(grid.querySelectorAll('.focusable'));
+    var idx = tiles.indexOf(document.activeElement);
+    if (idx === -1) {
+      // Not on a tile — fall back to linear nav (handles back arrow / hint).
+      moveFocus(dy > 0 ? 'down' : 'up');
+      return;
+    }
+    var target = idx + dy * cols;
+    if (target >= 0 && target < tiles.length) {
+      tiles[target].focus();
+      return;
+    }
+    // Off the grid: only "up" falls back to linear (lets it reach back arrow);
+    // "down" from the bottom row stays put.
+    if (dy < 0) moveFocus('up');
+  }
+
   function moveFocus(dir) {
     var els = focusables();
     if (!els.length) return;
@@ -456,11 +478,15 @@
       var bpmScreen = (state.screen === 'home' || state.screen === 'playing');
       switch (e.key) {
         case 'ArrowUp':
-          if (state.screen === 'step-tempo') focusTempoUp();
+          if (state.screen === 'step-tempo')      focusTempoUp();
+          else if (state.screen === 'step-time')  focusGridVertical('#time-grid', 3, -1);
+          else if (state.screen === 'step-note')  focusGridVertical('#note-grid', 2, -1);
           else moveFocus('up');
           e.preventDefault(); break;
         case 'ArrowDown':
-          if (state.screen === 'step-tempo') focusTempoDown();
+          if (state.screen === 'step-tempo')      focusTempoDown();
+          else if (state.screen === 'step-time')  focusGridVertical('#time-grid', 3, 1);
+          else if (state.screen === 'step-note')  focusGridVertical('#note-grid', 2, 1);
           else moveFocus('down');
           e.preventDefault(); break;
         case 'ArrowLeft':
