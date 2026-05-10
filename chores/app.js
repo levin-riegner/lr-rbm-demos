@@ -1,11 +1,10 @@
 (function () {
   'use strict';
 
-  // ─────────── Helpers ───────────
-  // Force mobile Amazon page on the glasses browser.
-  const mob = (url) => url.replace(/^https?:\/\/(www\.)?amazon\.com/, 'https://m.amazon.com');
-
   // ─────────── Data ───────────
+  const dp   = (asin) => `https://www.amazon.com/dp/${asin}`;
+  const srch = (q)    => `https://www.amazon.com/s?k=${encodeURIComponent(q)}`;
+
   const CHORES = [
     {
       id: 'bathroom',
@@ -18,9 +17,9 @@
         'Restock toilet paper'
       ],
       supplies: [
-        { label: 'Charmin Strong Toilet Paper',  url: mob('https://www.amazon.com/Charmin-Strong-Toilet-Family-Regular/dp/B09YKYV9N9/') },
-        { label: 'Lysol Bathroom Cleaner',       url: mob('https://www.amazon.com/gp/aw/d/B0F3LRCMP9/') },
-        { label: 'Scotch-Brite Sponges',         url: mob('https://www.amazon.com/Scotch-Brite-Sponges-Washing-Dishes-Kitchen/dp/B0917DL2QG/') }
+        { label: 'Charmin Ultra Soft 18-pack', url: dp('B00NJCVV0I') },
+        { label: 'Lysol Bathroom Cleaner',     url: dp('B01N6KBXK9') },
+        { label: 'Scotch-Brite Sponges 6-pk',  url: dp('B004NNG0AC') }
       ]
     },
     {
@@ -34,9 +33,9 @@
         'Fold and put away'
       ],
       supplies: [
-        { label: 'Laundry Detergent',      url: mob('https://www.amazon.com/Askshy-Laundry-Detergent-Compatible-Pre-Treater/dp/B0B1PGR1LZ') },
-        { label: 'Bounce Dryer Sheets',    url: mob('https://www.amazon.com/Bounce-Outdoor-Softener-Reduces-Wrinkles/dp/B0FG9GRFYT') },
-        { label: 'OxiClean Stain Remover', url: mob('https://www.amazon.com/OxiClean-Force-Laundry-Remover-3-Pack/dp/B0BVY2XKJX') }
+        { label: 'Tide Original Liquid 64oz',  url: dp('B01M0EB9QD') },
+        { label: 'Bounce Dryer Sheets 240-ct', url: dp('B003QWFPHA') },
+        { label: 'OxiClean Stain Remover',     url: srch('oxiclean max force stain remover spray') }
       ]
     },
     {
@@ -49,8 +48,8 @@
         'Bring bags to the curb'
       ],
       supplies: [
-        { label: 'Glad ForceFlex 13-gal', url: mob('https://www.amazon.com/Glad-OdorShield-Kitchen-Drawstring-Trash/dp/B00D5YS4HE') },
-        { label: 'Hefty Ultra Strong',    url: mob('https://www.amazon.com/Hefty-Strong-Kitchen-Gallon-Garbage/') }
+        { label: 'Glad ForceFlex 13-gal 40-ct', url: dp('B00Z0WXKOW') },
+        { label: 'Hefty Ultra Strong 33-gal',   url: srch('hefty ultra strong large trash bags 33 gallon') }
       ]
     },
     {
@@ -63,8 +62,8 @@
         'Vacuum rug and floor'
       ],
       supplies: [
-        { label: 'Vacuum Bags',              url: mob('https://www.amazon.com/Type-Compatible-Platinum-Canister-Cleaner/dp/B0DMW2LZTQ') },
-        { label: 'Scotch-Brite Lint Roller', url: mob('https://www.amazon.com/Scotch-Brite-Roller-3-Rollers-100-Sheets-Sheets/dp/B07CQ2PQW4') }
+        { label: 'Vacuum bags',              url: srch('vacuum cleaner bags universal') },
+        { label: 'Scotch-Brite Lint Roller', url: dp('B00006IFHP') }
       ]
     },
     {
@@ -78,9 +77,9 @@
         'Dry and put away'
       ],
       supplies: [
-        { label: 'Dawn Platinum Powerwash',  url: mob('https://www.amazon.com/Dawn-Platinum-Powerwash-Bundle-Starter/dp/B07YD3KQ5S') },
-        { label: 'Cascade Complete Pods',    url: mob('https://www.amazon.com/Cascade-Complete-All-Dishwasher-Detergent/dp/B00MB3JW44') },
-        { label: 'Scotch-Brite Non-Scratch', url: mob('https://www.amazon.com/Scotch-Brite-Non-Scratch-Sponge-Without-Scratching/dp/B0043P0GRA') }
+        { label: 'Dawn Ultra Dish Soap 32oz',     url: dp('B00GK8FLAM') },
+        { label: 'Cascade Complete Pods 78-ct',   url: dp('B00H20GIQY') },
+        { label: 'Scotch-Brite Non-Scratch 9-pk', url: dp('B001BKZR5S') }
       ]
     }
   ];
