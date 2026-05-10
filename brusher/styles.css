@@ -249,20 +249,62 @@ kbd {
   border-color: var(--ink);
 }
 
-/* ─────────── Training screen ─────────── */
-.train-grid {
-  display: grid;
-  grid-template-columns: 1fr 220px;
-  gap: 28px;
-  flex: 1;
-  align-items: center;
+/* ─────────── Training screen (centered, single column) ─────────── */
+.train-screen {
+  padding: 56px 28px 60px 28px;
+  display: flex;
 }
-.step-label {
-  font-size: 13px;
-  letter-spacing: 0.32em;
-  color: var(--accent);
+.train-stack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+.train-eyebrow {
+  font-size: 40px;
   font-weight: 700;
-  margin-bottom: 10px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  line-height: 1.0;
+}
+.train-headline {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1.0;
+}
+.train-count {
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 144px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+  margin-top: 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.train-of {
+  font-size: 36px;
+  color: var(--ink-faint);
+  letter-spacing: -0.02em;
+}
+.train-progress {
+  width: 280px;
+  height: 6px;
+  background: var(--ink-faint);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.signal-row.centered {
+  align-items: center;
+  width: 220px;
 }
 .count-card {
   background: var(--bg-2);

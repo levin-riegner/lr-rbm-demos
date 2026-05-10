@@ -36,22 +36,17 @@
   </section>
 
   <!-- ─── TRAINING SCREEN ─────────────────────────────── -->
-  <section class="screen hidden" id="screen-train">
-    <div class="train-grid">
-      <div class="train-left">
-        <div class="step-label">CALIBRATION</div>
-        <h2 class="med-title">Brush<br/><span class="hot">10 strokes.</span></h2>
-        <div class="signal-row">
-          <div class="signal-label">SIGNAL</div>
-          <div class="signal-meter"><div class="signal-meter-fill" id="signal-fill"></div></div>
-        </div>
+  <section class="screen train-screen hidden" id="screen-train">
+    <div class="train-stack">
+      <div class="train-eyebrow">CALIBRATION</div>
+      <div class="train-headline">Brush 10 strokes.</div>
+      <div class="train-count">
+        <span id="train-count">0</span><span class="train-of"> / 10</span>
       </div>
-      <div class="train-right">
-        <div class="count-card">
-          <div class="count-card-head">STROKES</div>
-          <div class="count-card-num"><span id="train-count">0</span><span class="of">/10</span></div>
-          <div class="count-bar"><div class="count-bar-fill" id="train-fill"></div></div>
-        </div>
+      <div class="train-progress"><div class="count-bar-fill" id="train-fill"></div></div>
+      <div class="signal-row centered">
+        <div class="signal-label">SIGNAL</div>
+        <div class="signal-meter"><div class="signal-meter-fill" id="signal-fill"></div></div>
       </div>
     </div>
   </section>
