@@ -141,6 +141,10 @@
   }
 
   document.addEventListener('keydown', (e) => {
+    // Left arrow always dismisses the loader if it's open
+    if (e.key === 'ArrowLeft' && !loaderEl.classList.contains('hidden')) {
+      e.preventDefault(); dismissLoader(); return;
+    }
     if (e.key === 'ArrowDown')      { e.preventDefault(); moveFocus(1); }
     else if (e.key === 'ArrowUp')   { e.preventDefault(); moveFocus(-1); }
     else if (e.key === 'ArrowLeft' && state.mode === 'chore') {
@@ -282,9 +286,21 @@
   const loadMsgEl  = document.getElementById('loaderMsg');
   const loadBarEl  = document.getElementById('loaderBar');
 
+  let loaderTicker  = null;
+  let loaderTimeout = null;
+
+  function dismissLoader() {
+    clearInterval(loaderTicker);
+    clearTimeout(loaderTimeout);
+    loaderTicker = loaderTimeout = null;
+    loaderEl.classList.add('hidden');
+    loadBarEl.style.transition = 'none';
+    loadBarEl.style.width = '0%';
+  }
+
   function openWithLoader(label, url) {
-    loadItemEl.textContent = label;
-    loadMsgEl.textContent  = LOAD_MSGS[0];
+    loadItemEl.textContent  = label;
+    loadMsgEl.textContent   = LOAD_MSGS[0];
     loadMsgEl.style.opacity = '1';
     loadBarEl.style.transition = 'none';
     loadBarEl.style.width = '0%';
@@ -298,22 +314,19 @@
 
     let step = 0;
     const stepMs = LOAD_MS / LOAD_MSGS.length;
-    const ticker = setInterval(() => {
+    loaderTicker = setInterval(() => {
       step++;
-      if (step >= LOAD_MSGS.length) { clearInterval(ticker); return; }
+      if (step >= LOAD_MSGS.length) { clearInterval(loaderTicker); return; }
       loadMsgEl.style.opacity = '0';
       setTimeout(() => {
-        loadMsgEl.textContent = LOAD_MSGS[step];
+        loadMsgEl.textContent   = LOAD_MSGS[step];
         loadMsgEl.style.opacity = '1';
       }, 180);
     }, stepMs);
 
-    setTimeout(() => {
-      clearInterval(ticker);
+    loaderTimeout = setTimeout(() => {
+      dismissLoader();
       window.open(url, '_blank', 'noopener');
-      loaderEl.classList.add('hidden');
-      loadBarEl.style.transition = 'none';
-      loadBarEl.style.width = '0%';
     }, LOAD_MS);
   }
 
