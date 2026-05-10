@@ -2,8 +2,7 @@
   'use strict';
 
   // ─────────── Data ───────────
-  const dp   = (asin) => `https://www.amazon.com/dp/${asin}`;
-  const srch = (q)    => `https://www.amazon.com/s?k=${encodeURIComponent(q)}`;
+  const srch = (q) => `https://www.amazon.com/s?k=${encodeURIComponent(q)}`;
 
   const CHORES = [
     {
@@ -17,9 +16,9 @@
         'Restock toilet paper'
       ],
       supplies: [
-        { label: 'Charmin Ultra Soft 18-pack', url: dp('B00NJCVV0I') },
-        { label: 'Lysol Bathroom Cleaner',     url: dp('B0F3LRCMP9') },
-        { label: 'Scotch-Brite Sponges 6-pk',  url: dp('B004NNG0AC') }
+        { label: 'Charmin Toilet Paper',   url: srch('charmin ultra soft toilet paper') },
+        { label: 'Lysol Bathroom Cleaner', url: 'https://www.amazon.com/Lysol-Strength-Bathroom-Disinfecting-Deodorizing/dp/B0F3LRCMP9' },
+        { label: 'Scotch-Brite Sponges',   url: srch('scotch brite sponges 6 pack') }
       ]
     },
     {
@@ -33,9 +32,9 @@
         'Fold and put away'
       ],
       supplies: [
-        { label: 'Tide Original Liquid 64oz',  url: dp('B01M0EB9QD') },
-        { label: 'Bounce Dryer Sheets 240-ct', url: dp('B003QWFPHA') },
-        { label: 'OxiClean Stain Remover',     url: srch('oxiclean max force stain remover spray') }
+        { label: 'Tide Liquid Detergent',  url: srch('tide original liquid laundry detergent') },
+        { label: 'Bounce Dryer Sheets',    url: srch('bounce dryer sheets 240 count') },
+        { label: 'OxiClean Stain Remover', url: srch('oxiclean max force stain remover spray') }
       ]
     },
     {
@@ -48,8 +47,8 @@
         'Bring bags to the curb'
       ],
       supplies: [
-        { label: 'Glad ForceFlex 13-gal 40-ct', url: dp('B00Z0WXKOW') },
-        { label: 'Hefty Ultra Strong 33-gal',   url: dp('B01BZ0LXL8') }
+        { label: 'Glad ForceFlex 13-gal', url: srch('glad forceflex 13 gallon kitchen trash bags') },
+        { label: 'Hefty Ultra Strong',    url: 'https://www.amazon.com/Hefty-Strong-Kitchen-Gallon-Garbage/dp/B01BZ0LXL8/' }
       ]
     },
     {
@@ -63,7 +62,7 @@
       ],
       supplies: [
         { label: 'Vacuum bags',              url: srch('vacuum cleaner bags universal') },
-        { label: 'Scotch-Brite Lint Roller', url: dp('B00006IFHP') }
+        { label: 'Scotch-Brite Lint Roller', url: srch('scotch brite lint roller') }
       ]
     },
     {
@@ -77,9 +76,9 @@
         'Dry and put away'
       ],
       supplies: [
-        { label: 'Dawn Ultra Dish Soap 32oz',     url: dp('B00GK8FLAM') },
-        { label: 'Cascade Complete Pods 78-ct',   url: dp('B00H20GIQY') },
-        { label: 'Scotch-Brite Non-Scratch 9-pk', url: dp('B001BKZR5S') }
+        { label: 'Dawn Dish Soap',           url: srch('dawn ultra dish soap 32oz') },
+        { label: 'Cascade Complete Pods',    url: srch('cascade complete dishwasher pods') },
+        { label: 'Scotch-Brite Non-Scratch', url: srch('scotch brite non scratch sponge') }
       ]
     }
   ];
