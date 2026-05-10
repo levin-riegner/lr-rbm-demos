@@ -295,20 +295,32 @@
     $('game').classList.remove('hidden');
 
     document.querySelectorAll('.act').forEach(btn => {
+      if (btn._bound) return;
+      btn._bound = true;
       btn.addEventListener('click', () => {
         if (btn.dataset.action === 'menu') return openMenu();
         doAction(btn.dataset.action, btn);
       });
     });
     document.querySelectorAll('.menu-item').forEach(btn => {
+      if (btn._bound) return;
+      btn._bound = true;
       btn.addEventListener('click', () => doMenu(btn.dataset.menu));
     });
-    document.querySelector('.about-close').addEventListener('click', () => {
-      doMenu('resume');
-    });
-    document.querySelector('.dead-btn').addEventListener('click', () => {
-      doMenu('reset');
-    });
+    const aboutBtn = document.querySelector('.about-close');
+    if (aboutBtn && !aboutBtn._bound) {
+      aboutBtn._bound = true;
+      aboutBtn.addEventListener('click', () => {
+        doMenu('resume');
+      });
+    }
+    const deadBtn = document.querySelector('.dead-btn');
+    if (deadBtn && !deadBtn._bound) {
+      deadBtn._bound = true;
+      deadBtn.addEventListener('click', () => {
+        doMenu('reset');
+      });
+    }
 
     refreshPalette();
     catchUpOffline();
