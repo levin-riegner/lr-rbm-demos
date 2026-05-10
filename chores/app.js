@@ -18,7 +18,7 @@
       ],
       supplies: [
         { label: 'Charmin Ultra Soft 18-pack', url: dp('B00NJCVV0I') },
-        { label: 'Lysol Bathroom Cleaner',     url: dp('B01N6KBXK9') },
+        { label: 'Lysol Bathroom Cleaner',     url: dp('B0F3LRCMP9') },
         { label: 'Scotch-Brite Sponges 6-pk',  url: dp('B004NNG0AC') }
       ]
     },
@@ -49,7 +49,7 @@
       ],
       supplies: [
         { label: 'Glad ForceFlex 13-gal 40-ct', url: dp('B00Z0WXKOW') },
-        { label: 'Hefty Ultra Strong 33-gal',   url: srch('hefty ultra strong large trash bags 33 gallon') }
+        { label: 'Hefty Ultra Strong 33-gal',   url: dp('B01BZ0LXL8') }
       ]
     },
     {
