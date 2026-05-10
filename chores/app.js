@@ -2,8 +2,6 @@
   'use strict';
 
   // ─────────── Data ───────────
-  const srch = (q) => `https://www.amazon.com/s?k=${encodeURIComponent(q)}`;
-
   const CHORES = [
     {
       id: 'bathroom',
@@ -16,9 +14,7 @@
         'Restock toilet paper'
       ],
       supplies: [
-        { label: 'Charmin Toilet Paper',   url: srch('charmin ultra soft toilet paper') },
-        { label: 'Lysol Bathroom Cleaner', url: 'https://www.amazon.com/Lysol-Strength-Bathroom-Disinfecting-Deodorizing/dp/B0F3LRCMP9' },
-        { label: 'Scotch-Brite Sponges',   url: srch('scotch brite sponges 6 pack') }
+        { label: 'Lysol Bathroom Cleaner', url: 'https://www.amazon.com/Lysol-Strength-Bathroom-Disinfecting-Deodorizing/dp/B0F3LRCMP9' }
       ]
     },
     {
@@ -31,11 +27,7 @@
         'Move to dryer',
         'Fold and put away'
       ],
-      supplies: [
-        { label: 'Tide Liquid Detergent',  url: srch('tide original liquid laundry detergent') },
-        { label: 'Bounce Dryer Sheets',    url: srch('bounce dryer sheets 240 count') },
-        { label: 'OxiClean Stain Remover', url: srch('oxiclean max force stain remover spray') }
-      ]
+      supplies: []
     },
     {
       id: 'trash',
@@ -47,8 +39,7 @@
         'Bring bags to the curb'
       ],
       supplies: [
-        { label: 'Glad ForceFlex 13-gal', url: srch('glad forceflex 13 gallon kitchen trash bags') },
-        { label: 'Hefty Ultra Strong',    url: 'https://www.amazon.com/Hefty-Strong-Kitchen-Gallon-Garbage/dp/B01BZ0LXL8/' }
+        { label: 'Hefty Ultra Strong', url: 'https://www.amazon.com/Hefty-Strong-Kitchen-Gallon-Garbage/dp/B01BZ0LXL8/' }
       ]
     },
     {
@@ -60,10 +51,7 @@
         'Move chairs and rugs',
         'Vacuum rug and floor'
       ],
-      supplies: [
-        { label: 'Vacuum bags',              url: srch('vacuum cleaner bags universal') },
-        { label: 'Scotch-Brite Lint Roller', url: srch('scotch brite lint roller') }
-      ]
+      supplies: []
     },
     {
       id: 'dishes',
@@ -75,11 +63,7 @@
         'Load dishwasher',
         'Dry and put away'
       ],
-      supplies: [
-        { label: 'Dawn Dish Soap',           url: srch('dawn ultra dish soap 32oz') },
-        { label: 'Cascade Complete Pods',    url: srch('cascade complete dishwasher pods') },
-        { label: 'Scotch-Brite Non-Scratch', url: srch('scotch brite non scratch sponge') }
-      ]
+      supplies: []
     }
   ];
 
