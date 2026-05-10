@@ -306,6 +306,9 @@
     document.querySelector('.about-close').addEventListener('click', () => {
       doMenu('resume');
     });
+    document.querySelector('.dead-btn').addEventListener('click', () => {
+      doMenu('reset');
+    });
 
     refreshPalette();
     catchUpOffline();
@@ -443,19 +446,29 @@
       const oldName = state.name;
       const oldVariant = state.eggVariant;
       const nextGen = (state.generation || 1) + 1;
-      const variants = ['amethyst', 'jade', 'ember'];
-      let newVariant = variants[Math.floor(Math.random() * variants.length)];
-      while (newVariant === oldVariant) {
-        newVariant = variants[Math.floor(Math.random() * variants.length)];
-      }
+
+      // Reset state but keep generation
       state = defaultState();
       state.name = oldName;
-      state.eggVariant = newVariant;
+      state.eggVariant = oldVariant;
       state.generation = nextGen;
-      save();
-      render();
-      closeMenu();
-      say('NEW COMPANION INITIALIZED');
+
+      // Show egg selection walkthrough
+      $('game').classList.add('hidden');
+      pendingName = oldName;
+      pendingEgg = oldVariant;
+      syncNamingScreen();
+      syncEggSelection();
+      walkStep = NAMING_STEP;
+      $('walk').dataset.step = String(NAMING_STEP);
+      $('walk').classList.remove('hidden');
+      // Show naming and egg screens (hide welcome/about)
+      document.querySelectorAll('.walk-screen').forEach((s, i) => {
+        s.classList.toggle('hidden', i < NAMING_STEP);
+      });
+      bindWalkButtons();
+      startWalkAnimations();
+      focusFirstInWalk();
     }
   }
 
@@ -463,7 +476,9 @@
   function catchUpOffline() {
     const now = Date.now();
     const elapsed = now - state.lastTick;
-    const ticks = Math.min(Math.floor(elapsed / TICK_MS), 60 * 6);
+    const maxOfflineMs = 2 * 60 * 60 * 1000; // 2 hour max offline catch-up
+    const cappedElapsed = Math.min(elapsed, maxOfflineMs);
+    const ticks = Math.min(Math.floor(cappedElapsed / TICK_MS), 60 * 6);
     for (let i = 0; i < ticks; i++) advance();
     state.lastTick = now;
   }

@@ -771,15 +771,31 @@ body {
 .act.busy { opacity: 0.4; pointer-events: none; }
 
 /* dead state */
-.dead .stage::after {
-  content: 'CONNECTION LOST';
+.dead-overlay {
   position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
+  display: none; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  background: rgba(0,0,0,0.55);
+  z-index: 6;
+}
+.dead .dead-overlay {
+  display: flex;
+}
+.dead-message {
   color: var(--red);
   letter-spacing: 0.4em; font-size: 22px;
-  background: rgba(0,0,0,0.55);
   text-shadow: 0 0 14px rgba(255, 90, 90, 0.6);
-  z-index: 6;
+}
+.dead-btn {
+  background: rgba(216, 200, 255, 0.04);
+  border: 1px solid var(--line);
+  color: var(--ink-0);
+  font-family: inherit;
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  padding: 12px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 /* ───────── PAUSE MENU ───────── */
