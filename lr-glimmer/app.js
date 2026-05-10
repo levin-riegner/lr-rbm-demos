@@ -677,6 +677,8 @@
     $('poop').classList.toggle('show', state.pooped);
     $('zzz').classList.toggle('show', state.sleeping);
     document.body.classList.toggle('dead', state.dead);
+    const deadMsg = $('deadMessage');
+    if (deadMsg) deadMsg.textContent = state.dead ? `RIP ${state.name || 'ORB-7'}` : '';
     updateTimeGlyph();
   }
   function setStat(key) {
