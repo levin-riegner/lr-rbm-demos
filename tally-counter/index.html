@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>Tally Counter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <section id="counter" class="screen">
+
+      <header class="head">
+        <span class="dot"></span>
+        <span class="brand">TALLY</span>
+        <span class="serial" id="serial">N°&nbsp;0042</span>
+      </header>
+
+      <div class="meta-row">
+        <span class="meta-label">SINCE</span>
+        <span class="meta-value" id="sinceTime">—</span>
+      </div>
+
+      <div class="display" aria-label="Count">
+        <div class="display-frame">
+          <div class="display-digits" id="digits">0000</div>
+          <div class="display-shimmer" aria-hidden="true"></div>
+        </div>
+        <div class="display-caption" id="caption">TAP&nbsp;TO&nbsp;COUNT</div>
+      </div>
+
+      <div class="stack">
+        <button class="bump focusable" data-action="inc" id="bumpBtn" aria-label="Count up">
+          <span class="bump-plus">+1</span>
+          <span class="bump-hint">PRESS&nbsp;·&nbsp;TAP&nbsp;·&nbsp;CLICK</span>
+        </button>
+        <button class="ctrl ctrl-minus focusable" data-action="dec" aria-label="Count down">
+          <span class="ctrl-glyph">−1</span>
+        </button>
+        <button class="ctrl ctrl-reset focusable" data-action="reset" aria-label="Reset count">
+          <span class="ctrl-glyph">RESET</span>
+        </button>
+      </div>
+
+      <div class="hints">
+        <span><span class="key">▶</span>&nbsp;+1</span>
+        <span><span class="key">◀</span>&nbsp;−1</span>
+        <span><span class="key">▲▼</span>&nbsp;NAV</span>
+        <span><span class="key">●</span>&nbsp;SELECT</span>
+      </div>
+
+    </section>
+
+    <!-- Reset confirm overlay -->
+    <div id="confirm" class="overlay hidden" role="dialog" aria-modal="true">
+      <div class="confirm-card">
+        <div class="confirm-title">RESET COUNTER?</div>
+        <div class="confirm-body">
+          <span class="confirm-num" id="confirmNum">0000</span>
+          <span class="confirm-arrow">→</span>
+          <span class="confirm-zero">0000</span>
+        </div>
+        <div class="confirm-actions">
+          <button class="ctrl ctrl-cancel focusable" data-action="reset-cancel">CANCEL</button>
+          <button class="ctrl ctrl-confirm focusable" data-action="reset-confirm">RESET</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

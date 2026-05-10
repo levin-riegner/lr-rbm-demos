@@ -1,0 +1,471 @@
+:root {
+  --bg:           #08080a;
+  --bg-2:         #111114;
+  --ink:          #f2efe6;
+  --ink-soft:     #b8b5ac;
+  --ink-dim:      #6a6a70;
+  --ink-faint:    #2a2a2f;
+
+  --chrome-1:     #d8dde2;
+  --chrome-2:     #8a8f96;
+  --chrome-3:     #44474c;
+
+  --amber:        #ffb547;
+  --amber-hi:     #ffd089;
+  --amber-glow:   rgba(255, 181, 71, 0.55);
+  --amber-faint:  rgba(255, 181, 71, 0.10);
+
+  --red:          #ff4848;
+  --red-glow:     rgba(255, 72, 72, 0.45);
+
+  --pad-l:  168px;
+  --pad-r:  40px;
+  --pad-t:  26px;
+  --pad-b:  26px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Space Grotesk", "SF Pro Display", "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
+  font-weight: 500;
+  font-size: 18px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  letter-spacing: inherit;
+  text-align: right;
+  padding: 0;
+}
+
+/* subtle horizontal scan to evoke HUD */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent 0px, transparent 3px,
+    rgba(0,0,0,0.10) 4px, rgba(0,0,0,0.10) 5px
+  );
+  pointer-events: none;
+  z-index: 200;
+  mix-blend-mode: multiply;
+}
+
+#app {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 80% 30%, rgba(255,181,71,0.06), transparent 55%),
+    radial-gradient(ellipse at 20% 90%, rgba(216,221,226,0.05), transparent 55%),
+    var(--bg);
+}
+
+/* ────────── Screen base ────────── */
+.screen {
+  position: absolute;
+  inset: 0;
+  width: 600px;
+  height: 600px;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  align-items: stretch;
+}
+.hidden { display: none !important; }
+
+/* ────────── Header ────────── */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 8px var(--amber-glow), 0 0 14px var(--amber-faint);
+  animation: pulse 2s ease-in-out infinite;
+}
+.brand {
+  color: var(--chrome-1);
+  letter-spacing: 0.32em;
+  font-weight: 700;
+}
+.serial {
+  font-family: "Share Tech Mono", monospace;
+  color: var(--ink-dim);
+  letter-spacing: 0.08em;
+  font-weight: 400;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+/* ────────── Meta row (since timestamp) ────────── */
+.meta-row {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--ink-dim);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.meta-label { color: var(--ink-faint); }
+.meta-value {
+  font-family: "Share Tech Mono", monospace;
+  color: var(--ink-soft);
+  letter-spacing: 0.1em;
+  font-size: 12px;
+}
+
+/* ────────── Main display ────────── */
+.display {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.display-frame {
+  position: relative;
+  padding: 14px 22px 12px;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, #050507 0%, #0c0c10 50%, #050507 100%);
+  border: 1px solid #1a1a1f;
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.9),
+    inset 0 -1px 2px rgba(255,181,71,0.04),
+    0 1px 0 rgba(216,221,226,0.05);
+  overflow: hidden;
+}
+
+.display-digits {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 132px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--amber);
+  text-shadow:
+    0 0 4px var(--amber-glow),
+    0 0 12px var(--amber-glow),
+    0 0 26px rgba(255,181,71,0.35);
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  z-index: 1;
+}
+
+/* dim "ghost" 8s behind real digits to mimic 7-seg LCD */
+.display-frame::before {
+  content: "8888";
+  position: absolute;
+  top: 14px;
+  right: 22px;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 132px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: rgba(255,181,71,0.05);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.display-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.00) 30%,
+    rgba(255,255,255,0.00) 70%,
+    rgba(0,0,0,0.25) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.display-caption {
+  margin-top: 8px;
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* tick flash on increment */
+.display-digits.tick {
+  animation: tickFlash 180ms ease-out;
+}
+@keyframes tickFlash {
+  0%   { color: var(--amber-hi); text-shadow:
+            0 0 6px var(--amber-hi),
+            0 0 18px var(--amber-glow),
+            0 0 38px var(--amber-glow); }
+  100% { color: var(--amber); }
+}
+.display-digits.tick-down {
+  animation: tickDown 180ms ease-out;
+}
+@keyframes tickDown {
+  0%   { color: #ffe9b8; opacity: 0.6; }
+  100% { color: var(--amber); opacity: 1; }
+}
+
+/* odometer-style digit roll for the units place */
+.roller {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  vertical-align: top;
+  height: 1em;
+}
+.roller-inner {
+  display: block;
+  transition: transform 180ms cubic-bezier(0.5, 0.0, 0.2, 1);
+}
+
+/* ────────── Stack (primary + secondary buttons, vertical) ────────── */
+.stack {
+  margin-top: 14px;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+/* ────────── Bump button (primary) ────────── */
+.bump {
+  flex: 1 1 auto;
+  min-height: 110px;
+  position: relative;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, #1d1d22 0%, #131318 50%, #0c0c10 100%);
+  border: 1px solid #2a2a30;
+  box-shadow:
+    inset 0 1px 0 rgba(216,221,226,0.06),
+    inset 0 -2px 4px rgba(0,0,0,0.5),
+    0 4px 14px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+  cursor: pointer;
+}
+.bump:focus { outline: none; }
+.bump:focus-visible,
+.bump.focused {
+  border-color: var(--amber);
+  box-shadow:
+    inset 0 1px 0 rgba(216,221,226,0.06),
+    inset 0 -2px 4px rgba(0,0,0,0.5),
+    0 0 0 2px var(--amber),
+    0 0 22px var(--amber-glow);
+}
+.bump:active,
+.bump.pressed {
+  transform: translateY(1px);
+  background: linear-gradient(180deg, #161619 0%, #0e0e12 50%, #0a0a0d 100%);
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.6),
+    inset 0 -1px 0 rgba(216,221,226,0.04);
+}
+
+.bump-plus {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 56px;
+  line-height: 1;
+  color: var(--chrome-1);
+  letter-spacing: 0.03em;
+  text-shadow:
+    0 1px 0 #fff,
+    0 0 8px rgba(216,221,226,0.4);
+}
+.bump-hint {
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* ring flash overlay on tap */
+.bump::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  pointer-events: none;
+  background: radial-gradient(circle at center, var(--amber-faint), transparent 60%);
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+}
+.bump.flash::after { opacity: 1; transition: opacity 30ms ease-out; }
+
+/* ────────── Secondary controls ────────── */
+.ctrl {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #16161a 0%, #0d0d11 100%);
+  border: 1px solid #25252b;
+  color: var(--ink-soft);
+  font-size: 14px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: transform 80ms ease-out, border-color 120ms, color 120ms;
+}
+.ctrl:focus { outline: none; }
+.ctrl:focus-visible,
+.ctrl.focused {
+  border-color: var(--amber);
+  color: var(--amber-hi);
+  box-shadow: 0 0 0 1px var(--amber), 0 0 16px var(--amber-faint);
+}
+.ctrl:active { transform: translateY(1px); }
+
+.ctrl-glyph {
+  font-family: "Share Tech Mono", monospace;
+  letter-spacing: 0.12em;
+}
+
+.ctrl-reset {
+  color: var(--chrome-2);
+}
+.ctrl-reset:focus-visible,
+.ctrl-reset.focused {
+  border-color: var(--red);
+  color: #ffb0b0;
+  box-shadow: 0 0 0 1px var(--red), 0 0 16px var(--red-glow);
+}
+
+/* ────────── Hints footer ────────── */
+.hints {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+.hints .key {
+  color: var(--ink-dim);
+  font-family: "Share Tech Mono", monospace;
+  letter-spacing: 0;
+  margin-right: 2px;
+}
+
+/* ────────── Reset confirm overlay ────────── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(8,8,10,0.84);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 var(--pad-r) 0 var(--pad-l);
+  z-index: 50;
+}
+.overlay.hidden { display: none; }
+
+.confirm-card {
+  width: 100%;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #1a1a1f 0%, #0d0d11 100%);
+  border: 1px solid var(--red);
+  box-shadow: 0 0 0 1px rgba(255,72,72,0.2), 0 12px 40px rgba(0,0,0,0.7), 0 0 28px var(--red-glow);
+  padding: 22px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.confirm-title {
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  color: #ffb0b0;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-align: right;
+}
+.confirm-body {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  font-family: "Share Tech Mono", monospace;
+}
+.confirm-num {
+  font-size: 44px;
+  color: var(--amber);
+  text-shadow: 0 0 10px var(--amber-glow);
+  letter-spacing: 0.04em;
+}
+.confirm-arrow {
+  font-size: 26px;
+  color: var(--ink-dim);
+}
+.confirm-zero {
+  font-size: 44px;
+  color: var(--red);
+  text-shadow: 0 0 10px var(--red-glow);
+  letter-spacing: 0.04em;
+}
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+.ctrl-confirm {
+  border-color: var(--red);
+  color: #ffb0b0;
+}
+.ctrl-confirm:focus-visible,
+.ctrl-confirm.focused {
+  background: linear-gradient(180deg, #2a1010 0%, #180808 100%);
+  box-shadow: 0 0 0 1px var(--red), 0 0 16px var(--red-glow);
+}
