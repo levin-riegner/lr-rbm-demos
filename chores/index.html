@@ -3,59 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
-  <title>Chore Navigator</title>
+  <title>Chore Orderer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="stage">
-    <!-- Intro -->
+  <div id="app">
+
+    <!-- ─────────── Intro ─────────── -->
     <section id="intro" class="screen">
-      <header class="bar">
-        <span class="tag">CHORES</span>
+      <header class="head">
+        <span class="dot"></span>
+        <span>Chore Orderer</span>
       </header>
-      <h1 class="title">Chore Navigator</h1>
-      <p class="explainer">
-        Step through today's chores one at a time. Each card shows what's
-        required and how long it takes. Mark it complete or request supplies
-        when you're running low.
+
+      <h1 class="intro-title">
+        Today's
+        <span class="accent">five.</span>
+      </h1>
+
+      <p class="intro-explainer">
+        Step through chores one at a time. Capture ideas with your voice. Reorder supplies in a tap.
       </p>
+
       <div class="actions">
-        <button class="btn primary" data-focusable data-action="start">Start</button>
+        <button class="btn primary" data-focusable data-action="start">
+          Begin<span class="glyph">→</span>
+        </button>
       </div>
+
       <div class="hints">
-        <span class="hint">▲▼ NAV</span>
-        <span class="hint">● SELECT</span>
+        <span><span class="key">▲▼</span> NAV</span>
+        <span><span class="key">●</span> SELECT</span>
       </div>
     </section>
 
-    <!-- Chore -->
+    <!-- ─────────── Chore ─────────── -->
     <section id="chore" class="screen hidden">
-      <header class="bar">
-        <span class="tag" id="choreProgress">CHORE 1 / 5</span>
-        <span class="tag accent" id="choreTime">~ —</span>
+      <header class="head">
+        <span class="dot"></span>
+        <span class="step" id="choreStep">Chore 1 of 5</span>
+        <span class="time" id="choreTime">~ 20 min</span>
       </header>
+
       <h2 class="chore-title" id="choreTitle"></h2>
-      <ul class="requirements" id="requirements"></ul>
+
+      <div class="label">Tasks</div>
+      <ol class="tasks" id="tasksList"></ol>
+
+      <div class="label" id="ordersLabel">Reorder supplies</div>
+      <ul class="orders" id="ordersList"></ul>
+
       <div class="actions" id="choreActions"></div>
+
       <div class="toast" id="toast"></div>
     </section>
 
-    <!-- Done -->
-    <section id="done" class="screen hidden">
-      <header class="bar">
-        <span class="tag">CHORES · COMPLETE</span>
-      </header>
-      <div class="big-check">✓</div>
-      <h2 class="title">All chores complete</h2>
-      <p class="explainer" id="doneSummary"></p>
+    <!-- ─────────── Listening overlay ─────────── -->
+    <div id="listening" class="overlay hidden">
+      <div class="listening-label">
+        <span class="pulse"></span>
+        <span>Listening</span>
+      </div>
+      <div class="transcript" id="transcript">
+        <span class="placeholder">Say what you need…</span>
+      </div>
       <div class="actions">
-        <button class="btn primary" data-focusable data-action="restart">Start over</button>
+        <button class="btn" data-focusable data-action="cancelListen">
+          Cancel<span class="glyph">×</span>
+        </button>
+      </div>
+      <div class="hints">
+        <span><span class="key">●</span> STOP &amp; SAVE</span>
+      </div>
+    </div>
+
+    <!-- ─────────── Done ─────────── -->
+    <section id="done" class="screen hidden">
+      <header class="head">
+        <span class="dot"></span>
+        <span>All clear</span>
+      </header>
+
+      <div class="done-mark">— complete —</div>
+      <h2 class="done-title">Nicely done.</h2>
+
+      <p class="done-summary" id="doneSummary"></p>
+
+      <div class="actions">
+        <button class="btn primary" data-focusable data-action="restart">
+          Start over<span class="glyph">↻</span>
+        </button>
+      </div>
+
+      <div class="hints">
+        <span><span class="key">●</span> SELECT</span>
       </div>
     </section>
-  </main>
+
+  </div>
   <script src="app.js"></script>
 </body>
 </html>
