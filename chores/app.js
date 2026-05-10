@@ -87,11 +87,14 @@
   const state = {
     mode: 'intro',       // 'intro' | 'chore' | 'done'
     index: 0,
-    completed: new Set(),
     ordered: new Set(),  // composite keys: `${choreId}::${label}`
     checked: {}          // choreId → Set of task indices
   };
   CHORES.forEach(c => { state.checked[c.id] = new Set(); });
+
+  function isChoreComplete(chore) {
+    return state.checked[chore.id].size === chore.tasks.length;
+  }
 
   // ─────────── DOM refs ───────────
   const screens = {
@@ -169,8 +172,11 @@
   // ─────────── Chore render ───────────
   function renderChore() {
     const chore = CHORES[state.index];
+    const complete = isChoreComplete(chore);
     stepEl.textContent  = `Chore ${state.index + 1} of ${CHORES.length}`;
-    timeEl.textContent  = `~ ${chore.minutes} min`;
+    timeEl.textContent  = complete ? 'Complete' : `~ ${chore.minutes} min`;
+    timeEl.classList.toggle('good', complete);
+    document.querySelector('#chore .head .dot').classList.toggle('good', complete);
     titleEl.textContent = chore.title;
 
     // Tasks (checkable)
@@ -224,35 +230,21 @@
     // Actions
     actionsEl.innerHTML = '';
 
-    const isComplete = state.completed.has(chore.id);
-    const completeBtn = mkBtn(
-      isComplete ? 'Completed' : 'Mark complete',
-      isComplete ? '✓' : '●',
+    const isLast = state.index === CHORES.length - 1;
+    const primary = mkBtn(
+      isLast ? 'Finish' : 'Next chore',
+      '→',
       'complete'
     );
-    completeBtn.classList.add('complete');
-    if (isComplete) completeBtn.classList.add('done');
-    completeBtn.dataset.action = 'complete';
-    actionsEl.appendChild(completeBtn);
-
-    const navRow = document.createElement('div');
-    navRow.className = 'nav-row';
+    primary.classList.add('complete');
+    primary.dataset.action = isLast ? 'finish' : 'next';
+    actionsEl.appendChild(primary);
 
     if (state.index > 0) {
-      const prev = mkBtn('Prev', '←', 'secondary');
+      const prev = mkBtn('Previous chore', '←', 'secondary');
       prev.dataset.action = 'prev';
-      navRow.appendChild(prev);
+      actionsEl.appendChild(prev);
     }
-    if (state.index < CHORES.length - 1) {
-      const next = mkBtn('Next', '→', 'secondary');
-      next.dataset.action = 'next';
-      navRow.appendChild(next);
-    } else {
-      const finish = mkBtn('Finish', '→', 'secondary');
-      finish.dataset.action = 'finish';
-      navRow.appendChild(finish);
-    }
-    actionsEl.appendChild(navRow);
 
     focusFirst();
   }
@@ -294,7 +286,6 @@
     if (action === 'start')   { setScreen('chore'); renderChore(); return; }
     if (action === 'restart') {
       state.index = 0;
-      state.completed.clear();
       state.ordered.clear();
       CHORES.forEach(c => { state.checked[c.id] = new Set(); });
       setScreen('intro');
@@ -302,27 +293,14 @@
     }
 
     if (state.mode !== 'chore') return;
-    const chore = CHORES[state.index];
 
-    if (action === 'complete') {
-      if (state.completed.has(chore.id)) return;
-      state.completed.add(chore.id);
-      toast(`Completed: ${chore.title}`);
-      setTimeout(() => {
-        if (state.index < CHORES.length - 1) {
-          state.index += 1;
-          renderChore();
-        } else {
-          finish();
-        }
-      }, 600);
-    } else if (action === 'next')   { gotoNext(); }
-    else if (action === 'prev')     { gotoPrev(); }
-    else if (action === 'finish')   { finish(); }
+    if (action === 'next')        { gotoNext(); }
+    else if (action === 'prev')   { gotoPrev(); }
+    else if (action === 'finish') { finish(); }
   });
 
   function finish() {
-    const done   = state.completed.size;
+    const done = CHORES.filter(isChoreComplete).length;
     const orders = state.ordered.size;
     let summary = `<span class="accent">${done}</span> of ${CHORES.length} chores done`;
     if (orders) summary += ` · <span class="accent">${orders}</span> reorder${orders === 1 ? '' : 's'}`;

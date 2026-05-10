@@ -107,7 +107,9 @@ body::after {
   background: var(--accent);
   border-radius: 50%;
   display: inline-block;
+  transition: background 200ms cubic-bezier(0.2, 0, 0, 1);
 }
+.head .dot.good { background: var(--good); }
 
 .head .step {
   color: var(--ink-soft);
@@ -115,7 +117,9 @@ body::after {
 
 .head .time {
   color: var(--accent);
+  transition: color 200ms cubic-bezier(0.2, 0, 0, 1);
 }
+.head .time.good { color: var(--good); }
 
 /* ────────── Display titles ────────── */
 .intro-title,
