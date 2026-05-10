@@ -65,6 +65,7 @@ html, body {
 .brand-bar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 14px;
   padding-bottom: 4px;
 }

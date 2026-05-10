@@ -438,11 +438,16 @@
       if (el) handleAction(el.dataset.action, el);
     });
     document.addEventListener('keydown', function (e) {
+      var bpmScreen = (state.screen === 'home' || state.screen === 'playing');
       switch (e.key) {
         case 'ArrowUp':    moveFocus('up');    e.preventDefault(); break;
         case 'ArrowDown':  moveFocus('down');  e.preventDefault(); break;
-        case 'ArrowLeft':  moveFocus('left');  e.preventDefault(); break;
-        case 'ArrowRight': moveFocus('right'); e.preventDefault(); break;
+        case 'ArrowLeft':
+          if (bpmScreen) adjustBpm(-1); else moveFocus('left');
+          e.preventDefault(); break;
+        case 'ArrowRight':
+          if (bpmScreen) adjustBpm(1); else moveFocus('right');
+          e.preventDefault(); break;
         case 'Enter':
         case ' ':
           if (document.activeElement && document.activeElement.classList.contains('focusable')) {
