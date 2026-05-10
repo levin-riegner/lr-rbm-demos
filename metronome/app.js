@@ -351,9 +351,13 @@
       case 'bpm-plus-10':    adjustBpm(10);                break;
       case 'tap':            handleTap();                  break;
       case 'set-time':
-        setTimeSig(parseInt(el.dataset.value, 10));        break;
+        setTimeSig(parseInt(el.dataset.value, 10));
+        stepNext();
+        break;
       case 'set-note':
-        setNoteValue(el.dataset.value);                    break;
+        setNoteValue(el.dataset.value);
+        startMetronome();
+        break;
       case 'toggle-play':
         if (state.playing) stopMetronome();
         else startMetronome();
@@ -391,6 +395,41 @@
   }
 
   // ===========================================================
+  //  SWIPE — adjust BPM ±1 on home/playing screens
+  // ===========================================================
+  function setupSwipe() {
+    var SWIPE_MIN = 40;       // px to register a swipe
+    var VERT_MAX  = 50;       // tolerance for vertical drift
+    var startX = 0, startY = 0, tracking = false, originatesOnButton = false;
+
+    function onDown(e) {
+      if (state.screen !== 'home' && state.screen !== 'playing') return;
+      var p = e.touches ? e.touches[0] : e;
+      startX = p.clientX;
+      startY = p.clientY;
+      tracking = true;
+      // ignore swipes that originate on a button — buttons own their tap
+      originatesOnButton = !!(e.target && e.target.closest('button'));
+    }
+    function onUp(e) {
+      if (!tracking) return;
+      tracking = false;
+      if (originatesOnButton) return;
+      var p = (e.changedTouches && e.changedTouches[0]) || e;
+      var dx = p.clientX - startX;
+      var dy = p.clientY - startY;
+      if (Math.abs(dy) > VERT_MAX) return;
+      if (Math.abs(dx) < SWIPE_MIN) return;
+      adjustBpm(dx > 0 ? 1 : -1);
+    }
+
+    document.addEventListener('touchstart', onDown, { passive: true });
+    document.addEventListener('touchend', onUp);
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('mouseup', onUp);
+  }
+
+  // ===========================================================
   //  EVENT WIRING
   // ===========================================================
   function setupEvents() {
@@ -423,6 +462,7 @@
   function init() {
     loadData();
     setupEvents();
+    setupSwipe();
     showScreen('home');
   }
 
