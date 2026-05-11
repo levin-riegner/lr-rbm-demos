@@ -465,38 +465,87 @@ body::after {
   border-radius: 1px;
 }
 
-/* ────────── Amazon iframe overlay ────────── */
-.overlay.frame {
-  padding: 0;
+/* ────────── Product detail overlay ────────── */
+#pdp {
   z-index: 60;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg);
 }
 
-.frame-head {
-  padding: 14px 20px;
-  background: rgba(10, 10, 11, 0.92);
-  border-bottom: 1px solid var(--ink-faint);
-  flex-shrink: 0;
+.pdp-back {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
-.frame-label {
-  color: var(--ink-soft);
-  flex: 1;
+.pdp-emoji {
+  font-size: 80px;
+  line-height: 1;
+  margin-top: 20px;
   text-align: right;
 }
 
-.frame-back {
-  color: var(--accent);
+.pdp-title {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 30px;
   font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-top: 14px;
 }
 
-#frameIframe {
-  flex: 1;
-  width: 100%;
-  border: 0;
-  background: var(--bg);
+.pdp-desc {
+  font-size: 17px;
+  color: var(--ink-soft);
+  font-weight: 400;
+  margin-top: 4px;
+}
+
+.pdp-price {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  margin-top: 14px;
+  line-height: 1;
+}
+
+/* Purchased confirmation popover */
+.pdp-confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 11, 0.94);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.pdp-confirm.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.pdp-check {
+  font-size: 80px;
+  color: var(--good);
+  line-height: 1;
+}
+
+.pdp-confirm-label {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--good);
+  margin-top: 14px;
 }
 
 /* ────────── Done screen ────────── */

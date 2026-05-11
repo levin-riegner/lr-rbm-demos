@@ -74,14 +74,25 @@
       </div>
     </div>
 
-    <!-- ─────────── Amazon iframe overlay ─────────── -->
-    <div id="frame" class="overlay frame hidden">
-      <header class="head frame-head">
+    <!-- ─────────── Product detail overlay ─────────── -->
+    <div id="pdp" class="overlay hidden">
+      <header class="head">
         <span class="dot"></span>
-        <span class="frame-label" id="frameLabel">Amazon</span>
-        <span class="frame-back">← BACK</span>
+        <span class="pdp-back">← BACK</span>
       </header>
-      <iframe id="frameIframe" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      <div class="pdp-emoji" id="pdpEmoji"></div>
+      <div class="pdp-title" id="pdpTitle"></div>
+      <div class="pdp-desc"  id="pdpDesc"></div>
+      <div class="pdp-price" id="pdpPrice"></div>
+      <div class="actions">
+        <button class="btn complete" id="pdpBuy" data-focusable>
+          Buy Now<span class="glyph">→</span>
+        </button>
+      </div>
+      <div class="pdp-confirm" id="pdpConfirm">
+        <div class="pdp-check">✓</div>
+        <div class="pdp-confirm-label">Purchased</div>
+      </div>
     </div>
 
     <!-- ─────────── Done ─────────── -->

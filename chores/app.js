@@ -14,9 +14,9 @@
         'Restock toilet paper'
       ],
       supplies: [
-        { label: 'Charmin Toilet Paper',   url: 'https://www.amazon.com/Charmin-Strong-Toilet-Family-Regular/dp/B09YKYV9N9/' },
-        { label: 'Lysol Bathroom Cleaner', url: 'https://www.amazon.com/gp/aw/d/B0F3LRCMP9/' },
-        { label: 'Scotch-Brite Sponges',   url: 'https://www.amazon.com/Scotch-Brite-Sponges-Washing-Dishes-Kitchen/dp/B0917DL2QG/' }
+        { label: 'Charmin Toilet Paper',   emoji: '🧻', price: '$22.99', desc: 'Strong, family-sized, 18 rolls',    url: 'https://www.amazon.com/Charmin-Strong-Toilet-Family-Regular/dp/B09YKYV9N9/' },
+        { label: 'Lysol Bathroom Cleaner', emoji: '🧴', price: '$4.99',  desc: 'Disinfecting & deodorizing spray', url: 'https://www.amazon.com/gp/aw/d/B0F3LRCMP9/' },
+        { label: 'Scotch-Brite Sponges',   emoji: '🧽', price: '$9.49',  desc: 'Heavy duty scrub, 6-pack',         url: 'https://www.amazon.com/Scotch-Brite-Sponges-Washing-Dishes-Kitchen/dp/B0917DL2QG/' }
       ]
     },
     {
@@ -30,9 +30,9 @@
         'Fold and put away'
       ],
       supplies: [
-        { label: 'Tide',                   url: 'https://www.amazon.com/Askshy-Laundry-Detergent-Compatible-Pre-Treater/dp/B0B1PGR1LZ' },
-        { label: 'Bounce Dryer Sheets',    url: 'http://amazon.com/Bounce-Outdoor-Softener-Reduces-Wrinkles/dp/B0FG9GRFYT' },
-        { label: 'OxiClean Stain Remover', url: 'https://www.amazon.com/OxiClean-Force-Laundry-Remover-3-Pack/dp/B0BVY2XKJX' }
+        { label: 'Tide',                   emoji: '🫧', price: '$14.99', desc: 'Original scent, 64 oz liquid',      url: 'https://www.amazon.com/Askshy-Laundry-Detergent-Compatible-Pre-Treater/dp/B0B1PGR1LZ' },
+        { label: 'Bounce Dryer Sheets',    emoji: '💨', price: '$13.99', desc: 'Outdoor Fresh, 240-count',          url: 'http://amazon.com/Bounce-Outdoor-Softener-Reduces-Wrinkles/dp/B0FG9GRFYT' },
+        { label: 'OxiClean Stain Remover', emoji: '✨', price: '$15.99', desc: 'Max Force spray, 3-pack',           url: 'https://www.amazon.com/OxiClean-Force-Laundry-Remover-3-Pack/dp/B0BVY2XKJX' }
       ]
     },
     {
@@ -45,8 +45,8 @@
         'Bring bags to the curb'
       ],
       supplies: [
-        { label: 'Glad ForceFlex 13-gal', url: 'https://www.amazon.com/Glad-OdorShield-Kitchen-Drawstring-Trash/dp/B00D5YS4HE' },
-        { label: 'Hefty Ultra Strong',    url: 'https://www.amazon.com/Hefty-Strong-Kitchen-Gallon-Garbage/' }
+        { label: 'Glad ForceFlex 13-gal', emoji: '🗑️', price: '$16.99', desc: 'OdorShield, drawstring, 40-count',  url: 'https://www.amazon.com/Glad-OdorShield-Kitchen-Drawstring-Trash/dp/B00D5YS4HE' },
+        { label: 'Hefty Ultra Strong',    emoji: '💪', price: '$22.99', desc: 'Large, 30-gallon, 50-count bags',   url: 'https://www.amazon.com/Hefty-Strong-Kitchen-Gallon-Garbage/' }
       ]
     },
     {
@@ -59,8 +59,8 @@
         'Vacuum rug and floor'
       ],
       supplies: [
-        { label: 'Vacuum Bags',              url: 'https://www.amazon.com/Type-Compatible-Platinum-Canister-Cleaner/dp/B0DMW2LZTQ' },
-        { label: 'Scotch-Brite Lint Roller', url: 'https://www.amazon.com/Scotch-Brite-Roller-3-Rollers-100-Sheets-Sheets/dp/B07CQ2PQW4' }
+        { label: 'Vacuum Bags',              emoji: '🌀', price: '$14.99', desc: 'Universal fit, 10-pack',            url: 'https://www.amazon.com/Type-Compatible-Platinum-Canister-Cleaner/dp/B0DMW2LZTQ' },
+        { label: 'Scotch-Brite Lint Roller', emoji: '🪄', price: '$9.99',  desc: '3 rollers, 100 sheets each',       url: 'https://www.amazon.com/Scotch-Brite-Roller-3-Rollers-100-Sheets-Sheets/dp/B07CQ2PQW4' }
       ]
     },
     {
@@ -74,9 +74,9 @@
         'Dry and put away'
       ],
       supplies: [
-        { label: 'Dawn',                     url: 'https://www.amazon.com/Dawn-Platinum-Powerwash-Bundle-Starter/dp/B07YD3KQ5S' },
-        { label: 'Cascade Complete Pods',    url: 'https://www.amazon.com/Cascade-Complete-All-Dishwasher-Detergent/dp/B00MB3JW44' },
-        { label: 'Scotch-Brite Non-Scratch', url: 'https://www.amazon.com/Scotch-Brite-Non-Scratch-Sponge-Without-Scratching/dp/B0043P0GRA' }
+        { label: 'Dawn',                     emoji: '🍋', price: '$12.99', desc: 'Platinum Powerwash, 16 oz',         url: 'https://www.amazon.com/Dawn-Platinum-Powerwash-Bundle-Starter/dp/B07YD3KQ5S' },
+        { label: 'Cascade Complete Pods',    emoji: '💧', price: '$19.99', desc: 'All-in-1 ActionPacs, 78-count',     url: 'https://www.amazon.com/Cascade-Complete-All-Dishwasher-Detergent/dp/B00MB3JW44' },
+        { label: 'Scotch-Brite Non-Scratch', emoji: '🧽', price: '$11.99', desc: 'Dishwashing sponge, 9-pack',        url: 'https://www.amazon.com/Scotch-Brite-Non-Scratch-Sponge-Without-Scratching/dp/B0043P0GRA' }
       ]
     }
   ];
@@ -100,15 +100,15 @@
     chore: document.getElementById('chore'),
     done:  document.getElementById('done')
   };
-  const stepEl       = document.getElementById('choreStep');
-  const timeEl       = document.getElementById('choreTime');
-  const titleEl      = document.getElementById('choreTitle');
-  const tasksEl      = document.getElementById('tasksList');
-  const ordersEl     = document.getElementById('ordersList');
-  const ordersLabel  = document.getElementById('ordersLabel');
-  const actionsEl    = document.getElementById('choreActions');
-  const toastEl      = document.getElementById('toast');
-  const doneSummary  = document.getElementById('doneSummary');
+  const stepEl      = document.getElementById('choreStep');
+  const timeEl      = document.getElementById('choreTime');
+  const titleEl     = document.getElementById('choreTitle');
+  const tasksEl     = document.getElementById('tasksList');
+  const ordersEl    = document.getElementById('ordersList');
+  const ordersLabel = document.getElementById('ordersLabel');
+  const actionsEl   = document.getElementById('choreActions');
+  const toastEl     = document.getElementById('toast');
+  const doneSummary = document.getElementById('doneSummary');
 
   // ─────────── Screen switching ───────────
   function setScreen(mode) {
@@ -141,15 +141,14 @@
   }
 
   document.addEventListener('keydown', (e) => {
-    // Left arrow always dismisses the Amazon frame or loader if either is open
-    if (e.key === 'ArrowLeft' && !frameEl.classList.contains('hidden')) {
-      e.preventDefault(); dismissFrame(); return;
+    if (e.key === 'ArrowLeft' && !pdpEl.classList.contains('hidden')) {
+      e.preventDefault(); dismissPDP(); return;
     }
     if (e.key === 'ArrowLeft' && !loaderEl.classList.contains('hidden')) {
       e.preventDefault(); dismissLoader(); return;
     }
-    if (e.key === 'ArrowDown')      { e.preventDefault(); moveFocus(1); }
-    else if (e.key === 'ArrowUp')   { e.preventDefault(); moveFocus(-1); }
+    if (e.key === 'ArrowDown')    { e.preventDefault(); moveFocus(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveFocus(-1); }
     else if (e.key === 'ArrowLeft' && state.mode === 'chore') {
       e.preventDefault(); gotoPrev();
     }
@@ -184,7 +183,7 @@
     document.querySelector('#chore .head .dot').classList.toggle('good', complete);
     titleEl.textContent = chore.title;
 
-    // Tasks (checkable)
+    // Tasks
     tasksEl.innerHTML = '';
     const checkedSet = state.checked[chore.id];
     chore.tasks.forEach((t, i) => {
@@ -225,7 +224,7 @@
           e.preventDefault();
           state.ordered.add(key);
           renderChore();
-          openWithLoader(item.label, item.url);
+          openWithLoader(item.label, item.emoji, item.price, item.desc);
         });
         ordersEl.appendChild(li);
       });
@@ -233,13 +232,8 @@
 
     // Actions
     actionsEl.innerHTML = '';
-
     const isLast = state.index === CHORES.length - 1;
-    const primary = mkBtn(
-      isLast ? 'Finish' : 'Next chore',
-      '→',
-      'complete'
-    );
+    const primary = mkBtn(isLast ? 'Finish' : 'Next chore', '→', 'complete');
     primary.classList.add('complete');
     primary.dataset.action = isLast ? 'finish' : 'next';
     actionsEl.appendChild(primary);
@@ -280,7 +274,7 @@
     'Checking availability…',
     'Comparing options…',
     'Almost there…',
-    'Opening now…'
+    'Loading product…'
   ];
   const LOAD_MS = 3600;
 
@@ -288,9 +282,6 @@
   const loadItemEl = document.getElementById('loaderItem');
   const loadMsgEl  = document.getElementById('loaderMsg');
   const loadBarEl  = document.getElementById('loaderBar');
-  const frameEl    = document.getElementById('frame');
-  const frameLabel = document.getElementById('frameLabel');
-  const frameIframe = document.getElementById('frameIframe');
 
   let loaderTicker  = null;
   let loaderTimeout = null;
@@ -304,18 +295,7 @@
     loadBarEl.style.width = '0%';
   }
 
-  function openFrame(label, url) {
-    frameLabel.textContent = label;
-    frameIframe.src = url;
-    frameEl.classList.remove('hidden');
-  }
-
-  function dismissFrame() {
-    frameEl.classList.add('hidden');
-    frameIframe.src = 'about:blank';
-  }
-
-  function openWithLoader(label, url) {
+  function openWithLoader(label, emoji, price, desc) {
     loadItemEl.textContent  = label;
     loadMsgEl.textContent   = LOAD_MSGS[0];
     loadMsgEl.style.opacity = '1';
@@ -343,9 +323,38 @@
 
     loaderTimeout = setTimeout(() => {
       dismissLoader();
-      openFrame(label, url);
+      openPDP(label, emoji, price, desc);
     }, LOAD_MS);
   }
+
+  // ─────────── Product detail overlay ───────────
+  const pdpEl        = document.getElementById('pdp');
+  const pdpEmojiEl   = document.getElementById('pdpEmoji');
+  const pdpTitleEl   = document.getElementById('pdpTitle');
+  const pdpDescEl    = document.getElementById('pdpDesc');
+  const pdpPriceEl   = document.getElementById('pdpPrice');
+  const pdpBuyEl     = document.getElementById('pdpBuy');
+  const pdpConfirmEl = document.getElementById('pdpConfirm');
+
+  function openPDP(label, emoji, price, desc) {
+    pdpEmojiEl.textContent = emoji;
+    pdpTitleEl.textContent = label;
+    pdpDescEl.textContent  = desc;
+    pdpPriceEl.textContent = price;
+    pdpConfirmEl.classList.remove('show');
+    pdpEl.classList.remove('hidden');
+    requestAnimationFrame(() => pdpBuyEl.focus());
+  }
+
+  function dismissPDP() {
+    pdpEl.classList.add('hidden');
+    pdpConfirmEl.classList.remove('show');
+  }
+
+  pdpBuyEl.addEventListener('click', () => {
+    pdpConfirmEl.classList.add('show');
+    setTimeout(() => dismissPDP(), 1800);
+  });
 
   // ─────────── Navigation ───────────
   function gotoNext() {
