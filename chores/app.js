@@ -141,7 +141,10 @@
   }
 
   document.addEventListener('keydown', (e) => {
-    // Left arrow always dismisses the loader if it's open
+    // Left arrow always dismisses the Amazon frame or loader if either is open
+    if (e.key === 'ArrowLeft' && !frameEl.classList.contains('hidden')) {
+      e.preventDefault(); dismissFrame(); return;
+    }
     if (e.key === 'ArrowLeft' && !loaderEl.classList.contains('hidden')) {
       e.preventDefault(); dismissLoader(); return;
     }
@@ -285,6 +288,9 @@
   const loadItemEl = document.getElementById('loaderItem');
   const loadMsgEl  = document.getElementById('loaderMsg');
   const loadBarEl  = document.getElementById('loaderBar');
+  const frameEl    = document.getElementById('frame');
+  const frameLabel = document.getElementById('frameLabel');
+  const frameIframe = document.getElementById('frameIframe');
 
   let loaderTicker  = null;
   let loaderTimeout = null;
@@ -296,6 +302,17 @@
     loaderEl.classList.add('hidden');
     loadBarEl.style.transition = 'none';
     loadBarEl.style.width = '0%';
+  }
+
+  function openFrame(label, url) {
+    frameLabel.textContent = label;
+    frameIframe.src = url;
+    frameEl.classList.remove('hidden');
+  }
+
+  function dismissFrame() {
+    frameEl.classList.add('hidden');
+    frameIframe.src = 'about:blank';
   }
 
   function openWithLoader(label, url) {
@@ -326,7 +343,7 @@
 
     loaderTimeout = setTimeout(() => {
       dismissLoader();
-      window.location.href = url;
+      openFrame(label, url);
     }, LOAD_MS);
   }
 
