@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=600, initial-scale=1" />
+<title>HEADPRINT · Biometric Wearer ID</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ─── TOP BAR ─────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">HEADPRINT</span>
+    </div>
+    <div class="topbar-right">
+      <span class="phase-pill" id="phase-pill">MENU</span>
+      <span class="sensor-pill" id="sensor-pill">SENSOR <em>—</em></span>
+    </div>
+  </header>
+
+  <!-- ─── MENU SCREEN ─────────────────────────────────── -->
+  <section class="screen menu-screen" id="screen-menu">
+    <div class="menu-eyebrow">PROFILES <span id="menu-count">0</span></div>
+    <div class="menu-list" id="menu-list">
+      <!-- profile rows + actions injected by JS -->
+    </div>
+    <div class="menu-empty hidden" id="menu-empty">
+      No profiles yet.<br/><span class="menu-empty-sub">Add one to begin training.</span>
+    </div>
+  </section>
+
+  <!-- ─── NAMING SCREEN ───────────────────────────────── -->
+  <section class="screen naming-screen hidden" id="screen-naming">
+    <div class="eyebrow">NEW PROFILE</div>
+    <div class="naming-label">Pick a callsign.</div>
+    <div class="naming-name" id="naming-name">STEADY-FOX-42</div>
+    <div class="naming-hint">
+      <kbd>↑</kbd><kbd>↓</kbd> reroll &nbsp;·&nbsp; <kbd>⏎</kbd> accept
+    </div>
+  </section>
+
+  <!-- ─── GESTURE CAPTURE SCREEN ──────────────────────── -->
+  <section class="screen capture-screen hidden" id="screen-capture">
+
+    <div class="capture-head">
+      <div class="capture-mode" id="capture-mode">TRAINING</div>
+      <div class="capture-rep">REP <span id="capture-rep">1</span> / <span id="capture-reps">3</span></div>
+    </div>
+
+    <div class="capture-mid">
+      <div class="gesture-icon" id="gesture-icon">↕</div>
+      <div class="gesture-name" id="gesture-name">NOD</div>
+      <div class="gesture-instruction" id="gesture-instruction">Look up. Look down. 3 times.</div>
+    </div>
+
+    <div class="capture-state" id="capture-state">
+      <!-- mode A: countdown -->
+      <div class="cap-countdown hidden" id="cap-countdown">
+        <div class="cap-countdown-num" id="cap-countdown-num">3</div>
+        <div class="cap-countdown-label">GET READY</div>
+      </div>
+      <!-- mode B: recording -->
+      <div class="cap-recording hidden" id="cap-recording">
+        <div class="rec-row">
+          <span class="rec-dot"></span>
+          <span class="rec-label">RECORDING</span>
+          <span class="rec-timer" id="rec-timer">3.0s</span>
+        </div>
+        <div class="rec-meter"><div class="rec-meter-fill" id="rec-meter-fill"></div></div>
+      </div>
+      <!-- mode C: captured chip -->
+      <div class="cap-captured hidden" id="cap-captured">
+        <span class="cap-check">✓</span> CAPTURED
+      </div>
+      <!-- mode D: waiting for user -->
+      <div class="cap-ready hidden" id="cap-ready">
+        <span class="cap-ready-label">PRESS</span> <kbd>⏎</kbd> <span class="cap-ready-label">TO START</span>
+      </div>
+    </div>
+
+    <div class="capture-progress">
+      <div class="capture-progress-track">
+        <div class="capture-progress-fill" id="capture-progress-fill"></div>
+      </div>
+      <div class="capture-progress-label">
+        GESTURE <span id="gesture-num">1</span> / <span id="gesture-total">4</span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── RESULT SCREEN (training-complete OR identify-result) ── -->
+  <section class="screen result-screen hidden" id="screen-result">
+    <div class="result-eyebrow" id="result-eyebrow">TRAINING COMPLETE</div>
+    <div class="result-headline" id="result-headline">STEADY-FOX-42</div>
+    <div class="result-sub" id="result-sub">3 reps · 4 gestures recorded</div>
+
+    <div class="ranking hidden" id="ranking">
+      <!-- ranking rows injected by JS during identify -->
+    </div>
+
+    <div class="result-actions">
+      <button class="primary focused" id="result-primary" data-action="result-primary">DONE  ⏎</button>
+    </div>
+  </section>
+
+  <!-- ─── PROFILE OVERLAY (per-profile actions) ───────── -->
+  <div class="overlay hidden" id="profile-overlay">
+    <div class="overlay-card">
+      <div class="overlay-eyebrow">PROFILE</div>
+      <div class="overlay-name" id="overlay-name">STEADY-FOX-42</div>
+      <div class="overlay-stat" id="overlay-stat">3 reps · trained</div>
+      <div class="overlay-actions" id="overlay-actions">
+        <button class="overlay-btn focused" data-overlay-action="train">TRAIN MORE</button>
+        <button class="overlay-btn" data-overlay-action="delete">DELETE</button>
+        <button class="overlay-btn" data-overlay-action="close">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DELETE CONFIRM OVERLAY ──────────────────────── -->
+  <div class="overlay hidden" id="confirm-overlay">
+    <div class="overlay-card small">
+      <div class="overlay-eyebrow warn">DELETE PROFILE</div>
+      <div class="overlay-name" id="confirm-name">STEADY-FOX-42</div>
+      <div class="overlay-stat">This cannot be undone.</div>
+      <div class="overlay-actions" id="confirm-actions">
+        <button class="overlay-btn focused" data-confirm-action="cancel">CANCEL</button>
+        <button class="overlay-btn danger" data-confirm-action="delete">DELETE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PERMISSION OVERLAY (iOS) ────────────────────── -->
+  <div class="overlay hidden" id="perm-overlay">
+    <div class="overlay-card">
+      <div class="overlay-eyebrow">PERMISSION</div>
+      <div class="overlay-name small-name">Motion access</div>
+      <p class="overlay-text">HEADPRINT reads head-motion telemetry from your glasses to build a biometric profile. Press <b>⏎</b> to allow.</p>
+      <div class="overlay-actions">
+        <button class="overlay-btn focused" id="perm-grant">GRANT  ⏎</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── BOTTOM HINT BAR ─────────────────────────────── -->
+  <footer class="hintbar" id="hintbar"></footer>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
