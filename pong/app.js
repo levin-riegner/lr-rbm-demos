@@ -36,10 +36,7 @@
   // (or Render / Railway / etc). When set, public visitors automatically use
   // it. Local dev (localhost, LAN, *.local) keeps using same-origin so
   // `npm start` keeps working unchanged.
-  //
-  // Example:
-  //   var WS_PROD = 'wss://pong-ws.fly.dev/ws';
-  var WS_PROD = '';
+  var WS_PROD = 'wss://pong-ws.fly.dev/ws';
 
   function isLocalHostname(host) {
     if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;
