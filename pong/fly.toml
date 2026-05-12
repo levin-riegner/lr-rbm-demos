@@ -1,45 +1,27 @@
-# fly.toml — Pong WebSocket server on Fly.io
+# fly.toml app configuration file generated for pong-demo on 2026-05-12T14:35:36-04:00
 #
-# First-time setup:
-#   1. Install flyctl:           curl -L https://fly.io/install.sh | sh
-#   2. Authenticate:             flyctl auth login
-#   3. From examples/pong/:      flyctl launch --copy-config --no-deploy
-#         (prompts for an app name, writes it back here as `app = "..."`)
-#   4. flyctl deploy
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
-# Subsequent deploys:            flyctl deploy
-# Logs:                          flyctl logs
-# Open in browser:               flyctl open
-#
-# After the first successful deploy, copy your Fly hostname (printed by
-# `flyctl deploy`, e.g. `pong-ws-abc.fly.dev`) into the WS_PROD constant
-# at the top of app.js, then redeploy the static files to Netlify.
 
-primary_region = "cdg"  # Paris. Change to a region close to your players:
-                        # https://fly.io/docs/reference/regions/
+app = 'pong-demo'
+primary_region = 'ewr'
 
 [build]
-  # Auto-detects the Dockerfile in this directory.
 
 [http_service]
   internal_port = 8080
   force_https = true
-
-  # Suspend (snapshot RAM) when idle. Wakes on next request in ~1 second —
-  # the client's exponential backoff absorbs that latency cleanly.
-  # Set to false if you want the machine to stay always-on instead.
-  auto_stop_machines = "suspend"
+  auto_stop_machines = 'suspend'
   auto_start_machines = true
   min_machines_running = 0
 
-  # Pong holds long-lived WebSockets, so don't be too eager to disconnect
-  # idle clients at the proxy layer. The server's 30 s WS ping handles the
-  # in-game case; this is for grace before the proxy itself force-closes.
   [http_service.concurrency]
-    type = "connections"
-    soft_limit = 200
+    type = 'connections'
     hard_limit = 500
+    soft_limit = 200
 
 [[vm]]
-  size = "shared-cpu-1x"
-  memory = "256mb"
+  size = 'shared-cpu-1x'
+  memory = '256mb'
+  cpus = 1
+  memory_mb = 256
