@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+*.log
+.git
+.gitignore
+.DS_Store
+README.md
+fly.toml
+Dockerfile
+.dockerignore
+netlify.toml
