@@ -29,7 +29,11 @@ pong/
 ├── styles.css      glasses theme: 600×600, #0a0a0f bg, 88 px tap targets, combo lock
 ├── server.js       Node http + ws: static files + WS rooms + 60 Hz physics
 ├── package.json    single dep: ws@^8
-├── vercel.json     kept for parity — see note below
+├── Dockerfile      container image for Fly.io (or any Docker host)
+├── .dockerignore   excludes node_modules, README, deploy config, etc.
+├── fly.toml        Fly.io app config — `flyctl launch` + `flyctl deploy`
+├── netlify.toml    Netlify build/publish config for the static side
+├── vercel.json     kept for parity — see note in Production hosting
 └── README.md       this file
 ```
 
@@ -114,13 +118,15 @@ Physics constants (paddle speed, ball speed, win score, snapshot rate) live at t
 
 ### Split-host mode (optional)
 
-If you host the static files somewhere else (e.g. Vercel) and the WS server on another origin, set the WS URL via query string:
+If you host the static files somewhere else and the WS server on another origin, the client picks the right URL automatically:
 
-```
-https://your-static-host.vercel.app/?ws=wss://your-ws-host.fly.dev/ws
-```
+1. **Edit `app.js`** — set the `WS_PROD` constant near the top:
+   ```js
+   var WS_PROD = 'wss://your-ws-host.fly.dev/ws';
+   ```
+2. **Redeploy the static files.** That's it. Public visitors auto-route to `WS_PROD`; localhost / LAN / `*.local` keeps using same-origin so `npm start` still works.
 
-`app.js` honors `?ws=...`. Both clients must use the same WS host to land in the same room.
+You can also force any URL with `?ws=wss://…/ws` — handy for testing different backends without redeploying. Override always wins over `WS_PROD`. See **[Production hosting](#production-hosting-netlify--flyio)** below for a full recipe.
 
 ---
 
@@ -261,26 +267,98 @@ Follow the [ngrok + QR](#on-device-demo-ngrok--qr) flow above. Things to test sp
 
 ---
 
-## Hosting beyond ngrok
+## Production hosting (Netlify + Fly.io)
 
-### A. Local + ngrok (this setup)
-- ✅ Easiest. Same-origin. Free.
-- ❌ Public URL rotates on every `ngrok` restart (free tier).
-- ❌ Not for sustained traffic.
+A persistent WebSocket server cannot run on Netlify or Vercel — their function runtimes terminate long-lived connections. The recommended production setup splits the deploy:
 
-### B. Static on Vercel, WS elsewhere
-- Deploy `index.html`, `app.js`, `styles.css` to Vercel.
-- Deploy `server.js` to **Render**, **Fly.io**, or **Railway** (any host that keeps a persistent process).
-- Glasses URL becomes `https://pong.vercel.app/?ws=wss://pong-ws.onrender.com/ws`.
-- Both peers must hit the same WS host to share rooms.
+- **Static files (index.html, app.js, styles.css)** → **Netlify** (free, instant CDN, HTTPS).
+- **WebSocket server (server.js)** → **Fly.io** (free tier, persistent Node process, WSS).
 
-### C. All-in-one on Fly.io / Render / Railway
-- Single host serves both static files and WS. Simplest long-lived deploy.
+The `app.js` config knows about this split automatically once you set `WS_PROD`.
 
-### D. Vercel alone
-- ❌ Not supported. Vercel serverless functions time out on long-lived connections. Use B or C.
+```
+                  ┌──────────────────────────┐
+                  │        Netlify           │
+   Players ───►   │  pong.netlify.app        │  serves index.html, app.js, styles.css
+                  └────────────┬─────────────┘
+                               │  (browser opens WSS to …)
+                               ▼
+                  ┌──────────────────────────┐
+                  │         Fly.io           │
+                  │  pong-ws.fly.dev/ws      │  Node + ws (your server.js verbatim)
+                  └──────────────────────────┘
+```
 
-The `vercel.json` is kept for **parity with other examples in this repo** (so tooling that assumes every example has one doesn't error). Deploying just this folder to Vercel will serve the static files fine — but the WS connection will never succeed against a Vercel origin.
+This directory already ships everything you need: a `Dockerfile`, `fly.toml`, `netlify.toml`, and a `.dockerignore`.
+
+### 1. Deploy the server to Fly.io
+
+```bash
+# One-time setup.
+curl -L https://fly.io/install.sh | sh
+flyctl auth login
+
+cd examples/pong
+flyctl launch --copy-config --no-deploy
+#   Prompts for an app name (e.g. "pong-ws"). Writes it back to fly.toml.
+flyctl deploy
+```
+
+After `flyctl deploy` succeeds, copy the public hostname it prints — e.g. `https://pong-ws.fly.dev`. Smoke-test it:
+
+```bash
+curl https://pong-ws.fly.dev/health   # → {"ok":true,"rooms":0}
+```
+
+### 2. Point the client at the Fly server
+
+Open `app.js` and set `WS_PROD` near the top:
+
+```js
+var WS_PROD = 'wss://pong-ws.fly.dev/ws';
+```
+
+(Use `wss://` — secure WebSocket — to match Netlify's HTTPS. Mixed-content rules will block a plain `ws://` from an HTTPS page.)
+
+### 3. Deploy the static files to Netlify
+
+Easiest path — drag-and-drop:
+
+1. Open <https://app.netlify.com/drop>.
+2. Drop the `examples/pong/` folder onto the page.
+3. Netlify prints a public URL like `https://random-name.netlify.app`. Done.
+
+Alternative — CLI:
+
+```bash
+npm i -g netlify-cli
+netlify deploy --prod --dir=examples/pong
+```
+
+Alternative — Git: connect this repo in the Netlify dashboard and set the **base directory** to `examples/pong`. `netlify.toml` skips the build step entirely (pure static).
+
+### 4. Play
+
+Share the Netlify URL with the other player. Both of you click **Create room** / **Join room** as before — the client transparently uses `WS_PROD` for the WebSocket because the page is on a public origin. Same UX, anywhere on the internet, at any time.
+
+### Updating
+
+- **Client change** (any file in `app.js`, `index.html`, `styles.css`): redeploy to Netlify only. Drag-and-drop again, or `netlify deploy --prod`, or push to the connected branch.
+- **Server change** (`server.js`): `flyctl deploy` from `examples/pong/`. The Netlify side doesn't need to know.
+- **Both:** deploy server first, client second — the client should never be ahead of a protocol the server doesn't yet speak.
+
+### Other options
+
+| Option | Trade-off |
+|---|---|
+| **All-in-one on Fly.io** | The Dockerfile already includes the static files (`index.html`, `app.js`, `styles.css`), so a single `flyctl deploy` actually serves both. Skip Netlify entirely and use the Fly URL. Simplest setup; only downside is the Fly free tier has fewer edge POPs than Netlify's CDN. |
+| **Render** | Free Web Service tier (750 h/mo). Same shape as Fly but free instances spin down after 15 min idle and take ~30–60 s to wake. Painful for an interactive game. |
+| **Railway** | Pay-as-you-go ($5 free credit/month). Best DX, no cold starts. Use if Fly free tier becomes a constraint. |
+| **Self-host on a VPS** (Hetzner / DO / Linode, $4–6/mo) | Full control, always-on, no cold starts. Manual setup (systemd + Caddy for TLS). |
+| **Cloudflare Workers + Durable Objects** | Would work via hibernating WebSockets, but requires rewriting `server.js` to the DO model. Overkill for Pong. |
+| **Vercel / Netlify Functions** | ❌ Not supported. Their function runtimes terminate persistent WebSockets. Same constraint as `pair-hud`. |
+
+The included `vercel.json` is kept for **parity with other examples in this repo** (so tooling that assumes every example has one doesn't error). It will serve the static files fine — but the WebSocket will never connect against a Vercel origin.
 
 ---
 

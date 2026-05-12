@@ -32,15 +32,40 @@
 
   // ---------- WebSocket URL derivation -----------------------------------
 
-  // Same-origin by default. Let ?ws=... override for split-host setups.
+  // Production WebSocket host. Set this AFTER deploying server.js to Fly.io
+  // (or Render / Railway / etc). When set, public visitors automatically use
+  // it. Local dev (localhost, LAN, *.local) keeps using same-origin so
+  // `npm start` keeps working unchanged.
+  //
+  // Example:
+  //   var WS_PROD = 'wss://pong-ws.fly.dev/ws';
+  var WS_PROD = '';
+
+  function isLocalHostname(host) {
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;
+    // RFC-1918 private ranges.
+    if (/^10\./.test(host)) return true;
+    if (/^192\.168\./.test(host)) return true;
+    if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
+    // mDNS / Bonjour (e.g. mymac.local).
+    if (/\.local$/.test(host)) return true;
+    return false;
+  }
+
   function resolveWsUrl() {
+    // 1. Explicit ?ws=… override always wins (handy for testing).
     try {
-      var qs = new URLSearchParams(location.search);
-      var override = qs.get('ws');
+      var override = new URLSearchParams(location.search).get('ws');
       if (override) return override;
     } catch (e) {
       /* URLSearchParams unavailable — fall through */
     }
+    // 2. Production WS host, if configured AND we're on a public origin
+    //    (i.e. not localhost / LAN / .local). This is what lets Netlify-
+    //    hosted static files talk to a Fly-hosted WS server with zero
+    //    user-facing config.
+    if (WS_PROD && !isLocalHostname(location.hostname)) return WS_PROD;
+    // 3. Default: same-origin. Works for `npm start`, LAN play, ngrok.
     var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
     return proto + '//' + location.host + '/ws';
   }
