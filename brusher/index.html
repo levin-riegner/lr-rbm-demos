@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=600, initial-scale=1" />
+<title>Brusher · Brush Coach</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ─── TOP BAR ─────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">BRUSHER</span>
+    </div>
+    <div class="topbar-right">
+      <span class="phase-pill" id="phase-pill">INTRO</span>
+      <span class="sensor-pill" id="sensor-pill">SENSOR <em>—</em></span>
+    </div>
+  </header>
+
+  <!-- ─── INTRO SCREEN ────────────────────────────────── -->
+  <section class="screen" id="screen-intro">
+    <div class="intro-block">
+      <div class="eyebrow">DAILY DENTAL · v1</div>
+      <h1 class="big-title">Brush Coach<br/><span class="thin">for your glasses</span></h1>
+      <p class="lede">
+        Counts your strokes from head motion. We'll calibrate with <b>10 brushes</b>, then guide you through <b>8 zones</b>.
+      </p>
+      <div class="cta-row">
+        <button class="primary focused" id="intro-begin" data-action="begin">BEGIN  ⏎</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TRAINING SCREEN ─────────────────────────────── -->
+  <section class="screen train-screen hidden" id="screen-train">
+    <div class="train-stack">
+      <div class="train-eyebrow">CALIBRATION</div>
+      <div class="train-headline">Brush 10 strokes.</div>
+      <div class="train-count">
+        <span id="train-count">0</span><span class="train-of"> / 10</span>
+      </div>
+      <div class="train-progress"><div class="count-bar-fill" id="train-fill"></div></div>
+      <div class="signal-row centered">
+        <div class="signal-label">SIGNAL</div>
+        <div class="signal-meter"><div class="signal-meter-fill" id="signal-fill"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── READY SCREEN ────────────────────────────────── -->
+  <section class="screen hidden" id="screen-ready">
+    <div class="intro-block">
+      <div class="eyebrow good">CALIBRATED</div>
+      <h1 class="big-title">All set.<br/><span class="thin">Wet the bristles.</span></h1>
+      <div class="ready-stats">
+        <div class="ready-stat"><div class="ready-stat-k">ZONES</div><div class="ready-stat-v" id="ready-zones">8</div></div>
+        <div class="ready-stat"><div class="ready-stat-k">PER ZONE</div><div class="ready-stat-v" id="ready-target">18</div></div>
+      </div>
+      <div class="cta-row">
+        <button class="primary focused" id="ready-start" data-action="start">START BRUSHING  ⏎</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── BRUSHING SCREEN ─────────────────────────────── -->
+  <section class="screen brush-screen hidden" id="screen-brush">
+
+    <!-- top row: metrics (left) + big stroke count (right) -->
+    <div class="brush-top">
+      <div class="brush-metrics">
+        <div class="bm-row"><span class="bm-k">TIME</span> <span class="bm-v" id="brush-time">0:00</span></div>
+        <div class="bm-row"><span class="bm-k">TOTAL</span> <span class="bm-v" id="brush-total">0</span></div>
+        <div class="bm-row"><span class="bm-k">PACE</span> <span class="bm-v" id="brush-pace">—</span></div>
+      </div>
+      <div class="brush-count-block">
+        <div class="big-count-num" id="brush-count">0</div>
+        <div class="big-count-of">/<span id="brush-target">18</span></div>
+      </div>
+    </div>
+
+    <!-- center: big mouth diagram -->
+    <div class="brush-mid">
+      <svg class="mouth big" viewBox="0 0 260 320" id="mouth-svg" aria-hidden="true">
+        <path id="z-u-r-out" class="arch outer" d="M 30 100 Q 50 60 110 50" />
+        <path id="z-u-f-out" class="arch outer" d="M 110 50 Q 130 46 150 50" />
+        <path id="z-u-l-out" class="arch outer" d="M 150 50 Q 210 60 230 100" />
+        <path id="z-u-in"    class="arch inner" d="M 60 110 Q 130 78 200 110" />
+        <path class="tongue" d="M 60 168 Q 130 196 200 168 Q 130 192 60 168 Z" />
+        <path id="z-l-l-out" class="arch outer" d="M 30 230 Q 50 270 110 280" />
+        <path id="z-l-f-out" class="arch outer" d="M 110 280 Q 130 284 150 280" />
+        <path id="z-l-r-out" class="arch outer" d="M 150 280 Q 210 270 230 230" />
+        <path id="z-l-in"    class="arch inner" d="M 60 220 Q 130 254 200 220" />
+        <circle class="mid-dot" cx="130" cy="165" r="2.5" />
+      </svg>
+    </div>
+
+    <!-- bottom: zone title centered, big -->
+    <div class="brush-bottom">
+      <div class="zone-eyebrow"><span id="zone-num">1</span> / <span id="zone-total">8</span></div>
+      <div class="zone-label" id="zone-label">UPPER · BACK RIGHT</div>
+      <div class="zone-sub" id="zone-sub">OUTER SURFACE</div>
+      <div class="count-bar tall"><div class="count-bar-fill" id="brush-fill"></div></div>
+    </div>
+
+  </section>
+
+  <!-- ─── DONE SCREEN ─────────────────────────────────── -->
+  <section class="screen hidden" id="screen-done">
+    <div class="intro-block">
+      <div class="eyebrow good">COMPLETE</div>
+      <h1 class="big-title">Nice work.</h1>
+      <div class="result-grid">
+        <div class="result">
+          <div class="result-k">STROKES</div>
+          <div class="result-v" id="done-strokes">144</div>
+        </div>
+        <div class="result">
+          <div class="result-k">TIME</div>
+          <div class="result-v" id="done-time">0:00</div>
+        </div>
+        <div class="result">
+          <div class="result-k">PACE</div>
+          <div class="result-v" id="done-pace">—</div>
+        </div>
+      </div>
+      <div class="cta-row" id="done-cta">
+        <button class="primary focused" data-action="restart">BRUSH AGAIN</button>
+        <button class="secondary" data-action="recalibrate">RE-CALIBRATE</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ZONE-COMPLETE POPOVER ───────────────────────── -->
+  <div class="overlay big-overlay hidden" id="zone-complete-overlay">
+    <div class="big-overlay-inner">
+      <div class="big-check">✓</div>
+      <div class="big-overlay-eyebrow">ZONE <span id="complete-zone-num">1</span> COMPLETE</div>
+      <div class="big-overlay-next-label">NEXT</div>
+      <div class="big-overlay-zone-name" id="complete-next-name">UPPER · FRONT</div>
+      <div class="big-overlay-zone-sub" id="complete-next-sub">OUTER SURFACE</div>
+    </div>
+  </div>
+
+  <!-- ─── PERMISSION OVERLAY (iOS) ────────────────────── -->
+  <div class="overlay hidden" id="perm-overlay">
+    <div class="overlay-card">
+      <div class="eyebrow">PERMISSION</div>
+      <h2 class="med-title">Motion access</h2>
+      <p class="muted">Brusher uses head-motion telemetry from your glasses to count brushstrokes. Press <b>Enter</b> to allow.</p>
+      <button class="primary focused" id="perm-grant">GRANT ACCESS  ⏎</button>
+    </div>
+  </div>
+
+  <!-- ─── BOTTOM HINT BAR (filled by JS per phase) ────── -->
+  <footer class="hintbar" id="hintbar"></footer>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

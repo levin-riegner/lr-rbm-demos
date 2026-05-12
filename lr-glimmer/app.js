@@ -216,7 +216,15 @@
   // ───────── Naming ─────────
   function syncNamingScreen() {
     const el = $('nameDisplay');
-    if (el) el.textContent = pendingName || 'ORB-7';
+    if (!el) return;
+    el.value = pendingName || 'ORB-7';
+    if (!el._inputBound) {
+      el._inputBound = true;
+      el.addEventListener('input', () => {
+        pendingName = el.value.toUpperCase().slice(0, 14);
+        el.value = pendingName;
+      });
+    }
   }
   function syncEggSelection() {
     document.querySelectorAll('.egg-card').forEach(c => {
@@ -336,6 +344,7 @@
   }
 
   function focusFirstAction() {
+    if (state.dead) return;
     const first = document.querySelector('.act.focusable');
     if (first) first.focus();
   }
@@ -455,6 +464,7 @@
       return;
     }
     if (action === 'reset') {
+      closeMenu();
       const oldName = state.name;
       const oldVariant = state.eggVariant;
       const nextGen = (state.generation || 1) + 1;
@@ -676,9 +686,14 @@
     $('ageLabel').textContent = `DAY ${days}`;
     $('poop').classList.toggle('show', state.pooped);
     $('zzz').classList.toggle('show', state.sleeping);
+    const wasDead = document.body.classList.contains('dead');
     document.body.classList.toggle('dead', state.dead);
     const deadMsg = $('deadMessage');
     if (deadMsg) deadMsg.textContent = state.dead ? `RIP ${state.name || 'ORB-7'}` : '';
+    if (state.dead && !wasDead) {
+      const db = document.querySelector('.dead-btn');
+      if (db) db.focus();
+    }
     updateTimeGlyph();
   }
   function setStat(key) {

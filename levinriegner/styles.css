@@ -224,6 +224,33 @@ html, body {
 .home-btn:hover::before { left: 100%; }
 .home-btn:hover .hb-meta { color: var(--white); }
 
+/* arrow-key focus — clearly distinct, with a glowing chevron */
+.home-btn.focused {
+  border-color: var(--white);
+  background: rgba(168, 232, 152, 0.20);
+  box-shadow:
+    0 0 34px rgba(168, 232, 152, 0.50),
+    inset 0 0 26px rgba(255, 255, 255, 0.08);
+  padding-right: 56px;
+}
+.home-btn.focused .hb-label { color: var(--white); }
+.home-btn.focused::after {
+  content: '▸';
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--white);
+  font-size: 26px;
+  font-weight: 900;
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.7);
+  animation: chevPulse 1.6s ease-in-out infinite;
+}
+@keyframes chevPulse {
+  0%, 100% { transform: translateY(-50%) translateX(0); opacity: 1; }
+  50%       { transform: translateY(-50%) translateX(4px); opacity: 0.6; }
+}
+
 .hb-label { color: var(--white); font-weight: 900; }
 
 .home-description {

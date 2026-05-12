@@ -61,6 +61,40 @@
       <div class="toast" id="toast"></div>
     </section>
 
+    <!-- ─────────── Amazon loader overlay ─────────── -->
+    <div id="loader" class="overlay hidden">
+      <header class="head">
+        <span class="dot loader-dot"></span>
+        <span>Amazon</span>
+      </header>
+      <div class="loader-item" id="loaderItem"></div>
+      <div class="loader-msg" id="loaderMsg"></div>
+      <div class="loader-track">
+        <div class="loader-bar" id="loaderBar"></div>
+      </div>
+    </div>
+
+    <!-- ─────────── Product detail overlay ─────────── -->
+    <div id="pdp" class="overlay hidden">
+      <header class="head">
+        <span class="dot"></span>
+        <span class="pdp-back">← BACK</span>
+      </header>
+      <div class="pdp-emoji" id="pdpEmoji"></div>
+      <div class="pdp-title" id="pdpTitle"></div>
+      <div class="pdp-desc"  id="pdpDesc"></div>
+      <div class="pdp-price" id="pdpPrice"></div>
+      <div class="actions">
+        <button class="btn complete" id="pdpBuy" data-focusable>
+          Buy Now<span class="glyph">→</span>
+        </button>
+      </div>
+      <div class="pdp-confirm" id="pdpConfirm">
+        <div class="pdp-check">✓</div>
+        <div class="pdp-confirm-label">Purchased</div>
+      </div>
+    </div>
+
     <!-- ─────────── Done ─────────── -->
     <section id="done" class="screen hidden">
       <header class="head">
