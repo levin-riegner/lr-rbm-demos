@@ -1,8 +1,8 @@
-# lr-rbm-demos
+# Meta Ray-Ban Display Glasses demos by L+R
 
 A collection of demo web apps for the [Meta Ray-Ban Display glasses](https://wearables.developer.meta.com/docs).
 
-Each app is a small, self-contained web project designed for the 600x600 display and D-pad navigation. Built by [Levin Riegner](https://levinriegner.com) to explore what's possible on the glasses.
+Each app is a small, self-contained web project designed for the 600x600 display and D-pad navigation. Built by [L+R](https://levinriegner.com) to explore what's possible on the glasses.
 
 ## Demos screenshots
 <img width="200" height="200" alt="Screenshot 2026-05-14 at 18 05 07" src="https://github.com/user-attachments/assets/3aac83c9-c3a7-46a5-8e72-ea0b95f85f0d" />
