@@ -7,7 +7,8 @@
     previous: null,   // previous value (number)
     operator: null,   // '+', '-', '*', '/'
     justEvaluated: false,
-    error: false
+    error: false,
+    pendingClear: false
   };
 
   // ---- DOM ----
@@ -45,7 +46,9 @@
       resultEl.textContent = state.current;
     }
     if (state.previous != null && state.operator && !state.justEvaluated) {
-      exprEl.textContent = `${formatNumber(state.previous)} ${formatOpLabel(state.operator)}`;
+      const head = `${formatNumber(state.previous)} ${formatOpLabel(state.operator)}`;
+      // After an operator, `current` still holds the first operand until digits are entered.
+      exprEl.textContent = state.pendingClear ? head : `${head} ${state.current}`;
     } else {
       exprEl.textContent = '—';
     }
