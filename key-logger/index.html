@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600" />
+  <title>Key Logger</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 600px;
+      height: 600px;
+      background: #1C1E21;
+      color: #FFFFFF;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+    }
+
+    #stage {
+      width: 600px;
+      height: 600px;
+      display: grid;
+      grid-template-rows: 1fr auto auto 24px;
+      align-items: center;
+      justify-items: center;
+      box-sizing: border-box;
+      padding: 32px;
+    }
+
+    #key {
+      font-size: 200px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -2px;
+      text-align: center;
+      word-break: break-all;
+      max-width: 540px;
+    }
+
+    #meta {
+      font-size: 22px;
+      color: #FFFFFF;
+      opacity: 0.85;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    #meta .repeat {
+      color: #FFC857;
+      font-weight: 700;
+    }
+
+    #history {
+      display: flex;
+      gap: 10px;
+      font-size: 18px;
+      color: #FFFFFF;
+      opacity: 0.6;
+      font-variant-numeric: tabular-nums;
+      flex-wrap: nowrap;
+      max-width: 540px;
+      overflow: hidden;
+    }
+
+    #history .item {
+      padding: 4px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    #hint {
+      font-size: 14px;
+      opacity: 0.4;
+    }
+
+    #key.idle {
+      font-size: 48px;
+      opacity: 0.5;
+      font-weight: 400;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <div id="key" class="idle">press any key</div>
+    <div id="meta">&nbsp;</div>
+    <div id="history"></div>
+    <div id="hint">keydown · preventDefault active</div>
+  </div>
+
+  <script>
+    (function () {
+      const keyEl = document.getElementById('key');
+      const metaEl = document.getElementById('meta');
+      const historyEl = document.getElementById('history');
+      const history = [];
+      const MAX_HISTORY = 8;
+
+      function render(e) {
+        keyEl.classList.remove('idle');
+        keyEl.textContent = e.key === ' ' ? 'Space' : e.key;
+
+        const mods = [];
+        if (e.ctrlKey) mods.push('Ctrl');
+        if (e.altKey) mods.push('Alt');
+        if (e.shiftKey) mods.push('Shift');
+        if (e.metaKey) mods.push('Meta');
+
+        const parts = [`code: ${e.code || '(none)'}`];
+        if (mods.length) parts.push(`mods: ${mods.join('+')}`);
+        const repeatHTML = e.repeat ? ' · <span class="repeat">REPEAT</span>' : '';
+        metaEl.innerHTML = parts.join(' · ') + repeatHTML;
+
+        history.unshift({ key: e.key === ' ' ? '␣' : e.key, repeat: e.repeat });
+        if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
+        historyEl.innerHTML = history
+          .map(h => `<div class="item">${escapeHTML(h.key)}${h.repeat ? '·r' : ''}</div>`)
+          .join('');
+      }
+
+      function escapeHTML(s) {
+        return String(s).replace(/[&<>"']/g, c => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[c]);
+      }
+
+      window.addEventListener('keydown', function (e) {
+        e.preventDefault();
+        render(e);
+      }, true);
+    })();
+  </script>
+</body>
+</html>

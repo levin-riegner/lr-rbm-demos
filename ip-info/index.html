@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>IP Info</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="home" class="screen">
+      <header class="header">
+        <h1>IP Info</h1>
+        <span class="header-meta" id="updated-label">&mdash;</span>
+      </header>
+
+      <div class="content" id="home-content">
+
+        <!-- Card grid -->
+        <div class="card-grid" id="card-grid">
+          <div class="card focusable" tabindex="0" data-action="copy-ip" id="card-ip">
+            <div class="card-label">IP</div>
+            <div class="card-value mono" id="val-ip">&mdash;</div>
+          </div>
+          <div class="card focusable" tabindex="0">
+            <div class="card-label">City</div>
+            <div class="card-value" id="val-city">&mdash;</div>
+          </div>
+          <div class="card focusable" tabindex="0">
+            <div class="card-label">Region</div>
+            <div class="card-value" id="val-region">&mdash;</div>
+          </div>
+          <div class="card focusable" tabindex="0">
+            <div class="card-label">Country</div>
+            <div class="card-value" id="val-country">&mdash;</div>
+          </div>
+          <div class="card focusable" tabindex="0">
+            <div class="card-label">Timezone</div>
+            <div class="card-value" id="val-timezone">&mdash;</div>
+          </div>
+          <div class="card focusable" tabindex="0">
+            <div class="card-label">Org (ISP)</div>
+            <div class="card-value" id="val-org">&mdash;</div>
+          </div>
+          <div class="card focusable card-wide" tabindex="0">
+            <div class="card-label">Coords</div>
+            <div class="card-value mono" id="val-coords">&mdash;</div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading-container hidden">
+          <div class="loading-spinner"></div>
+          <div class="loading-text">Fetching IP info&hellip;</div>
+        </div>
+
+        <!-- Error -->
+        <div id="error" class="error-container hidden">
+          <div class="error-icon">&#9888;</div>
+          <div class="error-message" id="error-message">Could not load IP info</div>
+          <button class="nav-item focusable" data-action="refresh">Retry</button>
+        </div>
+
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable primary" data-action="refresh">&#8635; Refresh</button>
+        <button class="nav-item focusable" data-action="copy-ip">&#128203; Copy IP</button>
+      </nav>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast hidden">Copied</div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

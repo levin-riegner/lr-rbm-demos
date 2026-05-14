@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Head Gesture Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="viewport-frame">
+  <div class="app-root">
+    <div id="notification" class="notification" role="alert" aria-live="polite">
+      <div class="notification-icon">!</div>
+      <div class="notification-body">
+        <div class="notification-title">New Message</div>
+        <div class="notification-text">Shake your head left, right, left to dismiss.</div>
+      </div>
+    </div>
+
+    <div id="dismissed-state" class="dismissed-state hidden">
+      <div class="dismissed-title">Dismissed</div>
+      <button id="reset-btn" class="focusable reset-btn" tabindex="0">Show again</button>
+    </div>
+
+    <div class="debug-panel">
+      <div class="debug-row">
+        <span class="debug-label">gamma</span>
+        <span class="debug-value" id="gamma-value">--</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">alpha</span>
+        <span class="debug-value" id="alpha-value">--</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">beta</span>
+        <span class="debug-value" id="beta-value">--</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">crossings</span>
+        <span class="debug-value" id="crossings-value">[ ]</span>
+      </div>
+      <div class="debug-row">
+        <span class="debug-label">status</span>
+        <span class="debug-value" id="status-value">awaiting permission</span>
+      </div>
+      <button id="permission-btn" class="focusable permission-btn hidden" tabindex="0">Enable sensors</button>
+    </div>
+  </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

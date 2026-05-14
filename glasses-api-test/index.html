@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=600, initial-scale=1" />
+<title>Glasses API Test</title>
+<style>
+  :root {
+    --bg: #000;
+    --fg: #d8e4ff;
+    --dim: #6b7a99;
+    --accent: #4ea1ff;
+    --pass: #4ade80;
+    --fail: #ff5566;
+    --pending: #f5b942;
+    --panel: #0b0f1a;
+    --border: #1c2638;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 600px;
+    height: 600px;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    user-select: none;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .subtitle {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+  }
+  .list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+  }
+  .row {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.12s, background 0.12s;
+  }
+  .row.focused {
+    border-color: var(--accent);
+    background: #0f1730;
+    box-shadow: 0 0 0 1px var(--accent) inset;
+  }
+  .row-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .name {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .name .idx {
+    color: var(--dim);
+    font-weight: 400;
+    margin-right: 8px;
+  }
+  .status {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    background: #0a0f1a;
+  }
+  .status[data-state="PASS"] { color: var(--pass); border-color: var(--pass); }
+  .status[data-state="FAIL"] { color: var(--fail); border-color: var(--fail); }
+  .status[data-state="RUN"] { color: var(--pending); border-color: var(--pending); }
+  .status[data-state="LIVE"] { color: var(--accent); border-color: var(--accent); }
+  .data {
+    font-size: 11px;
+    color: var(--dim);
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 14px;
+  }
+  .data .k { color: #8aa0c8; }
+  .data .v { color: var(--fg); }
+  .preview {
+    display: none;
+    margin-top: 4px;
+    align-items: center;
+    gap: 10px;
+  }
+  .preview.show { display: flex; }
+  .preview img,
+  .preview video,
+  .preview canvas {
+    width: 96px;
+    height: 72px;
+    object-fit: cover;
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .meter {
+    flex: 1;
+    height: 6px;
+    background: #1a2238;
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .meter-fill {
+    position: absolute;
+    inset: 0 100% 0 0;
+    background: linear-gradient(90deg, var(--accent), var(--pass));
+    transition: right 0.05s linear;
+  }
+  footer {
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+  }
+  kbd {
+    display: inline-block;
+    padding: 1px 6px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: #0a0f1a;
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Glasses API Test</h1>
+    <span class="subtitle">600 × 600</span>
+  </header>
+
+  <div class="list" id="list">
+    <div class="row" data-id="mic">
+      <div class="row-head">
+        <div class="name"><span class="idx">01</span>MICROPHONE</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Press <kbd>Enter</kbd> to record 3 seconds</div>
+      <div class="preview">
+        <div class="meter"><div class="meter-fill"></div></div>
+      </div>
+    </div>
+
+    <div class="row" data-id="cam">
+      <div class="row-head">
+        <div class="name"><span class="idx">02</span>CAMERA</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Press <kbd>Enter</kbd> to capture a photo</div>
+      <div class="preview">
+        <video autoplay playsinline muted></video>
+        <img alt="snapshot" />
+      </div>
+    </div>
+
+    <div class="row" data-id="geo">
+      <div class="row-head">
+        <div class="name"><span class="idx">03</span>LOCATION</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Press <kbd>Enter</kbd> to get lat / lon</div>
+    </div>
+
+    <div class="row" data-id="motion">
+      <div class="row-head">
+        <div class="name"><span class="idx">04</span>DEVICE SENSORS</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Press <kbd>Enter</kbd> to start live readout</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><kbd>↑</kbd> <kbd>↓</kbd> navigate</span>
+    <span><kbd>Enter</kbd> run</span>
+    <span><kbd>Esc</kbd> stop</span>
+  </footer>
+
+<script>
+(() => {
+  const rows = Array.from(document.querySelectorAll('.row'));
+  let focused = 0;
+
+  const setFocus = (i) => {
+    focused = (i + rows.length) % rows.length;
+    rows.forEach((r, idx) => r.classList.toggle('focused', idx === focused));
+  };
+
+  const setStatus = (row, state, text) => {
+    const s = row.querySelector('.status');
+    const prev = s.dataset.state;
+    s.dataset.state = state;
+    s.textContent = text || state;
+    if (state !== prev) {
+      if (state === 'PASS') beeps.pass();
+      else if (state === 'FAIL') beeps.fail();
+      else if (state === 'LIVE' && prev !== 'LIVE') beeps.live();
+    }
+  };
+
+  const setData = (row, html) => {
+    row.querySelector('.data').innerHTML = html;
+  };
+
+  const fmt = (obj) =>
+    Object.entries(obj)
+      .map(([k, v]) => `<span class="k">${k}:</span> <span class="v">${v}</span>`)
+      .join('  ');
+
+  // ─── BEEP TONES (lazy AudioContext) ─────────────────────────────
+  let beepCtx = null;
+  const ensureBeepCtx = () => {
+    if (!beepCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) beepCtx = new AC();
+    }
+    if (beepCtx && beepCtx.state === 'suspended') beepCtx.resume();
+    return beepCtx;
+  };
+
+  const tone = (freq, dur = 0.08, type = 'square', gain = 0.06, when = 0) => {
+    const ctx = ensureBeepCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime + when;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(gain, t0 + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+  };
+
+  const beeps = {
+    nav:    () => tone(720, 0.04, 'square', 0.04),
+    run:    () => { tone(880, 0.06); tone(1320, 0.07, 'square', 0.05, 0.06); },
+    stop:   () => { tone(520, 0.06); tone(320, 0.08, 'square', 0.05, 0.06); },
+    pass:   () => { tone(880, 0.07); tone(1175, 0.07, 'triangle', 0.07, 0.07); tone(1568, 0.10, 'triangle', 0.07, 0.14); },
+    fail:   () => { tone(220, 0.12, 'sawtooth', 0.06); tone(165, 0.18, 'sawtooth', 0.06, 0.10); },
+    live:   () => { tone(660, 0.05); tone(990, 0.06, 'square', 0.05, 0.05); }
+  };
+
+  // ─── 01 MICROPHONE ──────────────────────────────────────────────
+  const micRow = rows[0];
+  const micPreview = micRow.querySelector('.preview');
+  const micFill = micRow.querySelector('.meter-fill');
+  let micState = { running: false, stream: null, ctx: null, raf: null, recorder: null };
+
+  const stopMic = () => {
+    if (micState.raf) cancelAnimationFrame(micState.raf);
+    if (micState.recorder && micState.recorder.state !== 'inactive') micState.recorder.stop();
+    if (micState.stream) micState.stream.getTracks().forEach(t => t.stop());
+    if (micState.ctx) micState.ctx.close();
+    micState = { running: false, stream: null, ctx: null, raf: null, recorder: null };
+    micFill.style.right = '100%';
+    micPreview.classList.remove('show');
+  };
+
+  const runMic = async () => {
+    if (micState.running) return;
+    stopMic();
+    setStatus(micRow, 'RUN', 'RECORDING');
+    setData(micRow, 'Requesting permission...');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micState.stream = stream;
+      micState.running = true;
+      micPreview.classList.add('show');
+
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioCtx();
+      micState.ctx = ctx;
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      src.connect(analyser);
+      const buf = new Uint8Array(analyser.frequencyBinCount);
+      let peak = 0;
+
+      const tick = () => {
+        analyser.getByteTimeDomainData(buf);
+        let sum = 0;
+        for (let i = 0; i < buf.length; i++) {
+          const v = (buf[i] - 128) / 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / buf.length);
+        peak = Math.max(peak, rms);
+        micFill.style.right = `${Math.max(0, 100 - rms * 400)}%`;
+        micState.raf = requestAnimationFrame(tick);
+      };
+      tick();
+
+      const chunks = [];
+      const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+      const recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      micState.recorder = recorder;
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: mime || 'audio/webm' });
+        const kb = (blob.size / 1024).toFixed(1);
+        const track = stream.getAudioTracks()[0];
+        const settings = track ? track.getSettings() : {};
+        stopMic();
+        setStatus(micRow, 'PASS');
+        setData(micRow, fmt({
+          recorded: `${kb} KB`,
+          peak: peak.toFixed(3),
+          sampleRate: settings.sampleRate || 'n/a',
+          channels: settings.channelCount || 'n/a',
+          device: (track && track.label) ? track.label.slice(0, 28) : 'default'
+        }));
+      };
+      recorder.start();
+      setTimeout(() => { if (recorder.state !== 'inactive') recorder.stop(); }, 3000);
+    } catch (err) {
+      stopMic();
+      setStatus(micRow, 'FAIL');
+      setData(micRow, fmt({ error: err.name || 'Error', msg: err.message || String(err) }));
+    }
+  };
+
+  // ─── 02 CAMERA ──────────────────────────────────────────────────
+  const camRow = rows[1];
+  const camPreview = camRow.querySelector('.preview');
+  const camVideo = camRow.querySelector('video');
+  const camImg = camRow.querySelector('img');
+  let camState = { stream: null };
+
+  const stopCam = () => {
+    if (camState.stream) camState.stream.getTracks().forEach(t => t.stop());
+    camState.stream = null;
+    camVideo.srcObject = null;
+  };
+
+  const runCam = async () => {
+    stopCam();
+    setStatus(camRow, 'RUN', 'CAPTURING');
+    setData(camRow, 'Requesting permission...');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }, audio: false
+      });
+      camState.stream = stream;
+      camVideo.srcObject = stream;
+      camPreview.classList.add('show');
+      await camVideo.play().catch(() => {});
+      // Wait briefly so the camera exposes / focuses.
+      await new Promise(r => setTimeout(r, 400));
+
+      const track = stream.getVideoTracks()[0];
+      const s = track.getSettings();
+      const w = s.width || camVideo.videoWidth || 640;
+      const h = s.height || camVideo.videoHeight || 480;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d').drawImage(camVideo, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+      camImg.src = dataUrl;
+      const kb = Math.round((dataUrl.length * 3) / 4 / 1024);
+
+      stopCam();
+      setStatus(camRow, 'PASS');
+      setData(camRow, fmt({
+        photo: `${w}×${h}`,
+        size: `~${kb} KB`,
+        device: (track.label || 'default').slice(0, 28)
+      }));
+    } catch (err) {
+      stopCam();
+      setStatus(camRow, 'FAIL');
+      setData(camRow, fmt({ error: err.name || 'Error', msg: err.message || String(err) }));
+    }
+  };
+
+  // ─── 03 LOCATION ────────────────────────────────────────────────
+  const geoRow = rows[2];
+
+  const runGeo = () => {
+    if (!('geolocation' in navigator)) {
+      setStatus(geoRow, 'FAIL');
+      setData(geoRow, fmt({ error: 'unsupported' }));
+      return;
+    }
+    setStatus(geoRow, 'RUN', 'LOCATING');
+    setData(geoRow, 'Requesting permission...');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const c = pos.coords;
+        setStatus(geoRow, 'PASS');
+        setData(geoRow, fmt({
+          lat: c.latitude.toFixed(5),
+          lon: c.longitude.toFixed(5),
+          accuracy: `±${Math.round(c.accuracy)}m`,
+          alt: c.altitude != null ? `${c.altitude.toFixed(0)}m` : 'n/a'
+        }));
+      },
+      (err) => {
+        setStatus(geoRow, 'FAIL');
+        setData(geoRow, fmt({ error: err.code, msg: err.message }));
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  // ─── 04 DEVICE SENSORS ──────────────────────────────────────────
+  const motionRow = rows[3];
+  let motionState = { running: false, motionH: null, orientH: null, gotMotion: false, gotOrient: false };
+  const last = { ax: 0, ay: 0, az: 0, alpha: 0, beta: 0, gamma: 0 };
+
+  const stopMotion = () => {
+    if (motionState.motionH) window.removeEventListener('devicemotion', motionState.motionH);
+    if (motionState.orientH) window.removeEventListener('deviceorientation', motionState.orientH);
+    motionState = { running: false, motionH: null, orientH: null, gotMotion: false, gotOrient: false };
+  };
+
+  const renderMotion = () => {
+    setData(motionRow, fmt({
+      accel: `${last.ax.toFixed(2)}, ${last.ay.toFixed(2)}, ${last.az.toFixed(2)}`,
+      orient: `α${last.alpha.toFixed(0)}° β${last.beta.toFixed(0)}° γ${last.gamma.toFixed(0)}°`
+    }));
+  };
+
+  const startMotionListeners = () => {
+    motionState.running = true;
+    motionState.motionH = (e) => {
+      motionState.gotMotion = true;
+      const a = e.accelerationIncludingGravity || e.acceleration || {};
+      last.ax = a.x || 0; last.ay = a.y || 0; last.az = a.z || 0;
+      if (motionState.gotOrient || motionState.gotMotion) {
+        setStatus(motionRow, 'LIVE');
+      }
+      renderMotion();
+    };
+    motionState.orientH = (e) => {
+      motionState.gotOrient = true;
+      last.alpha = e.alpha || 0; last.beta = e.beta || 0; last.gamma = e.gamma || 0;
+      setStatus(motionRow, 'LIVE');
+      renderMotion();
+    };
+    window.addEventListener('devicemotion', motionState.motionH);
+    window.addEventListener('deviceorientation', motionState.orientH);
+
+    setStatus(motionRow, 'RUN', 'LISTENING');
+    setData(motionRow, 'Waiting for sensor events...');
+
+    // If we never receive an event, mark FAIL.
+    setTimeout(() => {
+      if (motionState.running && !motionState.gotMotion && !motionState.gotOrient) {
+        stopMotion();
+        setStatus(motionRow, 'FAIL');
+        setData(motionRow, fmt({ error: 'no events received' }));
+      }
+    }, 3000);
+  };
+
+  const runMotion = async () => {
+    if (motionState.running) { stopMotion(); setStatus(motionRow, 'IDLE'); return; }
+    const needsPerm =
+      typeof DeviceMotionEvent !== 'undefined' &&
+      typeof DeviceMotionEvent.requestPermission === 'function';
+    if (needsPerm) {
+      try {
+        const r = await DeviceMotionEvent.requestPermission();
+        if (r !== 'granted') {
+          setStatus(motionRow, 'FAIL');
+          setData(motionRow, fmt({ error: 'permission denied' }));
+          return;
+        }
+        if (typeof DeviceOrientationEvent !== 'undefined' &&
+            typeof DeviceOrientationEvent.requestPermission === 'function') {
+          await DeviceOrientationEvent.requestPermission().catch(() => {});
+        }
+      } catch (err) {
+        setStatus(motionRow, 'FAIL');
+        setData(motionRow, fmt({ error: err.name || 'Error', msg: err.message || String(err) }));
+        return;
+      }
+    }
+    if (typeof DeviceMotionEvent === 'undefined' && typeof DeviceOrientationEvent === 'undefined') {
+      setStatus(motionRow, 'FAIL');
+      setData(motionRow, fmt({ error: 'unsupported' }));
+      return;
+    }
+    startMotionListeners();
+  };
+
+  // ─── KEY HANDLING ───────────────────────────────────────────────
+  const runners = { mic: runMic, cam: runCam, geo: runGeo, motion: runMotion };
+  const stoppers = { mic: stopMic, cam: stopCam, motion: stopMotion };
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); ensureBeepCtx(); beeps.nav(); setFocus(focused + 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); ensureBeepCtx(); beeps.nav(); setFocus(focused - 1); }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      ensureBeepCtx();
+      beeps.run();
+      const id = rows[focused].dataset.id;
+      runners[id] && runners[id]();
+    } else if (e.key === 'Escape') {
+      ensureBeepCtx();
+      beeps.stop();
+      const id = rows[focused].dataset.id;
+      if (stoppers[id]) {
+        stoppers[id]();
+        setStatus(rows[focused], 'IDLE');
+        rows[focused].querySelector('.preview')?.classList.remove('show');
+        setData(rows[focused], 'Stopped');
+      }
+    }
+  });
+
+  setFocus(0);
+})();
+</script>
+</body>
+</html>

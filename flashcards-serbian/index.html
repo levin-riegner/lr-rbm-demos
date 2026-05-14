@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>Serbian Flashcards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="stage">
+    <!-- Learn mode -->
+    <section id="learn" class="screen">
+      <header class="bar">
+        <span class="tag">SRB · LEARN</span>
+        <span class="tag accent" id="progress">1 / 5</span>
+      </header>
+      <div class="card">
+        <div class="word" id="word"></div>
+        <div class="side-label" id="sideLabel">SERBIAN</div>
+      </div>
+      <div class="hints">
+        <span class="hint">◀ NEXT</span>
+        <span class="hint">▶ ANSWER</span>
+      </div>
+    </section>
+
+    <!-- Test mode -->
+    <section id="test" class="screen hidden">
+      <header class="bar">
+        <span class="tag">SRB · TEST</span>
+        <span class="tag accent" id="testProgress">Q 1 / 5</span>
+      </header>
+      <div class="question" id="question"></div>
+      <ul class="choices" id="choices"></ul>
+      <div class="hints">
+        <span class="hint">▲▼ SELECT</span>
+        <span class="hint">▶ SUBMIT</span>
+      </div>
+    </section>
+
+    <!-- Result mode -->
+    <section id="result" class="screen hidden">
+      <header class="bar">
+        <span class="tag">SRB · RESULT</span>
+      </header>
+      <div class="result-label">SCORE</div>
+      <div class="score" id="score"></div>
+      <div class="result-sub" id="resultSub"></div>
+      <div class="hints">
+        <span class="hint">▶ RESTART</span>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

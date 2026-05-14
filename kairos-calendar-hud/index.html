@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, initial-scale=1.0">
+  <title>KAIROS — Calendar HUD</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="ambient-canvas"></canvas>
+
+    <!-- Screen: Ambient -->
+    <div id="screen-ambient" class="screen">
+      <div class="ambient-zones">
+        <div class="zone zone-tl focusable" data-action="go-agenda" tabindex="0">
+          <div class="zone-label">TODAY</div>
+          <div class="zone-value" id="ambient-event-count">—</div>
+          <div class="zone-sub">events</div>
+        </div>
+        <div class="zone zone-tr focusable" data-action="go-next-event" tabindex="0">
+          <div class="zone-label">NEXT</div>
+          <div class="zone-value" id="ambient-next-time">—</div>
+          <div class="zone-sub" id="ambient-next-name">nothing scheduled</div>
+        </div>
+        <div class="zone zone-bl focusable" data-action="go-agenda" tabindex="0">
+          <div class="zone-label">FREE</div>
+          <div class="zone-value" id="ambient-free-hours">—</div>
+          <div class="zone-sub">hrs today</div>
+        </div>
+        <div class="zone zone-br focusable" data-action="go-tomorrow" tabindex="0">
+          <div class="zone-label">TOMORROW</div>
+          <div class="zone-value" id="ambient-tomorrow-count">—</div>
+          <div class="zone-sub" id="ambient-tomorrow-first">events</div>
+        </div>
+      </div>
+      <div class="ambient-center">
+        <div class="ambient-time" id="ambient-time">00:00</div>
+        <div class="ambient-date" id="ambient-date">—</div>
+        <div class="ambient-now-card focusable" id="ambient-now-card" data-action="go-current-event" tabindex="0">
+          <div class="now-label" id="ambient-now-label">CURRENT</div>
+          <div class="now-title" id="ambient-now-title">No active event</div>
+          <div class="now-time" id="ambient-now-time">—</div>
+        </div>
+      </div>
+      <div class="nav-bar">
+        <button class="nav-btn focusable" data-action="go-agenda" tabindex="0">AGENDA</button>
+        <button class="nav-btn nav-btn-primary focusable" data-action="go-week" tabindex="0">WEEK</button>
+      </div>
+    </div>
+
+    <!-- Screen: Agenda -->
+    <div id="screen-agenda" class="screen hidden">
+      <div class="header">
+        <button class="back-btn focusable" data-action="back" tabindex="0">←</button>
+        <div class="header-title">AGENDA</div>
+        <div class="header-meta" id="agenda-day-label">Today</div>
+      </div>
+      <div class="filter-bar">
+        <div class="filter-chip focusable active" data-action="filter-today" tabindex="0">TODAY</div>
+        <div class="filter-chip focusable" data-action="filter-tomorrow" tabindex="0">TOMORROW</div>
+        <div class="filter-chip focusable" data-action="filter-week" tabindex="0">WEEK</div>
+      </div>
+      <div class="event-list" id="agenda-list"></div>
+      <div class="nav-bar">
+        <button class="nav-btn focusable" data-action="back" tabindex="0">BACK</button>
+        <div class="nav-status" id="agenda-status">—</div>
+      </div>
+    </div>
+
+    <!-- Screen: Event Detail -->
+    <div id="screen-detail" class="screen hidden">
+      <div class="header">
+        <button class="back-btn focusable" data-action="back" tabindex="0">←</button>
+        <div class="header-title" id="detail-type-label">EVENT</div>
+        <div class="header-meta" id="detail-date-label">—</div>
+      </div>
+      <div class="detail-body">
+        <div class="detail-time-block">
+          <div class="detail-time" id="detail-time">—</div>
+          <div class="detail-duration" id="detail-duration">—</div>
+        </div>
+        <div class="detail-title" id="detail-title">—</div>
+        <div class="detail-location" id="detail-location"></div>
+        <div class="detail-countdown" id="detail-countdown"></div>
+        <div class="heat-bar-container">
+          <div class="heat-bar-label">IMMINENCE</div>
+          <div class="heat-bar-track">
+            <div class="heat-bar-fill" id="detail-heat-fill" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="detail-tags" id="detail-tags"></div>
+        <div class="detail-description" id="detail-description"></div>
+        <div class="detail-attendees" id="detail-attendees"></div>
+      </div>
+      <div class="nav-bar">
+        <button class="nav-btn focusable" data-action="back" tabindex="0">BACK</button>
+        <button class="nav-btn focusable" data-action="prev-event" tabindex="0">← PREV</button>
+        <button class="nav-btn nav-btn-primary focusable" data-action="next-event" tabindex="0">NEXT →</button>
+      </div>
+    </div>
+
+    <!-- Screen: Week -->
+    <div id="screen-week" class="screen hidden">
+      <div class="header">
+        <button class="back-btn focusable" data-action="back" tabindex="0">←</button>
+        <div class="header-title">WEEK</div>
+        <div class="header-meta" id="week-range-label">—</div>
+      </div>
+      <div class="week-grid" id="week-grid"></div>
+      <div class="week-day-preview" id="week-day-preview"></div>
+      <div class="nav-bar">
+        <button class="nav-btn focusable" data-action="back" tabindex="0">BACK</button>
+        <button class="nav-btn focusable" data-action="week-prev" tabindex="0">← PREV</button>
+        <button class="nav-btn nav-btn-primary focusable" data-action="week-open-day" tabindex="0">OPEN DAY</button>
+        <button class="nav-btn focusable" data-action="week-next" tabindex="0">NEXT →</button>
+      </div>
+    </div>
+
+  </div>
+  <script src="calendar-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

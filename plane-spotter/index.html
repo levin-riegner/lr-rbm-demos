@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Plane Spotter</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="home" class="screen">
+      <header class="header">
+        <h1>Plane Spotter</h1>
+        <span class="header-meta" id="status">Idle</span>
+      </header>
+
+      <main class="content">
+        <div class="hud">
+          <div class="scope" id="scope">
+            <div class="scope-horizon" id="scope-horizon"></div>
+            <div class="scope-ring"></div>
+            <div class="scope-tick scope-tick-n">N</div>
+            <div class="scope-tick scope-tick-e">E</div>
+            <div class="scope-tick scope-tick-s">S</div>
+            <div class="scope-tick scope-tick-w">W</div>
+            <div class="scope-crosshair"></div>
+            <div class="scope-marker idle" id="scope-marker">
+              <div class="scope-marker-glyph" id="scope-marker-glyph">&#9650;</div>
+            </div>
+          </div>
+
+          <div class="callsign" id="callsign">--------</div>
+
+          <div class="readouts">
+            <div class="readout">
+              <span class="readout-label">Dist</span>
+              <span class="readout-value" id="dist">--</span>
+            </div>
+            <div class="readout">
+              <span class="readout-label">Alt</span>
+              <span class="readout-value" id="alt">--</span>
+            </div>
+            <div class="readout">
+              <span class="readout-label">Spd</span>
+              <span class="readout-value" id="spd">--</span>
+            </div>
+            <div class="readout">
+              <span class="readout-label">Brg</span>
+              <span class="readout-value" id="brg">--</span>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable primary" id="btn-toggle" data-action="toggle">Start</button>
+        <button class="nav-item focusable" id="btn-demo" data-action="demo">Demo</button>
+        <button class="nav-item focusable" id="btn-cal" data-action="calibrate">Calibrate</button>
+      </nav>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

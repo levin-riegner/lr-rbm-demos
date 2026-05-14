@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Recipe Stepper</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="picker" class="screen hidden">
+      <header class="picker-header">
+        <h1 class="picker-title">Pick a recipe</h1>
+        <span class="picker-hint">&#8593; &#8595; navigate &#183; Enter select</span>
+      </header>
+      <ul class="picker-list" id="picker-list"></ul>
+    </div>
+
+    <div id="loading" class="screen">
+      <div class="centered">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loading-text">Loading</div>
+        <div class="loading-sub" id="loading-sub"></div>
+      </div>
+    </div>
+
+    <div id="error" class="screen hidden">
+      <div class="centered">
+        <div class="error-icon">!</div>
+        <div class="error-message" id="error-message">Unable to load recipe</div>
+        <div class="error-hint" id="error-hint">Press Enter to retry</div>
+      </div>
+    </div>
+
+    <div id="stepper" class="screen hidden">
+      <header class="stepper-header">
+        <span class="step-counter" id="step-counter">Step 1 of 1</span>
+        <span class="recipe-title" id="recipe-title">Recipe</span>
+      </header>
+
+      <main class="stepper-body">
+        <p class="step-text" id="step-text"></p>
+      </main>
+
+      <footer class="stepper-footer">
+        <span class="hint hint-prev" id="hint-prev">&#8592;</span>
+        <div class="progress-track">
+          <div class="progress-dots" id="progress-dots"></div>
+          <div class="page-pips" id="page-pips"></div>
+        </div>
+        <span class="hint hint-next" id="hint-next">&#8594;</span>
+      </footer>
+    </div>
+
+    <div id="finished" class="screen hidden">
+      <div class="centered">
+        <div class="finished-title">All steps complete</div>
+        <div class="finished-recipe" id="finished-recipe"></div>
+        <div class="finished-hint">Press &#8592; to review &#183; Enter for new recipe</div>
+      </div>
+    </div>
+
+    <div id="step-measure" aria-hidden="true"></div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

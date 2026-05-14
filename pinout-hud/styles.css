@@ -1,0 +1,907 @@
+/* ═══════════════════════════════════════════════════════════
+   PINOUT HUD · Stylesheet
+   600 × 600 right-aligned schematic HUD for Meta Ray-Ban Display
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --bg:        #000000;
+  --ink:       #d8e4ff;
+  --ink-dim:   #6b7a99;
+  --ink-faint: #1c2638;
+  --panel:     #050912;
+
+  --accent:    #4ea1ff;     /* electric chrome */
+  --accent-hi: #8ec4ff;
+  --accent-lo: rgba(78, 161, 255, 0.16);
+
+  --warn:      #f5b942;
+  --bad:       #ff5566;
+
+  /* Wire colors — referenced by data.js swatch ids */
+  --w-red:    #ff3344;
+  --w-blue:   #3388ff;
+  --w-green:  #22dd66;
+  --w-yellow: #ffdd22;
+  --w-orange: #ff8822;
+  --w-black:  #9aa3b6;
+  --w-white:  #ffffff;
+  --w-purple: #aa55ff;
+
+  /* Right-weighted padding: heavy left margin so content hugs the right */
+  --pad-l: 160px;
+  --pad-r: 32px;
+  --pad-t: 28px;
+  --pad-b: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, ui-monospace, monospace;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: antialiased;
+}
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  letter-spacing: inherit;
+}
+
+/* Subtle scan-line + vignette so the HUD reads as "projected" */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg,
+      transparent 0px, transparent 2px,
+      rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px);
+  pointer-events: none;
+  z-index: 100;
+  mix-blend-mode: multiply;
+}
+
+#bg-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 600px;
+  height: 600px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+#app {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: transparent;
+  z-index: 2;
+}
+
+/* Vertical brand mark on the open left side — gives the panel a anchor */
+#app::before {
+  content: 'PINOUT · HUD · v1';
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: center;
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.6em;
+  color: var(--ink-faint);
+  pointer-events: none;
+  z-index: 1;
+}
+/* Schematic accent rule along the right-content edge */
+#app::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--pad-l) - 18px);
+  top: 28px;
+  bottom: 28px;
+  width: 1px;
+  background: linear-gradient(180deg,
+    transparent 0%, var(--accent) 18%, var(--accent) 82%, transparent 100%);
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─────────── Screen base ─────────── */
+.screen {
+  position: absolute;
+  inset: 0;
+  width: 600px;
+  height: 600px;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  display: flex;
+  flex-direction: column;
+  animation: screenIn 220ms ease-out;
+  background: transparent;
+  z-index: 2;
+}
+.screen.hidden, .overlay.hidden, .hidden { display: none !important; }
+@keyframes screenIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─────────── Buttons ─────────── */
+.btn {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  padding: 14px 16px;
+  border: 2px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  text-transform: uppercase;
+  flex: 1;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+.btn.primary {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.btn:disabled { opacity: 0.28; cursor: not-allowed; }
+.btn:hover:not(:disabled),
+.btn.dpad-focus:not(:disabled) {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+
+/* ─────────── Page header ─────────── */
+.page-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.page-title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+  line-height: 1;
+}
+.page-meta {
+  font-size: 14px;
+  letter-spacing: 0.28em;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Bottom action row */
+.page-actions {
+  margin-top: auto;
+  padding-top: 14px;
+  display: flex;
+  gap: 8px;
+}
+.page-actions .btn { flex: 1; }
+.page-actions.three .btn {
+  flex: 1;
+  padding-left: 6px;
+  padding-right: 6px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+}
+
+/* ─────────── HOME ─────────── */
+#home {
+  justify-content: flex-start;
+}
+#home .page-head {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.brand-mark {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  line-height: 1;
+  animation: brandBreathe 7s ease-in-out infinite;
+}
+@keyframes brandBreathe {
+  0%, 100% { text-shadow: 0 0 0 transparent; }
+  50%      { text-shadow: 0 0 22px var(--accent-lo), 0 0 6px var(--accent-lo); }
+}
+.brand-tag {
+  font-size: 11px;
+  letter-spacing: 0.36em;
+  color: var(--accent);
+}
+.home-meta {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--ink-dim);
+  margin-top: 6px;
+  margin-bottom: auto;
+}
+.home-meta .dot-sep { margin: 0 8px; color: var(--accent); }
+#home-templates, #home-last { color: var(--ink); font-weight: 600; }
+
+.home-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: auto 0 16px;
+}
+.bigbtn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 18px 20px;
+  border: 2px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  width: 100%;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+.bigbtn.primary {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+.bigbtn:hover, .bigbtn.dpad-focus {
+  background: var(--accent) !important;
+  color: var(--bg) !important;
+  border-color: var(--accent) !important;
+}
+.bigbtn:active { transform: scale(0.985); }
+.bb-label {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.bb-sub {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.ghost-link {
+  align-self: flex-start;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--ink-dim);
+  background: none;
+  border: none;
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+.ghost-link:hover, .ghost-link.dpad-focus { color: var(--accent); }
+
+/* ─────────── ESP32 model list ─────────── */
+.model-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 4px;
+  min-height: 0;
+}
+.model-list::-webkit-scrollbar { width: 4px; }
+.model-list::-webkit-scrollbar-thumb { background: var(--ink-faint); }
+
+.model-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 14px;
+  border: 1px solid var(--ink-faint);
+  background: var(--panel);
+  text-align: left;
+  width: 100%;
+  color: var(--ink);
+  transition: all 140ms ease;
+}
+.model-item:hover, .model-item.dpad-focus {
+  background: var(--accent-lo);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+.model-item .mi-name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+.model-item .mi-sub {
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--ink-dim);
+}
+.model-item:hover .mi-sub,
+.model-item.dpad-focus .mi-sub { color: var(--accent-hi); }
+
+/* ─────────── Pin list (used by color-assign + reference) ─────────── */
+.pin-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pin-list::-webkit-scrollbar { width: 4px; }
+.pin-list::-webkit-scrollbar-thumb { background: var(--ink-faint); }
+
+.pin-row {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 8px;
+  border-bottom: 1px solid var(--ink-faint);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  width: 100%;
+  transition: background 120ms ease, padding 120ms ease;
+}
+.pin-row:hover, .pin-row.dpad-focus {
+  background: var(--accent-lo);
+  padding-left: 12px;
+}
+.pin-row .pr-num {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
+  text-align: right;
+}
+.pin-row.dpad-focus .pr-num,
+.pin-row:hover .pr-num { color: var(--accent); }
+.pin-row .pr-label {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.pin-row .pr-wire {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pin-row .pr-color-name {
+  font-size: 13px;
+  letter-spacing: 0.20em;
+  color: var(--ink-dim);
+  min-width: 70px;
+  text-align: right;
+}
+.pin-row.dpad-focus .pr-color-name,
+.pin-row:hover .pr-color-name { color: var(--ink); }
+
+/* Wire swatch — short colored "wire stub" with an end cap */
+.swatch {
+  display: inline-block;
+  width: 38px;
+  height: 10px;
+  border-radius: 2px;
+  background: currentColor;
+  position: relative;
+  box-shadow: 0 0 10px currentColor;
+}
+.swatch::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 14px;
+  border-radius: 1px;
+  background: var(--ink);
+  box-shadow: none;
+}
+
+/* Color assign helper line */
+.ca-help {
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  color: var(--ink);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+/* ─────────── Custom pin count ─────────── */
+.cc-prompt {
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.cc-readout {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.cc-num {
+  font-size: 96px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  line-height: 1;
+  min-width: 140px;
+  text-align: center;
+  text-shadow: 0 0 24px var(--accent-lo);
+}
+.cc-step {
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 140ms ease;
+}
+.cc-step:hover, .cc-step.dpad-focus {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.cc-hint {
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  color: var(--ink);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  text-align: right;
+}
+
+/* ─────────── Custom pin config (shared bits) ─────────── */
+.cp-section-label {
+  font-size: 14px;
+  letter-spacing: 0.24em;
+  color: var(--ink);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.cp-label-display {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 10px;
+  text-align: right;
+  padding-right: 2px;
+  text-shadow: 0 0 18px var(--accent-lo);
+}
+.cp-label-readout {
+  font-size: 56px;
+  margin-bottom: 18px;
+}
+
+/* Label grid — 5 columns × 9 rows of common pin labels.
+   Spatial picker: Up/Down jumps row, Left/Right walks within. */
+.label-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  flex: 1;
+  align-content: start;
+  margin-bottom: 12px;
+}
+.label-cell {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--ink-faint);
+  padding: 10px 4px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+.label-cell:hover, .label-cell.dpad-focus {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-lo);
+}
+/* Subtle row tint to imply category groups (power / bus / GPIO / analog) */
+.label-cell[data-row="0"] { border-top: 1px solid rgba(255, 51, 68, 0.35); }
+.label-cell[data-row="1"],
+.label-cell[data-row="2"] { border-top-color: rgba(34, 221, 102, 0.20); }
+.label-cell[data-row="8"] { border-top: 1px solid rgba(170, 85, 255, 0.35); }
+.label-cell.current {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.label-cell.dpad-focus.current { color: var(--bg); }
+
+.cp-color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.color-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 6px;
+  border: 1px solid var(--ink-faint);
+  background: var(--panel);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+.color-cell .cc-swatch {
+  width: 70px;
+  height: 16px;
+  border-radius: 3px;
+  background: currentColor;
+  box-shadow: 0 0 14px currentColor;
+}
+.color-cell .cc-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--ink);
+}
+.color-cell.selected {
+  border-color: var(--accent);
+  background: var(--accent-lo);
+}
+.color-cell:hover, .color-cell.dpad-focus {
+  border-color: var(--accent);
+  background: var(--accent-lo);
+}
+
+/* ─────────── Reference (active HUD) ─────────── */
+#reference {
+  position: relative;
+}
+.ref-help {
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  color: var(--ink);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+/* When focus mode is on, dim the underlying list */
+#reference.focus-on .pin-list { opacity: 0.18; pointer-events: none; }
+#reference.focus-on .ref-help { opacity: 0; }
+
+.focus-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--pad-l);
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  text-align: right;
+  z-index: 5;
+  animation: focusIn 180ms ease-out;
+  pointer-events: none;
+}
+@keyframes focusIn {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.fo-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.36em;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.fo-pinno {
+  font-size: 96px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  line-height: 0.9;
+  text-shadow: 0 0 28px var(--accent-lo);
+  margin-bottom: 4px;
+}
+.fo-label {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 22px;
+}
+.fo-wire {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.fo-swatch {
+  display: inline-block;
+  width: 80px;
+  height: 14px;
+  border-radius: 3px;
+  background: currentColor;
+  box-shadow: 0 0 18px currentColor;
+  position: relative;
+}
+.fo-swatch::after {
+  content: '';
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 22px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+.fo-color {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+.fo-help {
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+/* ─────────── WALKTHROUGH ─────────── */
+#walkthrough {
+  padding: 48px 48px 36px 48px;
+  align-items: center;
+  text-align: center;
+}
+.wt-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--accent);
+  z-index: 3;
+}
+.wt-corner.tl { top: 24px;    left: 24px;   border-right: none; border-bottom: none; }
+.wt-corner.tr { top: 24px;    right: 24px;  border-left:  none; border-bottom: none; }
+.wt-corner.bl { bottom: 24px; left: 24px;   border-right: none; border-top:    none; }
+.wt-corner.br { bottom: 24px; right: 24px;  border-left:  none; border-top:    none; }
+
+.wt-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  width: 100%;
+  animation: stepIn 280ms ease-out;
+}
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.wt-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.4em;
+  color: var(--accent);
+}
+.wt-glyph {
+  width: 100px;
+  height: 100px;
+  border: 2px solid var(--accent);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wt-glyph::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border: 1px dashed var(--accent);
+  opacity: 0.5;
+}
+/* Glyph: chip (DIP-shaped block w/ leg ticks) */
+.g-chip {
+  width: 50px;
+  height: 64px;
+  background: var(--accent);
+  position: relative;
+  box-shadow: 0 0 18px var(--accent-lo);
+}
+.g-chip::before, .g-chip::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 6px;
+  background:
+    linear-gradient(180deg,
+      var(--accent) 0 6px, transparent 6px 14px,
+      var(--accent) 14px 20px, transparent 20px 28px,
+      var(--accent) 28px 34px, transparent 34px 42px,
+      var(--accent) 42px 48px);
+}
+.g-chip::before { left: -10px; }
+.g-chip::after  { right: -10px; }
+/* Glyph: list of bars */
+.g-list {
+  width: 50px; height: 50px;
+  position: relative;
+}
+.g-list::before {
+  content: '';
+  position: absolute;
+  top: 4px; left: 0; right: 0;
+  height: 4px;
+  background: var(--accent);
+  box-shadow:
+    0 14px 0 var(--accent),
+    0 28px 0 var(--accent),
+    0 42px 0 var(--accent);
+}
+/* Glyph: zoom (rectangle with magnifier hint) */
+.g-zoom {
+  width: 56px; height: 56px;
+  border: 3px solid var(--accent);
+  position: relative;
+}
+.g-zoom::after {
+  content: '';
+  position: absolute;
+  bottom: -14px; right: -14px;
+  width: 22px;
+  height: 3px;
+  background: var(--accent);
+  transform: rotate(45deg);
+}
+
+.wt-title {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+  line-height: 1;
+}
+.wt-body {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink);
+  max-width: 360px;
+  letter-spacing: 0.04em;
+}
+.wt-body em {
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.wt-bottom {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.wt-progress {
+  display: flex;
+  gap: 10px;
+}
+.wt-dot {
+  width: 28px;
+  height: 3px;
+  background: var(--ink-faint);
+  transition: all 220ms ease;
+}
+.wt-dot.active { background: var(--accent); }
+.wt-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+/* ─────────── Toast ─────────── */
+.toast {
+  position: absolute;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  padding: 12px 22px;
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 220ms ease, transform 220ms ease;
+  text-transform: uppercase;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ─────────── Confirm overlay ─────────── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 50px;
+}
+.confirm-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  text-align: center;
+}
+.cc-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.4em;
+  color: var(--accent);
+}
+.cc-msg {
+  font-size: 19px;
+  color: var(--ink);
+  line-height: 1.45;
+  font-weight: 600;
+}
+.cc-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ─────────── Focusable ─────────── */
+.focusable:focus { outline: none; }

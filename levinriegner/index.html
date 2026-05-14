@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>L+R · HUD</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- INTRO OVERLAY -->
+  <div id="intro">
+    <canvas id="intro-canvas"></canvas>
+  </div>
+
+  <!-- GLOBAL FX CANVAS (interaction particles) -->
+  <canvas id="fx-canvas"></canvas>
+
+  <div id="app">
+
+    <!-- HOME — floating navigation -->
+    <div id="home" class="screen">
+      <canvas id="home-canvas"></canvas>
+
+      <div class="home-content">
+        <div class="home-brand">
+          <div class="home-wordmark">L+R</div>
+          <div class="home-name tw">Levin+Riegner</div>
+        </div>
+
+        <p class="home-description tw">We design transformations and build technology for ambitious brands.</p>
+
+        <div class="home-buttons">
+          <button class="home-btn focusable" data-action="go-work">
+            <span class="hb-label">Work</span>
+          </button>
+          <button class="home-btn focusable" data-action="go-services">
+            <span class="hb-label">Services</span>
+          </button>
+          <button class="home-btn focusable" data-action="go-studio">
+            <span class="hb-label">About</span>
+          </button>
+          <button class="home-btn focusable" data-action="go-contact">
+            <span class="hb-label">Contact</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORK LIST -->
+    <div id="work" class="screen hidden">
+<header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1 class="tw">WORK</h1>
+        <span class="header-meta" id="work-meta">9 PROJECTS</span>
+      </header>
+      <div class="filter-row">
+        <button class="filter-chip focusable active" data-filter="all">ALL</button>
+        <button class="filter-chip focusable" data-filter="spatial">SPATIAL</button>
+        <button class="filter-chip focusable" data-filter="brand">BRAND</button>
+        <button class="filter-chip focusable" data-filter="product">PRODUCT</button>
+      </div>
+      <div class="content no-pad">
+        <div id="work-list"></div>
+      </div>
+      <nav class="nav-bar">
+        <button class="nav-item primary focusable" data-action="open-project">VIEW PROJECT</button>
+        <button class="nav-item focusable" data-action="back">BACK</button>
+      </nav>
+    </div>
+
+    <!-- WORK DETAIL -->
+    <div id="work-detail" class="screen hidden">
+<header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1 id="detail-title" class="tw">PROJECT</h1>
+        <span class="header-meta" id="detail-category"></span>
+      </header>
+      <div class="content">
+        <div class="project-image" id="project-image">
+          <img id="detail-image" src="" alt="" loading="lazy">
+        </div>
+        <div class="stat-block" id="project-hero">
+          <div class="stat-label">HIGHLIGHT</div>
+          <div class="stat-value tw" id="project-stat"></div>
+        </div>
+        <div class="desc-block tw" id="project-desc"></div>
+        <div class="tag-row" id="project-tags"></div>
+      </div>
+      <nav class="nav-bar">
+        <button class="nav-item focusable" data-action="back">&#8592; BACK</button>
+        <button class="nav-item primary focusable" data-action="next-project">NEXT &#8594;</button>
+      </nav>
+    </div>
+
+    <!-- SERVICES -->
+    <div id="services" class="screen hidden">
+<header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1 class="tw">SERVICES</h1>
+        <span class="header-meta">6 PRACTICES</span>
+      </header>
+      <div class="content no-pad">
+        <div class="services-grid" id="services-grid"></div>
+      </div>
+      <nav class="nav-bar">
+        <button class="nav-item primary focusable" data-action="open-service">EXPLORE</button>
+        <button class="nav-item focusable" data-action="back">BACK</button>
+      </nav>
+    </div>
+
+    <!-- SERVICE DETAIL -->
+    <div id="service-detail" class="screen hidden">
+<header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1 id="service-title" class="tw">SERVICE</h1>
+        <span class="header-meta" id="service-glyph"></span>
+      </header>
+      <div class="content">
+        <div class="service-short tw" id="service-short"></div>
+        <div class="section-block">
+          <div class="section-title">CAPABILITIES</div>
+          <div id="capabilities-list"></div>
+        </div>
+        <div class="section-block">
+          <div class="section-title">RELATED WORK</div>
+          <div id="service-work"></div>
+        </div>
+      </div>
+      <nav class="nav-bar">
+        <button class="nav-item focusable" data-action="back">&#8592; BACK</button>
+        <button class="nav-item primary focusable" data-action="contact-service">CONTACT US</button>
+      </nav>
+    </div>
+
+    <!-- ABOUT US -->
+    <div id="studio" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1 class="tw">ABOUT US</h1>
+        <span class="header-meta">Levin+Riegner</span>
+      </header>
+      <div class="studio-tabs">
+        <button class="studio-tab focusable active" data-tab="about">STORY</button>
+        <button class="studio-tab focusable" data-tab="news">NEWS</button>
+        <button class="studio-tab focusable" data-tab="clients">CLIENTS</button>
+        <button class="studio-tab focusable" data-tab="awards">AWARDS</button>
+      </div>
+      <div class="content" id="studio-content"></div>
+      <nav class="nav-bar">
+        <button class="nav-item focusable" data-action="back">&#8592; BACK</button>
+        <button class="nav-item primary focusable" data-action="go-work-from-studio">SEE WORK</button>
+      </nav>
+    </div>
+
+    <!-- CONTACT OVERLAY -->
+    <div id="contact-flash" class="overlay hidden">
+      <div class="flash-card">
+        <div class="flash-corner tl"></div>
+        <div class="flash-corner tr"></div>
+        <div class="flash-corner bl"></div>
+        <div class="flash-corner br"></div>
+        <div class="flash-wordmark">L+R</div>
+        <div class="flash-title tw">LET'S BUILD TOGETHER</div>
+        <div class="flash-email">hello@levinriegner.com</div>
+        <div class="flash-regions">AMERICAS · AFRICA · APAC<br>EUROPE · MIDDLE EAST</div>
+        <button class="nav-item primary focusable" data-action="flash-dismiss">NOTED</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

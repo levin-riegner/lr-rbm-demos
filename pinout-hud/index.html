@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Pinout HUD</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <canvas id="bg-canvas" width="600" height="600" aria-hidden="true"></canvas>
+
+  <div id="app">
+
+    <!-- ─────────── WALKTHROUGH ─────────── -->
+    <section id="walkthrough" class="screen">
+      <div class="wt-corner tl"></div>
+      <div class="wt-corner tr"></div>
+      <div class="wt-corner bl"></div>
+      <div class="wt-corner br"></div>
+
+      <div class="wt-step">
+        <div class="wt-eyebrow">SOLDER ASSIST</div>
+        <div class="wt-glyph">
+          <span class="g-chip"></span>
+        </div>
+        <h1 class="wt-title">PINOUT HUD</h1>
+        <p class="wt-body">Hands-free wiring diagrams.<br>Glance, don't look away.</p>
+      </div>
+
+      <div class="wt-step hidden">
+        <div class="wt-eyebrow">STEP 01</div>
+        <div class="wt-glyph"><span class="g-list"></span></div>
+        <h1 class="wt-title">PICK BOARD</h1>
+        <p class="wt-body">Choose an <em>ESP32 template</em> or<br>configure a <em>custom board</em>.</p>
+      </div>
+
+      <div class="wt-step hidden">
+        <div class="wt-eyebrow">STEP 02</div>
+        <div class="wt-glyph"><span class="g-zoom"></span></div>
+        <h1 class="wt-title">FOCUS MODE</h1>
+        <p class="wt-body">Swipe <em>RIGHT</em> to zoom one pin.<br><em>UP/DOWN</em> steps. <em>LEFT</em> to exit.</p>
+      </div>
+
+      <div class="wt-bottom">
+        <div class="wt-progress">
+          <span class="wt-dot active"></span>
+          <span class="wt-dot"></span>
+          <span class="wt-dot"></span>
+        </div>
+        <div class="wt-actions">
+          <button class="btn ghost focusable" data-action="wt-skip">SKIP</button>
+          <button class="btn primary focusable" data-action="wt-next">NEXT &#8594;</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────── HOME ─────────── -->
+    <section id="home" class="screen hidden">
+      <header class="page-head">
+        <div class="brand-mark">PINOUT</div>
+        <div class="brand-tag">SOLDER REFERENCE · v1</div>
+      </header>
+
+      <div class="home-meta">
+        <span id="home-templates">4</span> TEMPLATES
+        <span class="dot-sep">·</span>
+        <span id="home-last">NO ACTIVE BOARD</span>
+      </div>
+
+      <div class="home-actions">
+        <button class="bigbtn focusable primary" data-action="go-esp32">
+          <span class="bb-label">ESP32</span>
+          <span class="bb-sub">PRELOADED TEMPLATES</span>
+        </button>
+        <button class="bigbtn focusable" data-action="go-custom">
+          <span class="bb-label">CUSTOM</span>
+          <span class="bb-sub">DEFINE PIN BY PIN</span>
+        </button>
+      </div>
+
+      <button class="ghost-link focusable" data-action="show-walkthrough">REPLAY TUTORIAL</button>
+    </section>
+
+    <!-- ─────────── ESP32 LIST ─────────── -->
+    <section id="esp32-list" class="screen hidden">
+      <header class="page-head">
+        <div class="page-title">ESP32</div>
+        <div class="page-meta" id="esp32-count">—</div>
+      </header>
+      <div class="model-list" id="model-list"></div>
+      <div class="page-actions">
+        <button class="btn ghost focusable" data-action="go-home">&#8592; BACK</button>
+      </div>
+    </section>
+
+    <!-- ─────────── COLOR ASSIGN (ESP32 flow) ─────────── -->
+    <section id="color-assign" class="screen hidden">
+      <header class="page-head">
+        <div class="page-title" id="ca-title">COLORS</div>
+        <div class="page-meta" id="ca-meta">—</div>
+      </header>
+
+      <div class="ca-help">SELECT PIN · TAP TO CYCLE COLOR</div>
+
+      <div class="pin-list" id="ca-pin-list"></div>
+
+      <div class="page-actions">
+        <button class="btn ghost focusable" data-action="ca-back">&#8592; BACK</button>
+        <button class="btn primary focusable" data-action="ca-finalize">FINALIZE &#8594;</button>
+      </div>
+    </section>
+
+    <!-- ─────────── CUSTOM PIN COUNT ─────────── -->
+    <section id="custom-count" class="screen hidden">
+      <header class="page-head">
+        <div class="page-title">CUSTOM</div>
+        <div class="page-meta">PIN COUNT</div>
+      </header>
+
+      <div class="cc-prompt">HOW MANY PINS?</div>
+
+      <div class="cc-readout">
+        <button class="cc-step focusable" data-action="cc-dec">&minus;</button>
+        <div class="cc-num" id="cc-num">8</div>
+        <button class="cc-step focusable" data-action="cc-inc">+</button>
+      </div>
+
+      <div class="cc-hint">SWIPE LEFT/RIGHT · TAP TO CONFIRM</div>
+
+      <div class="page-actions">
+        <button class="btn ghost focusable" data-action="go-home">&#8592; BACK</button>
+        <button class="btn primary focusable" data-action="cc-confirm">START &#8594;</button>
+      </div>
+    </section>
+
+    <!-- ─────────── CUSTOM · LABEL GRID ─────────── -->
+    <section id="custom-label" class="screen hidden">
+      <header class="page-head">
+        <div class="page-title" id="cl-title">PIN 1</div>
+        <div class="page-meta" id="cl-progress">LABEL · 1 / 8</div>
+      </header>
+
+      <div class="cp-section-label">SWIPE TO PIN · TAP TO PICK</div>
+
+      <div class="label-grid" id="label-grid"></div>
+
+      <div class="page-actions">
+        <button class="btn ghost focusable" data-action="cl-back">&#8592; BACK</button>
+        <button class="btn ghost focusable" data-action="cp-cancel">EXIT</button>
+      </div>
+    </section>
+
+    <!-- ─────────── CUSTOM · COLOR GRID ─────────── -->
+    <section id="custom-color" class="screen hidden">
+      <header class="page-head">
+        <div class="page-title" id="cc2-title">PIN 1</div>
+        <div class="page-meta" id="cc2-progress">WIRE · 1 / 8</div>
+      </header>
+
+      <div class="cp-label-display cp-label-readout" id="cc2-label">GND</div>
+      <div class="cp-section-label">PICK A WIRE COLOR</div>
+
+      <div class="cp-color-grid" id="cc2-color-grid"></div>
+
+      <div class="page-actions">
+        <button class="btn ghost focusable" data-action="cc2-back">&#8592; LABEL</button>
+        <button class="btn ghost focusable" data-action="cp-cancel">EXIT</button>
+      </div>
+    </section>
+
+    <!-- ─────────── REFERENCE (core HUD) ─────────── -->
+    <section id="reference" class="screen hidden">
+      <header class="page-head">
+        <div class="page-title" id="ref-title">PINOUT</div>
+        <div class="page-meta" id="ref-meta">—</div>
+      </header>
+
+      <div class="ref-help" id="ref-help">UP/DOWN STEP · RIGHT FOCUS</div>
+
+      <div class="pin-list ref-list" id="ref-pin-list"></div>
+
+      <!-- Focus overlay sits above the list when active -->
+      <div class="focus-overlay hidden" id="focus-overlay">
+        <div class="fo-eyebrow" id="fo-eyebrow">PIN 04 / 30</div>
+        <div class="fo-pinno" id="fo-pinno">04</div>
+        <div class="fo-label" id="fo-label">GND</div>
+        <div class="fo-wire">
+          <span class="fo-swatch" id="fo-swatch"></span>
+          <span class="fo-color" id="fo-color">BLACK WIRE</span>
+        </div>
+        <div class="fo-help">UP/DOWN STEP · LEFT EXIT</div>
+      </div>
+
+      <div class="page-actions">
+        <button class="btn ghost focusable" data-action="ref-exit">&#8592; HOME</button>
+      </div>
+    </section>
+
+    <!-- ─────────── TOAST ─────────── -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- ─────────── CONFIRM ─────────── -->
+    <div id="confirm" class="overlay hidden">
+      <div class="confirm-card">
+        <div class="cc-eyebrow" id="confirm-eyebrow">CONFIRM</div>
+        <div class="cc-msg" id="confirm-msg">Are you sure?</div>
+        <div class="cc-actions">
+          <button class="btn ghost focusable" data-action="confirm-no">CANCEL</button>
+          <button class="btn primary focusable" data-action="confirm-yes" id="confirm-yes">CONFIRM</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

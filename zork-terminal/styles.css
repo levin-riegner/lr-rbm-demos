@@ -1,0 +1,296 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+:root {
+  --green:       #4afe6e;
+  --green-soft:  #6dffa1;
+  --green-glow:  rgba(74, 254, 110, 0.55);
+  --green-dim:   rgba(74, 254, 110, 0.30);
+  --green-trace: rgba(74, 254, 110, 0.10);
+  --bg:          #000;
+  --bg-soft:     #04140a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--green);
+  font-family: "VT323", "Courier New", "Menlo", ui-monospace, monospace;
+  font-size: 30px;
+  line-height: 1.16;
+  letter-spacing: 0.02em;
+  text-shadow:
+    0 0 4px var(--green-glow),
+    0 0 10px rgba(74, 254, 110, 0.25);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#crt {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  padding: 6px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(ellipse at 50% 45%, var(--bg-soft) 0%, #000 78%);
+}
+
+/* Status bar — inverted, like Apple ][ Zork */
+#statusbar {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--green);
+  color: #000;
+  text-shadow: none;
+  padding: 0 8px;
+  font-size: 22px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  height: 30px;
+  margin-bottom: 6px;
+  font-weight: 400;
+  box-shadow: 0 0 18px var(--green-glow);
+}
+#statusbar > span { white-space: nowrap; }
+
+#screen {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+#output {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding-right: 6px;
+}
+#output::-webkit-scrollbar { width: 6px; }
+#output::-webkit-scrollbar-track { background: transparent; }
+#output::-webkit-scrollbar-thumb { background: var(--green-dim); }
+
+.line { display: block; }
+.echo {
+  color: var(--green-soft);
+  margin-top: 6px;
+}
+.echo::before { content: '> '; }
+.title-line {
+  display: inline-block;
+  background: var(--green);
+  color: #000;
+  text-shadow: none;
+  padding: 0 6px;
+  letter-spacing: 1px;
+  margin-top: 6px;
+}
+.dim   { color: var(--green-dim); }
+.bold  { font-weight: 700; color: var(--green-soft); }
+
+/* Active typewriter cursor at the end of the line being typed */
+.line.typing::after {
+  content: '\2588';
+  margin-left: 1px;
+  color: var(--green);
+  animation: blink 1s steps(2) infinite;
+}
+
+/* ── Chip command bar ─────────────────────────────────────── */
+#chipbar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  background: transparent;
+  color: var(--green);
+  border: 2px solid var(--green);
+  font-family: inherit;
+  font-size: 24px;
+  letter-spacing: 1px;
+  padding: 6px 14px;
+  cursor: pointer;
+  text-transform: uppercase;
+  text-shadow: inherit;
+  white-space: nowrap;
+  transition: background 0.1s, color 0.1s, box-shadow 0.15s;
+  outline: none;
+}
+/* Focused = selected = filled green. Works on any chip, anywhere
+   (main screen primary/secondary OR the MORE panel chips). */
+.chip:focus {
+  background: var(--green);
+  color: #000;
+  text-shadow: none;
+  outline: none;
+  box-shadow: 0 0 22px var(--green-glow);
+}
+.chip.primary:focus {
+  box-shadow: 0 0 34px var(--green-glow);
+  animation: chipPulse 1.2s ease-in-out infinite;
+}
+@keyframes chipPulse {
+  0%, 100% { box-shadow: 0 0 18px var(--green-glow); }
+  50%      { box-shadow: 0 0 34px var(--green-glow); }
+}
+.chip:hover, .chip:active {
+  background: var(--green);
+  color: #000;
+  text-shadow: none;
+}
+.chip.primary {
+  background: var(--green);
+  color: #000;
+  text-shadow: none;
+  box-shadow: 0 0 18px var(--green-glow);
+}
+.chip.full { flex: 1 1 100%; }
+.chip.big {
+  font-size: 32px;
+  padding: 14px 16px;
+  letter-spacing: 2px;
+  text-align: center;
+  justify-content: center;
+}
+.chip.compact {
+  font-size: 22px;
+  padding: 4px 10px;
+  letter-spacing: 0.5px;
+}
+.chip:disabled,
+#chipbar.disabled .chip {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ── More panel (expanded actions) ───────────────────────── */
+#more-panel {
+  position: absolute;
+  inset: 8px;
+  background: rgba(2, 18, 8, 0.97);
+  border: 2px solid var(--green);
+  z-index: 70;
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 0 28px var(--green-glow);
+}
+#more-panel.hidden { display: none !important; }
+.mp-header {
+  display: flex;
+  align-items: center;
+  background: var(--green);
+  color: #000;
+  text-shadow: none;
+  padding: 0 8px;
+  height: 32px;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+.mp-title { flex: 1; }
+.mp-close {
+  background: transparent;
+  border: none;
+  color: #000;
+  font-family: inherit;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.mp-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-content: flex-start;
+}
+.mp-list::-webkit-scrollbar { width: 6px; }
+.mp-list::-webkit-scrollbar-thumb { background: var(--green-dim); }
+
+/* ── Scanlines + vignette + flicker ── */
+#crt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.28) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+  mix-blend-mode: multiply;
+  z-index: 50;
+}
+#crt::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%);
+  z-index: 49;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  46% { opacity: 0.96; }
+  47% { opacity: 1; }
+  72% { opacity: 0.93; }
+  73% { opacity: 1; }
+}
+#screen, #statusbar { animation: flicker 6s infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Boot overlay */
+#boot {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+#boot.gone { opacity: 0; }
+#boot .crawl {
+  font-size: 24px;
+  letter-spacing: 2px;
+  color: var(--green);
+}
+#boot .scanline {
+  position: absolute;
+  left: 0; right: 0;
+  height: 4px;
+  background: var(--green);
+  box-shadow: 0 0 16px var(--green-glow);
+  animation: bootScan 0.85s ease-out forwards;
+}
+@keyframes bootScan {
+  0%   { top: 0;    opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: 600px; opacity: 0; }
+}
+
+.hidden { display: none !important; }

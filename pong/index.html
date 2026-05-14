@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Glasses viewport: fixed 600x600, no scaling. -->
+    <meta
+      name="viewport"
+      content="width=600, height=600, initial-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#0a0a0f" />
+    <title>Pong</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 1. Connecting — while the WS is handshaking. -->
+      <section id="screen-connecting" class="screen">
+        <div class="spinner" aria-hidden="true"></div>
+        <div class="screen-title">Connecting</div>
+        <button
+          class="focusable"
+          type="button"
+          data-action="retry"
+          aria-label="Retry connection"
+        >
+          Retry
+        </button>
+      </section>
+
+      <!-- 2. Home — pick Create or Join. -->
+      <section id="screen-home" class="screen hidden">
+        <div class="brand-title">PONG</div>
+        <div class="screen-subtitle">Two-player real-time over WebSocket.</div>
+        <div class="row">
+          <button
+            class="focusable primary"
+            type="button"
+            data-action="create"
+            aria-label="Create a new room"
+          >
+            Create room
+          </button>
+          <button
+            class="focusable"
+            type="button"
+            data-action="show-join"
+            aria-label="Join an existing room"
+          >
+            Join room
+          </button>
+        </div>
+      </section>
+
+      <!-- 3. Waiting — created a room, displaying the code, waiting for opponent. -->
+      <section id="screen-waiting" class="screen hidden">
+        <div class="screen-title">Room code</div>
+        <div
+          id="room-code"
+          class="pin-display"
+          aria-live="polite"
+          aria-label="Room code"
+        >
+          ····
+        </div>
+        <div class="pin-hint">
+          Tell your opponent this code. Both must be on the same server.
+        </div>
+        <div class="pin-ttl" id="code-ttl" aria-live="polite"></div>
+        <button
+          class="focusable danger"
+          type="button"
+          data-action="leave"
+          aria-label="Cancel and return home"
+        >
+          Cancel
+        </button>
+      </section>
+
+      <!-- 4. Join — 4-digit combo-lock picker, glasses-friendly. -->
+      <section id="screen-join" class="screen hidden">
+        <div class="screen-title">Enter room code</div>
+        <div class="combo-lock">
+          <div class="lock-body" id="lock-body">
+            <div class="selection-band"></div>
+            <div class="combo-column" data-col="0">
+              <div class="digit-window">
+                <div class="digit-strip">
+                  <span class="digit far">0</span>
+                  <span class="digit near">0</span>
+                  <span class="digit current">0</span>
+                  <span class="digit near">0</span>
+                  <span class="digit far">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="combo-divider"></div>
+            <div class="combo-column" data-col="1">
+              <div class="digit-window">
+                <div class="digit-strip">
+                  <span class="digit far">0</span>
+                  <span class="digit near">0</span>
+                  <span class="digit current">0</span>
+                  <span class="digit near">0</span>
+                  <span class="digit far">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="combo-divider"></div>
+            <div class="combo-column" data-col="2">
+              <div class="digit-window">
+                <div class="digit-strip">
+                  <span class="digit far">0</span>
+                  <span class="digit near">0</span>
+                  <span class="digit current">0</span>
+                  <span class="digit near">0</span>
+                  <span class="digit far">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="combo-divider"></div>
+            <div class="combo-column" data-col="3">
+              <div class="digit-window">
+                <div class="digit-strip">
+                  <span class="digit far">0</span>
+                  <span class="digit near">0</span>
+                  <span class="digit current">0</span>
+                  <span class="digit near">0</span>
+                  <span class="digit far">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="column-indicator">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+        <div class="lock-hint">
+          <span class="hint-arrows">▲ ▼</span> rotate &nbsp;&nbsp;
+          <span class="hint-arrows">◀ ▶</span> switch column &nbsp;&nbsp;
+          <span class="hint-arrows">⏎</span> submit
+        </div>
+        <div id="join-status" class="pin-ttl" aria-live="polite"></div>
+        <div class="row">
+          <button
+            class="focusable primary"
+            type="button"
+            data-action="submit-code"
+            aria-label="Submit room code"
+          >
+            Connect
+          </button>
+          <button
+            class="focusable danger"
+            type="button"
+            data-action="leave"
+            aria-label="Back to home"
+          >
+            Back
+          </button>
+        </div>
+      </section>
+
+      <!-- 5. Game — score row + canvas. No focusables; D-pad runs the paddle, Esc leaves. -->
+      <section id="screen-game" class="screen hidden game-layout">
+        <div class="score-row" aria-live="polite">
+          <span id="score-left" class="score-left">0</span>
+          <span class="score-sep">–</span>
+          <span id="score-right" class="score-right">0</span>
+        </div>
+        <canvas
+          id="court"
+          class="court-canvas"
+          width="600"
+          height="400"
+          aria-label="Pong court"
+        ></canvas>
+        <div class="game-legend">
+          <span class="legend-side legend-left">P1</span>
+          <span class="legend-meta" id="game-meta">↑ / ↓ moves your paddle &middot; Esc leaves</span>
+          <span class="legend-side legend-right">P2</span>
+        </div>
+      </section>
+
+      <!-- 6. Game over — winner headline + Play again / Leave. -->
+      <section id="screen-gameover" class="screen hidden">
+        <div id="gameover-headline" class="gameover-headline">You won</div>
+        <div class="screen-subtitle" id="gameover-detail">
+          5 – 3
+        </div>
+        <div class="row">
+          <button
+            class="focusable primary"
+            type="button"
+            data-action="ready"
+            aria-label="Play another match"
+          >
+            Play again
+          </button>
+          <button
+            class="focusable danger"
+            type="button"
+            data-action="leave"
+            aria-label="Leave the room"
+          >
+            Leave
+          </button>
+        </div>
+        <div class="screen-subtitle" id="ready-status" aria-live="polite"></div>
+      </section>
+
+      <!-- 7. Disconnected — WS dropped or peer left. -->
+      <section id="screen-disconnected" class="screen hidden">
+        <div class="status-glyph" aria-hidden="true">⟳</div>
+        <div class="screen-title">Disconnected</div>
+        <div class="status-message" id="disconnected-detail">
+          Lost connection to the server.
+        </div>
+        <div class="row">
+          <button class="focusable primary" type="button" data-action="retry">
+            Reconnect
+          </button>
+          <button class="focusable" type="button" data-action="home">
+            Home
+          </button>
+        </div>
+      </section>
+
+      <!-- 8. Error — protocol error. -->
+      <section id="screen-error" class="screen hidden">
+        <div class="status-glyph danger" aria-hidden="true">!</div>
+        <div class="screen-title">Something went wrong</div>
+        <div class="status-message" id="error-detail">Server error.</div>
+        <button class="focusable primary" type="button" data-action="retry">
+          Try again
+        </button>
+      </section>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>Dad Jokes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Share+Tech+Mono&family=Caveat:wght@500;700&family=Special+Elite&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <section id="stage" class="screen">
+
+      <header class="head">
+        <span class="dot"></span>
+        <span class="brand">DAD&nbsp;JOKES</span>
+        <span class="serial" id="serial">N°&nbsp;0001</span>
+      </header>
+
+      <div class="meta-row">
+        <span class="meta-label">GROANS</span>
+        <span class="meta-value" id="groanCount">0</span>
+        <span class="meta-sep">·</span>
+        <span class="meta-label">HEARD</span>
+        <span class="meta-value" id="heardCount">0</span>
+      </div>
+
+      <div class="card-wrap">
+        <div class="card" id="jokeCard">
+          <div class="card-tape card-tape-l" aria-hidden="true"></div>
+          <div class="card-tape card-tape-r" aria-hidden="true"></div>
+          <div class="card-stamp" aria-hidden="true">CERTIFIED<br/>DAD JOKE</div>
+
+          <div class="card-inner">
+            <div class="card-joke" id="jokeText">Loading a fresh one…</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary focusable" data-action="another" id="anotherBtn" aria-label="Another joke">
+          <span class="btn-glyph">▶</span>
+          <span class="btn-label">ANOTHER</span>
+        </button>
+        <button class="btn btn-secondary focusable" data-action="groan" id="groanBtn" aria-label="Groan">
+          <span class="btn-glyph">🫠</span>
+          <span class="btn-label">GROAN</span>
+        </button>
+      </div>
+
+      <div class="hints">
+        <span><span class="key">▶</span>&nbsp;NEXT</span>
+        <span><span class="key">▼</span>&nbsp;GROAN</span>
+      </div>
+
+      <div class="status" id="status" aria-live="polite"></div>
+
+    </section>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

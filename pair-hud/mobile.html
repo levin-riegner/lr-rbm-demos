@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!--
+      Phone view: use device width and respect OS zoom (no user-scalable=no).
+      viewport-fit=cover lets safe-area insets reach the bezel.
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0b0b12" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Pair with your glasses</title>
+    <link rel="stylesheet" href="mobile.css" />
+  </head>
+  <body>
+    <div class="app-root">
+      <!-- 1. Enter PIN -->
+      <section id="screen-join" class="screen">
+        <div
+          id="conn-pill"
+          class="conn-pill"
+          data-state="connecting"
+          aria-live="polite"
+        >
+          <span class="dot" aria-hidden="true"></span>
+          <span class="label">Connecting…</span>
+        </div>
+        <header class="app-header">
+          <h1>Pair with Glasses</h1>
+          <p>Enter the 4-digit PIN shown on your glasses to connect.</p>
+        </header>
+
+        <div>
+          <label for="pin-input" class="pin-input-label">PIN</label>
+          <input
+            id="pin-input"
+            class="pin-input"
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="4"
+            autocomplete="one-time-code"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="0000"
+            aria-label="Four digit PIN"
+          />
+        </div>
+
+        <div id="pin-status" class="pin-status" aria-live="polite"></div>
+
+        <div class="action-row">
+          <button
+            id="btn-join"
+            class="btn btn-primary"
+            type="button"
+            disabled
+          >
+            Connect
+          </button>
+        </div>
+
+        <div class="footer-note">
+          Keep this page open to keep the connection alive.
+        </div>
+      </section>
+
+      <!-- 2. Control -->
+      <section id="screen-control" class="screen hidden">
+        <div
+          id="conn-pill-control"
+          class="conn-pill"
+          data-state="open"
+          aria-live="polite"
+        >
+          <span class="dot" aria-hidden="true"></span>
+          <span class="label">Connected</span>
+        </div>
+        <header class="app-header">
+          <h1>Send to HUD</h1>
+          <p id="paired-pin-note">Paired. Tap a preset or type a message.</p>
+        </header>
+
+        <div>
+          <div class="section-title" style="margin-bottom: 10px">
+            Quick presets
+          </div>
+          <div class="preset-grid">
+            <button class="preset" type="button" data-preset="Coffee ready ☕">
+              Coffee ready ☕
+            </button>
+            <button class="preset" type="button" data-preset="Hi 👋">
+              Hi 👋
+            </button>
+            <button class="preset" type="button" data-preset="On my way 📍">
+              On my way 📍
+            </button>
+            <button class="preset" type="button" data-preset="Dinner in 5 🍽️">
+              Dinner in 5 🍽️
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label for="custom-input" class="pin-input-label">Custom message</label>
+          <textarea
+            id="custom-input"
+            class="custom-textarea"
+            maxlength="200"
+            placeholder="Type something to show on the HUD…"
+            rows="3"
+          ></textarea>
+          <div id="char-counter" class="char-counter">0 / 200</div>
+        </div>
+
+        <div class="action-row">
+          <button id="btn-send" class="btn btn-primary" type="button" disabled>
+            Send
+          </button>
+          <button id="btn-disconnect" class="btn btn-danger" type="button">
+            Disconnect
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="mobile.js"></script>
+  </body>
+</html>

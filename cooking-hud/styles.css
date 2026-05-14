@@ -1,0 +1,1086 @@
+:root {
+  --bg:         #fbfaf6;     /* warm white */
+  --bg-2:       #f0eee6;     /* paper */
+  --ink:        #0d0d0d;     /* deep ink */
+  --ink-dim:    #6b6864;     /* warm gray */
+  --ink-faint:  #d8d4c8;     /* faint sand */
+  --rule:       #1a1a1a;
+  --orange:     #ff5e1a;     /* primary pop */
+  --orange-2:   #ffb38a;
+  --red:        #e2241c;     /* timer/alert */
+  --red-2:      #ffb1ad;
+  --green:      #1a7f3e;     /* checked */
+
+  --pad-l:  150px;            /* big left pad → right-aligned HUD */
+  --pad-r:  32px;
+  --pad-t:  28px;
+  --pad-b:  28px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: #000; /* world is dark, panel is bright */
+  color: var(--ink);
+  font-family: "SF Pro Display", "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: 0.005em;
+  font-weight: 500;
+  font-size: 16px;
+}
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  letter-spacing: inherit;
+}
+
+/* fine scan-line overlay (HUD feel) */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent 0px, transparent 2px,
+    rgba(0,0,0,0.05) 3px, rgba(0,0,0,0.05) 4px
+  );
+  pointer-events: none;
+  z-index: 200;
+  mix-blend-mode: multiply;
+}
+
+#app {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: #000;
+}
+
+/* ─────────── Ambient (left side) ─────────── */
+.ambient {
+  position: absolute;
+  inset: 0;
+  width: 600px;
+  height: 600px;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.amb-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255,94,26,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,94,26,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.7;
+}
+.amb-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(80% 80% at 30% 50%, transparent 0%, rgba(0,0,0,0.6) 100%);
+}
+
+/* ─────────── Screen base (the bright panel) ─────────── */
+.screen {
+  position: absolute;
+  inset: 0;
+  width: 600px;
+  height: 600px;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  animation: screenIn 240ms ease-out;
+}
+.screen::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: var(--pad-l);
+  right: 0;
+  margin-left: -18px;
+  background: var(--bg);
+  z-index: -1;
+}
+.screen.hidden, .overlay.hidden, .hidden { display: none !important; }
+
+@keyframes screenIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─────────── Buttons ─────────── */
+.btn {
+  font-family: "SF Mono", "JetBrains Mono", "Menlo", ui-monospace, monospace;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  padding: 16px 16px;
+  border: 2px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+  text-transform: uppercase;
+  flex: 1;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+/* Primary buttons are orange-filled by default — they always read as the
+   recommended action. Focus is shown with an inset white ring (below). */
+.btn.primary {
+  background: var(--orange);
+  color: #fff;
+  border-color: var(--orange);
+}
+.btn:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+/* Selected (hovered or d-pad focused) — both ghost and primary go to the
+   same orange-filled look + an inset white ring so the SELECTED button
+   is always unambiguously the orange one. */
+.btn:hover:not(:disabled),
+.btn.dpad-focus:not(:disabled) {
+  background: var(--orange);
+  color: #fff;
+  border-color: var(--orange);
+  box-shadow: inset 0 0 0 3px #fff;
+}
+.btn:active:not(:disabled) { transform: scale(0.97); }
+
+/* ─────────── Page header ─────────── */
+.page-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.page-title {
+  font-family: "SF Mono", "JetBrains Mono", monospace;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+  line-height: 1;
+}
+.page-meta {
+  font-family: "SF Mono", monospace;
+  font-size: 16px;
+  letter-spacing: 0.28em;
+  color: var(--ink-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* ─────────── Page actions ─────────── */
+.page-actions {
+  margin-top: auto;
+  padding-top: 14px;
+  display: flex;
+  gap: 8px;
+}
+.page-actions .btn { flex: 1; }
+
+/* ─────────── HOME ─────────── */
+#home .page-head {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;     /* SELECT RECIPE label provides the break */
+  text-align: center;
+}
+.brand-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  justify-content: flex-start;
+}
+/* "COOKING HUD" is a single text element so the sheen is one continuous
+   sweep from the C all the way to the D. Two stacked backgrounds:
+     (1) animated highlight overlay (warm pale, mostly transparent)
+     (2) static base color — ink for "COOKING ", orange from "HUD" on. */
+.brand-mark {
+  font-family: "SF Mono", monospace;
+  font-size: 54px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  display: block;
+  background:
+    linear-gradient(
+      100deg,
+      transparent 0%,
+      transparent 42%,
+      rgba(255, 230, 195, 0.92) 50%,
+      transparent 58%,
+      transparent 100%
+    ),
+    linear-gradient(
+      90deg,
+      var(--ink) 0%,
+      var(--ink) 66%,
+      var(--orange) 70%,
+      var(--orange) 100%
+    );
+  background-size: 220% 100%, 100% 100%;
+  background-position: 160% 0, 0 0;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: brandShine 5s ease-in-out infinite;
+}
+@keyframes brandShine {
+  0%   { background-position: 160% 0, 0 0; }
+  100% { background-position: -60% 0, 0 0; }
+}
+.brand-tag {
+  font-family: "SF Mono", monospace;
+  font-size: 15px;
+  letter-spacing: 0.32em;
+  margin-top: 4px;
+  text-transform: uppercase;
+  font-weight: 700;
+  /* Same sheen as SELECT RECIPE — dim base with a brighter ink + orange
+     highlight that drifts through the text. */
+  background: linear-gradient(
+    100deg,
+    var(--ink-dim) 0%,
+    var(--ink-dim) 40%,
+    var(--ink) 50%,
+    var(--orange) 55%,
+    var(--ink) 60%,
+    var(--ink-dim) 70%,
+    var(--ink-dim) 100%
+  );
+  background-size: 250% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: brandShine 5s ease-in-out infinite;
+}
+.home-meta {
+  font-family: "SF Mono", monospace;
+  font-size: 15px;
+  letter-spacing: 0.26em;
+  color: var(--ink-dim);
+  margin-bottom: 12px;
+}
+.home-meta .dot-sep {
+  margin: 0 8px;
+  color: var(--orange);
+}
+#home-recipe-count {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.home-section-label {
+  font-family: "SF Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: var(--ink-dim);
+}
+.home-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  margin: 0 0 8px;
+  min-height: 0;
+}
+.home-list::-webkit-scrollbar { width: 4px; }
+.home-list::-webkit-scrollbar-thumb { background: var(--ink-faint); }
+
+.recipe-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 11px 14px 11px 0;
+  border: none;
+  border-bottom: 1px solid var(--ink-faint);
+  cursor: pointer;
+  transition: padding 140ms ease, background 140ms ease, color 140ms ease;
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  color: var(--ink);
+}
+.recipe-card:last-child { border-bottom: none; }
+.recipe-card:hover, .recipe-card.dpad-focus {
+  background: var(--orange);
+  color: #fff;
+  padding-left: 14px;
+  border-bottom-color: transparent;
+}
+.recipe-card:hover .rc-meta,
+.recipe-card.dpad-focus .rc-meta { color: rgba(255,255,255,0.85); }
+
+.rc-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: "SF Mono", monospace;
+  font-size: 14px;
+  color: var(--ink-dim);
+}
+/* Left side (recipe eyebrow) is now Title Case — tight spacing reads
+   naturally. Right side (e.g. "25 MIN") stays UPPERCASE with the
+   monospace-friendly wider tracking. */
+.rc-meta > :first-child {
+  letter-spacing: 0.02em;
+  font-size: 15px;
+}
+.rc-meta > :last-child {
+  letter-spacing: 0.26em;
+}
+.rc-name {
+  font-family: "SF Mono", monospace;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+.rc-tail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.rc-tail .rc-min {
+  font-family: "SF Mono", monospace;
+  font-size: 15px;
+  letter-spacing: 0.26em;
+  color: var(--ink-dim);
+}
+.recipe-card:hover .rc-tail .rc-min,
+.recipe-card.dpad-focus .rc-tail .rc-min { color: rgba(255,255,255,0.9); }
+.rc-arrow {
+  font-family: "SF Mono", monospace;
+  font-size: 16px;
+  color: var(--orange);
+  font-weight: 800;
+}
+.recipe-card:hover .rc-arrow,
+.recipe-card.dpad-focus .rc-arrow { color: #fff; }
+
+.rc-tail-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.rc-badge {
+  font-family: "SF Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  font-weight: 800;
+  padding: 6px 9px;
+  border: 1.5px solid var(--orange);
+  color: var(--orange);
+  background: var(--bg);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.rc-badge.done {
+  border-color: var(--green);
+  color: var(--green);
+}
+.recipe-card:hover .rc-badge,
+.recipe-card.dpad-focus .rc-badge {
+  background: #fff;
+  border-color: #fff;
+  color: var(--orange);
+}
+.recipe-card.is-done .rc-name { opacity: 0.6; }
+
+/* progress chip */
+.rc-prog {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "SF Mono", monospace;
+  font-size: 14px;
+  letter-spacing: 0.22em;
+  color: var(--ink-dim);
+}
+.rc-prog .rc-bar {
+  width: 38px; height: 4px;
+  background: var(--ink-faint);
+  position: relative;
+  overflow: hidden;
+}
+.rc-prog .rc-bar > span {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: var(--orange);
+  transition: width 200ms ease;
+}
+.recipe-card:hover .rc-prog,
+.recipe-card.dpad-focus .rc-prog { color: rgba(255,255,255,0.9); }
+.recipe-card:hover .rc-bar,
+.recipe-card.dpad-focus .rc-bar { background: rgba(255,255,255,0.3); }
+.recipe-card:hover .rc-bar > span,
+.recipe-card.dpad-focus .rc-bar > span { background: #fff; }
+
+/* ─────────── RECIPE ─────────── */
+#recipe {
+  padding-bottom: 18px;
+}
+.recipe-head {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.rh-eyebrow {
+  font-family: "SF Mono", monospace;
+  font-size: 14px;
+  letter-spacing: 0.3em;
+  color: var(--orange);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.rh-title {
+  font-family: "SF Mono", monospace;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  line-height: 1.05;
+  margin-top: 2px;
+}
+.rh-meta {
+  font-family: "SF Mono", monospace;
+  font-size: 14px;
+  letter-spacing: 0.26em;
+  color: var(--ink-dim);
+  margin-top: 2px;
+}
+.rh-meta .dot-sep {
+  margin: 0 6px;
+  color: var(--orange);
+}
+
+/* Phase tabs */
+.phase-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding-top: 6px;
+  border-top: 1px solid var(--ink-faint);
+}
+.ph-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 6px;
+  border-top: 3px solid var(--ink-faint);
+  margin-top: -8px;
+  padding-top: 11px;
+  transition: all 140ms ease;
+}
+.ph-tab .pt-num {
+  font-family: "SF Mono", monospace;
+  font-size: 14px;
+  letter-spacing: 0.26em;
+  color: var(--ink-dim);
+  font-weight: 700;
+}
+.ph-tab .pt-label {
+  font-family: "SF Mono", monospace;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--ink-dim);
+  line-height: 1;
+}
+.ph-tab .pt-prog {
+  font-family: "SF Mono", monospace;
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  font-weight: 600;
+}
+.ph-tab.active {
+  border-top-color: var(--orange);
+}
+.ph-tab.active .pt-num { color: var(--orange); }
+.ph-tab.active .pt-label { color: var(--ink); }
+.ph-tab.active .pt-prog { color: var(--ink); }
+.ph-tab.complete .pt-prog { color: var(--green); }
+.ph-tab.complete .pt-prog::before {
+  content: '✓ ';
+  color: var(--green);
+}
+
+/* Phase stage */
+.phase-stage {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+.phase {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  animation: phaseIn 220ms ease-out;
+}
+@keyframes phaseIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.phase::-webkit-scrollbar { width: 4px; }
+.phase::-webkit-scrollbar-thumb { background: var(--ink-faint); }
+
+/* Phase items (shop / prep / cook share base) */
+.phase-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: start;
+  gap: 12px;
+  padding: 12px 4px 12px 0;
+  border: none;
+  border-bottom: 1px solid var(--ink-faint);
+  background: transparent;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, padding 120ms ease;
+  text-align: left;
+  color: var(--ink);
+  width: 100%;
+}
+.phase-item:last-child { border-bottom: none; }
+.phase-item:hover, .phase-item.dpad-focus {
+  background: var(--orange);
+  color: #fff;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-bottom-color: transparent;
+}
+
+.checkbox {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--ink);
+  flex-shrink: 0;
+  position: relative;
+  transition: all 140ms ease;
+  margin-top: 2px;
+}
+.phase-item:hover .checkbox,
+.phase-item.dpad-focus .checkbox {
+  border-color: #fff;
+}
+.phase-item.checked .checkbox {
+  background: var(--green);
+  border-color: var(--green);
+}
+.phase-item.checked .checkbox::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 11px;
+  border: solid #fff;
+  border-width: 0 2.5px 2.5px 0;
+  /* translate by an optical bias (the L-shape's visual mass sits in its
+     bottom-right corner, so we shift up + slightly left for true center) */
+  transform: translate(-60%, -65%) rotate(45deg);
+}
+.phase-item.checked:hover .checkbox,
+.phase-item.checked.dpad-focus .checkbox {
+  background: #fff;
+  border-color: #fff;
+}
+.phase-item.checked:hover .checkbox::after,
+.phase-item.checked.dpad-focus .checkbox::after {
+  border-color: var(--orange);
+}
+
+.pi-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.pi-qty {
+  font-family: "SF Mono", monospace;
+  font-size: 15px;
+  letter-spacing: 0.22em;
+  color: var(--ink-dim);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.phase-item:hover .pi-qty,
+.phase-item.dpad-focus .pi-qty {
+  color: rgba(255,255,255,0.9);
+}
+.pi-text {
+  font-size: 19px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.005em;
+}
+.phase-item:hover .pi-text,
+.phase-item.dpad-focus .pi-text { color: #fff; }
+.phase-item.checked .pi-text {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  color: var(--ink-dim);
+}
+.phase-item.checked:hover .pi-text,
+.phase-item.checked.dpad-focus .pi-text {
+  color: rgba(255,255,255,0.85);
+}
+
+.pi-step-num {
+  font-family: "SF Mono", monospace;
+  font-size: 15px;
+  letter-spacing: 0.22em;
+  color: var(--ink-dim);
+  font-weight: 700;
+}
+.phase-item:hover .pi-step-num,
+.phase-item.dpad-focus .pi-step-num { color: rgba(255,255,255,0.9); }
+
+/* ─────────── Cook items with timer (replaces checkbox cell) ─────────── */
+.phase-item.cook-item.with-timer {
+  grid-template-columns: 72px 1fr;
+  gap: 14px;
+}
+.ci-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 8px;
+  border: 2px solid var(--orange);
+  background: var(--bg);
+  color: var(--orange);
+  font-family: "SF Mono", monospace;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+.ci-cell .ci-play {
+  display: inline-block;
+  width: 0; height: 0;
+  border-left: 8px solid var(--orange);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  transition: border-color 140ms ease;
+}
+.ci-cell .ci-time { line-height: 1; }
+.ci-cell .ci-check {
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+/* RUNNING — pulsing red */
+.cook-item.state-running .ci-cell {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+  animation: ciCellPulse 1.4s ease-in-out infinite;
+}
+@keyframes ciCellPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(226,36,28,0.55); }
+  50%     { box-shadow: 0 0 0 5px rgba(226,36,28,0); }
+}
+
+/* DONE — solid green */
+.cook-item.state-done .ci-cell {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
+/* Focused row (orange row bg) — invert cell so it stays readable */
+.phase-item.cook-item.with-timer:hover .ci-cell,
+.phase-item.cook-item.with-timer.dpad-focus .ci-cell {
+  background: #fff;
+  border-color: #fff;
+  color: var(--orange);
+}
+.phase-item.cook-item.with-timer:hover .ci-cell .ci-play,
+.phase-item.cook-item.with-timer.dpad-focus .ci-cell .ci-play {
+  border-left-color: var(--orange);
+}
+.cook-item.state-running:hover .ci-cell,
+.cook-item.state-running.dpad-focus .ci-cell {
+  background: #fff;
+  border-color: #fff;
+  color: var(--red);
+}
+.cook-item.state-done:hover .ci-cell,
+.cook-item.state-done.dpad-focus .ci-cell {
+  background: #fff;
+  border-color: #fff;
+  color: var(--green);
+}
+
+/* Done cook items: don't strike through (the green cell + check is enough) */
+.phase-item.cook-item.with-timer.checked .pi-text {
+  text-decoration: none;
+  color: var(--ink);
+  opacity: 0.55;
+}
+.phase-item.cook-item.with-timer.checked:hover .pi-text,
+.phase-item.cook-item.with-timer.checked.dpad-focus .pi-text {
+  color: #fff;
+  opacity: 1;
+}
+
+/* phase empty state */
+.phase-empty {
+  padding: 18px 0;
+  font-family: "SF Mono", monospace;
+  font-size: 16px;
+  letter-spacing: 0.22em;
+  color: var(--ink-dim);
+}
+
+/* phase complete banner (above the footer) */
+.phase-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--green);
+  color: #fff;
+  font-family: "SF Mono", monospace;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  margin-top: 8px;
+  animation: bannerIn 240ms ease-out;
+}
+.phase-banner.hidden { display: none; }
+.phase-banner .pb-tick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 900;
+}
+@keyframes bannerIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* recipe footer */
+.recipe-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  margin-top: 4px;
+}
+.recipe-footer .btn { flex: 0 0 auto; padding: 13px 16px; font-size: 14px; }
+
+.phase-hint {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "SF Mono", monospace;
+  font-size: 14px;
+  letter-spacing: 0.26em;
+  color: var(--ink-dim);
+}
+.phase-hint.hidden { display: none; }
+.phase-hint .hint-arrow {
+  display: inline-block;
+  width: 26px;
+  text-align: center;
+  border: 1px solid var(--ink-faint);
+  padding: 4px 0;
+  color: var(--orange);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+/* ─────────── TIMER RAIL (top, persistent) ─────────── */
+.timer-rail {
+  position: absolute;
+  top: 6px;
+  left: var(--pad-l);
+  right: 8px;
+  z-index: 60;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  pointer-events: auto;
+  margin-left: -10px;
+}
+.timer-rail.hidden { display: none; }
+
+/* shift screens down to make room for the persistent timer rail */
+body.has-timers .screen { padding-top: calc(var(--pad-t) + 32px); }
+/* Timer rail chips are status-only — not focusable, not clickable.
+   Reset/start/stop a timer from the cook step in the menu instead. */
+.tr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--red);
+  color: #fff;
+  font-family: "SF Mono", monospace;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: default;
+  border: 2px solid var(--red);
+  pointer-events: none;
+}
+.tr-chip .tr-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  display: inline-block;
+  animation: trDot 1s ease-in-out infinite;
+}
+@keyframes trDot {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.3; }
+}
+.tr-chip .tr-tag {
+  font-size: 13px;
+  opacity: 0.85;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+}
+.tr-chip.expired {
+  background: #ff8a00;
+  border-color: #ff8a00;
+  animation: trExpired 0.6s ease-in-out infinite;
+}
+@keyframes trExpired {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.04); }
+}
+
+/* ─────────── HELP ─────────── */
+.help-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 6px;
+}
+.help-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.help-keys {
+  display: inline-flex;
+  gap: 4px;
+}
+.key-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 2px solid var(--ink);
+  font-family: "SF Mono", monospace;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: 0.12em;
+}
+.key-glyph.wide { min-width: 56px; font-size: 11px; letter-spacing: 0.24em; }
+.key-glyph.timer-key {
+  border-color: var(--orange);
+  color: var(--orange);
+  font-size: 18px;
+  letter-spacing: 0;
+}
+.help-title {
+  font-family: "SF Mono", monospace;
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  color: var(--ink);
+}
+.help-sub {
+  font-size: 17px;
+  color: var(--ink-dim);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* ─────────── Toast ─────────── */
+.toast {
+  position: absolute;
+  bottom: 24px;
+  left: calc(var(--pad-l) - 4px);
+  right: 24px;
+  margin: 0;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: "SF Mono", monospace;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  padding: 14px 18px;
+  z-index: 220;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 220ms ease, transform 220ms ease;
+  text-align: center;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─────────── Confirm overlay ─────────── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 30px 30px calc(var(--pad-l) - 16px);
+}
+.confirm-card {
+  width: 100%;
+  background: var(--bg);
+  padding: 34px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  text-align: center;
+  border-left: 6px solid var(--orange);
+}
+.cc-eyebrow {
+  font-family: "SF Mono", monospace;
+  font-size: 16px;
+  letter-spacing: 0.36em;
+  color: var(--orange);
+  font-weight: 800;
+}
+.cc-msg {
+  font-size: 23px;
+  color: var(--ink);
+  line-height: 1.4;
+  font-weight: 600;
+}
+.cc-actions {
+  display: flex;
+  gap: 12px;
+}
+/* Inside the confirm dialog, both buttons are ghost-styled until selected
+   — only the focused one fills with orange. CONFIRM stays neutral so it
+   doesn't look like a default action. */
+#confirm .btn.primary {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--ink);
+}
+#confirm .btn.primary:hover:not(:disabled),
+#confirm .btn.primary.dpad-focus:not(:disabled) {
+  background: var(--orange);
+  color: #fff;
+  border-color: var(--orange);
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+/* timer alert */
+.timer-alert {
+  background: rgba(226, 36, 28, 0.78);
+  animation: alertFlash 0.9s ease-in-out infinite;
+}
+@keyframes alertFlash {
+  0%,100% { background: rgba(226, 36, 28, 0.78); }
+  50%     { background: rgba(255, 138, 0, 0.78); }
+}
+.ta-card {
+  width: 100%;
+  background: var(--bg);
+  padding: 26px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  border: 4px solid var(--red);
+  position: relative;
+}
+.ta-pulse {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--red);
+  margin-bottom: 4px;
+  animation: blinkBig 0.8s ease-in-out infinite;
+  box-shadow: 0 0 24px var(--red);
+}
+@keyframes blinkBig {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%     { opacity: 0.5; transform: scale(0.85); }
+}
+.ta-eyebrow {
+  font-family: "SF Mono", monospace;
+  font-size: 16px;
+  letter-spacing: 0.3em;
+  color: var(--red);
+  font-weight: 800;
+}
+.ta-step {
+  font-size: 22px;
+  color: var(--ink);
+  line-height: 1.35;
+  font-weight: 600;
+}
+.ta-recipe {
+  font-family: "SF Mono", monospace;
+  font-size: 15px;
+  letter-spacing: 0.24em;
+  color: var(--ink-dim);
+  font-weight: 700;
+}
+
+/* ─────────── Focusable focus state ─────────── */
+.focusable:focus { outline: none; }

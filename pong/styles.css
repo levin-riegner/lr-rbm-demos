@@ -1,0 +1,472 @@
+/*
+ * pong — Glasses HUD theme.
+ *
+ * Additive-display rules (mirrors pair-hud):
+ *   - Background is #0a0a0f (dark gray, never #000 which is transparent).
+ *   - Foreground text is pure #fff at 100% opacity for max photonic output.
+ *   - No SVGs. No external fonts. Spinner is CSS, digits are plain type.
+ *   - 8 px safe margin on every screen (rubberbanding clips the edge).
+ *   - 88 px minimum tap target on every .focusable.
+ *   - Focus state = cyan outline + soft glow.
+ */
+
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #14141f;
+  --bg-tertiary: #1e1e2e;
+  --bg-card: #1a1a2e;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0b0;
+  --text-muted: #606070;
+  --accent-primary: #00d4ff;
+  --accent-secondary: #00ff88;
+  --danger: #ff4466;
+  --focus-ring: #00d4ff;
+  --focus-glow: rgba(0, 212, 255, 0.4);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'tnum' 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  padding: 8px; /* 8 dp safe margin */
+}
+
+/* ---------- Screens ---------- */
+
+.screen {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px;
+}
+
+.screen.hidden {
+  display: none;
+}
+
+.screen-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.screen-subtitle {
+  font-size: 18px;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 520px;
+  line-height: 1.4;
+}
+
+/* ---------- Brand title (home) ---------- */
+
+.brand-title {
+  font-size: 96px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  text-shadow:
+    0 0 18px rgba(0, 212, 255, 0.35),
+    0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- Focusable / buttons ---------- */
+
+.focusable {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 88px;
+  min-width: 160px;
+  padding: 20px 28px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 500;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    transform 475ms cubic-bezier(0.6, 0, 0.4, 1),
+    border-color 300ms cubic-bezier(0.4, 0.04, 0.5, 1),
+    box-shadow 300ms cubic-bezier(0.4, 0.04, 0.5, 1),
+    background 300ms cubic-bezier(0.4, 0.04, 0.5, 1);
+  user-select: none;
+}
+
+.focusable:focus {
+  outline: none;
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 24px var(--focus-glow);
+  background: var(--bg-card);
+}
+
+.focusable.primary {
+  background: transparent;
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.focusable.primary:focus {
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--text-primary);
+}
+
+.focusable.danger {
+  color: var(--danger);
+  border-color: transparent;
+}
+
+.focusable.danger:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 24px rgba(255, 68, 102, 0.4);
+}
+
+/* ---------- Connecting ---------- */
+
+.spinner {
+  width: 72px;
+  height: 72px;
+  border: 6px solid var(--bg-tertiary);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Waiting (room code shown) ---------- */
+
+.pin-display {
+  font-size: 140px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  text-shadow:
+    0 0 18px rgba(0, 212, 255, 0.35),
+    0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+.pin-hint {
+  font-size: 18px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.4;
+  max-width: 520px;
+}
+
+.pin-ttl {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  min-height: 18px;
+}
+
+/* ---------- Join (combo lock — adapted from passcode-for-testing/lock.html) -- */
+
+.combo-lock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.lock-body {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: linear-gradient(180deg, #0d0d18 0%, #161628 40%, #161628 60%, #0d0d18 100%);
+  border-radius: 16px;
+  border: 2px solid #2a2a40;
+  padding: 0 6px;
+  position: relative;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.selection-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 56px;
+  background: rgba(0, 212, 255, 0.06);
+  border-top: 1.5px solid rgba(0, 212, 255, 0.25);
+  border-bottom: 1.5px solid rgba(0, 212, 255, 0.25);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.combo-column {
+  width: 80px;
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.combo-column.active .digit.current {
+  color: var(--accent-primary);
+  text-shadow: 0 0 20px var(--focus-glow);
+}
+
+.combo-divider {
+  width: 1.5px;
+  height: 160px;
+  background: linear-gradient(180deg, transparent, #2a2a40, transparent);
+  flex-shrink: 0;
+}
+
+.digit-window {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.digit-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  transition: transform 0.15s ease-out;
+}
+
+.digit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 40px;
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  transition: color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+}
+
+.digit.current {
+  color: var(--text-primary);
+  font-size: 36px;
+  opacity: 1;
+}
+.digit.near {
+  color: var(--text-muted);
+  opacity: 0.5;
+  font-size: 26px;
+}
+.digit.far {
+  color: var(--text-muted);
+  opacity: 0.15;
+  font-size: 20px;
+}
+
+.column-indicator {
+  display: flex;
+  gap: 10px;
+}
+
+.column-indicator .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.4;
+  transition: all 0.2s ease;
+}
+
+.column-indicator .dot.active {
+  background: var(--accent-primary);
+  opacity: 1;
+  box-shadow: 0 0 8px var(--focus-glow);
+}
+
+.lock-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+
+.hint-arrows {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.lock-body.shake {
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* ---------- Game ---------- */
+
+.game-layout {
+  /* Override the default centered layout — game wants tight vertical packing. */
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.score-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 36px;
+  font-size: 56px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  padding: 8px 0 4px;
+}
+
+.score-left {
+  color: var(--accent-primary);
+}
+.score-right {
+  color: var(--text-primary);
+}
+.score-sep {
+  color: var(--text-muted);
+  font-size: 36px;
+}
+
+.court-canvas {
+  width: 552px;
+  height: 368px;
+  display: block;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 24px rgba(0, 212, 255, 0.1);
+}
+
+.game-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 552px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.legend-side {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.legend-left {
+  color: var(--accent-primary);
+}
+
+.legend-right {
+  color: var(--text-primary);
+}
+
+.legend-meta {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Game over ---------- */
+
+.gameover-headline {
+  font-size: 64px;
+  font-weight: 700;
+  color: var(--accent-primary);
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 24px rgba(0, 212, 255, 0.35);
+}
+
+.gameover-headline.lose {
+  color: var(--danger);
+  text-shadow: 0 0 24px rgba(255, 68, 102, 0.35);
+}
+
+/* ---------- Disconnected / Error ---------- */
+
+.status-glyph {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.status-glyph.danger {
+  color: var(--danger);
+}
+
+.status-message {
+  font-size: 22px;
+  color: var(--text-primary);
+  text-align: center;
+  max-width: 520px;
+  line-height: 1.4;
+}
+
+/* ---------- Utility ---------- */
+
+.hidden {
+  display: none !important;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .focusable,
+  .digit,
+  .digit-strip {
+    transition: none;
+  }
+  .spinner {
+    animation-duration: 2s;
+  }
+}

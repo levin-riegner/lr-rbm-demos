@@ -1,0 +1,26 @@
+# netlify.toml — Pong static assets on Netlify
+#
+# Deploy paths:
+#   Drag-and-drop:  open https://app.netlify.com/drop and drop this folder
+#   Netlify CLI:    netlify deploy --prod --dir=.
+#   Git deploy:     connect this repo, set base directory to `examples/pong`
+#
+# Before deploying, set WS_PROD in app.js to your Fly.io hostname:
+#   var WS_PROD = 'wss://your-app.fly.dev/ws';
+#
+# Only the static files (index.html, app.js, styles.css) are served by
+# Netlify. server.js, the Dockerfile, fly.toml, etc. are uploaded too but
+# unused — Netlify never executes server.js. The WebSocket server runs on
+# Fly.io (or wherever WS_PROD points).
+
+[build]
+  publish = "."
+  # No build step — pure static. We override the auto-detected Node build
+  # so Netlify doesn't burn time on `npm install` for the static deploy.
+  command = "echo 'pong is pure static — no build step needed'"
+
+[build.environment]
+  # Skip the implicit `npm install` Netlify would otherwise run because of
+  # package.json. Saves ~5 s per deploy; ws is only needed by the server.
+  NETLIFY_USE_YARN = "false"
+  NPM_FLAGS = "--version"

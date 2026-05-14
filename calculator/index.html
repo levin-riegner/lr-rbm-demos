@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="stage">
+    <section class="screen">
+      <header class="bar">
+        <span class="tag">CALC</span>
+        <span class="tag accent" id="expression">—</span>
+      </header>
+
+      <div class="display">
+        <div class="result" id="result">0</div>
+      </div>
+
+      <div class="pad" id="pad">
+        <button class="key fn" data-focusable data-key="ac" data-row="0" data-col="0">AC</button>
+        <button class="key fn" data-focusable data-key="sign" data-row="0" data-col="1">+/−</button>
+        <button class="key fn" data-focusable data-key="percent" data-row="0" data-col="2">%</button>
+        <button class="key op" data-focusable data-key="/" data-row="0" data-col="3">÷</button>
+
+        <button class="key" data-focusable data-key="7" data-row="1" data-col="0">7</button>
+        <button class="key" data-focusable data-key="8" data-row="1" data-col="1">8</button>
+        <button class="key" data-focusable data-key="9" data-row="1" data-col="2">9</button>
+        <button class="key op" data-focusable data-key="*" data-row="1" data-col="3">×</button>
+
+        <button class="key" data-focusable data-key="4" data-row="2" data-col="0">4</button>
+        <button class="key" data-focusable data-key="5" data-row="2" data-col="1">5</button>
+        <button class="key" data-focusable data-key="6" data-row="2" data-col="2">6</button>
+        <button class="key op" data-focusable data-key="-" data-row="2" data-col="3">−</button>
+
+        <button class="key" data-focusable data-key="1" data-row="3" data-col="0">1</button>
+        <button class="key" data-focusable data-key="2" data-row="3" data-col="1">2</button>
+        <button class="key" data-focusable data-key="3" data-row="3" data-col="2">3</button>
+        <button class="key op" data-focusable data-key="+" data-row="3" data-col="3">+</button>
+
+        <button class="key wide" data-focusable data-key="0" data-row="4" data-col="0">0</button>
+        <button class="key" data-focusable data-key="." data-row="4" data-col="2">.</button>
+        <button class="key op primary" data-focusable data-key="=" data-row="4" data-col="3">=</button>
+      </div>
+
+      <footer class="hints">
+        <span class="hint">▲▼◀▶ NAV</span>
+        <span class="hint">● SELECT</span>
+      </footer>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

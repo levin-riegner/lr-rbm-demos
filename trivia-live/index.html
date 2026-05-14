@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Trivia Live</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ==================== START SCREEN ==================== -->
+    <div id="start" class="screen">
+      <header class="header">
+        <h1>Trivia Live</h1>
+        <span class="header-meta" id="best-meta">Best: &mdash;</span>
+      </header>
+
+      <div class="content">
+        <div class="selector-group">
+          <div class="selector-label">Category</div>
+          <div class="selector-row" id="category-row">
+            <!-- category chips injected -->
+          </div>
+        </div>
+
+        <div class="selector-group">
+          <div class="selector-label">Difficulty</div>
+          <div class="selector-row" id="difficulty-row">
+            <!-- difficulty chips injected -->
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable primary" data-action="start-quiz">&#9654; Start Quiz</button>
+      </nav>
+    </div>
+
+    <!-- ==================== QUIZ SCREEN ==================== -->
+    <div id="quiz" class="screen hidden">
+      <header class="header quiz-header">
+        <span class="q-count" id="q-count">Q 1/10</span>
+        <span class="q-chip" id="q-chip">&mdash;</span>
+        <span class="q-score" id="q-score">0</span>
+      </header>
+
+      <div class="content quiz-content">
+        <div class="timer-wrap">
+          <div class="timer-bar-track">
+            <div class="timer-bar-fill" id="timer-fill"></div>
+          </div>
+          <div class="timer-num" id="timer-num">15</div>
+        </div>
+
+        <div class="question-text" id="question-text">&mdash;</div>
+
+        <div class="answers" id="answers">
+          <!-- 4 answer buttons injected -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== RESULTS SCREEN ==================== -->
+    <div id="results" class="screen hidden">
+      <header class="header">
+        <h1>Results</h1>
+        <span class="header-meta" id="results-best">&mdash;</span>
+      </header>
+
+      <div class="content">
+        <div class="score-block">
+          <div class="score-big" id="score-big">0/10</div>
+          <div class="score-sub" id="score-sub">&mdash;</div>
+        </div>
+
+        <div class="review-title">Review</div>
+        <div class="review-list" id="review-list">
+          <!-- review items injected -->
+        </div>
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable primary" data-action="play-again">&#8635; Play Again</button>
+        <button class="nav-item focusable" data-action="go-start">&#8962; Home</button>
+      </nav>
+    </div>
+
+    <!-- ==================== LOADING SCREEN ==================== -->
+    <div id="loading" class="screen hidden">
+      <div class="content center">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Fetching questions&hellip;</div>
+      </div>
+    </div>
+
+    <!-- ==================== ERROR SCREEN ==================== -->
+    <div id="error" class="screen hidden">
+      <header class="header">
+        <h1>Error</h1>
+      </header>
+      <div class="content center">
+        <div class="error-icon">&#9888;</div>
+        <div class="error-message" id="error-message">Could not load questions</div>
+      </div>
+      <nav class="nav-bar">
+        <button class="nav-item focusable primary" data-action="retry">&#8635; Retry</button>
+        <button class="nav-item focusable" data-action="go-start">&#8962; Home</button>
+      </nav>
+    </div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

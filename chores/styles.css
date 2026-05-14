@@ -1,0 +1,593 @@
+:root {
+  --bg:        #0A0A0B;
+  --ink:       #F2EFE6;
+  --ink-soft:  #B8B5AC;
+  --ink-dim:   #6A6A70;
+  --ink-faint: #2A2A2F;
+  --accent:    #FF8B6B;
+  --accent-hi: #FFB39A;
+  --accent-lo: rgba(255, 139, 107, 0.14);
+  --note:      #C9BCFF;
+  --good:      #9EE9B0;
+
+  --pad-l:  168px;
+  --pad-r:  40px;
+  --pad-t:  32px;
+  --pad-b:  28px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Space Grotesk", "SF Pro Display", "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "ss02";
+  letter-spacing: -0.005em;
+  font-weight: 500;
+  font-size: 18px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  letter-spacing: inherit;
+  text-align: right;
+  padding: 0;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* very subtle horizontal scan to evoke HUD without competing with content */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent 0px, transparent 3px,
+    rgba(0,0,0,0.10) 4px, rgba(0,0,0,0.10) 5px
+  );
+  pointer-events: none;
+  z-index: 200;
+  mix-blend-mode: multiply;
+}
+
+#app {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+}
+
+/* ────────── Screen base ────────── */
+.screen {
+  position: absolute;
+  inset: 0;
+  width: 600px;
+  height: 600px;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  animation: screenIn 260ms cubic-bezier(0.2, 0, 0, 1);
+  background: var(--bg);
+}
+.screen.hidden { display: none !important; }
+
+@keyframes screenIn {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ────────── Header tag (top-right) ────────── */
+.head {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.head .dot {
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: inline-block;
+  transition: background 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+.head .dot.good { background: var(--good); }
+
+.head .step {
+  color: var(--ink-soft);
+}
+
+.head .time {
+  color: var(--accent);
+  transition: color 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+.head .time.good { color: var(--good); }
+
+/* ────────── Display titles ────────── */
+.intro-title,
+.chore-title,
+.done-title {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 0.96;
+  color: var(--ink);
+}
+
+.intro-title {
+  font-size: 76px;
+  margin-top: 28px;
+}
+.intro-title .accent {
+  display: block;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.chore-title {
+  font-size: 42px;
+  margin-top: 10px;
+  line-height: 0.98;
+}
+
+.done-title {
+  font-size: 56px;
+  margin-top: 6px;
+}
+
+.intro-explainer {
+  font-size: 22px;
+  line-height: 1.35;
+  color: var(--ink-soft);
+  margin-top: 22px;
+  font-weight: 400;
+  max-width: 380px;
+  margin-left: auto;
+}
+
+/* ────────── Section labels ────────── */
+.label {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-top: 14px;
+  margin-bottom: 4px;
+}
+
+/* ────────── Tasks list ────────── */
+.tasks {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tasks li {
+  font-size: 19px;
+  line-height: 1.25;
+  color: var(--ink);
+  font-weight: 400;
+  padding: 2px 0;
+  cursor: pointer;
+  outline: none;
+  transition: color 120ms cubic-bezier(0.2, 0, 0, 1), transform 120ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.tasks li .text {
+  position: relative;
+  display: inline-block;
+}
+
+.tasks li .text::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52%;
+  height: 1.5px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.tasks li.checked {
+  color: var(--ink-dim);
+}
+.tasks li.checked .text::after {
+  transform: scaleX(1);
+}
+
+.tasks li .mark {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 14px;
+  color: var(--ink-faint);
+  margin-left: 12px;
+  font-weight: 500;
+  vertical-align: 2px;
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+  transition: color 120ms;
+}
+
+.tasks li.checked .mark { color: var(--accent); }
+
+.tasks li:focus,
+.tasks li.focused {
+  color: var(--accent);
+  transform: translateX(-4px);
+}
+.tasks li:focus .mark,
+.tasks li.focused .mark { color: var(--accent); }
+.tasks li.checked:focus,
+.tasks li.checked.focused { color: var(--accent); }
+
+/* ────────── Order items (Amazon links) ────────── */
+.orders {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.orders li {
+  font-size: 19px;
+  line-height: 1.2;
+  font-weight: 500;
+  padding: 3px 0;
+  color: var(--ink-soft);
+  transition: color 120ms cubic-bezier(0.2, 0, 0, 1), transform 120ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.orders li[data-focusable] {
+  cursor: pointer;
+}
+
+.orders li .arrow {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--ink-dim);
+  margin-left: 14px;
+  transition: color 120ms, transform 120ms;
+  display: inline-block;
+}
+
+.orders li[data-focusable]:focus,
+.orders li.focused {
+  color: var(--accent);
+  outline: none;
+}
+.orders li[data-focusable]:focus .arrow,
+.orders li.focused .arrow {
+  color: var(--accent);
+  transform: translateX(4px);
+}
+
+.orders li.note {
+  color: var(--note);
+}
+.orders li.note .arrow { color: var(--note); opacity: 0.5; }
+.orders li.note[data-focusable]:focus,
+.orders li.note.focused { color: var(--note); }
+.orders li.note[data-focusable]:focus .arrow,
+.orders li.note.focused .arrow { color: var(--note); opacity: 1; }
+
+.orders li.done {
+  color: var(--good);
+}
+.orders li.done .arrow { color: var(--good); opacity: 0.6; }
+
+/* ────────── Buttons (text-only, no boxes) ────────── */
+.actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding-top: 12px;
+}
+
+.btn {
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink-soft);
+  padding: 3px 0;
+  cursor: pointer;
+  text-align: right;
+  transition: color 120ms cubic-bezier(0.2, 0, 0, 1), transform 120ms cubic-bezier(0.2, 0, 0, 1);
+  outline: none;
+}
+
+.btn .glyph {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-weight: 500;
+  font-size: 22px;
+  color: var(--ink-dim);
+  margin-left: 12px;
+  display: inline-block;
+  transition: color 120ms, transform 120ms;
+}
+
+.btn:focus,
+.btn.focused {
+  color: var(--accent);
+  transform: translateX(-4px);
+}
+.btn:focus .glyph,
+.btn.focused .glyph {
+  color: var(--accent);
+  transform: translateX(4px);
+}
+
+.btn.primary {
+  color: var(--ink);
+  font-size: 30px;
+  font-weight: 600;
+}
+.btn.primary:focus,
+.btn.primary.focused {
+  color: var(--accent);
+}
+
+.btn.complete {
+  color: var(--ink);
+  font-size: 26px;
+  font-weight: 600;
+}
+.btn.complete .glyph { color: var(--accent); }
+.btn.complete:focus,
+.btn.complete.focused {
+  color: var(--accent);
+}
+
+.btn.complete.done {
+  color: var(--good);
+  pointer-events: none;
+}
+.btn.complete.done .glyph { color: var(--good); }
+
+.btn.secondary {
+  font-size: 20px;
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+.btn.secondary .glyph { font-size: 16px; }
+
+.nav-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 28px;
+  margin-top: 4px;
+}
+
+/* ────────── Hints (footer) ────────── */
+.hints {
+  position: absolute;
+  bottom: 16px;
+  right: var(--pad-r);
+  display: flex;
+  gap: 18px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  font-weight: 500;
+}
+.hints .key { color: var(--ink-soft); }
+
+/* ────────── Amazon loader overlay ────────── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  width: 600px;
+  height: 600px;
+  background: var(--bg);
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  z-index: 50;
+  animation: screenIn 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+.overlay.hidden { display: none !important; }
+
+.loader-dot {
+  animation: loaderPulse 0.9s cubic-bezier(0.2, 0, 0, 1) infinite;
+}
+@keyframes loaderPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50%       { opacity: 1;   transform: scale(1.15); }
+}
+
+.loader-item {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 42px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.0;
+  color: var(--ink);
+  margin-top: 28px;
+  max-width: 380px;
+  margin-left: auto;
+}
+
+.loader-msg {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-top: 24px;
+  transition: opacity 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.loader-track {
+  margin-top: 14px;
+  height: 2px;
+  background: var(--ink-faint);
+  position: relative;
+  overflow: hidden;
+  border-radius: 1px;
+}
+
+.loader-bar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+/* ────────── Product detail overlay ────────── */
+#pdp {
+  z-index: 60;
+}
+
+.pdp-back {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.pdp-emoji {
+  font-size: 80px;
+  line-height: 1;
+  margin-top: 20px;
+  text-align: right;
+}
+
+.pdp-title {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-top: 14px;
+}
+
+.pdp-desc {
+  font-size: 17px;
+  color: var(--ink-soft);
+  font-weight: 400;
+  margin-top: 4px;
+}
+
+.pdp-price {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  margin-top: 14px;
+  line-height: 1;
+}
+
+/* Purchased confirmation popover */
+.pdp-confirm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 11, 0.94);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.pdp-confirm.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.pdp-check {
+  font-size: 80px;
+  color: var(--good);
+  line-height: 1;
+}
+
+.pdp-confirm-label {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--good);
+  margin-top: 14px;
+}
+
+/* ────────── Done screen ────────── */
+.done-summary {
+  font-size: 22px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  margin-top: 22px;
+  max-width: 380px;
+  margin-left: auto;
+  font-weight: 400;
+}
+.done-summary .accent { color: var(--accent); font-weight: 500; }
+
+.done-mark {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+/* ────────── Toast ────────── */
+.toast {
+  position: absolute;
+  bottom: 56px;
+  right: var(--pad-r);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0;
+  transform: translateX(8px);
+  transition: opacity 160ms cubic-bezier(0.2, 0, 0, 1), transform 160ms cubic-bezier(0.2, 0, 0, 1);
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen, .toast, .btn, .orders li, .tasks li { animation: none !important; transition: none !important; }
+}

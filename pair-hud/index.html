@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Glasses viewport: fixed 600x600, no scaling. -->
+    <meta
+      name="viewport"
+      content="width=600, height=600, initial-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#0a0a0f" />
+    <title>Pair HUD</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 1. Connecting — while the WS is handshaking. -->
+      <section id="screen-connecting" class="screen">
+        <div class="spinner" aria-hidden="true"></div>
+        <div class="screen-title">Connecting</div>
+        <button
+          class="focusable"
+          type="button"
+          data-action="retry"
+          aria-label="Retry connection"
+        >
+          Retry
+        </button>
+      </section>
+
+      <!-- 2. Pairing — show the PIN and wait for a mobile to join. -->
+      <section id="screen-pairing" class="screen hidden">
+        <div class="screen-title">Pair with your phone</div>
+        <div
+          id="pin-display"
+          class="pin-display"
+          aria-live="polite"
+          aria-label="Pairing PIN"
+        >
+          ····
+        </div>
+        <div class="pin-hint">
+          Open <span class="url" id="pair-url">the pair page</span> on your
+          phone and enter this PIN.
+        </div>
+        <div class="pin-ttl" id="pin-ttl" aria-live="polite"></div>
+        <button
+          class="focusable"
+          type="button"
+          data-action="new-pin"
+          aria-label="Request a new PIN"
+        >
+          New PIN
+        </button>
+      </section>
+
+      <!-- 3. Paired — brief "Connected" state. Auto-advances on first push. -->
+      <section id="screen-paired" class="screen hidden">
+        <div class="big-state">
+          <span class="glyph" aria-hidden="true">✓</span>Connected
+        </div>
+        <div class="screen-subtitle">Waiting for your first message…</div>
+        <button
+          class="focusable danger"
+          type="button"
+          data-action="unpair"
+          aria-label="Disconnect the paired phone"
+        >
+          Unpair
+        </button>
+      </section>
+
+      <!-- 4. Content — live push from the paired phone. -->
+      <section id="screen-content" class="screen hidden">
+        <div
+          id="content-payload"
+          class="content-payload"
+          aria-live="polite"
+          aria-label="Pushed message"
+        >
+          —
+        </div>
+        <div id="content-meta" class="content-meta" aria-live="polite"></div>
+        <div class="content-actions">
+          <button class="focusable" type="button" data-action="clear">
+            Clear
+          </button>
+          <button class="focusable danger" type="button" data-action="unpair">
+            Unpair
+          </button>
+        </div>
+      </section>
+
+      <!-- 5. Disconnected — WS dropped, helper is retrying. -->
+      <section id="screen-disconnected" class="screen hidden">
+        <div class="status-glyph" aria-hidden="true">⟳</div>
+        <div class="screen-title">Reconnecting…</div>
+        <div class="status-message" id="disconnected-detail">
+          Lost connection to the server.
+        </div>
+        <button class="focusable" type="button" data-action="retry">
+          Retry now
+        </button>
+      </section>
+
+      <!-- 6. Error — protocol error or server refused. -->
+      <section id="screen-error" class="screen hidden">
+        <div class="status-glyph danger" aria-hidden="true">!</div>
+        <div class="screen-title">Something went wrong</div>
+        <div class="status-message" id="error-detail">Server error.</div>
+        <button class="focusable primary" type="button" data-action="retry">
+          Try again
+        </button>
+      </section>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Crypto Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ==================== HOME SCREEN ==================== -->
+    <div id="home" class="screen">
+      <header class="header">
+        <h1>Crypto</h1>
+        <span class="header-meta" id="status-indicator">Loading&hellip;</span>
+      </header>
+
+      <div class="tabs">
+        <button class="tab focusable active" data-action="tab-all" id="tab-all">All</button>
+        <button class="tab focusable" data-action="tab-favs" id="tab-favs">Favorites</button>
+      </div>
+
+      <div class="content" id="home-content">
+        <div class="coin-list" id="coin-list">
+          <!-- coin cards injected here -->
+        </div>
+
+        <div id="empty-favs" class="empty-container hidden">
+          <div class="empty-icon">&#9734;</div>
+          <div class="empty-message">No favorites yet</div>
+          <div class="empty-hint">Press Enter on a coin, then star it</div>
+        </div>
+
+        <div id="loading" class="loading-container hidden">
+          <div class="coin-list">
+            <div class="coin-card skeleton"></div>
+            <div class="coin-card skeleton"></div>
+            <div class="coin-card skeleton"></div>
+            <div class="coin-card skeleton"></div>
+            <div class="coin-card skeleton"></div>
+            <div class="coin-card skeleton"></div>
+            <div class="coin-card skeleton"></div>
+            <div class="coin-card skeleton"></div>
+          </div>
+        </div>
+
+        <div id="error" class="error-container hidden">
+          <div class="error-icon">&#9888;</div>
+          <div class="error-message" id="error-message">Could not load prices</div>
+          <button class="nav-item focusable primary" data-action="refresh">&#8635; Retry</button>
+        </div>
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable" data-action="refresh">&#8635; Refresh</button>
+      </nav>
+    </div>
+
+    <!-- ==================== DETAIL SCREEN ==================== -->
+    <div id="detail" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1 id="detail-title">Coin</h1>
+      </header>
+
+      <div class="content">
+        <div class="detail-hero">
+          <div class="detail-symbol" id="detail-symbol">&mdash;</div>
+          <div class="detail-name" id="detail-name">&mdash;</div>
+          <div class="detail-price" id="detail-price">$--</div>
+          <div class="change-badge" id="detail-change">--%</div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Price</div>
+            <div class="stat-value" id="stat-price">$--</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">24h Change</div>
+            <div class="stat-value" id="stat-change">--%</div>
+          </div>
+          <div class="stat-card stat-wide">
+            <div class="stat-label">Last Updated</div>
+            <div class="stat-value" id="stat-updated">&mdash;</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable primary" data-action="toggle-fav-detail" id="detail-fav-btn">
+          <span id="detail-fav-icon">&#9734;</span>
+          <span id="detail-fav-label">Add Favorite</span>
+        </button>
+        <button class="nav-item focusable" data-action="back">&#8592; Back</button>
+      </nav>
+    </div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

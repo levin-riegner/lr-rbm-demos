@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Speedometer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="home" class="screen">
+      <header class="header">
+        <h1>Speed</h1>
+        <span class="header-meta" id="status">Idle</span>
+      </header>
+
+      <main class="content">
+        <div class="speed-readout">
+          <div class="speed-value" id="speed-value">0.0</div>
+          <div class="speed-unit">m/s</div>
+        </div>
+
+        <div class="level-indicator" aria-hidden="true">
+          <div class="level-track">
+            <span class="level-center-tick"></span>
+            <div class="level-bubble" id="level-bubble"></div>
+          </div>
+        </div>
+
+        <div class="top-speed" id="top-speed-row">
+          <span class="label">Top</span>
+          <span class="value" id="top-speed">0.0</span>
+          <span class="unit">m/s</span>
+        </div>
+      </main>
+
+      <nav class="nav-bar">
+        <button class="nav-item focusable primary" id="btn-toggle-sensor" data-action="toggle-sensor">Start</button>
+        <button class="nav-item focusable" id="btn-toggle-sim" data-action="toggle-sim">Sim</button>
+        <button class="nav-item focusable" id="btn-reset" data-action="reset">Reset Top</button>
+      </nav>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>ZORK I — Great Underground Empire</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="crt">
+    <header id="statusbar">
+      <span id="status-loc">WEST OF HOUSE</span>
+      <span id="status-meta">SCORE: 0/350&nbsp;&nbsp;MOVES: 0</span>
+    </header>
+
+    <main id="screen">
+      <div id="output"></div>
+    </main>
+
+    <!-- Chip command bar: primary suggested action + secondary chips -->
+    <div id="chipbar">
+      <div id="primary-row" class="chip-row"></div>
+      <div id="secondary-row" class="chip-row"></div>
+    </div>
+
+    <!-- Expanded "MORE" panel — overlay listing every contextual action -->
+    <div id="more-panel" class="hidden">
+      <div class="mp-header">
+        <span class="mp-title">ALL ACTIONS</span>
+        <button id="mp-close" class="mp-close">&#10005;</button>
+      </div>
+      <div id="mp-list" class="mp-list"></div>
+    </div>
+  </div>
+
+  <script src="world.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

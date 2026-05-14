@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Spireworks NYC</title>
+  <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+  <div id="app">
+
+    <!-- HOME -->
+    <div id="home" class="screen">
+      <div class="content centered">
+        <div class="spire-logo">
+          <div class="spire-tower">
+            <div class="spire-light" id="home-spire-light"></div>
+          </div>
+        </div>
+        <h1 class="app-title">Spireworks</h1>
+        <p class="app-tagline">Light up NYC. Support a cause.</p>
+        <div class="home-actions">
+          <button class="primary-btn focusable" data-action="go-buildings">Choose a Building</button>
+          <button class="secondary-btn focusable" data-action="go-about">How It Works</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOW IT WORKS -->
+    <div id="about" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>How It Works</h1>
+      </header>
+      <div class="content">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <div class="step-title">Pick a Building</div>
+            <div class="step-desc">Choose one of 5 iconic NYC spires</div>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <div class="step-title">Donate to the Cause</div>
+            <div class="step-desc">A cause is preselected each month</div>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <div class="step-title">Find Your Building</div>
+            <div class="step-desc">We'll point you the right direction</div>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-text">
+            <div class="step-title">Control the Light</div>
+            <div class="step-desc">2 minutes — any color you choose</div>
+          </div>
+        </div>
+        <button class="primary-btn focusable" data-action="go-buildings" style="margin-top:8px">Get Started</button>
+      </div>
+    </div>
+
+    <!-- BUILDINGS -->
+    <div id="buildings" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>Choose Building</h1>
+      </header>
+      <div class="content" style="padding-top:8px">
+        <div class="list-container" id="buildings-list">
+          <button class="building-item focusable" data-action="select-building" data-building="owtc">
+            <div class="building-icon">&#9650;</div>
+            <div class="building-info">
+              <div class="building-name">One World Trade</div>
+              <div class="building-loc">Lower Manhattan</div>
+            </div>
+            <div class="building-height">1,776 ft</div>
+          </button>
+          <button class="building-item focusable" data-action="select-building" data-building="obp">
+            <div class="building-icon">&#9650;</div>
+            <div class="building-info">
+              <div class="building-name">One Bryant Park</div>
+              <div class="building-loc">Midtown</div>
+            </div>
+            <div class="building-height">1,200 ft</div>
+          </button>
+          <button class="building-item focusable" data-action="select-building" data-building="ofo">
+            <div class="building-icon">&#9650;</div>
+            <div class="building-info">
+              <div class="building-name">One Five One W 42nd</div>
+              <div class="building-loc">Times Square</div>
+            </div>
+            <div class="building-height">750 ft</div>
+          </button>
+          <button class="building-item focusable" data-action="select-building" data-building="sven">
+            <div class="building-icon">&#9650;</div>
+            <div class="building-info">
+              <div class="building-name">Sven</div>
+              <div class="building-loc">Midtown West</div>
+            </div>
+            <div class="building-height">680 ft</div>
+          </button>
+          <button class="building-item focusable" data-action="select-building" data-building="hp">
+            <div class="building-icon">&#9650;</div>
+            <div class="building-info">
+              <div class="building-name">Halletts Point</div>
+              <div class="building-loc">Astoria, Queens</div>
+            </div>
+            <div class="building-height">430 ft</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DONATE -->
+    <div id="donate" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1 id="donate-building-name">Building</h1>
+      </header>
+      <div class="content">
+        <div class="cause-card">
+          <div class="cause-label">This Month's Cause</div>
+          <div class="cause-name">NYC Youth Arts Fund</div>
+          <div class="cause-desc">Supporting arts education in public schools across all 5 boroughs</div>
+        </div>
+        <div class="donate-label">Select Amount</div>
+        <div class="amount-grid">
+          <button class="amount-btn focusable" data-action="set-amount" data-amount="5">$5</button>
+          <button class="amount-btn focusable" data-action="set-amount" data-amount="10">$10</button>
+          <button class="amount-btn focusable" data-action="set-amount" data-amount="25">$25</button>
+          <button class="amount-btn focusable" data-action="set-amount" data-amount="50">$50</button>
+        </div>
+        <div class="selected-amount-row">
+          <span class="selected-amount-label">Donating:</span>
+          <span class="selected-amount-value" id="selected-amount-display">$10</span>
+        </div>
+        <button class="primary-btn focusable" data-action="confirm-donate" id="donate-btn">
+          Donate &amp; Get Access
+        </button>
+        <p class="fine-print">You'll get 2:00 minutes to control the spire light</p>
+      </div>
+    </div>
+
+    <!-- COMPASS -->
+    <div id="compass" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>Find the Spire</h1>
+      </header>
+      <div class="content centered">
+        <div class="compass-wrapper">
+          <div class="compass-ring">
+            <div class="compass-arrow-wrap" id="compass-arrow-wrap">
+              <div class="compass-arrow" id="compass-arrow">&#9650;</div>
+            </div>
+            <div class="compass-center-dot"></div>
+            <div class="compass-label north">N</div>
+            <div class="compass-label east">E</div>
+            <div class="compass-label south">S</div>
+            <div class="compass-label west">W</div>
+          </div>
+        </div>
+        <div class="compass-building" id="compass-building-name">One World Trade</div>
+        <div class="compass-instruction" id="compass-instruction">Rotate to point arrow at building</div>
+        <div class="compass-bearing" id="compass-bearing-text"></div>
+        <div class="compass-status" id="compass-status">Locating...</div>
+        <button class="primary-btn focusable" data-action="go-colors" style="margin-top:8px">
+          I See It — Control the Light
+        </button>
+      </div>
+    </div>
+
+    <!-- COLOR CONTROLLER -->
+    <div id="colors" class="screen hidden">
+      <header class="header colors-header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <div class="colors-building-name" id="colors-building-name">One World Trade</div>
+        <div class="active-color-swatch" id="active-color-swatch"></div>
+        <div class="active-color-name" id="active-color-name">Pick a color</div>
+        <div class="timer-display" id="timer-display">2:00</div>
+      </header>
+      <div class="content colors-content">
+        <div class="color-grid" id="color-grid">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPIRED -->
+    <div id="expired" class="screen hidden">
+      <div class="content centered">
+        <div class="expired-icon">&#9651;</div>
+        <h2 class="expired-title">Time's Up!</h2>
+        <p class="expired-msg">Your 2-minute session has ended.<br>Thanks for supporting NYC Youth Arts Fund!</p>
+        <button class="primary-btn focusable" data-action="go-buildings">Light Another Spire</button>
+        <button class="secondary-btn focusable" data-action="go-home">Home</button>
+      </div>
+    </div>
+
+  </div><!-- /app -->
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js?v=3"></script>
+</body>
+</html>

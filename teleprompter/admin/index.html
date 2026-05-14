@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teleprompter Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    :root {
+      --bg:           #17181B;
+      --surface-1:    #212326;
+      --surface-2:    #2B2E33;
+      --border:       #2E3136;
+      --text:         #F2F3F5;
+      --text-2:       #B7BBC2;
+      --muted:        #7A7F88;
+      --accent:       #5EE7DF;
+      --accent-dim:   #2F8C88;
+      --accent-strong:#7FF0E9;
+      --danger:       #FF6E6E;
+      --ok:           #8AE38C;
+      --ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--ui);
+      -webkit-font-smoothing: antialiased;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    #root { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+
+    header.app-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+    .brand-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 2px;
+      color: var(--accent);
+      border: 1px solid #2F5E5B;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+    .dot.connected { background: var(--ok); box-shadow: 0 0 8px rgba(138, 227, 140, 0.5); }
+    .dot.disconnected { background: var(--danger); }
+
+    .panel {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px;
+    }
+
+    label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      background: #0E0F11;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 14px;
+      font-size: 16px;
+      font-family: var(--ui);
+      line-height: 1.45;
+      resize: vertical;
+      outline: none;
+      transition: border-color 100ms cubic-bezier(0.2,0,0,1), box-shadow 100ms cubic-bezier(0.2,0,0,1);
+    }
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: inset 3px 0 0 0 var(--accent);
+    }
+
+    .row { display: flex; gap: 10px; margin-top: 14px; align-items: center; }
+
+    button {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 11px 16px;
+      border-radius: 4px;
+      font-family: var(--ui);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: background 100ms cubic-bezier(0.2,0,0,1), border-color 100ms cubic-bezier(0.2,0,0,1);
+    }
+    button:not(:disabled):hover { border-color: var(--accent); }
+    button:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: inset 3px 0 0 0 var(--accent);
+    }
+    button.primary {
+      background: var(--accent-dim);
+      border-color: #3FA8A3;
+      color: #06201F;
+      font-weight: 600;
+    }
+    button.primary:not(:disabled):hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+    button.primary:focus-visible { box-shadow: none; background: var(--accent-strong); border-color: var(--accent-strong); }
+    button:disabled { opacity: 0.35; cursor: not-allowed; }
+    button.secondary { background: transparent; color: var(--text-2); }
+
+    .hint {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .preview {
+      margin-top: 18px;
+      background: #000;
+      color: var(--accent);
+      font-family: var(--ui);
+      font-size: 24px;
+      font-weight: 500;
+      line-height: 1.4;
+      padding: 24px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      min-height: 100px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .preview-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 28px;
+      margin-bottom: 8px;
+    }
+
+    .feed-panel { margin-top: 28px; }
+    .feed-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .feed-header h2 {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0;
+    }
+    .feed-controls { display: flex; gap: 10px; align-items: center; }
+
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-wrap::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 12%; bottom: 12%;
+      width: 3px;
+      background: var(--accent);
+      opacity: 0.6;
+      z-index: 1;
+    }
+    .video-wrap video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+    .video-placeholder {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 24px;
+      line-height: 1.6;
+    }
+
+    .rtc-state {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+    }
+
+    .muted-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      cursor: pointer;
+      user-select: none;
+    }
+    .muted-toggle input { accent-color: var(--accent); }
+
+    @media (prefers-reduced-motion: reduce) {
+      textarea, button { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const ICE_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }];
+
+    function App() {
+      const [text, setText] = useState('');
+      const [connected, setConnected] = useState(false);
+      const [lastSent, setLastSent] = useState('');
+      const [lastSentAt, setLastSentAt] = useState(null);
+      const [rtcState, setRtcState] = useState('idle'); // idle | requesting | connecting | live | error
+      const [rtcError, setRtcError] = useState('');
+      const [muted, setMuted] = useState(false);
+      const socketRef = useRef(null);
+      const textareaRef = useRef(null);
+      const videoRef = useRef(null);
+      const pcRef = useRef(null);
+      const remoteStreamRef = useRef(null);
+      const pendingIceRef = useRef([]);
+
+      const teardownPeer = () => {
+        if (pcRef.current) {
+          try { pcRef.current.close(); } catch (_) {}
+          pcRef.current = null;
+        }
+        remoteStreamRef.current = null;
+        pendingIceRef.current = [];
+        if (videoRef.current) videoRef.current.srcObject = null;
+      };
+
+      useEffect(() => {
+        const socket = io({ query: { role: 'admin' } });
+        socketRef.current = socket;
+        socket.on('connect', () => setConnected(true));
+        socket.on('disconnect', () => { setConnected(false); teardownPeer(); setRtcState('idle'); });
+        socket.on('message', (msg) => {
+          setLastSent(msg.text);
+          setLastSentAt(msg.ts);
+        });
+
+        socket.on('rtc:offer', async ({ sdp }) => {
+          if (!sdp) return;
+          try {
+            teardownPeer();
+            const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+            pcRef.current = pc;
+            const remote = new MediaStream();
+            remoteStreamRef.current = remote;
+            pc.ontrack = (e) => {
+              e.streams[0].getTracks().forEach(t => remote.addTrack(t));
+              if (videoRef.current) {
+                videoRef.current.srcObject = remote;
+              }
+            };
+            pc.onicecandidate = (e) => {
+              if (e.candidate) socket.emit('rtc:ice', { candidate: e.candidate });
+            };
+            pc.onconnectionstatechange = () => {
+              const s = pc.connectionState;
+              if (s === 'connected') setRtcState('live');
+              else if (s === 'connecting') setRtcState('connecting');
+              else if (s === 'failed' || s === 'closed' || s === 'disconnected') {
+                setRtcState('idle');
+                teardownPeer();
+              }
+            };
+            await pc.setRemoteDescription(sdp);
+            for (const c of pendingIceRef.current) {
+              try { await pc.addIceCandidate(c); } catch (_) {}
+            }
+            pendingIceRef.current = [];
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            socket.emit('rtc:answer', { sdp: pc.localDescription });
+            setRtcState('connecting');
+          } catch (err) {
+            console.error('[admin] offer handling failed', err);
+            setRtcError(String(err?.message || err));
+            setRtcState('error');
+          }
+        });
+
+        socket.on('rtc:ice', async ({ candidate }) => {
+          if (!candidate) return;
+          const pc = pcRef.current;
+          if (pc && pc.remoteDescription) {
+            try { await pc.addIceCandidate(candidate); } catch (_) {}
+          } else {
+            pendingIceRef.current.push(candidate);
+          }
+        });
+
+        socket.on('rtc:peer-left', ({ role }) => {
+          if (role === 'glasses') { teardownPeer(); setRtcState('idle'); }
+        });
+
+        return () => { teardownPeer(); socket.disconnect(); };
+      }, []);
+
+      const startFeed = () => {
+        setRtcError('');
+        setRtcState('requesting');
+        socketRef.current?.emit('rtc:request-stream');
+      };
+
+      const stopFeed = () => {
+        socketRef.current?.emit('rtc:stop-stream');
+        teardownPeer();
+        setRtcState('idle');
+      };
+
+      useEffect(() => {
+        if (videoRef.current) videoRef.current.muted = muted;
+      }, [muted]);
+
+      const send = () => {
+        if (!text.trim()) return;
+        socketRef.current?.emit('send', { text });
+        setText('');
+        textareaRef.current?.focus();
+      };
+
+      const clear = () => {
+        socketRef.current?.emit('clear');
+      };
+
+      const onKeyDown = (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+          e.preventDefault();
+          send();
+        }
+      };
+
+      const sentAgo = lastSentAt
+        ? new Date(lastSentAt).toLocaleTimeString()
+        : 'never';
+
+      return (
+        <>
+          <header className="app-bar">
+            <h1><span className="brand-tag">TP · ADMIN</span> Teleprompter</h1>
+            <div className="status">
+              <span className={`dot ${connected ? 'connected' : 'disconnected'}`}></span>
+              {connected ? 'Link · Live' : 'Link · Down'}
+            </div>
+          </header>
+          <div className="panel">
+            <label htmlFor="msg">Message to glasses</label>
+            <textarea
+              id="msg"
+              ref={textareaRef}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder="Type what you want the wearer to see, then press Send (or ⌘/Ctrl + Enter)…"
+              autoFocus
+            />
+            <div className="row">
+              <button onClick={send} disabled={!connected || !text.trim()}>Send</button>
+              <button className="secondary" onClick={clear} disabled={!connected}>Clear glasses</button>
+              <span className="hint">⌘/CTRL + ENTER</span>
+            </div>
+          </div>
+          <div className="preview-label">Currently on glasses · last sent {sentAgo}</div>
+          <div className="preview">{lastSent || '\u00A0'}</div>
+
+          <div className="feed-panel">
+            <div className="feed-header">
+              <h2>Live feed from glasses</h2>
+              <div className="feed-controls">
+                <span className="rtc-state">{rtcState}{rtcError ? ` · ${rtcError}` : ''}</span>
+                {rtcState === 'idle' || rtcState === 'error'
+                  ? <button onClick={startFeed} disabled={!connected}>Start feed</button>
+                  : <button className="secondary" onClick={stopFeed}>Stop feed</button>}
+              </div>
+            </div>
+            <div className="video-wrap">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted={muted}
+                style={{ display: rtcState === 'live' ? 'block' : 'none' }}
+              />
+              {rtcState !== 'live' && (
+                <div className="video-placeholder">
+                  {rtcState === 'idle' && 'No feed. Click “Start feed” to request the glasses camera and mic.'}
+                  {rtcState === 'requesting' && 'Requesting stream from glasses…'}
+                  {rtcState === 'connecting' && 'Negotiating connection…'}
+                  {rtcState === 'error' && `Error: ${rtcError}`}
+                </div>
+              )}
+            </div>
+            <div className="row" style={{ marginTop: 12 }}>
+              <label className="muted-toggle">
+                <input type="checkbox" checked={muted} onChange={(e) => setMuted(e.target.checked)} />
+                Mute audio
+              </label>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

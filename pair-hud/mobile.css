@@ -1,0 +1,368 @@
+/*
+ * pair-hud — phone pairing + control view.
+ *
+ * This file is for a regular touchscreen phone, NOT the glasses. Normal
+ * display rules apply: black backgrounds are fine, we want compact layout,
+ * and the OS's own focus/tap behavior is enough.
+ *
+ * Phone-specific gotchas baked in:
+ *   - Inputs ≥16 px font-size prevent iOS Safari auto-zoom on focus.
+ *   - Buttons min-height 48 px (Apple HIG).
+ *   - viewport-fit=cover + safe-area insets for notches/home bars.
+ *   - type="text" + inputmode="numeric" avoids <input type="number">'s
+ *     leading-zero loss (a 4-digit PIN can be "0042").
+ */
+
+:root {
+  --bg: #0b0b12;
+  --bg-elev: #16161f;
+  --bg-input: #1f1f2b;
+  --text: #ffffff;
+  --text-muted: #a0a0b0;
+  --text-dim: #707080;
+  --accent: #00d4ff;
+  --accent-soft: rgba(0, 212, 255, 0.15);
+  --danger: #ff4466;
+  --success: #00ff88;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'tnum' 1;
+  overscroll-behavior-y: contain;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding:
+    max(16px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+
+.app-root {
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.app-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 16px;
+}
+
+.app-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.app-header p {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+.screen.hidden {
+  display: none;
+}
+
+/* --------- Status / connection pill --------- */
+
+.conn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-elev);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text-muted);
+  align-self: flex-start;
+}
+
+.conn-pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: background-color 200ms linear;
+}
+
+.conn-pill[data-state='connecting'] .dot {
+  background: #ffaa00;
+  animation: blink 1s ease-in-out infinite;
+}
+
+.conn-pill[data-state='open'] .dot {
+  background: var(--success);
+}
+
+.conn-pill[data-state='closed'] .dot {
+  background: var(--danger);
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* --------- #screen-join --------- */
+
+.pin-input-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.pin-input {
+  width: 100%;
+  padding: 20px 16px;
+  font-size: 40px; /* Well over 16 px → no iOS auto-zoom. */
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: var(--bg-input);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  outline: none;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.pin-input::placeholder {
+  color: var(--text-dim);
+  letter-spacing: 0.3em;
+}
+
+.pin-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.pin-status {
+  min-height: 22px;
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.pin-status.error {
+  color: var(--danger);
+}
+
+/* --------- #screen-control --------- */
+
+.paired-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  color: var(--text);
+  font-size: 15px;
+}
+
+.paired-banner .check {
+  font-size: 20px;
+  color: var(--success);
+  font-weight: 700;
+}
+
+.section-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.preset {
+  min-height: 56px;
+  padding: 12px 14px;
+  background: var(--bg-elev);
+  border: 1px solid transparent;
+  border-radius: 14px;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.preset:active {
+  background: var(--bg-input);
+  border-color: var(--accent);
+}
+
+.custom-textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--bg-input);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  outline: none;
+  resize: vertical;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.custom-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.char-counter {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: right;
+  margin-top: -12px;
+}
+
+.char-counter.near-limit {
+  color: #ffaa00;
+}
+
+/* --------- Buttons --------- */
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 20px;
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 150ms ease, transform 80ms ease;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #001018;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid rgba(255, 68, 102, 0.5);
+}
+
+.action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.action-row .btn {
+  flex: 1;
+}
+
+/* --------- Toast --------- */
+
+.toast {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translate(-50%, 120%);
+  background: var(--bg-elev);
+  color: var(--text);
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 14px;
+  transition: transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  pointer-events: none;
+  z-index: 100;
+}
+
+.toast.visible {
+  transform: translate(-50%, 0);
+}
+
+.toast.success {
+  border-color: var(--success);
+}
+
+.toast.error {
+  border-color: var(--danger);
+}
+
+.footer-note {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+  padding-top: 8px;
+}

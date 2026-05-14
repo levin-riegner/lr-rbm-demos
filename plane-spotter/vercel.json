@@ -1,0 +1,10 @@
+{
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "functions": {
+    "api/aircraft.js": {
+      "maxDuration": 25
+    }
+  }
+}

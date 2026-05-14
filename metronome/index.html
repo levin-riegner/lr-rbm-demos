@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Metronome</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ============================================================
+       HOME — saved settings summary + big START
+       ============================================================ -->
+  <section id="home" class="screen">
+    <div class="brand-bar">
+      <span class="brand-mark">♩</span>
+      <span class="brand-text">METRONOME</span>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-bpm">
+        <span class="summary-num" id="home-bpm">80</span>
+        <span class="summary-unit">BPM</span>
+      </div>
+      <div class="summary-meta">
+        <span class="summary-chip"><span class="chip-label">TIME</span><span class="chip-value" id="home-time">4/4</span></span>
+        <span class="summary-chip"><span class="chip-label">NOTE</span><span class="chip-value" id="home-note">♩</span></span>
+      </div>
+    </div>
+
+    <div class="home-actions">
+      <button class="btn btn-primary focusable" data-action="quick-start" id="home-start">
+        <span class="btn-icon">▶</span><span class="btn-label">START</span>
+      </button>
+      <button class="btn btn-ghost focusable" data-action="setup-begin">
+        <span class="btn-label">CHANGE TEMPO</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       STEP 1 — TEMPO (BPM)
+       ============================================================ -->
+  <section id="step-tempo" class="screen hidden">
+    <div class="step-header">
+      <span class="step-back focusable" data-action="step-back">‹</span>
+      <span class="step-title">TEMPO</span>
+      <span class="step-pips"><i class="pip on"></i><i class="pip"></i><i class="pip"></i></span>
+    </div>
+
+    <div class="picker-tempo">
+      <div class="bpm-stage">
+        <div class="bpm-big" id="bpm-big">080</div>
+        <div class="bpm-sub">BEATS&nbsp;PER&nbsp;MINUTE</div>
+      </div>
+      <div class="bpm-controls">
+        <button class="step-btn focusable" data-action="bpm-minus-10">−10</button>
+        <button class="step-btn focusable" data-action="bpm-minus-1">−1</button>
+        <button class="step-btn step-btn-tap focusable" data-action="tap" id="tap-btn">TAP</button>
+        <button class="step-btn focusable" data-action="bpm-plus-1">+1</button>
+        <button class="step-btn focusable" data-action="bpm-plus-10">+10</button>
+      </div>
+    </div>
+
+    <div class="step-foot">
+      <button class="btn btn-primary focusable" data-action="step-next">
+        <span class="btn-label">NEXT</span><span class="btn-icon">›</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       STEP 2 — TIME SIGNATURE
+       ============================================================ -->
+  <section id="step-time" class="screen hidden">
+    <div class="step-header">
+      <span class="step-back focusable" data-action="step-back">‹</span>
+      <span class="step-title">TIME SIGNATURE</span>
+      <span class="step-pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span>
+    </div>
+
+    <div class="picker-hint">TAP TO SELECT</div>
+
+    <div class="picker-time">
+      <div class="time-grid" id="time-grid">
+        <button class="big-tile focusable" data-action="set-time" data-value="2">
+          <span class="tile-num">2</span><span class="tile-sub">/4</span>
+        </button>
+        <button class="big-tile focusable" data-action="set-time" data-value="3">
+          <span class="tile-num">3</span><span class="tile-sub">/4</span>
+        </button>
+        <button class="big-tile focusable active" data-action="set-time" data-value="4">
+          <span class="tile-num">4</span><span class="tile-sub">/4</span>
+        </button>
+        <button class="big-tile focusable" data-action="set-time" data-value="5">
+          <span class="tile-num">5</span><span class="tile-sub">/4</span>
+        </button>
+        <button class="big-tile focusable" data-action="set-time" data-value="6">
+          <span class="tile-num">6</span><span class="tile-sub">/8</span>
+        </button>
+        <button class="big-tile focusable" data-action="set-time" data-value="7">
+          <span class="tile-num">7</span><span class="tile-sub">/8</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       STEP 3 — SUBDIVISION (NOTE VALUE)
+       ============================================================ -->
+  <section id="step-note" class="screen hidden">
+    <div class="step-header">
+      <span class="step-back focusable" data-action="step-back">‹</span>
+      <span class="step-title">SUBDIVISION</span>
+      <span class="step-pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span>
+    </div>
+
+    <div class="picker-hint">TAP TO START</div>
+
+    <div class="picker-note">
+      <div class="note-grid" id="note-grid">
+        <button class="note-tile focusable active" data-action="set-note" data-value="quarter">
+          <span class="note-glyph">♩</span><span class="note-name">QUARTER</span>
+        </button>
+        <button class="note-tile focusable" data-action="set-note" data-value="eighth">
+          <span class="note-glyph">♪♪</span><span class="note-name">EIGHTH</span>
+        </button>
+        <button class="note-tile focusable" data-action="set-note" data-value="triplet">
+          <span class="note-glyph">♩³</span><span class="note-name">TRIPLET</span>
+        </button>
+        <button class="note-tile focusable" data-action="set-note" data-value="sixteenth">
+          <span class="note-glyph">♫♫</span><span class="note-name">SIXTEENTH</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       PLAYING — beat indicator + stop
+       ============================================================ -->
+  <section id="playing" class="screen hidden">
+    <div class="play-header">
+      <span class="play-tag" id="play-time-tag">4/4</span>
+      <span class="play-tag" id="play-note-tag">♩</span>
+    </div>
+
+    <div class="play-stage">
+      <div class="beat-dots" id="beat-dots"></div>
+      <div class="play-bpm">
+        <span class="play-bpm-num" id="play-bpm">80</span>
+        <span class="play-bpm-unit">BPM</span>
+      </div>
+      <div class="pulse-ring" id="pulse-ring"></div>
+    </div>
+
+    <div class="play-foot">
+      <button class="btn btn-stop focusable" data-action="toggle-play" id="stop-btn">
+        <span class="btn-icon">■</span><span class="btn-label">STOP</span>
+      </button>
+      <button class="btn btn-ghost btn-edit focusable" data-action="setup-begin">EDIT</button>
+    </div>
+  </section>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

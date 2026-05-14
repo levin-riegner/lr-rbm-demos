@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>Find My Car</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="stage">
+    <!-- Home -->
+    <section id="home" class="screen">
+      <header class="bar">
+        <span class="tag">FIND MY CAR</span>
+      </header>
+      <h1 class="title">Find My Car</h1>
+      <p class="sub" id="savedInfo">No parking location saved.</p>
+      <div class="actions">
+        <button class="btn primary" data-focusable data-action="park">Park Here</button>
+        <button class="btn" data-focusable data-action="navigate" id="navigateBtn" hidden>Navigate to car</button>
+        <button class="btn ghost" data-focusable data-action="clear" id="clearBtn" hidden>Clear saved spot</button>
+      </div>
+      <div class="hints">
+        <span class="hint">▲▼ NAV</span>
+        <span class="hint">● SELECT</span>
+      </div>
+      <div class="banner" id="homeBanner" hidden></div>
+    </section>
+
+    <!-- Navigate -->
+    <section id="nav" class="screen hidden">
+      <header class="topbar">
+        <button class="btn ghost small" data-focusable data-action="back">◀ BACK</button>
+        <span class="tag accent" id="distance">— M</span>
+      </header>
+
+      <div class="compass-wrap">
+        <div class="compass-ring"></div>
+        <div class="arrow" id="arrow">
+          <svg viewBox="0 0 100 100" width="220" height="220" aria-hidden="true">
+            <polygon points="50,6 86,88 50,70 14,88" fill="#5EE7DF" stroke="#F2F3F5" stroke-width="2" stroke-linejoin="miter"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div><span class="stat-label">HEADING</span><span id="heading">—°</span></div>
+        <div><span class="stat-label">BEARING</span><span id="bearing">—°</span></div>
+        <div><span class="stat-label">ACCURACY</span><span id="accuracy">—</span></div>
+      </div>
+
+      <div class="banner" id="navBanner" hidden></div>
+      <button class="btn ghost" data-focusable data-action="enableCompass" id="enableCompassBtn" hidden>Enable compass</button>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
