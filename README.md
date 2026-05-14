@@ -4,7 +4,9 @@ A collection of demo web apps for the [Meta Ray-Ban Display glasses](https://wea
 
 Each app is a small, self-contained web project designed for the 600x600 display and D-pad navigation. Built by [Levin Riegner](https://levinriegner.com) to explore what's possible on the glasses.
 
-Each app is deployed on [Netlify](https://www.netlify.com/) and can be opened directly in the browser—no local setup required. URLs follow `https://rbm-demos.lnr.io/<path>/` (use the project folder path under this repo).
+## Demos screenshots
+<img width="600" height="600" alt="Screenshot 2026-05-14 at 18 05 07" src="https://github.com/user-attachments/assets/3aac83c9-c3a7-46a5-8e72-ea0b95f85f0d" />
+
 
 ## Hosted demos
 
