@@ -4,15 +4,16 @@ A collection of demo web apps for the [Meta Ray-Ban Display glasses](https://wea
 
 Each app is a small, self-contained web project designed for the 600x600 display and D-pad navigation. Built by [L+R](https://levinriegner.com) to explore what's possible on the glasses.
 
-## Demos screenshots
-<img width="200" height="200" alt="Screenshot 2026-05-14 at 18 05 07" src="https://github.com/user-attachments/assets/3aac83c9-c3a7-46a5-8e72-ea0b95f85f0d" />
-<img width="200" height="200" alt="Screenshot 2026-05-14 at 18 11 01" src="https://github.com/user-attachments/assets/989bdd65-6b85-4195-9555-4d5cf9a0e658" />
-<img width="200" height="200" alt="Screenshot 2026-05-14 at 18 09 26" src="https://github.com/user-attachments/assets/61d35992-781f-450a-a9da-49f2b861f58f" />
-<img width="200" height="200" alt="Screenshot 2026-05-14 at 18 08 55" src="https://github.com/user-attachments/assets/af60c633-4075-4442-a97f-a49035ace6ef" />
-<img width="200" height="200" alt="Screenshot 2026-05-14 at 18 08 08" src="https://github.com/user-attachments/assets/344b21af-4e1c-4703-914d-6d490e25aa2e" />
-<img width="200" height="200" alt="Screenshot 2026-05-14 at 18 07 34" src="https://github.com/user-attachments/assets/5325290c-62e1-4a41-9244-0520cbb919c1" />
-<img width="200" height="200" alt="Screenshot 2026-05-14 at 18 12 44" src="https://github.com/user-attachments/assets/f6b77bca-f6bb-485c-8c90-01383c82b219" />
-<img width="200" height="200" alt="Screenshot 2026-05-14 at 18 13 07" src="https://github.com/user-attachments/assets/c56f0fc2-1052-4552-879e-ba3f039dd71f" />
+## Demos GIFs
+
+<img width="200" height="200" alt="weather" src="https://github.com/user-attachments/assets/7a2298b7-244b-43bb-ae75-5a6ee7c626ca" />
+<img width="200" height="200" alt="pomodoro" src="https://github.com/user-attachments/assets/7f5f6998-f493-41c4-a8fb-ffbecd758fb9" />
+<img width="200" height="200" alt="metronome" src="https://github.com/user-attachments/assets/9629936c-77a2-4fd5-9e9f-91ed15f25b53" />
+<img width="200" height="200" alt="flight-status" src="https://github.com/user-attachments/assets/adebccd0-a995-488e-a482-10ceec05684e" />
+<img width="200" height="200" alt="demo-pair-hud" src="https://github.com/user-attachments/assets/b8f02f1f-b9f6-43ed-9f49-0b406f98dad6" />
+<img width="200" height="200" alt="dad-jokes" src="https://github.com/user-attachments/assets/99a8a164-9e88-4f75-bc62-67d3b7ded329" />
+<img width="200" height="200" alt="crypto-tracker" src="https://github.com/user-attachments/assets/cef49fcf-c9b4-47e3-9946-19950bf79f64" />
+<img width="200" height="200" alt="calculator" src="https://github.com/user-attachments/assets/cf1f56b3-3dc5-4a7d-b985-b762bae87258" />
 
 ## Hosted demos
 
