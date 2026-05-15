@@ -142,12 +142,27 @@
     });
   }
 
+  /* ── Background position (drag-to-pan) ────────────────────────── */
+  let bgOffset = { x: 50, y: 50 };
+
+  function applyBgPosition() {
+    const pos = `${bgOffset.x}% ${bgOffset.y}%`;
+    bgImg.style.objectPosition = pos;
+    bgVid.style.objectPosition = pos;
+  }
+
+  function resetBgPosition() {
+    bgOffset = { x: 50, y: 50 };
+    applyBgPosition();
+  }
+
   /* ── Background presets ────────────────────────────────────────── */
   function setBackgroundFromUrl(url) {
     bgImg.src = url;
     bgImg.style.display = 'block';
     bgVid.style.display = 'none';
     bgVid.removeAttribute('src');
+    resetBgPosition();
   }
 
   function buildBgStrip() {
@@ -202,7 +217,8 @@
       bgImg.style.display = 'block';
       bgVid.style.display = 'none';
     }
-    markActiveBg(null); // user-supplied file → no preset highlighted
+    resetBgPosition();
+    markActiveBg(null);
   }
 
   document.addEventListener('dragover', e => {
@@ -225,6 +241,36 @@
     const file = e.target.files[0];
     if (file) loadBackgroundFile(file);
     e.target.value = '';
+  });
+
+  /* ── Background drag-to-pan ───────────────────────────────────── */
+  const scene = document.getElementById('scene');
+  let bgDragging = false;
+  let bgDragStart = {};
+
+  scene.addEventListener('mousedown', e => {
+    if (e.target === bgImg || e.target === bgVid || e.target === scene) {
+      bgDragging = true;
+      bgDragStart = { mx: e.clientX, my: e.clientY, ox: bgOffset.x, oy: bgOffset.y };
+      scene.style.cursor = 'grabbing';
+      e.preventDefault();
+    }
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!bgDragging) return;
+    const dx = (bgDragStart.mx - e.clientX) / window.innerWidth * 100;
+    const dy = (bgDragStart.my - e.clientY) / window.innerHeight * 100;
+    bgOffset.x = Math.max(0, Math.min(100, bgDragStart.ox + dx));
+    bgOffset.y = Math.max(0, Math.min(100, bgDragStart.oy + dy));
+    applyBgPosition();
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (bgDragging) {
+      bgDragging = false;
+      scene.style.cursor = '';
+    }
   });
 
   /* ── HUD drag + resize ─────────────────────────────────────────── */
