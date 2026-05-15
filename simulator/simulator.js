@@ -39,11 +39,11 @@
   // Background presets — files in simulator/background/.
   // Note: parkin.jpeg is the on-disk filename; the displayed label is "Parking".
   const BG_PRESETS = [
-    { name: 'Office',  file: 'background/office.jpg'  },
+    { name: 'Office',  file: 'background/office.png'  },
     { name: 'Garden',  file: 'background/garden.jpg'  },
     { name: 'Sky',     file: 'background/sky.jpeg'    },
-    { name: 'Car',     file: 'background/car.jpg'     },
-    { name: 'Parking', file: 'background/parkin.jpeg' },
+    { name: 'Car',     file: 'background/car.png'     },
+    { name: 'Parking', file: 'background/parkin.png' },
   ];
 
   /* ── State ─────────────────────────────────────────────────────── */
