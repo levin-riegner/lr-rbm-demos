@@ -297,4 +297,35 @@
     applyPosition(Math.max(0, l), Math.max(0, t));
   });
 
+  /* ── "H" key — hide/show overlay UI for clean screen recordings ─ */
+  const overlayEls = [
+    document.getElementById('top-controls'),
+    document.getElementById('scene-controls'),
+  ];
+  let overlaysVisible = true;
+
+  function toggleOverlays() {
+    overlaysVisible = !overlaysVisible;
+    overlayEls.forEach(el => {
+      el.style.display = overlaysVisible ? '' : 'none';
+    });
+  }
+
+  document.addEventListener('keydown', e => {
+    console.log('[simulator] keydown:', e.key, '| activeElement:', document.activeElement.tagName, document.activeElement.id);
+    if (document.activeElement === urlInput) {
+      console.log('[simulator] ignoring — urlInput focused');
+      return;
+    }
+    if (e.key === 'h' || e.key === 'H') {
+      console.log('[simulator] toggling overlays, visible:', !overlaysVisible);
+      toggleOverlays();
+    }
+  }, true);
+
+  // When the iframe steals focus, clicks outside it should reclaim it so "h" works.
+  document.addEventListener('click', e => {
+    if (e.target !== iframe) iframe.blur();
+  }, true);
+
 })();
