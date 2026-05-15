@@ -56,6 +56,19 @@ Each app is a small, self-contained web project designed for the 600x600 display
 - [Weather Dashboard](https://rbm-demos.lnr.io/weather-dashboard/)
 - [Zork Terminal](https://rbm-demos.lnr.io/zork-terminal/)
 
+## Simulator
+
+A browser-based simulator that previews how any web app would look on the display glasses. It applies the additive waveguide blend (plus-lighter) over a real-world background image, so you can judge contrast and legibility without a physical device.
+
+Try it live: [https://rbm-demos.lnr.io/simulator/](https://rbm-demos.lnr.io/simulator/)
+
+Features:
+- Load any URL into the simulated 600x600 HUD
+- Drag to reposition, resize the display
+- Swap background scenes or upload your own image/video
+- Adjust HUD brightness, size, and background brightness
+- Press **H** to hide all UI overlays for clean screen recordings
+
 ## Running an app locally
 
 ```bash
