@@ -1,0 +1,391 @@
+/* ==========================================================================
+   Meta Display Glasses — Simulator
+   ========================================================================== */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --app-native: 600px;
+  --accent: #00d4ff;
+  --glass-bg: rgba(255,255,255,0.06);
+  --glass-bg-strong: rgba(255,255,255,0.07);
+  --glass-border: rgba(255,255,255,0.10);
+}
+
+body {
+  width: 100vw; height: 100vh; overflow: hidden;
+  background: #07070f;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  color: #fff;
+}
+
+/* ── SCENE (background layer) ─────────────────────────────────── */
+#scene {
+  position: fixed; inset: 0; z-index: 0;
+}
+
+#bg-img, #bg-vid {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+/* Drag-active outline (visual feedback while dragging files over the page) */
+body.drag-active {
+  outline: 2px dashed rgba(100,180,255,0.30);
+  outline-offset: -8px;
+}
+
+/* ── TOP CONTROLS (chips + URL bar, stacked, top-center) ──────── */
+#top-controls {
+  position: fixed;
+  top: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 300;
+  display: flex; flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+#top-controls > * { pointer-events: auto; }
+
+#app-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+  padding: 7px 10px;
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border: 1px solid var(--glass-border);
+  border-radius: 22px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.45);
+  max-width: calc(100vw - 40px);
+}
+
+.app-chip {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  color: rgba(255,255,255,0.78);
+  padding: 6px 13px;
+  border-radius: 16px;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+}
+.app-chip:hover {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(100,180,255,0.40);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.app-chip.active {
+  background: rgba(0,212,255,0.18);
+  border-color: rgba(0,212,255,0.70);
+  color: #fff;
+  box-shadow: 0 0 14px rgba(0,212,255,0.25);
+}
+
+#url-bar {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border: 1px solid var(--glass-border);
+  border-radius: 50px;
+  padding: 7px 10px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.50);
+  white-space: nowrap;
+}
+
+#url-input {
+  width: 340px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 22px;
+  padding: 7px 15px;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+#url-input:focus {
+  border-color: rgba(100,180,255,0.40);
+  background: rgba(255,255,255,0.09);
+}
+#url-input::placeholder { color: rgba(255,255,255,0.25); }
+
+.pill-btn {
+  background: rgba(80,150,255,0.18);
+  border: 1px solid rgba(80,150,255,0.28);
+  color: rgba(160,205,255,1);
+  padding: 7px 15px;
+  border-radius: 22px;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; white-space: nowrap;
+  transition: background 0.15s;
+}
+.pill-btn:hover { background: rgba(80,150,255,0.30); }
+
+.icon-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  color: rgba(255,255,255,0.50);
+  font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.icon-btn:hover { background: rgba(255,255,255,0.13); color: #fff; }
+
+/* ── SCENE CONTROLS (bottom-left: sliders row + bg thumbs row) ─ */
+#scene-controls {
+  position: fixed;
+  left: 24px; bottom: 24px;
+  z-index: 300;
+  display: flex; flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.45);
+  max-width: calc(100vw - 48px);
+}
+
+.sc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sc-sliders { gap: 14px; padding: 0 4px; }
+.sc-bgs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.sc-bgs::-webkit-scrollbar { height: 6px; }
+.sc-bgs::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px;
+}
+
+.bc-group { display: flex; align-items: center; gap: 8px; }
+.bc-label {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  white-space: nowrap;
+}
+
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 88px; height: 3px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px;
+  outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: rgba(100,175,255,0.90);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(100,175,255,0.40);
+}
+
+.bc-val {
+  font-size: 11px; color: rgba(100,175,255,0.75);
+  min-width: 32px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sep {
+  width: 1px; height: 18px;
+  background: rgba(255,255,255,0.10);
+}
+
+/* BG thumbnail tiles — always visible, click to set background. */
+.bg-tile {
+  position: relative;
+  width: 96px; height: 60px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.10);
+  background-size: cover;
+  background-position: center;
+  background-color: rgba(255,255,255,0.04);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  overflow: hidden;
+}
+.bg-tile:hover {
+  border-color: rgba(100,180,255,0.50);
+  transform: translateY(-1px);
+}
+.bg-tile.active {
+  border-color: rgba(0,212,255,0.95);
+  box-shadow: 0 0 14px rgba(0,212,255,0.35);
+}
+.bg-tile .bg-name {
+  position: absolute;
+  left: 6px; bottom: 4px;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+}
+.bg-tile.upload {
+  display: flex;
+  align-items: center; justify-content: center;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+  background-image: none;
+  border-style: dashed;
+}
+.bg-tile.upload .upload-glyph {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* ── WAVEGUIDE DISPLAY (additive HUD) ─────────────────────────── */
+#display-wrap {
+  position: fixed;
+
+  /* Default: bottom-right, like the real glasses HUD.
+     Drag-to-reposition switches to inline left/top via JS. */
+  right: 24px;
+  bottom: 24px;
+
+  width: 300px; height: 300px;
+  cursor: move;
+  user-select: none;
+  z-index: 200;
+
+  /* CORE FEATURE — additive waveguide blend.
+     plus-lighter strictly adds light photons (clamp(bg + fg, 0, 1)).
+     - Black pixels emit zero light → fully transparent on the display.
+     - Bright/light colors add maximum light → most visible.
+     This matches the real Meta Ray-Ban Display Glasses, per the toolkit's
+     display-guidelines.md and the official Web Apps PDF. */
+  mix-blend-mode: plus-lighter;
+  isolation: isolate;
+
+  /* Outer chromatic glow */
+  filter:
+    drop-shadow(0 0 18px rgba(80,140,255,0.22))
+    drop-shadow(0 0 6px rgba(80,140,255,0.14));
+}
+#display-wrap.hidden { display: none; }
+
+/* Inner clipping frame */
+.wg-frame {
+  position: relative;
+  width: 100%; height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(100,180,255,0.22),
+    inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+/* Chromatic aberration color cast */
+.wg-frame::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 5;
+  pointer-events: none; border-radius: 10px;
+  background: linear-gradient(
+    125deg,
+    rgba(255,30,100,0.05) 0%,
+    transparent 40%,
+    rgba(0,210,255,0.05) 100%
+  );
+}
+
+/* Subtle scanline texture */
+.wg-frame::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 6;
+  pointer-events: none; border-radius: 10px;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.018) 3px,
+    rgba(0,0,0,0.018) 4px
+  );
+}
+
+/* Iframe — fully interactive (click to focus, native keys go to the app).
+   Pointer events are only suppressed while the user is dragging the HUD. */
+#app-iframe {
+  position: absolute; top: 0; left: 0;
+  width: var(--app-native); height: var(--app-native);
+  border: none;
+  transform-origin: top left;
+  transform: scale(0.5);
+}
+#display-wrap.dragging #app-iframe { pointer-events: none; }
+
+/* Placeholder shown before a URL is loaded. The near-black backdrop reads
+   as near-transparent under additive blend, so the diamond + label appear
+   to float over the scene — a clean preview of the real-glasses effect. */
+#wg-placeholder {
+  position: absolute; inset: 0; z-index: 4;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 9px;
+  background: rgba(5, 5, 15, 0.85);
+  border-radius: 10px;
+}
+.ph-diamond {
+  width: 32px; height: 32px;
+  border: 1.5px solid rgba(100,180,255,0.30);
+  border-radius: 3px;
+  transform: rotate(45deg);
+}
+.ph-text {
+  font-size: 11px; color: rgba(100,180,255,0.40);
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
+
+/* Resize handle (bottom-right corner of the HUD) */
+#resize-handle {
+  position: absolute; bottom: -5px; right: -5px;
+  width: 18px; height: 18px;
+  cursor: se-resize; z-index: 10;
+}
+#resize-handle::after {
+  content: '';
+  position: absolute; bottom: 3px; right: 3px;
+  width: 9px; height: 9px;
+  border-right: 2px solid rgba(100,180,255,0.45);
+  border-bottom: 2px solid rgba(100,180,255,0.45);
+  border-radius: 0 0 2px 0;
+}
+
+/* Scale badge */
+#scale-badge {
+  position: absolute; top: -18px; left: 0;
+  font-size: 10px; color: rgba(100,180,255,0.35);
+  pointer-events: none; white-space: nowrap;
+}
+
+/* Load error toast — top-center, below the URL pill */
+#load-error {
+  position: fixed;
+  top: 140px; left: 50%; transform: translateX(-50%);
+  background: rgba(255,60,60,0.15);
+  border: 1px solid rgba(255,60,60,0.30);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 12px; color: rgba(255,140,140,0.90);
+  z-index: 400;
+  display: none;
+}

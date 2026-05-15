@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meta Display Glasses — Simulator</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="simulator.js"></script>
+</head>
+<body>
+
+<!-- Background scene (additive-blend target) -->
+<div id="scene">
+  <img id="bg-img" alt="">
+  <video id="bg-vid" loop muted autoplay playsinline></video>
+</div>
+
+<!-- Top controls: app preset chips + URL bar -->
+<div id="top-controls">
+  <div id="app-chips" role="toolbar" aria-label="App presets"></div>
+  <div id="url-bar">
+    <input id="url-input" type="url" placeholder="https://your-app.vercel.app" autocomplete="off" spellcheck="false">
+    <button class="pill-btn" id="load-btn">Load</button>
+    <button class="icon-btn" id="reset-btn" title="Reset HUD to bottom-right">⊙</button>
+  </div>
+</div>
+
+<!-- Waveguide HUD (additive plus-lighter blend) -->
+<div id="display-wrap">
+  <div id="scale-badge">50%</div>
+  <div class="wg-frame">
+    <div id="wg-placeholder">
+      <div class="ph-diamond"></div>
+      <div class="ph-text">Pick an app above</div>
+    </div>
+    <iframe
+      id="app-iframe"
+      src="about:blank"
+      allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; geolocation; gyroscope; microphone"
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock"
+    ></iframe>
+  </div>
+  <div id="resize-handle"></div>
+</div>
+
+<!-- Bottom-left scene controls: sliders + always-visible bg thumbnail strip -->
+<div id="scene-controls">
+  <div class="sc-row sc-sliders">
+    <div class="bc-group">
+      <span class="bc-label">Brightness</span>
+      <input type="range" id="sl-opacity" min="30" max="100" value="100">
+      <span class="bc-val" id="lbl-opacity">100%</span>
+    </div>
+    <div class="sep"></div>
+    <div class="bc-group">
+      <span class="bc-label">Size</span>
+      <input type="range" id="sl-scale" min="15" max="80" value="50" step="5">
+      <span class="bc-val" id="lbl-scale">50%</span>
+    </div>
+  </div>
+  <div class="sc-row sc-bgs" id="bg-strip"></div>
+</div>
+
+<div id="load-error">App blocked iframe embedding — try opening in a tab instead</div>
+
+<!-- Hidden file input (used by the Upload tile and drag-and-drop) -->
+<input type="file" id="file-input" accept="image/*,video/*" style="display:none">
+
+</body>
+</html>
