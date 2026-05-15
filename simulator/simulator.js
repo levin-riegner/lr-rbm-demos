@@ -324,6 +324,14 @@
     applyScale(parseInt(this.value, 10));
   });
 
+  const slBgBrightness  = document.getElementById('sl-bg-brightness');
+  const lblBgBrightness = document.getElementById('lbl-bg-brightness');
+
+  slBgBrightness.addEventListener('input', function () {
+    scene.style.opacity = this.value / 100;
+    lblBgBrightness.textContent = this.value + '%';
+  });
+
   /* ── Init ──────────────────────────────────────────────────────── */
   buildAppChips();
   buildBgStrip();
