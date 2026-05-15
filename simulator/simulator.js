@@ -347,6 +347,7 @@
   const overlayEls = [
     document.getElementById('top-controls'),
     document.getElementById('scene-controls'),
+    scaleBadge,
   ];
   let overlaysVisible = true;
 
@@ -355,16 +356,12 @@
     overlayEls.forEach(el => {
       el.style.display = overlaysVisible ? '' : 'none';
     });
+    wrap.classList.toggle('clean-mode', !overlaysVisible);
   }
 
   document.addEventListener('keydown', e => {
-    console.log('[simulator] keydown:', e.key, '| activeElement:', document.activeElement.tagName, document.activeElement.id);
-    if (document.activeElement === urlInput) {
-      console.log('[simulator] ignoring — urlInput focused');
-      return;
-    }
+    if (document.activeElement === urlInput) return;
     if (e.key === 'h' || e.key === 'H') {
-      console.log('[simulator] toggling overlays, visible:', !overlaysVisible);
       toggleOverlays();
     }
   }, true);

@@ -284,6 +284,11 @@ input[type=range]::-webkit-slider-thumb {
     drop-shadow(0 0 6px rgba(80,140,255,0.14));
 }
 #display-wrap.hidden { display: none; }
+#display-wrap.clean-mode { filter: none; }
+.clean-mode .wg-frame { box-shadow: none; border-radius: 0; }
+.clean-mode .wg-frame::before,
+.clean-mode .wg-frame::after { display: none; }
+.clean-mode #resize-handle { display: none; }
 
 /* Inner clipping frame */
 .wg-frame {
