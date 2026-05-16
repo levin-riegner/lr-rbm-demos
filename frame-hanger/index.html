@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=600, initial-scale=1" />
+<title>FRAME HANGER · Hang Art Like a Pro</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ─── TOP BAR ─────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">⊹</span>
+      <span class="brand-name">FRAME HANGER</span>
+    </div>
+    <div class="topbar-right">
+      <span class="phase-pill" id="phase-pill">START</span>
+      <span class="sensor-pill" id="sensor-pill">SENSOR <em>—</em></span>
+    </div>
+  </header>
+
+  <!-- ─── INTRO SCREEN ────────────────────────────────── -->
+  <section class="screen intro-screen" id="screen-intro">
+    <div class="intro-eyebrow">ART · INSTALL</div>
+    <div class="intro-title">Hang it<br/>straight.</div>
+    <div class="intro-steps">
+      <div class="step"><span class="step-num">1</span>MARK LEFT EDGE</div>
+      <div class="step"><span class="step-num">2</span>MARK RIGHT EDGE</div>
+      <div class="step"><span class="step-num">3</span>FIND CENTER</div>
+      <div class="step"><span class="step-num">4</span>LEVEL TOP</div>
+    </div>
+    <div class="intro-cta">PRESS <kbd>⏎</kbd> TO BEGIN</div>
+  </section>
+
+  <!-- ─── MEASURE SCREEN (point-a + point-b) ──────────── -->
+  <section class="screen measure-screen hidden" id="screen-measure">
+
+    <div class="measure-prompt">
+      <div class="prompt-eyebrow" id="prompt-eyebrow">POINT · A</div>
+      <div class="prompt-title" id="prompt-title">Look at the LEFT edge</div>
+      <div class="prompt-sub" id="prompt-sub">Press <kbd>⏎</kbd> to lock</div>
+    </div>
+
+    <div class="measure-readout">
+      <div class="readout-label">SPAN</div>
+      <div class="readout-value" id="readout-span">—</div>
+      <div class="readout-unit">°</div>
+    </div>
+
+    <div class="tape-frame">
+      <div class="tape-window" id="tape-window">
+        <div class="tape-ticks" id="tape-ticks"></div>
+        <div class="tape-span" id="tape-span"></div>
+        <div class="tape-marker tape-marker-a hidden" id="tape-marker-a">
+          <div class="marker-flag">A</div>
+          <div class="marker-stem"></div>
+        </div>
+        <div class="tape-marker tape-marker-b hidden" id="tape-marker-b">
+          <div class="marker-flag">B</div>
+          <div class="marker-stem"></div>
+        </div>
+        <div class="tape-marker tape-marker-c hidden" id="tape-marker-c">
+          <div class="marker-flag center-flag">C</div>
+          <div class="marker-stem center-stem"></div>
+        </div>
+        <div class="tape-needle">
+          <div class="needle-tri"></div>
+          <div class="needle-line"></div>
+        </div>
+      </div>
+      <div class="tape-rivets">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── CENTER SCREEN ───────────────────────────────── -->
+  <section class="screen center-screen hidden" id="screen-center">
+
+    <div class="center-prompt">
+      <div class="prompt-eyebrow" id="center-eyebrow">CENTER · TARGET</div>
+      <div class="prompt-title" id="center-title">Rotate to align</div>
+      <div class="prompt-sub" id="center-sub">Then press <kbd>⏎</kbd></div>
+    </div>
+
+    <div class="center-arrow-wrap">
+      <div class="center-arrow" id="center-arrow-left">◀</div>
+      <div class="center-reticle" id="center-reticle">
+        <div class="reticle-ring"></div>
+        <div class="reticle-cross-h"></div>
+        <div class="reticle-cross-v"></div>
+        <div class="reticle-dot"></div>
+      </div>
+      <div class="center-arrow" id="center-arrow-right">▶</div>
+    </div>
+
+    <div class="center-deviation">
+      <span class="dev-label">OFFSET</span>
+      <span class="dev-value" id="dev-value">+0.0°</span>
+    </div>
+
+    <div class="tape-frame mini">
+      <div class="tape-window" id="tape-window-mini">
+        <div class="tape-ticks" id="tape-ticks-mini"></div>
+        <div class="mini-marker mini-marker-a" id="mini-marker-a"></div>
+        <div class="mini-marker mini-marker-b" id="mini-marker-b"></div>
+        <div class="mini-marker mini-marker-c" id="mini-marker-c"></div>
+        <div class="tape-needle small">
+          <div class="needle-tri"></div>
+          <div class="needle-line"></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── LEVEL SCREEN ────────────────────────────────── -->
+  <section class="screen level-screen hidden" id="screen-level">
+
+    <div class="level-prompt">
+      <div class="prompt-eyebrow" id="level-eyebrow">LEVEL · TOP EDGE</div>
+      <div class="prompt-title">Align with frame top</div>
+      <div class="prompt-sub">Press <kbd>⏎</kbd> when matched</div>
+    </div>
+
+    <div class="level-stage">
+      <div class="level-line-wrap" id="level-line-wrap">
+        <div class="level-line"></div>
+        <div class="level-tick-l"></div>
+        <div class="level-tick-r"></div>
+      </div>
+      <div class="level-bubble-track">
+        <div class="level-bubble" id="level-bubble"></div>
+        <div class="level-bubble-zero"></div>
+      </div>
+    </div>
+
+    <div class="level-readout">
+      <span class="dev-label">HEAD TILT</span>
+      <span class="dev-value" id="tilt-value">+0.0°</span>
+      <span class="level-status" id="level-status">—</span>
+    </div>
+
+  </section>
+
+  <!-- ─── DONE SCREEN ─────────────────────────────────── -->
+  <section class="screen done-screen hidden" id="screen-done">
+    <div class="done-glyph">✓</div>
+    <div class="done-eyebrow">FRAME · PLACED</div>
+    <div class="done-title">All set.<br/>Mark it.</div>
+    <div class="done-stats">
+      <div class="stat"><span class="stat-key">SPAN</span><span class="stat-val" id="done-span">—°</span></div>
+      <div class="stat"><span class="stat-key">HALF</span><span class="stat-val" id="done-center">—°</span></div>
+      <div class="stat"><span class="stat-key">TILT</span><span class="stat-val" id="done-tilt">—°</span></div>
+    </div>
+    <div class="done-cta">PRESS <kbd>⏎</kbd> TO RESTART</div>
+  </section>
+
+  <!-- ─── PERMISSION OVERLAY (iOS) ────────────────────── -->
+  <div class="overlay hidden" id="perm-overlay">
+    <div class="overlay-card">
+      <div class="overlay-eyebrow">PERMISSION</div>
+      <div class="overlay-name">Head orientation</div>
+      <p class="overlay-text">FRAME HANGER reads head orientation from your glasses to measure angles and check level. Press <b>⏎</b> to allow.</p>
+      <div class="overlay-actions">
+        <button class="overlay-btn focused" id="perm-grant">GRANT  ⏎</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── BOTTOM HINT BAR ─────────────────────────────── -->
+  <footer class="hintbar" id="hintbar"></footer>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
