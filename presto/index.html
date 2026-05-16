@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>Presto · Pocket Prestidigitator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ─── TITLE ─── -->
+    <section id="screen-title" class="screen">
+      <div class="title-stack">
+        <div class="title-eyebrow">
+          <span class="sigil">♠</span>
+          <span class="sigil red">♥</span>
+          <span class="sigil red">♦</span>
+          <span class="sigil">♣</span>
+        </div>
+        <h1 class="title-name">PRESTO</h1>
+        <div class="title-sub">POCKET PRESTIDIGITATOR</div>
+        <p class="title-blurb">
+          A whispered coach for sleight-of-hand.<br/>
+          Every cue you see is a magician's gesture &mdash;<br/>
+          perform it on stage, and the next beat appears.
+        </p>
+        <div class="title-cue">
+          <span class="cue-glyph">✦</span>
+          <span class="cue-text">PINCH TO BEGIN</span>
+          <span class="cue-glyph">✦</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── ROUTINE PICKER ─── -->
+    <section id="screen-menu" class="screen hidden">
+      <header class="head">
+        <span class="head-sigil">♠</span>
+        <span class="head-brand">PRESTO</span>
+        <span class="head-meta" id="menuMeta">ROUTINES</span>
+      </header>
+
+      <div class="menu-eyebrow">CHOOSE YOUR TRICK</div>
+
+      <div class="menu-list" id="menuList">
+        <div class="menu-row focused" data-trick="key-card">
+          <span class="menu-num">I.</span>
+          <div class="menu-body">
+            <div class="menu-name">THE SPECTATOR'S CARD</div>
+            <div class="menu-tag">KEY-CARD · 7 BEATS · BEGINNER</div>
+          </div>
+          <span class="menu-suit">♥</span>
+        </div>
+        <div class="menu-row locked" data-trick="ambitious">
+          <span class="menu-num">II.</span>
+          <div class="menu-body">
+            <div class="menu-name">THE AMBITIOUS CARD</div>
+            <div class="menu-tag">DOUBLE LIFT · LOCKED</div>
+          </div>
+          <span class="menu-suit">♠</span>
+        </div>
+        <div class="menu-row locked" data-trick="equivoque">
+          <span class="menu-num">III.</span>
+          <div class="menu-body">
+            <div class="menu-name">THE LYING SPECTATOR</div>
+            <div class="menu-tag">EQUIVOQUE · LOCKED</div>
+          </div>
+          <span class="menu-suit">♣</span>
+        </div>
+      </div>
+
+      <div class="hint-row">
+        <span><span class="key">↑↓</span> CHOOSE</span>
+        <span><span class="key">●</span> PINCH</span>
+      </div>
+    </section>
+
+    <!-- ─── STEP ─── -->
+    <section id="screen-step" class="screen hidden">
+      <header class="head">
+        <span class="head-sigil" id="stepSuit">♠</span>
+        <span class="head-brand">PRESTO</span>
+        <span class="head-meta" id="stepCount">01 / 07</span>
+      </header>
+
+      <div class="phase-label" id="stepPhase">PHASE · SETUP</div>
+
+      <div class="patter-card">
+        <span class="patter-quote-l">&ldquo;</span>
+        <div class="patter-text" id="stepPatter"></div>
+        <span class="patter-quote-r">&rdquo;</span>
+        <div class="patter-corner tl">♠</div>
+        <div class="patter-corner br">♠</div>
+      </div>
+
+      <div class="secret-block">
+        <div class="secret-label">
+          <span class="secret-bar"></span>
+          <span>SECRET</span>
+        </div>
+        <div class="secret-text" id="stepSecret"></div>
+      </div>
+
+      <div class="cue-row" id="cueRow">
+        <div class="cue-pulse"></div>
+        <div class="cue-line">
+          <span class="cue-glyph">✦</span>
+          <span class="cue-text" id="stepCue"></span>
+        </div>
+      </div>
+
+      <div class="hint-row dim">
+        <span><span class="key">●</span> PERFORM CUE</span>
+        <span><span class="key">←</span> BACK</span>
+      </div>
+    </section>
+
+    <!-- ─── REVEAL ─── -->
+    <section id="screen-reveal" class="screen hidden">
+      <div class="reveal-stack">
+        <div class="reveal-eyebrow">★&nbsp;&nbsp;★&nbsp;&nbsp;★</div>
+        <h2 class="reveal-name">TAKE A BOW</h2>
+        <p class="reveal-blurb">
+          The card directly to the <em>right</em> of your KEY is theirs.<br/>
+          Name it. Pluck it. Let them gasp.
+        </p>
+        <div class="reveal-cue">
+          <span class="cue-glyph">✦</span>
+          <span class="cue-text">PINCH FOR ENCORE</span>
+          <span class="cue-glyph">✦</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
