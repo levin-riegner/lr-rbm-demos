@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>Origami Sensei</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Shippori+Mincho:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ────────── MENU SCREEN ────────── -->
+    <section id="screen-menu" class="screen">
+      <header class="head">
+        <span class="brand-mark">折</span>
+        <span class="brand">ORIGAMI&nbsp;SENSEI</span>
+        <span class="serial" id="menu-serial">六&nbsp;MODELS</span>
+      </header>
+
+      <div class="menu-eyebrow">CHOOSE A FOLD</div>
+
+      <div class="menu-list" id="menu-list">
+        <!-- model rows injected -->
+      </div>
+
+      <div class="hints">
+        <span><span class="key">↑↓</span>&nbsp;BROWSE</span>
+        <span><span class="key">⏎</span>&nbsp;BEGIN</span>
+      </div>
+    </section>
+
+    <!-- ────────── FOLD SCREEN ────────── -->
+    <section id="screen-fold" class="screen hidden">
+      <header class="head">
+        <span class="brand-mark" id="fold-mark">折</span>
+        <span class="brand" id="fold-model">PAPER CUP</span>
+        <span class="serial" id="fold-counter">01 / 06</span>
+      </header>
+
+      <div class="fold-chip-row">
+        <span class="fold-chip" id="fold-type">VALLEY</span>
+        <span class="fold-difficulty" id="fold-difficulty">★☆☆</span>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram" id="diagram"></div>
+      </div>
+
+      <div class="instruction" id="instruction">
+        Place a square sheet, colored side down.
+      </div>
+
+      <div class="progress-row">
+        <div class="progress-dots" id="progress-dots"></div>
+      </div>
+
+      <div class="hints">
+        <span><span class="key">⏎</span>&nbsp;NEXT</span>
+        <span><span class="key">←</span>&nbsp;BACK</span>
+        <span><span class="key">↑</span>&nbsp;MENU</span>
+      </div>
+    </section>
+
+    <!-- ────────── DONE SCREEN ────────── -->
+    <section id="screen-done" class="screen hidden">
+      <header class="head">
+        <span class="brand-mark">完</span>
+        <span class="brand">FOLD COMPLETE</span>
+        <span class="serial" id="done-serial">六&nbsp;MODELS</span>
+      </header>
+
+      <div class="done-stamp">
+        <div class="done-stamp-inner">
+          <div class="done-kanji" id="done-kanji">折</div>
+          <div class="done-label">完</div>
+        </div>
+      </div>
+
+      <div class="done-name" id="done-name">PAPER CUP</div>
+      <div class="done-sub" id="done-sub">6 folds · well done</div>
+
+      <div class="done-actions">
+        <button class="btn btn-primary focused" data-action="again" id="doneAgainBtn">
+          <span class="btn-glyph">↻</span><span class="btn-label">FOLD AGAIN</span>
+        </button>
+        <button class="btn btn-secondary" data-action="menu" id="doneMenuBtn">
+          <span class="btn-glyph">≡</span><span class="btn-label">MENU</span>
+        </button>
+      </div>
+
+      <div class="hints">
+        <span><span class="key">⏎</span>&nbsp;AGAIN</span>
+        <span><span class="key">↑</span>&nbsp;MENU</span>
+      </div>
+    </section>
+
+    <div class="status" id="status" aria-live="polite"></div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

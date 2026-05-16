@@ -1,0 +1,551 @@
+:root {
+  /* washi paper backdrop */
+  --bg:           #2a221b;
+  --bg-2:         #352a20;
+  --bg-3:         #3f3127;
+
+  --paper:        #f3e7c8;
+  --paper-2:      #e8d9b3;
+  --paper-back:   #fbf4e0;
+  --paper-shade:  #cdb98c;
+  --paper-edge:   #8b7449;
+
+  --ink:          #f5ecd2;
+  --ink-soft:     #c9b88f;
+  --ink-dim:      #927a4f;
+  --ink-faint:    #5a4a30;
+
+  --sumi:         #1c1612;     /* deep ink */
+  --crease:       #b29c6c;     /* existing creases */
+
+  --vermilion:    #d83c2c;     /* hanko red */
+  --vermilion-hi: #ff6650;
+  --vermilion-glow: rgba(216,60,44,0.45);
+  --vermilion-faint: rgba(216,60,44,0.10);
+
+  --indigo:       #2a4d63;
+  --moss:         #5d7a3a;
+
+  --pad-l:        168px;
+  --pad-r:        30px;
+  --pad-t:        18px;
+  --pad-b:        16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Shippori Mincho", "Cormorant Garamond", "Times New Roman", serif;
+  -webkit-font-smoothing: antialiased;
+  font-weight: 500;
+  font-size: 17px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  letter-spacing: inherit;
+  padding: 0;
+}
+
+/* tatami-grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg, transparent 0, transparent 3px,
+      rgba(0,0,0,0.08) 4px, rgba(0,0,0,0.08) 5px);
+  pointer-events: none;
+  z-index: 200;
+  mix-blend-mode: multiply;
+}
+
+#app {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 80% 18%, rgba(243,231,200,0.07), transparent 55%),
+    radial-gradient(ellipse at 30% 95%, rgba(216,60,44,0.06), transparent 55%),
+    linear-gradient(160deg, var(--bg-3) 0%, var(--bg) 50%, var(--bg-2) 100%);
+}
+
+/* ────────── Screen base ────────── */
+.screen {
+  position: absolute;
+  inset: 0;
+  width: 600px;
+  height: 600px;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  align-items: stretch;
+}
+.hidden { display: none !important; }
+
+/* ────────── Header ────────── */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  font-size: 18px;
+  letter-spacing: 0.18em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.brand-mark {
+  font-family: "Shippori Mincho", serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--paper-back);
+  background: var(--vermilion);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  letter-spacing: 0;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.3),
+    0 2px 6px rgba(216,60,44,0.35);
+  transform: rotate(-3deg);
+}
+.brand {
+  color: var(--ink);
+  letter-spacing: 0.30em;
+  font-weight: 700;
+  font-size: 16px;
+}
+.serial {
+  font-family: "Share Tech Mono", monospace;
+  color: var(--ink-dim);
+  letter-spacing: 0.10em;
+  font-weight: 400;
+  font-size: 14px;
+  margin-left: 2px;
+}
+
+/* ────────── Menu eyebrow + list ────────── */
+.menu-eyebrow {
+  margin-top: 14px;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+}
+
+.menu-list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 0;
+  justify-content: center;
+}
+
+.menu-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 8px 12px 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: border-color 120ms, background 120ms, color 120ms;
+  background: linear-gradient(180deg, rgba(243,231,200,0.02) 0%, rgba(0,0,0,0.06) 100%);
+}
+.menu-row .row-name {
+  color: var(--ink);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-family: "Cormorant Garamond", "Shippori Mincho", serif;
+}
+.menu-row .row-meta {
+  color: var(--ink-dim);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  min-width: 64px;
+  text-align: left;
+}
+.menu-row .row-stars {
+  color: var(--vermilion);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  min-width: 38px;
+  text-align: left;
+}
+.menu-row .row-kanji {
+  font-family: "Shippori Mincho", serif;
+  font-size: 22px;
+  color: var(--vermilion);
+  letter-spacing: 0;
+  width: 28px;
+  text-align: center;
+  opacity: 0.8;
+}
+.menu-row.focused {
+  border-color: var(--vermilion);
+  background:
+    linear-gradient(90deg, transparent 0%, rgba(216,60,44,0.12) 100%);
+  box-shadow: 0 0 14px var(--vermilion-faint);
+}
+.menu-row.focused .row-name { color: var(--paper-back); }
+.menu-row.focused .row-kanji { opacity: 1; text-shadow: 0 0 8px var(--vermilion-glow); }
+
+/* ────────── Fold screen ────────── */
+.fold-chip-row {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+.fold-chip {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: var(--vermilion-hi);
+  border: 1px solid var(--vermilion);
+  padding: 3px 9px;
+  border-radius: 3px;
+  background: rgba(216,60,44,0.08);
+  text-transform: uppercase;
+}
+.fold-chip.mountain { color: #ffd4a0; border-color: #d89656; background: rgba(216,150,86,0.10); }
+.fold-chip.squash   { color: #b8e6ff; border-color: #569dd8; background: rgba(86,157,216,0.10); }
+.fold-chip.petal    { color: #ffb3d8; border-color: #d85692; background: rgba(216,86,146,0.10); }
+.fold-chip.reverse  { color: #b8ffc7; border-color: #56d873; background: rgba(86,216,115,0.10); }
+.fold-chip.unfold   { color: var(--ink-soft); border-color: var(--ink-dim); background: rgba(146,122,79,0.08); }
+.fold-chip.start    { color: var(--ink); border-color: var(--ink-soft); background: rgba(243,231,200,0.06); }
+.fold-chip.shape    { color: #ffe2a8; border-color: #d8b256; background: rgba(216,178,86,0.10); }
+
+.fold-difficulty {
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  color: var(--vermilion);
+  font-family: "Share Tech Mono", monospace;
+}
+
+/* ────────── Diagram ────────── */
+.diagram-wrap {
+  margin-top: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: stretch;
+}
+.diagram {
+  flex: 1 1 auto;
+  height: 100%;
+  border-radius: 4px;
+  position: relative;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(243,231,200,0.04), transparent 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+.diagram svg {
+  width: 100%;
+  height: 100%;
+  max-height: 240px;
+  display: block;
+}
+.diagram svg .paper {
+  fill: var(--paper);
+  stroke: var(--sumi);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.diagram svg .paper.back  { fill: var(--paper-back); }
+.diagram svg .paper.shade { fill: var(--paper-shade); }
+.diagram svg .paper.shade2 { fill: var(--paper-2); }
+.diagram svg .crease {
+  stroke: var(--crease);
+  stroke-width: 1.2;
+  stroke-dasharray: 2 3;
+  fill: none;
+}
+.diagram svg .valley {
+  stroke: var(--vermilion);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  fill: none;
+}
+.diagram svg .mountain {
+  stroke: var(--vermilion);
+  stroke-width: 2;
+  stroke-dasharray: 9 3 2 3;
+  fill: none;
+}
+.diagram svg .arrow {
+  fill: none;
+  stroke: var(--vermilion);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.diagram svg .arrow-head {
+  fill: var(--vermilion);
+  stroke: none;
+}
+.diagram svg .label {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  fill: var(--ink-dim);
+  text-anchor: middle;
+}
+
+.diagram.tick svg {
+  animation: diagramPop 380ms cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+@keyframes diagramPop {
+  0%   { transform: translateY(-3px) scale(0.97); opacity: 0; }
+  60%  { transform: translateY(0)    scale(1.02); opacity: 1; }
+  100% { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+
+/* ────────── Instruction ────────── */
+.instruction {
+  margin-top: 6px;
+  font-family: "Cormorant Garamond", "Shippori Mincho", serif;
+  font-size: 22px;
+  line-height: 1.18;
+  color: var(--paper);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-align: right;
+  min-height: 52px;
+}
+.instruction strong {
+  color: var(--vermilion-hi);
+  font-weight: 700;
+}
+
+/* ────────── Progress dots ────────── */
+.progress-row {
+  margin-top: 6px;
+  display: flex;
+  justify-content: flex-end;
+}
+.progress-dots {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+.progress-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  border: 1px solid var(--ink-dim);
+  transition: background 120ms, transform 120ms;
+}
+.progress-dots .dot.done {
+  background: var(--vermilion);
+  border-color: var(--vermilion);
+  box-shadow: 0 0 6px var(--vermilion-glow);
+}
+.progress-dots .dot.current {
+  background: var(--paper);
+  border-color: var(--paper);
+  transform: scale(1.25);
+  box-shadow: 0 0 8px rgba(243,231,200,0.5);
+}
+
+/* ────────── Hints footer ────────── */
+.hints {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  font-family: "Share Tech Mono", monospace;
+}
+.hints .key {
+  color: var(--vermilion);
+  font-family: "Share Tech Mono", monospace;
+  letter-spacing: 0;
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+/* ────────── Done screen ────────── */
+.done-stamp {
+  margin: 18px auto 0 auto;
+  width: 110px;
+  height: 110px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+}
+.done-stamp-inner {
+  width: 100%;
+  height: 100%;
+  border: 3px solid var(--vermilion);
+  border-radius: 8px;
+  background: rgba(216,60,44,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-7deg);
+  box-shadow: 0 0 0 1px rgba(216,60,44,0.4), 0 0 26px var(--vermilion-glow);
+  position: relative;
+}
+.done-stamp-inner::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed var(--vermilion);
+  border-radius: 5px;
+  opacity: 0.5;
+}
+.done-kanji {
+  font-family: "Shippori Mincho", serif;
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--vermilion-hi);
+  line-height: 1;
+}
+.done-label {
+  font-family: "Shippori Mincho", serif;
+  font-size: 14px;
+  color: var(--vermilion);
+  letter-spacing: 0.2em;
+  margin-top: 2px;
+}
+
+.done-name {
+  margin-top: 14px;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--paper);
+  letter-spacing: 0.04em;
+}
+.done-sub {
+  margin-top: 2px;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+}
+
+.done-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+/* ────────── Buttons ────────── */
+.btn {
+  flex: 1 1 0;
+  min-height: 50px;
+  border-radius: 6px;
+  border: 1.5px solid var(--ink-faint);
+  background: linear-gradient(180deg, rgba(243,231,200,0.04) 0%, rgba(0,0,0,0.18) 100%);
+  color: var(--paper);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    0 2px 6px rgba(0,0,0,0.4);
+  transition: transform 80ms ease-out, border-color 120ms, color 120ms, box-shadow 120ms;
+}
+.btn:focus { outline: none; }
+.btn.focused,
+.btn:focus-visible {
+  border-color: var(--vermilion);
+  color: var(--vermilion-hi);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    0 0 0 1px var(--vermilion),
+    0 0 18px var(--vermilion-faint);
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  border-color: var(--vermilion);
+  background: linear-gradient(180deg, rgba(216,60,44,0.18) 0%, rgba(110,30,20,0.20) 100%);
+}
+.btn-primary.focused {
+  border-color: var(--vermilion-hi);
+  color: #ffe7e0;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 0 0 1px var(--vermilion-hi),
+    0 0 22px var(--vermilion-glow);
+}
+.btn-glyph {
+  font-family: "Shippori Mincho", serif;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+/* ────────── Status ────────── */
+.status {
+  position: absolute;
+  right: var(--pad-r);
+  bottom: 4px;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 220ms ease-out;
+  z-index: 20;
+}
+.status.show { opacity: 1; }
+
+/* ────────── Animations ────────── */
+.screen.shake {
+  animation: paperShake 320ms ease-out;
+}
+@keyframes paperShake {
+  0%   { transform: translateX(0); }
+  25%  { transform: translateX(-2px); }
+  50%  { transform: translateX(2px); }
+  75%  { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
+}
