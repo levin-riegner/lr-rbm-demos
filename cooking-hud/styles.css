@@ -159,6 +159,63 @@ body::after {
 }
 .btn:active:not(:disabled) { transform: scale(0.97); }
 
+/* Small emoji-icon button (e.g. see-through toggle). Square, no text. */
+.btn.btn-emoji {
+  flex: 0 0 auto;
+  padding: 0;
+  width: 56px;
+  font-size: 22px;
+  line-height: 1;
+}
+.btn.btn-emoji:hover:not(:disabled),
+.btn.btn-emoji.dpad-focus:not(:disabled) {
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+/* ─────────── SEE-THROUGH MODE ───────────
+   On the actual Ray-Ban Display, pure black renders as fully transparent.
+   We flip the panel from cream → black and override the ink/dim colors
+   to bright white + brighter orange so text reads at high contrast over
+   whatever the user is looking at. */
+body.see-through {
+  --bg:         #000000;     /* panel + cards become black (= transparent) */
+  --bg-2:       #000000;
+  --ink:        #ffffff;     /* primary text is bright white */
+  --ink-dim:    #d0d0d0;     /* secondary text lifts toward white too */
+  --ink-faint:  #2c2c2c;     /* dividers — just barely visible */
+  --orange:     #ff7a3a;     /* a touch brighter for punch on black */
+  --orange-2:   #ffb88a;
+  --red:        #ff453a;
+  --green:      #30d158;
+}
+body.see-through #app { background: #000; }
+body.see-through .screen::before { background: #000; }
+body.see-through .ambient,
+body.see-through .amb-grid,
+body.see-through .amb-vignette { background: transparent; opacity: 0; }
+body.see-through body::after { display: none; }       /* drop scan lines */
+body.see-through .amb-grid { background-image: none; }
+/* Static recipe-card name reads white; brand mark stays gradient-clipped
+   (its own ink→orange gradient already adapts via --ink/--orange). */
+body.see-through .rc-name { color: #fff; }
+body.see-through .pi-text { color: #fff; }
+body.see-through .checkbox { border-color: #fff; }
+body.see-through .phase-item.checked .checkbox { background: #2bb14a; border-color: #2bb14a; }
+body.see-through .ci-cell { background: #000; }
+/* Buttons */
+body.see-through .btn { color: #fff; border-color: #fff; }
+body.see-through .btn.primary { background: var(--orange); color: #fff; border-color: var(--orange); }
+body.see-through .btn:hover:not(:disabled),
+body.see-through .btn.dpad-focus:not(:disabled) {
+  background: var(--orange);
+  color: #fff;
+  border-color: var(--orange);
+}
+/* The recipe-card progress bar still needs visible track */
+body.see-through .rc-bar { background: #333; }
+/* Help screen key glyphs */
+body.see-through .key-glyph { border-color: #fff; color: #fff; }
+
 /* ─────────── Page header ─────────── */
 .page-head {
   display: flex;

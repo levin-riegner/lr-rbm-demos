@@ -289,5 +289,35 @@ const RECIPES = [
       { id: 'c7', text: 'Cool on sheets for 2 minutes.', timerSec: 120, tag: 'COOL' },
       { id: 'c8', text: 'Transfer to a wire rack to finish cooling.' }
     ]
+  },
+  {
+    id: 'radish-slaw',
+    name: 'SESAME RADISH SLAW',
+    eyebrow: 'Side',
+    totalMin: 15,
+    servings: 4,
+    shop: [
+      { id: 's1', qty: '1 bunch', item: 'Radishes' },
+      { id: 's2', qty: '1',       item: 'Cucumber' },
+      { id: 's3', qty: '2 tbsp',  item: 'Rice vinegar' },
+      { id: 's4', qty: '1 tbsp',  item: 'Soy sauce' },
+      { id: 's5', qty: '1 tsp',   item: 'Sesame oil' },
+      { id: 's6', qty: '1 tsp',   item: 'Sugar' },
+      { id: 's7', qty: '1 tbsp',  item: 'Sesame seeds, toasted' },
+      { id: 's8', qty: '1',       item: 'Scallion' },
+      { id: 's9', qty: '1/4 tsp', item: 'Chili flakes (optional)' }
+    ],
+    prep: [
+      { id: 'p1', text: 'Trim and slice radishes paper-thin.' },
+      { id: 'p2', text: 'Slice cucumber thin into half-moons.' },
+      { id: 'p3', text: 'Thinly slice the scallion on a bias.' }
+    ],
+    cook: [
+      { id: 'c1', text: 'Whisk vinegar, soy, sesame oil, sugar in a bowl.' },
+      { id: 'c2', text: 'Combine radishes + cucumber in a wide bowl.' },
+      { id: 'c3', text: 'Pour dressing over, toss to coat.' },
+      { id: 'c4', text: 'Let sit 5 minutes so the slices soften.', timerSec: 300, tag: 'REST' },
+      { id: 'c5', text: 'Top with sesame seeds, scallion, chili flakes.' }
+    ]
   }
 ];

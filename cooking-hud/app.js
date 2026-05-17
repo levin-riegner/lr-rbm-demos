@@ -5,6 +5,7 @@
 const PROGRESS_KEY = 'cooking.progress.v1';   // checkbox state per recipe
 const TIMERS_KEY   = 'cooking.timers.v1';     // active timers (persist across reloads)
 const LAST_KEY     = 'cooking.last.v1';       // most recent recipe id
+const ST_KEY       = 'cooking.seethrough.v1'; // see-through mode (black panel)
 
 const PHASES = ['shop', 'prep', 'cook'];
 const PHASE_LABEL = { shop: 'SHOP', prep: 'PREP', cook: 'COOK' };
@@ -107,8 +108,15 @@ function renderHome() {
 function renderHomeActions() {
   const wrap = $('#home-actions');
   const resume = findResumableRecipe();
+  const isSeeThrough = document.body.classList.contains('see-through');
+  const seeThroughBtn = `
+    <button class="btn btn-emoji focusable" data-action="toggle-seethrough"
+            aria-label="Toggle see-through mode"
+            title="See-through mode">${isSeeThrough ? '🌗' : '👁️'}</button>
+  `;
   if (resume) {
     wrap.innerHTML = `
+      ${seeThroughBtn}
       <button class="btn ghost focusable" data-action="show-help">HOW IT WORKS</button>
       <button class="btn primary focusable" data-action="resume" data-id="${resume.id}">
         RESUME &#8594;
@@ -116,9 +124,28 @@ function renderHomeActions() {
     `;
   } else {
     wrap.innerHTML = `
+      ${seeThroughBtn}
       <button class="btn primary focusable" data-action="show-help">HOW IT WORKS</button>
     `;
   }
+}
+
+/* See-through mode — black panel + white/orange brighter text so the
+   HUD looks fully transparent on the actual glasses display. */
+function applySeeThrough(on) {
+  document.body.classList.toggle('see-through', !!on);
+  try { localStorage.setItem(ST_KEY, on ? '1' : '0'); } catch {}
+}
+function loadSeeThrough() {
+  try { return localStorage.getItem(ST_KEY) === '1'; } catch { return false; }
+}
+function toggleSeeThrough() {
+  applySeeThrough(!document.body.classList.contains('see-through'));
+  if (!$('#home').classList.contains('hidden')) renderHomeActions();
+  requestAnimationFrame(() => {
+    const btn = document.querySelector('[data-action="toggle-seethrough"]');
+    if (btn) setFocus(btn);
+  });
 }
 function recipeCardHTML(r) {
   const { done, total, pct } = recipeStats(r);
@@ -902,6 +929,7 @@ function handleAction(a, target) {
     case 'go-home':       goHome(); break;
     case 'show-help':     showScreen('help'); break;
     case 'resume':        resumeLast(); break;
+    case 'toggle-seethrough': toggleSeeThrough(); break;
     case 'next-phase':    nextPhase(); break;
     case 'confirm-yes':   closeConfirm(true); break;
     case 'confirm-no':    closeConfirm(false); break;
@@ -915,6 +943,8 @@ function handleAction(a, target) {
 
 /* ─────────── Boot ─────────── */
 function boot() {
+  // Restore see-through preference before first paint
+  applySeeThrough(loadSeeThrough());
   bindEvents();
   renderHome();
   renderTimerRail();
