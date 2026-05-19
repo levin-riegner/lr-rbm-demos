@@ -517,6 +517,7 @@
       case 'server-full':      return 'Server is full. Try again in a minute.';
       case 'rate-limited':     return 'Too many attempts. Wait a minute and retry.';
       case 'payload-too-large':return 'Payload too large.';
+      case 'bad-intent':       return 'Connection to server was lost.';
       default:                 return (msg.reason || 'Unknown error') + '.';
     }
   }
