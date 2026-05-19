@@ -389,12 +389,24 @@
   var codeTtlTimer = null;
 
   // Rapid-tap booster state.
+  //
+  // The glasses fire ArrowUp/Down as discrete keydown-then-keyup events
+  // (touchpad-swipe-to-arrow) rather than held keys, so we can't rely on
+  // "intent is alive while key is down". Each tap instead drives the
+  // paddle for IMPULSE_MS regardless of when keyup arrives — that's what
+  // turns a brief swipe into actual paddle motion. Rapid taps stack the
+  // intent magnitude up to 4×.
   var BOOST_WINDOW_MS = 260;
-  var BOOST_DECAY_MS = 320;
+  var IMPULSE_MS = 320;
   var tapDirection = 0;
   var tapCount = 0;
   var tapLastAt = 0;
-  var boostDecayTimer = null;
+  var impulseTimer = null;
+
+  // Long-press ↑ (held > LONG_PRESS_UP_MS) opens the pause prompt. Works
+  // for both practice and multiplayer.
+  var LONG_PRESS_UP_MS = 520;
+  var longPressUpTimer = null;
 
   // Practice mode (solo vs the right-side wall).
   var isPractice = false;
@@ -786,7 +798,8 @@
     myIntent = 0;
     tapCount = 0;
     tapDirection = 0;
-    clearBoostDecay();
+    clearImpulse();
+    clearLongPressUp();
 
     var best = 0;
     try { best = parseInt(localStorage.getItem('pong-practice-best') || '0', 10) || 0; }
@@ -803,7 +816,7 @@
 
     scoreLeftEl.textContent = '0';
     scoreRightEl.textContent = String(best);
-    gameMetaEl.textContent = '↑ / ↓ paddle · tap fast = boost · WALL →';
+    gameMetaEl.textContent = '↑ / ↓ paddle · tap fast = boost · hold ↑ = pause · WALL →';
     navigateTo('game');
     sfx.join();
   }
@@ -823,7 +836,7 @@
     practice = null;
     practicePromptVisible = false;
     lastEnterAt = 0;
-    var el = getPracticePromptEl();
+    var el = getPausePromptEl();
     if (el) {
       el.classList.add('hidden');
       el.setAttribute('aria-hidden', 'true');
@@ -935,35 +948,37 @@
     ctx.restore();
   }
 
-  // ---------- Practice exit prompt --------------------------------------
+  // ---------- Pause prompt (practice + multiplayer) ----------------------
 
-  function getPracticePromptEl() {
+  function getPausePromptEl() {
     return document.getElementById('practice-confirm');
   }
 
-  function showPracticePrompt() {
+  function showPausePrompt() {
     if (practicePromptVisible) return;
     practicePromptVisible = true;
-    // Cancel any in-flight paddle motion so the ball — and now the
-    // paddle — sit still while the user decides.
+    // Cancel any in-flight paddle motion so the paddle freezes while the
+    // user decides. In multiplayer the ball keeps moving server-side —
+    // the prompt is UI-only — but at least we don't send phantom inputs.
     sendIntent(0);
     tapCount = 0;
     tapDirection = 0;
-    clearBoostDecay();
-    var el = getPracticePromptEl();
+    clearImpulse();
+    clearLongPressUp();
+    var el = getPausePromptEl();
     if (!el) return;
     el.classList.remove('hidden');
     el.setAttribute('aria-hidden', 'false');
-    // Default focus = Stay (the safer choice).
+    // Default focus = Resume (the safer choice).
     var btns = focusableIn(el);
     if (btns.length) btns[0].focus();
     sfx.click();
   }
 
-  function hidePracticePrompt() {
+  function hidePausePrompt() {
     if (!practicePromptVisible) return;
     practicePromptVisible = false;
-    var el = getPracticePromptEl();
+    var el = getPausePromptEl();
     if (el) {
       el.classList.add('hidden');
       el.setAttribute('aria-hidden', 'true');
@@ -972,14 +987,14 @@
     if (document.activeElement && document.activeElement.blur) {
       document.activeElement.blur();
     }
-    // Reset dt so resumed physics doesn't fast-forward.
+    // Reset dt so resumed practice physics doesn't fast-forward.
     if (practice) practice.lastT = performance.now();
     lastEnterAt = 0;
     sfx.click();
   }
 
-  function movePracticePromptFocus(direction) {
-    var el = getPracticePromptEl();
+  function movePausePromptFocus(direction) {
+    var el = getPausePromptEl();
     if (!el) return;
     var list = focusableIn(el);
     if (!list.length) return;
@@ -1011,9 +1026,9 @@
 
   function updateLegendForSide() {
     if (mySide === 'left') {
-      gameMetaEl.textContent = '↑ / ↓ LEFT paddle · tap fast = boost';
+      gameMetaEl.textContent = '↑ / ↓ LEFT paddle · tap fast = boost · hold ↑ = pause';
     } else if (mySide === 'right') {
-      gameMetaEl.textContent = '↑ / ↓ RIGHT paddle · tap fast = boost';
+      gameMetaEl.textContent = '↑ / ↓ RIGHT paddle · tap fast = boost · hold ↑ = pause';
     }
   }
 
@@ -1046,24 +1061,22 @@
     send({ type: 'input', intent: v });
   }
 
-  function clearBoostDecay() {
-    if (boostDecayTimer) { clearTimeout(boostDecayTimer); boostDecayTimer = null; }
+  function clearImpulse() {
+    if (impulseTimer) { clearTimeout(impulseTimer); impulseTimer = null; }
   }
 
-  function scheduleBoostDecay() {
-    clearBoostDecay();
-    boostDecayTimer = setTimeout(function () {
-      // Streak ended — clamp back to a single press.
+  function scheduleImpulseEnd() {
+    clearImpulse();
+    impulseTimer = setTimeout(function () {
+      impulseTimer = null;
       tapCount = 0;
       tapDirection = 0;
-      // Don't force intent to 0 here; the user may still be holding.
-      // If still pressing the same key, normal keydown auto-repeat will
-      // re-send intent 1. If released, keyup already set it to 0.
-      if (myIntent !== 0 && (myIntent === 4 || myIntent === -4 || myIntent === 3 || myIntent === -3 || myIntent === 2 || myIntent === -2)) {
-        var sign = myIntent > 0 ? 1 : -1;
-        sendIntent(sign); // step back down to 1×
-      }
-    }, BOOST_DECAY_MS);
+      sendIntent(0);
+    }, IMPULSE_MS);
+  }
+
+  function clearLongPressUp() {
+    if (longPressUpTimer) { clearTimeout(longPressUpTimer); longPressUpTimer = null; }
   }
 
   function registerArrowTap(direction) {
@@ -1079,7 +1092,13 @@
     var magnitude = tapCount; // 1..4
     sendIntent(direction * magnitude);
     if (magnitude > 1) sfx.boost();
-    scheduleBoostDecay();
+    // Each tap renews the impulse — short brushing taps still deliver
+    // a noticeable paddle move on the glasses.
+    scheduleImpulseEnd();
+  }
+
+  function refreshImpulse() {
+    if (impulseTimer) scheduleImpulseEnd();
   }
 
   function moveMenuFocus(direction) {
@@ -1099,29 +1118,29 @@
   document.addEventListener('keydown', function (ev) {
     // -------------------- Game screen --------------------
     if (currentScreen === 'game') {
-      // Practice exit prompt has priority over normal game input.
+      // Pause prompt has priority over normal game input.
       if (practicePromptVisible) {
         switch (ev.key) {
           case 'ArrowLeft':
           case 'ArrowUp':
-            movePracticePromptFocus('prev');
+            if (!ev.repeat) movePausePromptFocus('prev');
             ev.preventDefault();
             return;
           case 'ArrowRight':
           case 'ArrowDown':
-            movePracticePromptFocus('next');
+            if (!ev.repeat) movePausePromptFocus('next');
             ev.preventDefault();
             return;
           case 'Enter':
           case ' ':
-            if (document.activeElement && document.activeElement.click) {
+            if (!ev.repeat && document.activeElement && document.activeElement.click) {
               document.activeElement.click();
             }
             ev.preventDefault();
             return;
           case 'Escape':
           case 'Backspace':
-            hidePracticePrompt();
+            if (!ev.repeat) hidePausePrompt();
             ev.preventDefault();
             return;
           default:
@@ -1132,21 +1151,36 @@
       switch (ev.key) {
         case 'ArrowUp':
           ev.preventDefault();
-          if (!ev.repeat) registerArrowTap(-1);
+          if (!ev.repeat) {
+            registerArrowTap(-1);
+            // Hold ↑ for > LONG_PRESS_UP_MS to open the pause prompt.
+            clearLongPressUp();
+            longPressUpTimer = setTimeout(function () {
+              longPressUpTimer = null;
+              tapCount = 0;
+              tapDirection = 0;
+              clearImpulse();
+              sendIntent(0);
+              showPausePrompt();
+            }, LONG_PRESS_UP_MS);
+          } else {
+            refreshImpulse();
+          }
           break;
         case 'ArrowDown':
           ev.preventDefault();
           if (!ev.repeat) registerArrowTap(1);
+          else            refreshImpulse();
           break;
         case 'Enter':
         case ' ':
-          // Double-tap Enter (practice only) opens the exit prompt.
+          // Double-tap Enter (in either mode) also opens the pause prompt.
           ev.preventDefault();
-          if (isPractice && !ev.repeat) {
+          if (!ev.repeat) {
             var nowE = performance.now();
             if (lastEnterAt && (nowE - lastEnterAt) < ENTER_DOUBLE_TAP_MS) {
               lastEnterAt = 0;
-              showPracticePrompt();
+              showPausePrompt();
             } else {
               lastEnterAt = nowE;
             }
@@ -1280,10 +1314,11 @@
   document.addEventListener('keyup', function (ev) {
     if (currentScreen !== 'game') return;
     if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') {
-      sendIntent(0);
-      tapCount = 0;
-      tapDirection = 0;
-      clearBoostDecay();
+      // Don't reset intent here — let the impulse timer run so a brief
+      // discrete swipe (glasses touchpad) still produces real paddle
+      // motion. Only cancel the long-press-pause timer if ↑ was released
+      // before the threshold.
+      if (ev.key === 'ArrowUp') clearLongPressUp();
       ev.preventDefault();
     }
   });
@@ -1310,13 +1345,17 @@
         startPractice();
         break;
       case 'confirm-exit-yes':
-        hidePracticePrompt();
-        endPractice();
+        hidePausePrompt();
+        if (isPractice) {
+          endPractice();
+        } else {
+          send({ type: 'leave' });
+        }
         leaveToHome();
         sfx.click();
         break;
       case 'confirm-exit-no':
-        hidePracticePrompt();
+        hidePausePrompt();
         break;
       case 'submit-code':
         submitJoinCode();
@@ -1359,7 +1398,8 @@
     myIntent = 0;
     tapCount = 0;
     tapDirection = 0;
-    clearBoostDecay();
+    clearImpulse();
+    clearLongPressUp();
     stopCodeTtlCountdown();
     navigateTo('home');
   }

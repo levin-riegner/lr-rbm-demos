@@ -201,32 +201,34 @@
           <span class="legend-side legend-right">P2</span>
         </div>
 
-        <!-- Practice-only exit prompt. Triggered by double-tap Enter. -->
+        <!-- Pause prompt. Long-press ↑ or double-tap Enter while playing
+             (practice OR multiplayer) opens this. Resume = hide, Quit
+             leaves the match. -->
         <div
           id="practice-confirm"
           class="practice-confirm hidden"
           aria-hidden="true"
           role="dialog"
-          aria-label="Exit practice"
+          aria-label="Paused"
         >
           <div class="practice-confirm-card">
-            <div class="practice-confirm-title">EXIT PRACTICE?</div>
+            <div class="practice-confirm-title">PAUSED</div>
             <div class="row">
               <button
-                class="focusable"
+                class="focusable primary"
                 type="button"
                 data-action="confirm-exit-no"
-                aria-label="Stay in practice"
+                aria-label="Resume"
               >
-                Stay
+                Resume
               </button>
               <button
                 class="focusable danger"
                 type="button"
                 data-action="confirm-exit-yes"
-                aria-label="Exit practice"
+                aria-label="Quit the match"
               >
-                Exit
+                Quit
               </button>
             </div>
           </div>
@@ -241,20 +243,20 @@
         </div>
         <div class="row">
           <button
-            class="focusable primary"
-            type="button"
-            data-action="ready"
-            aria-label="Play another match"
-          >
-            Play again
-          </button>
-          <button
             class="focusable danger"
             type="button"
             data-action="leave"
             aria-label="Leave the room"
           >
             Leave
+          </button>
+          <button
+            class="focusable primary"
+            type="button"
+            data-action="ready"
+            aria-label="Play another match"
+          >
+            Play again
           </button>
         </div>
         <div class="screen-subtitle" id="ready-status" aria-live="polite"></div>
@@ -268,11 +270,11 @@
           Lost connection to the server.
         </div>
         <div class="row">
-          <button class="focusable primary" type="button" data-action="retry">
-            Reconnect
-          </button>
           <button class="focusable" type="button" data-action="home">
             Home
+          </button>
+          <button class="focusable primary" type="button" data-action="retry">
+            Reconnect
           </button>
         </div>
       </section>
