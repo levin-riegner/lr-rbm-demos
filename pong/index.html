@@ -3,8 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <script>
-      // Device sense — runs before anything else loads. If we look like a
-      // phone (mobile UA + touch capability), hand off to the phone build.
+      // Device sense — runs before anything else loads. We only redirect
+      // when the UA is clearly a phone (iPhone / iPod / "Android …
+      // Mobile"). No touch-capability check, because the glasses report
+      // touchpad gestures as touch events and we don't want to bounce
+      // them off this build.
+      //
       // Overrides: ?desktop=1 forces the glasses build, ?mobile=1 forces
       // the phone build.
       (function () {
@@ -13,9 +17,11 @@
           if (/[?&]desktop=1\b/.test(qs)) return;
           var force = /[?&]mobile=1\b/.test(qs);
           var ua = navigator.userAgent || '';
-          var mobileUA = /Mobi|Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-          var hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-          if (force || (mobileUA && hasTouch)) {
+          var isPhoneUA =
+            /iPhone|iPod/.test(ua) ||
+            (/Android/.test(ua) && /Mobile/.test(ua)) ||
+            /Windows Phone|IEMobile|BlackBerry|Opera Mini/.test(ua);
+          if (force || isPhoneUA) {
             location.replace('/mobile.html' + qs);
           }
         } catch (e) { /* if detection blows up, stay here */ }
