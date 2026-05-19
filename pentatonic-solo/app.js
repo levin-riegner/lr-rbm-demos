@@ -37,6 +37,17 @@ const SLOT_KEYCODE = {
 const RING_DURATION = 3.5;  // seconds a note rings out naturally
 const QUICK_RELEASE = 0.08; // seconds to fade an interrupted note
 
+// rainbow spectrum (Dark Side prism)
+const PRISM = [
+  [255,  74,  91],  // red
+  [255, 130,  60],  // orange
+  [255, 210,  70],  // yellow
+  [120, 230, 130],  // green
+  [ 80, 200, 255],  // cyan
+  [ 90, 120, 255],  // blue
+  [180, 100, 255],  // violet
+];
+
 // ---------------------------------------------------------
 // state
 // ---------------------------------------------------------
@@ -188,6 +199,7 @@ function playNote(slot) {
   currentVoice = voice;
 
   paintActive(slot, entry.name + octave, entry.deg);
+  burstParticles(slot);
 
   // when this voice ends naturally, clear UI (unless a newer note has taken over)
   osc1.onended = () => {
@@ -196,6 +208,112 @@ function playNote(slot) {
       paintRingEnd(slot);
     }
   };
+}
+
+// ---------------------------------------------------------
+// rainbow particles
+// ---------------------------------------------------------
+let pCtx, pCanvas;
+const particles = [];
+
+function initParticles() {
+  pCanvas = document.getElementById('particles');
+  pCtx = pCanvas.getContext('2d');
+  requestAnimationFrame(tickParticles);
+}
+
+function burstParticles(slot) {
+  // emit from the pressed pad's screen center, biased outward
+  const pad = document.querySelector(`.pad[data-key="${slot}"]`);
+  if (!pad || !pCanvas) return;
+  const rect = pad.getBoundingClientRect();
+  const canvasRect = pCanvas.getBoundingClientRect();
+  // map to canvas internal coords (canvas is 600x600 logical, may be scaled)
+  const scaleX = pCanvas.width / canvasRect.width;
+  const scaleY = pCanvas.height / canvasRect.height;
+  const cx = (rect.left - canvasRect.left + rect.width / 2) * scaleX;
+  const cy = (rect.top  - canvasRect.top  + rect.height / 2) * scaleY;
+
+  const count = 36;
+  for (let i = 0; i < count; i++) {
+    spawnParticle(cx, cy, 1.6 + Math.random() * 3.4);
+  }
+}
+
+function spawnParticle(cx, cy, speed) {
+  const angle = Math.random() * Math.PI * 2;
+  const life = 70 + Math.random() * 90;
+  const colorIdx = Math.floor(Math.random() * PRISM.length);
+  particles.push({
+    x: cx + (Math.random() - 0.5) * 8,
+    y: cy + (Math.random() - 0.5) * 8,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed - 0.2, // slight upward drift
+    size: 1.6 + Math.random() * 2.8,
+    life,
+    maxLife: life,
+    color: PRISM[colorIdx],
+  });
+}
+
+let trickleAccum = 0;
+function tickParticles(t) {
+  if (!pCtx) { requestAnimationFrame(tickParticles); return; }
+
+  // trickle while a note is ringing — sparkle emanating from active pad
+  if (currentVoice) {
+    trickleAccum += 1;
+    if (trickleAccum >= 4) {
+      trickleAccum = 0;
+      const pad = document.querySelector(`.pad[data-key="${currentVoice.slot}"]`);
+      if (pad) {
+        const rect = pad.getBoundingClientRect();
+        const canvasRect = pCanvas.getBoundingClientRect();
+        const scaleX = pCanvas.width / canvasRect.width;
+        const scaleY = pCanvas.height / canvasRect.height;
+        const cx = (rect.left - canvasRect.left + rect.width / 2) * scaleX;
+        const cy = (rect.top  - canvasRect.top  + rect.height / 2) * scaleY;
+        spawnParticle(cx, cy, 0.5 + Math.random() * 1.8);
+        spawnParticle(cx, cy, 0.5 + Math.random() * 1.8);
+      }
+    }
+  }
+
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  pCtx.globalCompositeOperation = 'lighter';
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vx *= 0.985;
+    p.vy *= 0.985;
+    p.life--;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+
+    const a = p.life / p.maxLife;
+    const r = p.size * (0.35 + 0.65 * a);
+    const halo = r * 3.2;
+    const [cr, cg, cb] = p.color;
+
+    const grad = pCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, halo);
+    grad.addColorStop(0,    `rgba(${cr},${cg},${cb},${0.85 * a})`);
+    grad.addColorStop(0.35, `rgba(${cr},${cg},${cb},${0.40 * a})`);
+    grad.addColorStop(1,    `rgba(${cr},${cg},${cb},0)`);
+    pCtx.fillStyle = grad;
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, halo, 0, Math.PI * 2);
+    pCtx.fill();
+
+    // bright core
+    pCtx.fillStyle = `rgba(255,255,255,${0.7 * a})`;
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, Math.max(0.6, r * 0.4), 0, Math.PI * 2);
+    pCtx.fill();
+  }
+
+  pCtx.globalCompositeOperation = 'source-over';
+  requestAnimationFrame(tickParticles);
 }
 
 // ---------------------------------------------------------
@@ -297,3 +415,6 @@ document.querySelectorAll('.pad').forEach((pad) => {
   const slot = pad.dataset.key;
   pad.addEventListener('pointerdown', (e) => { e.preventDefault(); playNote(slot); });
 });
+
+// kick off the particle canvas loop (runs always, idle until a note plays)
+initParticles();
