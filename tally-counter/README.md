@@ -1,60 +1,96 @@
 # Tally Counter
 
-A wearable hand-tally-counter for the Ray-Ban Meta Display glasses. Press to count up. The big amber LED reads at a glance, the click confirms you didn't miss one, and the count survives reloads.
-
-Inspired by mechanical knitting / coaching tally counters — the kind with a chrome button on top, four white drums in a black window, and a side knob for reset.
+A heads-up hand-tally-counter for Meta Display glasses. One **big +1 target**, a **glanceable 4-digit LED**, and a **light click** every time you count up — so you can keep your eyes on whatever you're counting (knitting rows, push-ups, foot traffic, kids on a field trip) instead of on a clicker.
 
 > 📖 **Case study:** [levinriegner.com/work/tally-counter](https://www.levinriegner.com/work/tally-counter/)
 
-## Screenshots
-
-<p align="center">
-  <img src="screenshots/idle.png" width="300" alt="Idle state — 0000 on the LED">
-  &nbsp;
-  <img src="screenshots/counted.png" width="300" alt="Counted state — 0137 with since-timestamp">
-  &nbsp;
-  <img src="screenshots/confirm.png" width="300" alt="Reset confirmation overlay">
-</p>
-
-## Controls
-
-| Input | Action |
-| --- | --- |
-| `▶` Right arrow | +1 |
-| `◀` Left arrow | −1 |
-| `▲▼` Up / Down | Move focus between **+1**, **−1**, **RESET** |
-| `●` Enter / Space | Activate the focused button |
-| Tap / click | Activate the tapped button |
-| `R` | Open reset confirmation |
-| `Esc` | Close reset confirmation |
-
-The big **+1** button is the only thing you really need; the rest is for fixing miscounts and starting fresh.
+---
 
 ## What it does
 
-- **0000–9999** drum-roll readout, tabular-numeric amber on dark.
-- **Light click** on every +1 (Web Audio API: short noise transient + tonal body, ~14 ms decay). A lower click on −1, a soft descending chime on reset.
-- **Since HH:MM** timestamp captures the moment you started the current run; cleared on reset.
-- **Persisted** in `localStorage` so the count survives a reload or app restart.
-- **Reset is gated** by a confirmation overlay (cancel is the default focus, since reset is destructive).
+- **One-button counting.** The big **+1** button fills most of the lens; tap, click, or press Enter/Space/▶ to increment. A short Web-Audio click confirms each count without you having to look down.
+- **0000–9999 LED display.** Tabular amber digits with a ghost-`8888` back-layer, just like a 7-segment LCD. Tick flash on +1, dim flash on −1, red pulse if you hit the 9999 ceiling.
+- **−1 to correct miscounts.** Sits directly below +1 in the stack; a slightly lower-pitched click distinguishes it from +1 by ear.
+- **RESET with confirmation.** Destructive, so it's gated by a red-bordered "0042 → 0000" overlay with Cancel focused by default. A descending two-tone chime plays on confirm.
+- **Since-timestamp.** Captures `HH:MM` of the first count after each reset so you can see how long the current run has been going.
+- **Persisted.** Count + since-timestamp survive reloads via `localStorage` (`mdg_tally_v1`).
+
+All audio is synthesised at runtime through the Web Audio API — no asset files, no autoplay-policy traps (the first user interaction unlocks the context).
+
+---
+
+## Controls
+
+| Where | Input | Result |
+| --- | --- | --- |
+| Anywhere | ▶ Right | +1 |
+| Anywhere | ◀ Left | −1 |
+| Anywhere | ▲ ▼ Up / Down | Move focus through +1 → −1 → RESET |
+| Anywhere | Enter / Space / ● | Activate the focused button |
+| Anywhere | Tap / click | Activate the tapped button |
+| Anywhere | R | Open the reset confirmation |
+| Reset confirm | ◀ ▶ / ▲ ▼ | Toggle CANCEL ↔ RESET |
+| Reset confirm | Enter / Space | Activate focused option |
+| Reset confirm | Esc | Close the overlay |
+
+Every action has a focused button and a key shortcut — tapping a button is equivalent to pressing its key. There are no swipe gestures.
+
+---
+
+## Screenshots
+
+### Counting
+
+| Idle — 0000 | Mid-run — 0137, SINCE 22:30 |
+| --- | --- |
+| ![Idle counter](screenshots/idle.png) | ![Counted state](screenshots/counted.png) |
+
+### Reset confirmation
+
+| 0042 → 0000 |
+| --- |
+| ![Reset confirmation overlay](screenshots/confirm.png) |
+
+---
 
 ## Running locally
 
+The app is a single static HTML/CSS/JS bundle — no build step.
+
 ```bash
 npx serve -l 4211 tally-counter
+# then open http://localhost:4211
 ```
 
-Then open [http://localhost:4211](http://localhost:4211) — the viewport is locked to **600 × 600** to match the glasses display.
+For development inside the meta-display-glasses-webapps workspace it's also wired into `.claude/launch.json` as the `tally-counter` preview target on port **4211**.
+
+### Regenerating screenshots
+
+The screenshots above are produced from headless Chrome against the `?state=…` URL parameter the app reads on load (`idle`, `counted`, `confirm`):
+
+```bash
+npx serve -l 4211 tally-counter &
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+for STATE in idle counted confirm; do
+  "$CHROME" --headless=new --disable-gpu --hide-scrollbars \
+    --window-size=600,600 --virtual-time-budget=2500 \
+    --screenshot="tally-counter/screenshots/$STATE.png" \
+    "http://localhost:4211/?state=$STATE"
+done
+```
+
+---
 
 ## Files
 
 ```
 tally-counter/
-├── index.html   # single-screen markup + reset-confirm overlay
-├── styles.css   # right-aligned HUD, amber-LED display, chrome-rimmed buttons
-└── app.js       # state, Web Audio click engine, keyboard nav, persistence
+├── index.html      # single screen + reset-confirm overlay
+├── styles.css      # 600×600 right-aligned HUD; black bg, amber LED, chrome-rimmed buttons
+├── app.js          # state, Web Audio click engine, keyboard nav, persistence, URL-state overrides
+└── screenshots/    # generated state captures used by this README
 ```
 
 ---
 
-<sub>By <a href="https://www.levinriegner.com">Alex Levin · L+R</a></sub>
+<sub>Made by Alex Levin at [L+R](https://www.levinriegner.com).</sub>

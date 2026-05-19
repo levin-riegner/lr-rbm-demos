@@ -342,11 +342,39 @@
     });
   }
 
+  // ===========================================================
+  //  URL STATE — for screenshot/demo overrides (e.g. ?state=counted)
+  //  Recognized states: idle | counted | confirm
+  // ===========================================================
+  function applyUrlState() {
+    var p = new URLSearchParams(location.search);
+    var s = p.get('state');
+    if (!s) return false;
+    if (s === 'counted') {
+      state.count = 137;
+      state.sinceTs = Date.now() - 23 * 60 * 1000;
+      renderDigits(false, false);
+      renderSince();
+      return true;
+    }
+    if (s === 'confirm') {
+      state.count = 42;
+      state.sinceTs = Date.now() - 14 * 60 * 1000;
+      renderDigits(false, false);
+      renderSince();
+      openConfirm();
+      return true;
+    }
+    // 'idle' (or any other) — leave defaults
+    return true;
+  }
+
   function init() {
     loadData();
     renderDigits(false, false);
     renderSince();
     setupEvents();
+    applyUrlState();
     // focus the bump so spacebar/enter immediately counts
     setTimeout(function () {
       var b = document.getElementById('bumpBtn');
