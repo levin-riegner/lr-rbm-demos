@@ -70,6 +70,8 @@ Inside the `meta-display-glasses-webapps` workspace it's also wired into `.claud
 
 ### Regenerating screenshots
 
+> 🛠️ **Developer tooling only.** The app itself has zero Chrome dependency — it's vanilla HTML/CSS/JS that runs in the Ray-Ban Meta Display's built-in browser. The block below is just the local recipe used on a Mac to refresh the PNGs in `screenshots/`.
+
 The screenshots above come from headless Chrome against the `?state=…` URL parameter the app reads on load:
 
 ```bash
