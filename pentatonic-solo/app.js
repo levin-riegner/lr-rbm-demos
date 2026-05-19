@@ -11,11 +11,11 @@
    ========================================================= */
 
 const SCALE = [
-  { name: 'B',  midi: 59, deg: '1'  }, // B3
-  { name: 'D',  midi: 62, deg: 'b3' }, // D4
-  { name: 'E',  midi: 64, deg: '4'  }, // E4
-  { name: 'F#', midi: 66, deg: '5'  }, // F#4
-  { name: 'A',  midi: 69, deg: 'b7' }, // A4
+  { name: 'B',  midi: 47, deg: '1'  }, // B2
+  { name: 'D',  midi: 50, deg: 'b3' }, // D3
+  { name: 'E',  midi: 52, deg: '4'  }, // E3
+  { name: 'F#', midi: 54, deg: '5'  }, // F#3
+  { name: 'A',  midi: 57, deg: 'b7' }, // A3
 ];
 
 const SLOT_INDEX = {
@@ -51,22 +51,65 @@ let masterFilter = null;
 let analyser = null;
 let analyserData = null;
 
+function makeSaturationCurve(amount) {
+  // mild soft-clip — adds harmonics without being heavy fuzz
+  const n = 1024;
+  const curve = new Float32Array(n);
+  const k = amount;
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    curve[i] = ((1 + k) * x) / (1 + k * Math.abs(x));
+  }
+  return curve;
+}
+
 function ensureAudio() {
   if (actx) return;
   actx = new (window.AudioContext || window.webkitAudioContext)();
+
   masterFilter = actx.createBiquadFilter();
   masterFilter.type = 'lowpass';
-  masterFilter.frequency.value = 2400;
+  masterFilter.frequency.value = 2200;
   masterFilter.Q.value = 0.7;
 
+  // soft saturation — Big-Muff-light warmth
+  const saturator = actx.createWaveShaper();
+  saturator.curve = makeSaturationCurve(1.6);
+  saturator.oversample = '4x';
+
+  // tape-delay for Gilmour space (~430ms with feedback)
+  const delay = actx.createDelay(1.5);
+  delay.delayTime.value = 0.43;
+  const delayFb = actx.createGain();
+  delayFb.gain.value = 0.34;
+  const delayHi = actx.createBiquadFilter();
+  delayHi.type = 'highpass';
+  delayHi.frequency.value = 250;
+  const delayLo = actx.createBiquadFilter();
+  delayLo.type = 'lowpass';
+  delayLo.frequency.value = 2600;
+  const delayWet = actx.createGain();
+  delayWet.gain.value = 0.32;
+
   masterGain = actx.createGain();
-  masterGain.gain.value = 0.32;
+  masterGain.gain.value = 0.30;
 
   analyser = actx.createAnalyser();
   analyser.fftSize = 1024;
   analyserData = new Uint8Array(analyser.frequencyBinCount);
 
-  masterFilter.connect(masterGain);
+  // routing:
+  //   masterFilter -> saturator -> [dry -> masterGain, wet -> delay loop -> delayWet -> masterGain]
+  masterFilter.connect(saturator);
+  saturator.connect(masterGain);                       // dry
+  saturator.connect(delayHi);
+  delayHi.connect(delayLo);
+  delayLo.connect(delay);
+  delay.connect(delayFb);
+  delayFb.connect(delayHi);                            // feedback loop
+  delay.connect(delayWet);
+  delayWet.connect(masterGain);                        // wet
+
   masterGain.connect(analyser);
   analyser.connect(actx.destination);
 
@@ -112,18 +155,17 @@ function playNote(slot) {
 
   const voiceGain = actx.createGain();
   voiceGain.gain.setValueAtTime(0, now);
-  voiceGain.gain.linearRampToValueAtTime(0.95, now + 0.012);   // fast attack
-  voiceGain.gain.linearRampToValueAtTime(0.6,  now + 0.18);    // settle to body
-  // long natural ring-out — exponential cannot ramp to 0, so target 0.0001 then set 0
+  voiceGain.gain.linearRampToValueAtTime(0.85, now + 0.022);   // slightly slower pluck attack
+  voiceGain.gain.linearRampToValueAtTime(0.55, now + 0.22);    // settle to body
   voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + RING_DURATION);
   voiceGain.gain.setValueAtTime(0, now + RING_DURATION + 0.005);
 
   const voiceFilter = actx.createBiquadFilter();
   voiceFilter.type = 'lowpass';
-  voiceFilter.Q.value = 4;
-  voiceFilter.frequency.setValueAtTime(900, now);
-  voiceFilter.frequency.exponentialRampToValueAtTime(3200, now + 0.06);
-  voiceFilter.frequency.exponentialRampToValueAtTime(1400, now + 0.5);
+  voiceFilter.Q.value = 3.5;
+  voiceFilter.frequency.setValueAtTime(700, now);
+  voiceFilter.frequency.exponentialRampToValueAtTime(2400, now + 0.08);
+  voiceFilter.frequency.exponentialRampToValueAtTime(1100, now + 0.6);
 
   const mix = actx.createGain();
   mix.gain.value = 0.55;
@@ -210,20 +252,19 @@ function paintActive(slot, fullNote, deg) {
 
   const noteEl = document.getElementById('now-note');
   const subEl  = document.getElementById('now-sub');
-  const ring   = document.getElementById('now-ring');
 
   noteEl.textContent = fullNote;
+  noteEl.setAttribute('data-text', fullNote);
   subEl.textContent = deg;
-  ring.classList.remove('active');
-  void ring.offsetWidth;
-  ring.classList.add('active');
+
+  document.querySelector('.stage')?.classList.add('ringing');
 }
 
 function paintRingEnd(slot) {
   const pad = document.querySelector(`.pad[data-key="${slot}"]`);
   if (pad) pad.classList.remove('active');
-  document.getElementById('now-sub').textContent = 'READY';
-  document.getElementById('now-ring').classList.remove('active');
+  document.getElementById('now-sub').textContent = 'SILENT';
+  document.querySelector('.stage')?.classList.remove('ringing');
 }
 
 // ---------------------------------------------------------
@@ -246,8 +287,8 @@ window.addEventListener('blur', () => {
   if (currentVoice) {
     cutVoice(currentVoice, QUICK_RELEASE);
     currentVoice = null;
-    document.getElementById('now-sub').textContent = 'READY';
-    document.getElementById('now-ring').classList.remove('active');
+    document.getElementById('now-sub').textContent = 'SILENT';
+    document.querySelector('.stage')?.classList.remove('ringing');
   }
 });
 
