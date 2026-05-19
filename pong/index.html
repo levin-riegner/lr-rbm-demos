@@ -200,6 +200,37 @@
           <span class="legend-meta" id="game-meta">↑ / ↓ paddle &middot; tap fast = boost</span>
           <span class="legend-side legend-right">P2</span>
         </div>
+
+        <!-- Practice-only exit prompt. Triggered by double-tap Enter. -->
+        <div
+          id="practice-confirm"
+          class="practice-confirm hidden"
+          aria-hidden="true"
+          role="dialog"
+          aria-label="Exit practice"
+        >
+          <div class="practice-confirm-card">
+            <div class="practice-confirm-title">EXIT PRACTICE?</div>
+            <div class="row">
+              <button
+                class="focusable"
+                type="button"
+                data-action="confirm-exit-no"
+                aria-label="Stay in practice"
+              >
+                Stay
+              </button>
+              <button
+                class="focusable danger"
+                type="button"
+                data-action="confirm-exit-yes"
+                aria-label="Exit practice"
+              >
+                Exit
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 6. Game over — winner headline + Play again / Leave. -->

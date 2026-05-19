@@ -404,6 +404,9 @@
   var PRACTICE_BALL_MAX_SPEED = 520;
   var PRACTICE_BALL_GAIN = 1.04;
   var PRACTICE_MAX_VYVX = 3;
+  var practicePromptVisible = false;
+  var ENTER_DOUBLE_TAP_MS = 450;
+  var lastEnterAt = 0;
 
   // ============================================================
   // 8. WebSocket lifecycle
@@ -818,12 +821,29 @@
   function endPractice() {
     isPractice = false;
     practice = null;
+    practicePromptVisible = false;
+    lastEnterAt = 0;
+    var el = getPracticePromptEl();
+    if (el) {
+      el.classList.add('hidden');
+      el.setAttribute('aria-hidden', 'true');
+    }
     sendIntent(0);
   }
 
   function practiceTickAndRender() {
     if (!practice) return;
     var now = performance.now();
+
+    // Prompt open — freeze physics but keep rendering the frozen state.
+    if (practicePromptVisible) {
+      practice.lastT = now;
+      drawPaddle(PADDLE_MARGIN, practice.paddleY, '#00ff88');
+      drawPracticeWall();
+      drawBall(practice.ballX, practice.ballY);
+      return;
+    }
+
     var dt = Math.min(0.05, (now - practice.lastT) / 1000);
     practice.lastT = now;
 
@@ -913,6 +933,62 @@
     // Solid right-edge wall.
     ctx.fillRect(COURT_W - 6, 0, 6, COURT_H);
     ctx.restore();
+  }
+
+  // ---------- Practice exit prompt --------------------------------------
+
+  function getPracticePromptEl() {
+    return document.getElementById('practice-confirm');
+  }
+
+  function showPracticePrompt() {
+    if (practicePromptVisible) return;
+    practicePromptVisible = true;
+    // Cancel any in-flight paddle motion so the ball — and now the
+    // paddle — sit still while the user decides.
+    sendIntent(0);
+    tapCount = 0;
+    tapDirection = 0;
+    clearBoostDecay();
+    var el = getPracticePromptEl();
+    if (!el) return;
+    el.classList.remove('hidden');
+    el.setAttribute('aria-hidden', 'false');
+    // Default focus = Stay (the safer choice).
+    var btns = focusableIn(el);
+    if (btns.length) btns[0].focus();
+    sfx.click();
+  }
+
+  function hidePracticePrompt() {
+    if (!practicePromptVisible) return;
+    practicePromptVisible = false;
+    var el = getPracticePromptEl();
+    if (el) {
+      el.classList.add('hidden');
+      el.setAttribute('aria-hidden', 'true');
+    }
+    // Make sure a stale focus on a hidden button doesn't intercept keys.
+    if (document.activeElement && document.activeElement.blur) {
+      document.activeElement.blur();
+    }
+    // Reset dt so resumed physics doesn't fast-forward.
+    if (practice) practice.lastT = performance.now();
+    lastEnterAt = 0;
+    sfx.click();
+  }
+
+  function movePracticePromptFocus(direction) {
+    var el = getPracticePromptEl();
+    if (!el) return;
+    var list = focusableIn(el);
+    if (!list.length) return;
+    var idx = list.indexOf(document.activeElement);
+    if (idx < 0) { list[0].focus(); sfx.focus(); return; }
+    if (direction === 'next') idx = (idx + 1) % list.length;
+    else                     idx = (idx - 1 + list.length) % list.length;
+    list[idx].focus();
+    sfx.focus();
   }
 
   function onSnapshot(snap) {
@@ -1023,6 +1099,36 @@
   document.addEventListener('keydown', function (ev) {
     // -------------------- Game screen --------------------
     if (currentScreen === 'game') {
+      // Practice exit prompt has priority over normal game input.
+      if (practicePromptVisible) {
+        switch (ev.key) {
+          case 'ArrowLeft':
+          case 'ArrowUp':
+            movePracticePromptFocus('prev');
+            ev.preventDefault();
+            return;
+          case 'ArrowRight':
+          case 'ArrowDown':
+            movePracticePromptFocus('next');
+            ev.preventDefault();
+            return;
+          case 'Enter':
+          case ' ':
+            if (document.activeElement && document.activeElement.click) {
+              document.activeElement.click();
+            }
+            ev.preventDefault();
+            return;
+          case 'Escape':
+          case 'Backspace':
+            hidePracticePrompt();
+            ev.preventDefault();
+            return;
+          default:
+            ev.preventDefault();
+            return;
+        }
+      }
       switch (ev.key) {
         case 'ArrowUp':
           ev.preventDefault();
@@ -1031,6 +1137,20 @@
         case 'ArrowDown':
           ev.preventDefault();
           if (!ev.repeat) registerArrowTap(1);
+          break;
+        case 'Enter':
+        case ' ':
+          // Double-tap Enter (practice only) opens the exit prompt.
+          ev.preventDefault();
+          if (isPractice && !ev.repeat) {
+            var nowE = performance.now();
+            if (lastEnterAt && (nowE - lastEnterAt) < ENTER_DOUBLE_TAP_MS) {
+              lastEnterAt = 0;
+              showPracticePrompt();
+            } else {
+              lastEnterAt = nowE;
+            }
+          }
           break;
         case 'Escape':
         case 'Backspace':
@@ -1188,6 +1308,15 @@
         break;
       case 'practice':
         startPractice();
+        break;
+      case 'confirm-exit-yes':
+        hidePracticePrompt();
+        endPractice();
+        leaveToHome();
+        sfx.click();
+        break;
+      case 'confirm-exit-no':
+        hidePracticePrompt();
         break;
       case 'submit-code':
         submitJoinCode();
