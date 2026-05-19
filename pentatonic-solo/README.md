@@ -23,8 +23,11 @@ Hold doesn't matter — each press auto-rings for a few seconds. A new press qui
 
 ## Play along
 
-Backing track (Comfortably Numb without the guitar):
-**[Comfortably Numb — backing track](https://www.youtube.com/watch?v=wec4h8koJ1Q&list=RDwec4h8koJ1Q)**
+Backing track (Comfortably Numb without the guitar) — click to open on YouTube:
+
+<a href="https://www.youtube.com/watch?v=wec4h8koJ1Q&list=RDwec4h8koJ1Q" target="_blank" rel="noopener noreferrer">
+  <img src="https://img.youtube.com/vi/wec4h8koJ1Q/maxresdefault.jpg" alt="▶ Comfortably Numb — backing track (opens in a new tab)" width="600"/>
+</a>
 
 Press play, then follow the notes below. Each parenthesized group is the notes for the preceding syllables. Notes are written as their letter names — match them to the keys in the table above.
 
