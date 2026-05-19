@@ -39,7 +39,6 @@ All metronome clicks are synthesised on the fly as 28ms damped sinusoids — 150
 | Playing (full) | EDIT | Return to TEMPO step with NOD pre-focused |
 | Playing (any) | Tap expand-icon | Toggle compact ↔ full mode |
 | Playing (compact) | Swipe ▼ anywhere | Expand back to full mode |
-| Anywhere | Esc | Stop playing, then back out a step at a time |
 
 Horizontal swipes mirror ◀ ▶ for BPM on the home and play screens.
 
