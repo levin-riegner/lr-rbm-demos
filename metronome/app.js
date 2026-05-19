@@ -225,13 +225,14 @@
   }
 
   // ===========================================================
-  //  NOD TEMPO — peak/trough detection on head pitch
+  //  NOD TEMPO — full-cycle detection on head pitch
   //
-  //  Strategy: smooth the pitch reading, track its velocity, and emit
-  //  a tick every time velocity reverses sign (i.e. an extremum — the
-  //  bottom of a down-nod, or the top of the recovery). That gives 2
-  //  ticks per full nod cycle, which feels natural: at 120 BPM the
-  //  user just bobs their head at ~1 Hz.
+  //  Strategy: smooth the pitch reading, track its velocity, detect
+  //  every direction reversal (each is an extremum — a peak or trough).
+  //  A full nod = one down-half + one up-half = TWO reversals. We emit
+  //  one tick per full nod cycle: fire on the first reversal (the
+  //  bottom of the down-half), skip the second (the top recovery),
+  //  fire again on the next bottom, and so on.
   // ===========================================================
   var nod = {
     active: false,
@@ -242,6 +243,7 @@
     extremum: null,    // pitch at the last detected extremum (or initial)
     extremumAt: 0,     // timestamp of last extremum
     lastTickAt: 0,
+    revCount: 0,       // direction reversals since listening started
   };
   // Tuning knobs.
   var NOD_SMOOTH    = 0.55;  // EMA weight on new sample (higher = less smoothing)
@@ -278,14 +280,19 @@
         // is implicitly the previous extremum.
         nod.dir = newDir;
       } else if (newDir !== nod.dir) {
-        // Direction just reversed → the previous smoothed value is the
-        // extremum. Check amplitude/time gates before firing.
+        // Direction just reversed → the previous smoothed value is an
+        // extremum. Check amplitude/time gates before counting it.
         var now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
         var amp = Math.abs(nod.prevSmoothed - nod.extremum);
         var gap = now - nod.lastTickAt;
         if (amp >= NOD_MIN_AMP && gap >= NOD_MIN_GAP) {
-          nod.lastTickAt = now;
-          registerNodTick();
+          // Fire on every other reversal so one full nod (down + back up)
+          // counts as a single tap. revCount 0,2,4,... fire; 1,3,5,... skip.
+          if (nod.revCount % 2 === 0) {
+            nod.lastTickAt = now;
+            registerNodTick();
+          }
+          nod.revCount++;
         }
         nod.extremum = nod.prevSmoothed;
         nod.extremumAt = now;
@@ -315,6 +322,7 @@
     nod.extremum = null;
     nod.extremumAt = 0;
     nod.lastTickAt = 0;
+    nod.revCount = 0;
     nod.handler = onOrient;
     window.addEventListener('deviceorientation', nod.handler);
     // Reset the tap-tempo buffer so old taps don't get averaged with new nods.
