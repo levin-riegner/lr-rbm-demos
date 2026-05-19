@@ -347,8 +347,17 @@
     if (state.screen === 'home') {
       var card = document.getElementById('last-card');
       var hasLast = card && !card.classList.contains('hidden');
-      if ((k === 'ArrowUp' || k === 'ArrowDown') && hasLast) {
-        state.homeFocus = state.homeFocus === 'last' ? 'start' : 'last';
+      // Directional, idempotent at edges:
+      //   ▲ moves focus UP to LAST FLIGHT (which sits above the CTA)
+      //   ▼ moves focus DOWN to FIND FLIGHT
+      if (k === 'ArrowUp' && hasLast) {
+        state.homeFocus = 'last';
+        applyHomeFocus();
+        e.preventDefault();
+        return;
+      }
+      if (k === 'ArrowDown') {
+        state.homeFocus = 'start';
         applyHomeFocus();
         e.preventDefault();
         return;

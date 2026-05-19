@@ -240,14 +240,20 @@ body::after {
   min-height: 66px;
   background: linear-gradient(180deg, var(--amber), var(--amber-dim));
   color: #1a0d00;
-  box-shadow: 0 8px 22px rgba(255, 184, 77, 0.22);
+  box-shadow: 0 4px 12px rgba(255, 184, 77, 0.10);
   border: 3px solid transparent;
   flex-shrink: 0;
+  opacity: 0.55;
+  transition: opacity .12s ease, background .12s ease,
+              box-shadow .12s ease, border-color .12s ease,
+              transform .12s ease;
 }
 .cta:focus {
   background: linear-gradient(180deg, var(--amber-hi), var(--amber));
   box-shadow: 0 0 30px var(--amber-glow);
   border-color: var(--amber-hi);
+  opacity: 1;
+  transform: translateY(-1px);
 }
 .cta-icon { font-size: 18px; line-height: 1; }
 
