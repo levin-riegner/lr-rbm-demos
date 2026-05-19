@@ -39,6 +39,8 @@
     dateOffset:    0,
     status:        null,
     statusView:    'main',  // 'main' | 'seat'
+    statusMode:    'full',  // 'full' | 'compact'
+    homeFocus:     'start', // 'start' | 'last'
   };
 
   var SEAT_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -168,13 +170,33 @@
   function renderHome() {
     var last = loadLast();
     var card = document.getElementById('last-card');
+    var cta  = document.getElementById('cta-start');
+    var hint = document.getElementById('home-hint');
+
     if (last && card) {
       document.getElementById('last-code').textContent  = last.code;
       document.getElementById('last-route').textContent = last.route;
       card.classList.remove('hidden');
+      // Default home focus to LAST FLIGHT when present so reopening is instant.
+      state.homeFocus = state.homeFocus === 'start' ? 'last' : state.homeFocus;
+      if (hint) hint.innerHTML =
+        '<span class="hint-keys"><span class="key">▲</span><span class="key">▼</span> CHOOSE</span>' +
+        '<span class="hint-keys"><span class="key">ENTER</span> OPEN</span>';
     } else if (card) {
       card.classList.add('hidden');
+      state.homeFocus = 'start';
+      if (hint) hint.innerHTML =
+        '<span class="hint-keys"><span class="key">ENTER</span> START</span>';
     }
+    applyHomeFocus();
+  }
+
+  function applyHomeFocus() {
+    var card = document.getElementById('last-card');
+    var cta  = document.getElementById('cta-start');
+    if (!card || !cta) return;
+    var target = (state.homeFocus === 'last' && !card.classList.contains('hidden')) ? card : cta;
+    try { target.focus(); } catch (e) { /* ignore */ }
   }
 
   // ===========================================================
@@ -248,8 +270,11 @@
     setStatusView(state.statusView);
 
     saveLast({
-      code:  s.airline.code + ' · ' + s.flightNo,
-      route: s.origin + ' → ' + s.dest,
+      code:         s.airline.code + ' · ' + s.flightNo,
+      route:        s.origin + ' → ' + s.dest,
+      airlineIdx:   state.airlineIdx,
+      flightDigits: state.flightDigits.slice(),
+      dateOffset:   state.dateOffset,
     });
   }
 
@@ -265,6 +290,42 @@
     if (dotS) dotS.classList.toggle('on', view === 'seat');
   }
 
+  function setStatusMode(mode) {
+    state.statusMode = mode;
+    var sec     = document.getElementById('status');
+    var compact = document.getElementById('status-compact');
+    if (!sec || !compact) return;
+    if (mode === 'compact') {
+      // populate the compact strip from current status
+      var s = state.status;
+      if (s) {
+        document.getElementById('cs-flight').textContent   = s.airline.code + '·' + s.flightNo;
+        document.getElementById('cs-terminal').textContent = s.terminal;
+        document.getElementById('cs-gate').textContent     = s.gate;
+        document.getElementById('cs-board').textContent    = s.board;
+        document.getElementById('cs-carousel').textContent = s.carousel;
+      }
+      compact.classList.remove('hidden');
+      sec.classList.add('compact');
+    } else {
+      compact.classList.add('hidden');
+      sec.classList.remove('compact');
+    }
+  }
+
+  function restoreLast() {
+    var last = loadLast();
+    if (!last || typeof last.airlineIdx !== 'number' || !last.flightDigits) return false;
+    state.airlineIdx   = last.airlineIdx;
+    state.flightDigits = last.flightDigits.slice();
+    state.dateOffset   = last.dateOffset || 0;
+    state.status       = null;       // rebuild from saved inputs (same hash → same data)
+    state.statusView   = 'main';
+    state.statusMode   = 'full';
+    showScreen('status');
+    return true;
+  }
+
   // ===========================================================
   //  WIZARD ACTIONS
   // ===========================================================
@@ -275,6 +336,7 @@
     state.dateOffset   = 0;
     state.status       = null;
     state.statusView   = 'main';
+    state.statusMode   = 'full';
     showScreen('step-airline');
   }
 
@@ -284,7 +346,22 @@
   function onKey(e) {
     var k = e.key;
     if (state.screen === 'home') {
-      if (k === 'Enter' || k === ' ') { startWizard(); e.preventDefault(); }
+      var card = document.getElementById('last-card');
+      var hasLast = card && !card.classList.contains('hidden');
+      if ((k === 'ArrowUp' || k === 'ArrowDown') && hasLast) {
+        state.homeFocus = state.homeFocus === 'last' ? 'start' : 'last';
+        applyHomeFocus();
+        e.preventDefault();
+        return;
+      }
+      if (k === 'Enter' || k === ' ') {
+        if (state.homeFocus === 'last' && hasLast) {
+          if (!restoreLast()) startWizard();
+        } else {
+          startWizard();
+        }
+        e.preventDefault();
+      }
       return;
     }
 
@@ -353,8 +430,20 @@
     }
 
     if (state.screen === 'status') {
-      if (k === 'ArrowLeft' || k === 'ArrowRight') {
-        setStatusView(state.statusView === 'main' ? 'seat' : 'main');
+      if (k === 'ArrowUp') {
+        // collapse
+        setStatusMode('compact');
+        e.preventDefault();
+      } else if (k === 'ArrowDown') {
+        // expand
+        setStatusMode('full');
+        e.preventDefault();
+      } else if (k === 'ArrowLeft' || k === 'ArrowRight') {
+        if (state.statusMode === 'compact') {
+          setStatusMode('full');                                  // any horizontal flick also expands
+        } else {
+          setStatusView(state.statusView === 'main' ? 'seat' : 'main');
+        }
         e.preventDefault();
       } else if (k === 'Enter' || k === ' ') {
         state.status = null;
@@ -366,15 +455,20 @@
   }
 
   // ===========================================================
-  //  SWIPE on status screen — toggles main <-> seat
+  //  SWIPE on status screen
+  //    horizontal → toggle main / seat (when full)
+  //    swipe up   → collapse to compact strip
+  //    swipe down → expand back to full
   // ===========================================================
   function setupSwipe() {
-    var SWIPE_MIN = 36;   // px to register a swipe
-    var VERT_MAX  = 60;   // tolerance for vertical drift
-    var startX = 0, startY = 0, tracking = false;
+    var SWIPE_MIN = 32;   // px to register a swipe
+    var startX = 0, startY = 0, tracking = false, originatedOnControl = false;
 
     function onDown(e) {
       if (state.screen !== 'status') return;
+      // Don't hijack clicks on focusable controls (e.g. last-card on home, buttons).
+      var t = e.target;
+      originatedOnControl = !!(t && typeof t.closest === 'function' && t.closest('button'));
       var p = e.touches ? e.touches[0] : e;
       startX = p.clientX;
       startY = p.clientY;
@@ -383,12 +477,24 @@
     function onUp(e) {
       if (!tracking) return;
       tracking = false;
+      if (originatedOnControl) return;
       var p = (e.changedTouches && e.changedTouches[0]) || e;
       var dx = p.clientX - startX;
       var dy = p.clientY - startY;
-      if (Math.abs(dy) > VERT_MAX) return;
-      if (Math.abs(dx) < SWIPE_MIN) return;
-      setStatusView(state.statusView === 'main' ? 'seat' : 'main');
+      var ax = Math.abs(dx), ay = Math.abs(dy);
+      if (ax < SWIPE_MIN && ay < SWIPE_MIN) return;
+      if (ay > ax) {
+        // vertical swipe
+        if (dy < 0) setStatusMode('compact');
+        else        setStatusMode('full');
+      } else {
+        // horizontal swipe
+        if (state.statusMode === 'compact') {
+          setStatusMode('full');
+        } else {
+          setStatusView(state.statusView === 'main' ? 'seat' : 'main');
+        }
+      }
     }
     document.addEventListener('touchstart', onDown, { passive: true });
     document.addEventListener('touchend',   onUp);
@@ -425,11 +531,19 @@
   // ===========================================================
   function onClick(e) {
     var el = e.target.closest('[data-action]');
-    if (el && el.dataset.action === 'start') { startWizard(); return; }
+    if (el) {
+      if (el.dataset.action === 'start')   { startWizard(); return; }
+      if (el.dataset.action === 'restore') { if (!restoreLast()) startWizard(); return; }
+    }
     var dateTile = e.target.closest('#date-grid .date-tile');
     if (dateTile && state.screen === 'step-date') {
       state.dateOffset = parseInt(dateTile.dataset.value, 10);
       renderDate();
+    }
+    // Tap on the compact strip expands back to full.
+    if (state.screen === 'status' && state.statusMode === 'compact') {
+      var strip = e.target.closest('#status-compact');
+      if (strip) setStatusMode('full');
     }
   }
 

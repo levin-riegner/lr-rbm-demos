@@ -168,18 +168,29 @@ body::after {
 
 .last-card {
   background: var(--bg-2);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 16px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 18px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  width: 100%;
+}
+.last-card:focus {
+  border-color: var(--cyan);
+  background: var(--bg-3);
+  box-shadow: 0 0 22px var(--cyan-glow);
 }
 .last-label {
-  font-size: 10px;
+  font-size: 20px;
   font-weight: 800;
-  letter-spacing: 3px;
-  color: var(--text-3);
-  margin-bottom: 4px;
+  letter-spacing: 6px;
+  color: var(--cyan);
+  margin-bottom: 2px;
 }
+.last-card:focus .last-label { color: var(--cyan-hi); }
 .last-line {
   display: flex;
   justify-content: space-between;
@@ -187,16 +198,24 @@ body::after {
   gap: 12px;
 }
 .last-code {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--amber);
   letter-spacing: 1px;
 }
 .last-route {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-2);
   letter-spacing: 1px;
 }
+.last-go {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+.last-card:focus .last-go { color: var(--cyan); }
 
 .cta {
   display: flex;
@@ -704,3 +723,73 @@ body::after {
   font-size: 14px;
   margin: 0 4px;
 }
+
+/* ============================================================
+   STATUS — compact (swipe-up) mode
+   ============================================================ */
+.status-compact {
+  position: absolute;
+  top: 14px;
+  left: var(--pad-l);
+  right: var(--pad-r);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.6);
+  z-index: 5;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.cs-flight {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--amber);
+}
+.cs-dot {
+  color: var(--text-4);
+  font-size: 14px;
+}
+.cs-pair {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.cs-key {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--text-3);
+}
+.cs-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+.cs-val.cs-amber {
+  color: var(--amber);
+  text-shadow: 0 0 8px var(--amber-glow);
+}
+.cs-hint {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text-3);
+}
+
+/* When compact mode is active on the status screen, hide everything
+   except the compact strip. */
+#status.compact .status-head,
+#status.compact .status-badge,
+#status.compact .status-views,
+#status.compact .status-dots,
+#status.compact .status-foot {
+  display: none !important;
+}
+#status.compact { padding-top: 0; padding-bottom: 0; }

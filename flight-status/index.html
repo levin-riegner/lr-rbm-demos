@@ -28,20 +28,21 @@
       <div class="hero-sub">TERMINAL · GATE · BOARD · CAROUSEL</div>
     </div>
 
-    <div class="last-card hidden" id="last-card">
-      <div class="last-label">LAST FLIGHT</div>
+    <button class="last-card focusable hidden" data-action="restore" id="last-card">
+      <div class="last-label">LAST&nbsp;FLIGHT</div>
       <div class="last-line">
         <span class="last-code mono" id="last-code">AA·1234</span>
         <span class="last-route mono" id="last-route">JFK → LAX</span>
       </div>
-    </div>
+      <div class="last-go">TAP&nbsp;TO&nbsp;OPEN&nbsp;›</div>
+    </button>
 
     <button class="cta focusable" data-action="start" id="cta-start">
       <span class="cta-icon">▶</span>
       <span class="cta-label">FIND&nbsp;FLIGHT</span>
     </button>
 
-    <div class="hint-bar">
+    <div class="hint-bar" id="home-hint">
       <span class="hint-keys"><span class="key">ENTER</span> START</span>
     </div>
   </section>
@@ -143,6 +144,18 @@
        STATUS
        =========================================================== -->
   <section id="status" class="screen hidden">
+    <!-- Compact strip: shown when status is collapsed via swipe-up.
+         Sits at the top of the lens and holds all critical info on one line. -->
+    <div class="status-compact hidden" id="status-compact">
+      <span class="cs-flight mono" id="cs-flight">AA·0007</span>
+      <span class="cs-dot">·</span>
+      <span class="cs-pair"><span class="cs-key">T</span><span class="cs-val mono" id="cs-terminal">6</span></span>
+      <span class="cs-pair"><span class="cs-key">G</span><span class="cs-val mono cs-amber" id="cs-gate">B49</span></span>
+      <span class="cs-pair"><span class="cs-val mono cs-amber" id="cs-board">20:37</span></span>
+      <span class="cs-pair"><span class="cs-key">CR</span><span class="cs-val mono" id="cs-carousel">12</span></span>
+      <span class="cs-hint">▼&nbsp;EXPAND</span>
+    </div>
+
     <header class="status-head">
       <div class="status-flight mono" id="s-flight">AA · 1234</div>
       <div class="status-route mono" id="s-route">JFK → LAX</div>
@@ -195,7 +208,8 @@
       </div>
       <div class="hint-bar">
         <span class="hint-keys"><span class="key">◀</span><span class="key">▶</span> SEAT</span>
-        <span class="hint-keys"><span class="key">ENTER</span> CHANGE&nbsp;FLIGHT</span>
+        <span class="hint-keys"><span class="key">▲</span> HIDE</span>
+        <span class="hint-keys"><span class="key">ENTER</span> CHANGE</span>
       </div>
     </div>
   </section>
