@@ -16,6 +16,8 @@ A heads-up display for Meta Display glasses that surfaces the four things you ac
 
 All mock data is deterministic — the same airline + flight + date hash always renders the same terminal / gate / board / carousel / seat / status, so the demo behaves predictably.
 
+> ℹ️ For a production build, the [aviationstack API](https://aviationstack.com/) can be plugged in to swap the deterministic mock for real-time data — it covers airline / flight / terminal / gate / scheduled + estimated times. It was left out of this demo to keep it self-contained and to avoid the API-key dependency.
+
 ---
 
 ## Controls
