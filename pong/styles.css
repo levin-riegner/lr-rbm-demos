@@ -204,6 +204,21 @@ body {
   border-left-color: var(--danger);
 }
 
+.focusable.small {
+  min-height: 56px;
+  min-width: 140px;
+  padding: 12px 22px;
+  font-size: 16px;
+  color: var(--dim);
+  border-color: var(--mute);
+}
+
+.focusable.small:focus {
+  color: var(--fg);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
 /* ---------- Connecting — playful fragments ---------- */
 
 #screen-connecting {

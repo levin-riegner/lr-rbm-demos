@@ -396,6 +396,15 @@
   var tapLastAt = 0;
   var boostDecayTimer = null;
 
+  // Practice mode (solo vs the right-side wall).
+  var isPractice = false;
+  var practice = null;
+  var PRACTICE_PADDLE_SPEED = 320;     // px/s, matches server's PADDLE_SPEED
+  var PRACTICE_BALL_INIT_SPEED = 260;  // px/s
+  var PRACTICE_BALL_MAX_SPEED = 520;
+  var PRACTICE_BALL_GAIN = 1.04;
+  var PRACTICE_MAX_VYVX = 3;
+
   // ============================================================
   // 8. WebSocket lifecycle
   // ============================================================
@@ -700,6 +709,11 @@
       ctx.fillRect(netX, y, netW, netH);
     }
 
+    if (isPractice) {
+      practiceTickAndRender();
+      return;
+    }
+
     if (!latestSnapshot) return;
 
     var t = 1;
@@ -760,6 +774,147 @@
     ctx.restore();
   }
 
+  // ---------- Practice mode — local physics + render ---------------------
+
+  function startPractice() {
+    if (currentScreen === 'game' && isPractice) return;
+    isPractice = true;
+    mySide = 'left';
+    myIntent = 0;
+    tapCount = 0;
+    tapDirection = 0;
+    clearBoostDecay();
+
+    var best = 0;
+    try { best = parseInt(localStorage.getItem('pong-practice-best') || '0', 10) || 0; }
+    catch (e) { best = 0; }
+
+    practice = {
+      paddleY: (COURT_H - PADDLE_H) / 2,
+      intent: 0,
+      hits: 0,
+      best: best,
+      lastT: performance.now(),
+    };
+    practiceServe(-1);
+
+    scoreLeftEl.textContent = '0';
+    scoreRightEl.textContent = String(best);
+    gameMetaEl.textContent = '↑ / ↓ paddle · tap fast = boost · WALL →';
+    navigateTo('game');
+    sfx.join();
+  }
+
+  function practiceServe(towardX) {
+    if (!practice) return;
+    var angle = ((Math.random() * 70) - 35) * Math.PI / 180;
+    var dir = towardX >= 0 ? 1 : -1;
+    practice.ballX = COURT_W / 2;
+    practice.ballY = COURT_H / 2;
+    practice.vx = dir * PRACTICE_BALL_INIT_SPEED * Math.cos(angle);
+    practice.vy = PRACTICE_BALL_INIT_SPEED * Math.sin(angle);
+  }
+
+  function endPractice() {
+    isPractice = false;
+    practice = null;
+    sendIntent(0);
+  }
+
+  function practiceTickAndRender() {
+    if (!practice) return;
+    var now = performance.now();
+    var dt = Math.min(0.05, (now - practice.lastT) / 1000);
+    practice.lastT = now;
+
+    // Paddle move.
+    practice.paddleY += practice.intent * PRACTICE_PADDLE_SPEED * dt;
+    if (practice.paddleY < 0) practice.paddleY = 0;
+    if (practice.paddleY > COURT_H - PADDLE_H) practice.paddleY = COURT_H - PADDLE_H;
+
+    // Ball move.
+    practice.ballX += practice.vx * dt;
+    practice.ballY += practice.vy * dt;
+
+    // Top / bottom.
+    if (practice.ballY - BALL_R < 0) {
+      practice.ballY = BALL_R;
+      practice.vy = Math.abs(practice.vy);
+      sfx.wallHit();
+    } else if (practice.ballY + BALL_R > COURT_H) {
+      practice.ballY = COURT_H - BALL_R;
+      practice.vy = -Math.abs(practice.vy);
+      sfx.wallHit();
+    }
+
+    // Right wall (the opponent).
+    if (practice.ballX + BALL_R > COURT_W) {
+      practice.ballX = COURT_W - BALL_R;
+      practice.vx = -Math.abs(practice.vx);
+      sfx.wallHit();
+    }
+
+    // Left paddle collision.
+    var leftFace = PADDLE_MARGIN + PADDLE_W;
+    if (
+      practice.vx < 0 &&
+      practice.ballX - BALL_R <= leftFace &&
+      practice.ballX - BALL_R >= PADDLE_MARGIN - 4 &&
+      practice.ballY >= practice.paddleY - BALL_R &&
+      practice.ballY <= practice.paddleY + PADDLE_H + BALL_R
+    ) {
+      practice.ballX = PADDLE_MARGIN + PADDLE_W + BALL_R;
+      practice.vx = Math.abs(practice.vx);
+      var hitPos = ((practice.ballY - practice.paddleY) / PADDLE_H) - 0.5;
+      var s = Math.sqrt(practice.vx * practice.vx + practice.vy * practice.vy);
+      var nextSpeed = Math.min(PRACTICE_BALL_MAX_SPEED, s * PRACTICE_BALL_GAIN);
+      var influence = hitPos * 1.2;
+      practice.vy = nextSpeed * influence;
+      var ang = Math.atan2(practice.vy, practice.vx) +
+                ((Math.random() * 10) - 5) * Math.PI / 180;
+      practice.vx = Math.cos(ang) * nextSpeed;
+      practice.vy = Math.sin(ang) * nextSpeed;
+      if (Math.abs(practice.vx) > 1e-3) {
+        var ratio = Math.abs(practice.vy / practice.vx);
+        if (ratio > PRACTICE_MAX_VYVX) {
+          var sign = practice.vy >= 0 ? 1 : -1;
+          practice.vy = sign * Math.abs(practice.vx) * PRACTICE_MAX_VYVX;
+        }
+      }
+      practice.hits += 1;
+      scoreLeftEl.textContent = String(practice.hits);
+      sfx.paddleHit();
+    }
+
+    // Miss — ball got past the paddle.
+    if (practice.ballX + BALL_R < 0) {
+      if (practice.hits > practice.best) {
+        practice.best = practice.hits;
+        try { localStorage.setItem('pong-practice-best', String(practice.best)); } catch (e) {}
+        scoreRightEl.textContent = String(practice.best);
+      }
+      sfx.lose();
+      practice.hits = 0;
+      scoreLeftEl.textContent = '0';
+      practiceServe(-1);
+    }
+
+    // Render.
+    drawPaddle(PADDLE_MARGIN, practice.paddleY, '#00ff88');
+    drawPracticeWall();
+    drawBall(practice.ballX, practice.ballY);
+  }
+
+  function drawPracticeWall() {
+    ctx.save();
+    ctx.fillStyle = '#3a3a44';
+    ctx.shadowColor = 'rgba(255,255,255,0.18)';
+    ctx.shadowBlur = 6;
+    // Solid right-edge wall.
+    ctx.fillRect(COURT_W - 6, 0, 6, COURT_H);
+    ctx.restore();
+  }
+
   function onSnapshot(snap) {
     if (latestSnapshot && typeof snap.seq === 'number' && snap.seq < latestSnapshot.seq) {
       return;
@@ -808,6 +963,10 @@
     if (v < -4) v = -4;
     if (v === myIntent) return;
     myIntent = v;
+    if (isPractice) {
+      if (practice) practice.intent = v;
+      return;
+    }
     send({ type: 'input', intent: v });
   }
 
@@ -1027,6 +1186,9 @@
         navigateTo('join');
         sfx.click();
         break;
+      case 'practice':
+        startPractice();
+        break;
       case 'submit-code':
         submitJoinCode();
         sfx.click();
@@ -1037,7 +1199,11 @@
         sfx.click();
         break;
       case 'leave':
-        send({ type: 'leave' });
+        if (isPractice) {
+          endPractice();
+        } else {
+          send({ type: 'leave' });
+        }
         leaveToHome();
         sfx.click();
         break;
@@ -1056,6 +1222,7 @@
   }
 
   function leaveToHome() {
+    if (isPractice) endPractice();
     mySide = null;
     roomCode = null;
     prevSnapshot = null;
