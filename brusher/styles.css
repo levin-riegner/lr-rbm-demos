@@ -203,6 +203,13 @@ kbd {
   font-weight: 500;
 }
 .lede b { color: var(--accent); font-weight: 700; }
+.lede .emoji {
+  font-size: 28px;
+  vertical-align: middle;
+  margin-left: 4px;
+  display: inline-block;
+  filter: saturate(1.1);
+}
 
 /* CTA */
 .cta-row {

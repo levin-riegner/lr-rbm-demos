@@ -140,7 +140,7 @@
 
   // ─── Hintbar (per-phase) ───────────────────────────────────────
   const HINTS = {
-    intro: [['⏎', 'begin']],
+    intro: [['⏎', 'start brushing']],
     train: [['↑', 'reset'], ['↓', 'stroke (test)']],
     ready: [['⏎', 'start'], ['↑', 'recalibrate']],
     brush: [['←', 'prev zone'], ['→', 'next zone'], ['↓', 'stroke (test)'], ['↑', 'recalibrate']],
