@@ -568,13 +568,66 @@
   // ===========================================================
   //  INIT
   // ===========================================================
+  // Optional: pre-set a screen/view via URL — used to generate the
+  // README screenshots (e.g. ?state=compact-seat). Harmless otherwise.
+  function applyUrlState() {
+    if (typeof URLSearchParams === 'undefined') return false;
+    var p = new URLSearchParams(location.search);
+    var s = p.get('state');
+    if (!s) return false;
+    state.airlineIdx   = 2;          // DL
+    state.flightDigits = [2, 3, 2, 4];
+    state.dateOffset   = 0;
+    state.status       = buildStatus();
+    var sampleLast = {
+      code: 'DL · 2324', route: state.status.origin + ' → ' + state.status.dest,
+      airlineIdx: 2, flightDigits: [2,3,2,4], dateOffset: 0,
+    };
+    switch (s) {
+      case 'home':
+      case 'home-find':
+        saveLast(sampleLast);
+        state.homeFocus = 'start';
+        showScreen('home');
+        return true;
+      case 'home-last':
+        saveLast(sampleLast);
+        state.homeFocus = 'last';
+        showScreen('home');
+        return true;
+      case 'airline':
+        showScreen('step-airline');
+        return true;
+      case 'number':
+        state.digitIdx = 1;
+        showScreen('step-number');
+        return true;
+      case 'date':
+        showScreen('step-date');
+        return true;
+      case 'status-main':
+        showScreen('status'); setStatusView('main'); setStatusMode('full');
+        return true;
+      case 'status-seat':
+        showScreen('status'); setStatusView('seat'); setStatusMode('full');
+        return true;
+      case 'compact-main':
+        showScreen('status'); setStatusView('main'); setStatusMode('compact');
+        return true;
+      case 'compact-seat':
+        showScreen('status'); setStatusView('seat'); setStatusMode('compact');
+        return true;
+    }
+    return false;
+  }
+
   function init() {
     document.addEventListener('keydown', onKey);
     document.addEventListener('click', onClick);
     setupSwipe();
     tickClock();
     setInterval(tickClock, 1000);
-    showScreen('home');
+    if (!applyUrlState()) showScreen('home');
   }
 
   if (document.readyState === 'loading') {
