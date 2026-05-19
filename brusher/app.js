@@ -553,10 +553,67 @@
     }
   });
 
+  // ─── URL state (for README screenshots) ────────────────────────
+  // Pre-set a screen via ?state=… so headless Chrome can capture each phase
+  // deterministically. Harmless when the param is absent.
+  function applyUrlState() {
+    if (typeof URLSearchParams === 'undefined') return false;
+    const s = new URLSearchParams(location.search).get('state');
+    if (!s) return false;
+    setSensorPill('ok', 'LIVE');
+    usingSensor = true;
+    switch (s) {
+      case 'intro':
+        setPhase('intro');
+        return true;
+      case 'train':
+        resetTrainState();
+        setPhase('train');
+        setTrainCount(7, false);
+        signalFill.style.width = '62%';
+        return true;
+      case 'ready':
+        setPhase('ready');
+        return true;
+      case 'brush':
+        zoneIdx = 2;
+        strokeCount = 12;
+        totalStrokes = 48;
+        sessionStartedAt = performance.now() - 84_000;
+        renderZone();
+        brushCount.textContent = '12';
+        brushFill.style.width = `${(12 / ZONE_STROKES) * 100}%`;
+        brushTime.textContent = '1:24';
+        brushTotal.textContent = '48';
+        brushPace.textContent = '0.57 /s';
+        setPhase('brush');
+        return true;
+      case 'zone-complete':
+        zoneIdx = 2;
+        totalStrokes = 54;
+        sessionStartedAt = performance.now() - 90_000;
+        renderZone();
+        brushTime.textContent = '1:30';
+        brushTotal.textContent = '54';
+        brushPace.textContent = '0.60 /s';
+        setPhase('brush');
+        showZoneCompleteOverlay(2, 3);
+        if (overlayTimer) { clearTimeout(overlayTimer); overlayTimer = null; }
+        return true;
+      case 'done':
+        doneStrokes.textContent = '144';
+        doneTime.textContent = '2:23';
+        donePace.textContent = '1.01 /s';
+        setPhase('done');
+        return true;
+    }
+    return false;
+  }
+
   // ─── Init ──────────────────────────────────────────────────────
-  setPhase('intro');
   // Best-effort: hook up the sensor immediately on non-iOS so the meter is
   // live before the user even hits BEGIN — they'll see SENSOR LIVE up top.
   if (!needsIosPerm) attachSensor();
+  if (!applyUrlState()) setPhase('intro');
 
 })();

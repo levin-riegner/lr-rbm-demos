@@ -2,6 +2,9 @@
 
 A heads-up **brush coach** for Meta Display glasses. It counts your toothbrush strokes from head motion, calibrates itself in ten brushes, then walks you through the eight zones of your teeth on a big anatomical mouth diagram — so you actually finish the two-minute routine the dentist keeps asking about.
 
+> 📖 **Case study:** [levinriegner.com/work/brush-coach](https://www.levinriegner.com/work/brush-coach/)
+> 🌐 **Live demo:** [rbm-demos.lnr.io/brusher](https://rbm-demos.lnr.io/brusher/)
+
 ---
 
 ## What it does
@@ -38,6 +41,28 @@ The phase pill (top-right) shows where you are; the SENSOR pill shows whether th
 
 ---
 
+## Screenshots
+
+### Onboarding
+
+| Intro | Calibration (7 / 10) | Ready |
+| --- | --- | --- |
+| ![Intro — Brush Coach for your glasses](screenshots/intro.png) | ![Calibration screen at 7 of 10 strokes](screenshots/train.png) | ![Calibrated, ready to start](screenshots/ready.png) |
+
+### Brushing
+
+| Mid-zone (zone 3 / 8, 12 / 18) | Zone-complete handoff |
+| --- | --- |
+| ![Brushing — Upper · Back Left at 12 / 18 strokes](screenshots/brush.png) | ![Zone complete overlay, previewing Upper · Inner](screenshots/zone-complete.png) |
+
+### Finish
+
+| Session summary |
+| --- |
+| ![Done — 144 strokes in 2:23, 1.01 / s](screenshots/done.png) |
+
+---
+
 ## Running locally
 
 The app is a single static HTML/CSS/JS bundle — no build step.
@@ -49,6 +74,23 @@ npx serve -l 4202 brusher
 
 For real head-motion testing, open the served URL on the glasses (or any phone with motion access) — the laptop browser will only fire `devicemotion` if it has an accelerometer.
 
+### Regenerating screenshots
+
+> 🛠️ **Developer tooling only.** The app itself has zero Chrome dependency — it's vanilla HTML/CSS/JS that runs in the Ray-Ban Meta Display's built-in browser. The block below is just the local recipe used to refresh the PNGs in `screenshots/`.
+
+The screenshots above are produced from headless Chrome against the `?state=…` URL parameter the app reads on load (`intro`, `train`, `ready`, `brush`, `zone-complete`, `done`):
+
+```bash
+npx serve -l 4202 brusher &
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+for STATE in intro train ready brush zone-complete done; do
+  "$CHROME" --headless=new --disable-gpu --hide-scrollbars \
+    --window-size=600,600 --virtual-time-budget=3000 \
+    --screenshot="brusher/screenshots/$STATE.png" \
+    "http://localhost:4202/?state=$STATE"
+done
+```
+
 ---
 
 ## Files
@@ -57,7 +99,8 @@ For real head-motion testing, open the served URL on the glasses (or any phone w
 brusher/
 ├── index.html      # 5 screens (intro / train / ready / brush / done) + zone-complete + perm overlays
 ├── styles.css      # 600×600 lens; black bg, cyan accent, anatomical mouth SVG
-└── app.js          # motion high-pass + peak detector, axis auto-pick, zone state machine, Web Audio beeps
+├── app.js          # motion high-pass + peak detector, axis auto-pick, zone state machine, Web Audio beeps, ?state= router
+└── screenshots/    # generated state captures used by this README
 ```
 
 ---
