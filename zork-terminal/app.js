@@ -1331,6 +1331,20 @@ document.addEventListener("keydown", (e) => {
 
 // ── boot ──────────────────────────────────────────────────────
 
+// Tiny URL-hash router for screenshot capture / sharable deep links.
+//   #gameplay → auto-tap BEGIN so the screenshot lands on the first room
+//   #more     → auto-tap BEGIN, then open the MORE… panel
+//   #boot     → no-op (default instructions screen)
+function applyHashState() {
+  const h = location.hash || "";
+  if (h === "#gameplay") {
+    setTimeout(() => { if (state.flags.awaitingStart) startGame(); }, 1500);
+  } else if (h === "#more") {
+    setTimeout(() => { if (state.flags.awaitingStart) startGame(); }, 1500);
+    setTimeout(openMorePanel, 4500);
+  }
+}
+
 function boot() {
   const overlay = document.createElement("div");
   overlay.id = "boot";
@@ -1343,6 +1357,7 @@ function boot() {
 
   snapshotRoomItems();
   bootStart();
+  applyHashState();
 
   // Boot zap on the first user gesture (autoplay policy compliance).
   const onFirstGesture = () => {
