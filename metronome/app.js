@@ -225,6 +225,99 @@
   }
 
   // ===========================================================
+  //  NOD TEMPO — head-nod detection via deviceorientation
+  // ===========================================================
+  var nod = {
+    active: false,
+    baseline: null,    // drifting reference pitch
+    state: 'idle',     // 'idle' | 'away'
+    awaySign: 0,       // direction of current excursion
+    peak: 0,           // max |rel| reached in this excursion
+    lastTickAt: 0,
+    handler: null,
+  };
+  // Pitch thresholds (degrees from baseline).
+  var NOD_AWAY = 9;          // must swing this far from baseline
+  var NOD_RETURN = 3;        // and return within this band → register tick
+  var NOD_MIN_GAP = 180;     // ms — debounce duplicate ticks
+
+  function onOrient(e) {
+    if (e == null || e.beta == null) return;
+    var b = e.beta;
+    if (nod.baseline == null) {
+      nod.baseline = b;
+      return;
+    }
+    // Slow baseline drift so a long-held tilt doesn't lock the detector.
+    nod.baseline += (b - nod.baseline) * 0.004;
+    var rel = b - nod.baseline;
+
+    if (nod.state === 'idle') {
+      if (Math.abs(rel) >= NOD_AWAY) {
+        nod.state = 'away';
+        nod.awaySign = rel > 0 ? 1 : -1;
+        nod.peak = Math.abs(rel);
+      }
+    } else {
+      // Track peak magnitude during the excursion.
+      if (Math.abs(rel) > nod.peak) nod.peak = Math.abs(rel);
+      // Tick when head returns near baseline.
+      if (Math.abs(rel) <= NOD_RETURN) {
+        var now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+        nod.state = 'idle';
+        nod.awaySign = 0;
+        nod.peak = 0;
+        if (now - nod.lastTickAt < NOD_MIN_GAP) return;
+        nod.lastTickAt = now;
+        registerNodTick();
+      }
+    }
+  }
+
+  function registerNodTick() {
+    handleTap();
+    var btn = document.getElementById('nod-btn');
+    if (btn) {
+      btn.classList.add('nodded');
+      setTimeout(function () { btn.classList.remove('nodded'); }, 140);
+    }
+    playUI('tick');
+  }
+
+  function startNod() {
+    if (nod.active) return;
+    nod.active = true;
+    nod.baseline = null;
+    nod.state = 'idle';
+    nod.handler = onOrient;
+    window.addEventListener('deviceorientation', nod.handler);
+    var btn = document.getElementById('nod-btn');
+    if (btn) btn.classList.add('listening');
+  }
+
+  function stopNod() {
+    if (!nod.active) return;
+    nod.active = false;
+    if (nod.handler) window.removeEventListener('deviceorientation', nod.handler);
+    nod.handler = null;
+    var btn = document.getElementById('nod-btn');
+    if (btn) btn.classList.remove('listening');
+  }
+
+  function toggleNod() {
+    if (nod.active) { stopNod(); return; }
+    // iOS Safari requires explicit permission. Other browsers grant by default.
+    var DOE = window.DeviceOrientationEvent;
+    if (DOE && typeof DOE.requestPermission === 'function') {
+      DOE.requestPermission().then(function (p) {
+        if (p === 'granted') startNod();
+      }).catch(function () { /* user denied — silent */ });
+    } else {
+      startNod();
+    }
+  }
+
+  // ===========================================================
   //  STATE SETTERS
   // ===========================================================
   function adjustBpm(delta) {
@@ -258,6 +351,8 @@
     if (name === 'step-tempo') renderBpm();
     if (name === 'step-time') renderTimeSelection();
     if (name === 'step-note') renderNoteSelection();
+    // Stop nod listening when navigating away from the tempo step.
+    if (name !== 'step-tempo' && nod.active) stopNod();
     setTimeout(focusFirst, 60);
   }
 
@@ -441,6 +536,7 @@
       case 'bpm-plus-1':     playUI('tick');   adjustBpm(1);                 break;
       case 'bpm-plus-10':    playUI('tick');   adjustBpm(10);                break;
       case 'tap':            playUI('tick');   handleTap();                  break;
+      case 'toggle-nod':     playUI('next');   toggleNod();                  break;
       case 'set-time':
         playUI('select');
         setTimeSig(parseInt(el.dataset.value, 10));
