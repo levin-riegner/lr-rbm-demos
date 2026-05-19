@@ -1,6 +1,6 @@
 # Cooking HUD
 
-A hands-free cooking companion for the Ray-Ban Meta Display — 10 recipes split into Shop → Prep → Cook phases, a multi-timer engine that tells you what's timing in one word, AudioContext cues for every check / start / complete, and a see-through mode that goes pure black so the panel reads as transparent on the glasses.
+A hands-free cooking companion for the Meta Display glasses that walks you through **shop → prep → cook** as three short, focused lists. Concurrent timers pin to the top of the lens with a one-word descriptor of what they're timing, and phases auto-advance the moment the last item ticks off — so the HUD stays glanceable while your hands stay in the food.
 
 > 📖 **Case study:** [levinriegner.com/work/cooking-hud](https://www.levinriegner.com/work/cooking-hud/)
 
@@ -8,32 +8,34 @@ A hands-free cooking companion for the Ray-Ban Meta Display — 10 recipes split
 
 ## What it does
 
-- **10 recipes**, sorted with in-progress ones pinned to the top — Pasta Carbonara, Sheet Pan Salmon, Chicken Stir Fry, Overnight Oats, Tomato Soup, Greek Salad, Beef Tacos, Banana Pancakes, Chocolate Chip Cookies, Sesame Radish Slaw.
-- **Three-phase flow** — `SHOP` (grocery list), `PREP` (mise-en-place), `COOK` (timed steps). Each phase has its own progress, and the screen auto-advances ~900ms after the last item ticks off.
-- **Multi-timer rail** — concurrent timers pin to the top with a one-word descriptor of what they're timing (`BOIL`, `PASTA`, `ROAST`, `BAKE`, `REST`, `BROWN`, `SIMMER`, etc.). The rail follows the user across screens; the cook step's checkbox cell morphs through `▶ 6:00` (idle) → red `5:54` (running) → green `✓` (done) when the timer expires.
-- **Auto-check on timer end** — when a timer expires it pops a red `TIME'S UP — STEP DONE` alert with the step text and a 4-beep AudioContext alarm; dismissing auto-ticks the step.
-- **Reset confirms** — tapping a running timer or an already-completed step opens a `RESET TIMER?` / `RESET STEP?` confirm with the step text on top, CANCEL pre-focused so a destructive tap is never one click away.
-- **See-through mode** — small 👁️ button on home flips the panel from cream to pure black. On the Ray-Ban Display, black renders transparent, leaving bright white + lifted-orange (`#ff7a3a`) text floating in the user's periphery.
-- **AudioContext cues** — focus-move click, item check/uncheck, timer start/end, phase-complete triad, recipe-complete arpeggio, reset warning.
-- **Resume + progress persistence** — `cooking.progress.v1`, `cooking.timers.v1`, `cooking.last.v1`, and `cooking.seethrough.v1` in localStorage so a recipe and its timers survive reloads; an in-progress recipe surfaces a `RESUME →` button on home.
+- **10 recipes, ranked smart.** Pasta Carbonara, Sheet Pan Salmon, Chicken Stir Fry, Overnight Oats, Tomato Soup, Greek Salad, Beef Tacos, Banana Pancakes, Chocolate Chip Cookies, Sesame Radish Slaw. In-progress recipes float to the top of the home list with an `IN PROGRESS` chip; finished ones drop to the bottom with `DONE`.
+- **Three-phase flow.** Each recipe is a `SHOP` (grocery list), `PREP` (mise-en-place), and `COOK` (timed steps) lane. Phase tabs at the top of the recipe screen show `done/total` for each lane, and the screen auto-advances ~900ms after the last item completes — no `NEXT PHASE` button to hunt for.
+- **Multi-timer rail with action tags.** Concurrent cook timers pin to the top of the lens as red chips with a one-word descriptor of what's happening — `BOIL`, `PASTA`, `ROAST`, `BAKE`, `REST`, `BROWN`, `SIMMER`, `BEAT`, `COOL`. The rail follows the user across phases and screens.
+- **Timer cell IS the checkbox.** On a cook step with a timer, the checkbox is replaced by a state cell that morphs through `▶ 6:00` (idle, outlined) → red `5:54` (running, pulsing) → solid green `✓` (done). Tap = start; tap again = `RESET TIMER?` confirm with the step text on top and `CANCEL` pre-focused.
+- **Auto-check on timer end.** When a timer expires the panel pops a red `TIME'S UP — STEP DONE` overlay with a 4-beep AudioContext alarm; dismissing auto-ticks the step and refreshes phase progress.
+- **See-through mode.** A small 👁️ toggle on home flips the panel from cream to pure black (which renders fully transparent on the Ray-Ban Display), with bright white + lifted-orange `#ff7a3a` text so the HUD floats cleanly over the real world.
+- **AudioContext sound design.** Focus-move click, item check / uncheck, timer start (two-note rise), timer end (4-beep square alarm), phase-complete triad, recipe-complete arpeggio, reset warning. Lazily unlocks on first interaction so autoplay restrictions don't bite.
+- **Resume + progress persistence.** `cooking.progress.v1`, `cooking.timers.v1`, `cooking.last.v1`, and `cooking.seethrough.v1` in localStorage so an in-progress recipe (and its running timers) survive reloads. Home surfaces a `RESUME →` button for the most recently touched recipe.
 
 ---
 
 ## Controls
 
-| Where        | Input              | Result                                                |
-| ------------ | ------------------ | ----------------------------------------------------- |
-| Home         | ▲ ▼                | Move focus through recipe list / `HOW IT WORKS` / 👁️ |
-| Home         | Tap                | Open the focused recipe (or toggle see-through / open help) |
-| Recipe       | ▲ ▼                | Scroll items within the current phase                 |
-| Recipe       | ◀ ▶                | Swipe between phases (Shop / Prep / Cook)             |
-| Shop / Prep  | Tap                | Check / uncheck the focused item; advance to next     |
-| Cook (idle)  | Tap on timer cell  | **Start the timer** for that step                     |
-| Cook (run)   | Tap on timer cell  | Open `RESET TIMER?` confirm                           |
-| Cook (done)  | Tap on timer cell  | Open `RESET STEP?` confirm                            |
-| Timer alert  | Tap `GOT IT`       | Dismiss + auto-check the step                         |
+| Where | Input | Result |
+| --- | --- | --- |
+| Home | ▲ ▼ | Move focus through recipe list / 👁️ / HOW IT WORKS / RESUME |
+| Home | Enter | Open the focused recipe (or toggle see-through / open help) |
+| Recipe | ▲ ▼ | Scroll items within the current phase |
+| Recipe | ◀ ▶ | Swipe between phases (Shop / Prep / Cook) |
+| Shop / Prep | Enter | Check / uncheck the focused item; jumps to the next un-checked |
+| Cook (idle) | Enter on timer cell | Start the timer for that step |
+| Cook (running) | Enter on timer cell | Open `RESET TIMER?` confirm |
+| Cook (done) | Enter on timer cell | Open `RESET STEP?` confirm |
+| Confirm | ◀ ▶ | Move between CANCEL / CONFIRM (CANCEL default) |
+| Timer alert | Enter on `GOT IT` | Dismiss + auto-check the step |
+| Recipe | Esc | Back to home |
 
-Arrow keys + Enter mirror the swipe gestures for desktop preview.
+Touch swipes mirror the arrow keys; Enter mirrors Tap on the actual hardware.
 
 ---
 
@@ -41,46 +43,43 @@ Arrow keys + Enter mirror the swipe gestures for desktop preview.
 
 ### Home
 
-|                  Home                  |             See-through mode             |
-| :------------------------------------: | :--------------------------------------: |
-| ![Home — recipe list](screenshots/home.png) | ![Black-panel see-through home](screenshots/home-seethrough.png) |
+| Default — recipe list | See-through mode (black panel = transparent on lens) |
+| --- | --- |
+| ![Home — recipe list](screenshots/home.png) | ![See-through home](screenshots/home-seethrough.png) |
 
 ### Recipe flow
 
-|         Shop phase          |         Prep phase          |  Cook phase — two timers running   |
-| :-------------------------: | :-------------------------: | :--------------------------------: |
-| ![Shop list](screenshots/shop.png) | ![Prep steps](screenshots/prep.png) | ![Cook with timer rail + cell](screenshots/cook.png) |
+| Shop list | Prep steps | Cook with two timers running |
+| --- | --- | --- |
+| ![Shop](screenshots/shop.png) | ![Prep](screenshots/prep.png) | ![Cook with timer rail](screenshots/cook.png) |
 
 ---
 
 ## Running locally
 
-Single static HTML / CSS / JS bundle — no build step.
+The app is a single static HTML/CSS/JS bundle — no build step.
 
 ```bash
 npx serve -l 4205 cooking-hud
 # then open http://localhost:4205
 ```
 
-A preview entry is wired up in `.claude/launch.json` on port **4205**.
+For development inside the meta-display-glasses-webapps workspace it's also wired into `.claude/launch.json` as the `cooking-hud` preview target on port **4205**.
 
 ### Regenerating screenshots
 
-The screenshots above are produced by walking Chrome headless across every `?state=` value the app supports. Run from anywhere:
+The screenshots above are produced from headless Chrome against the `?state=…` URL parameter the app reads on load (`applyUrlState()` in `app.js`):
 
 ```bash
-mkdir -p cooking-hud/screenshots
+npx serve -l 4305 cooking-hud &
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-APP="file://$PWD/cooking-hud/index.html"
-for s in home home-seethrough shop prep cook; do
+for STATE in home home-seethrough shop prep cook; do
   "$CHROME" --headless --disable-gpu --hide-scrollbars \
-    --window-size=600,600 \
-    --screenshot="cooking-hud/screenshots/$s.png" \
-    "$APP?state=$s&t=$(date +%s)"
+    --window-size=600,600 --virtual-time-budget=3000 \
+    --screenshot="cooking-hud/screenshots/$STATE.png" \
+    "http://localhost:4305/?state=$STATE"
 done
 ```
-
-(Locally the actual capture uses Puppeteer + the same Chrome binary at 2× DPR — see `applyUrlState()` in `app.js` for the states.)
 
 ---
 
@@ -88,12 +87,11 @@ done
 
 ```
 cooking-hud/
-├── index.html        # 600×600 layout: home, recipe (3 phases), help, overlays
-├── styles.css        # cream panel, ink+orange palette, see-through overrides
-├── app.js            # phase nav, timers, audio cues, ?state= routing
-├── data.js           # 10 recipes (shop / prep / cook with timerSec + tag)
-├── README.md         # this file
-└── screenshots/      # PNGs regenerated from ?state= URLs
+├── index.html      # home, recipe (3 phases), help, timer alert, confirm
+├── styles.css      # 600×600 right-aligned cream HUD; ink + orange palette; see-through overrides
+├── app.js          # phase nav, multi-timer engine, AudioContext, ?state= routing
+├── data.js         # 10 recipes (shop / prep / cook with timerSec + tag)
+└── screenshots/    # generated state captures used by this README
 ```
 
 ---
