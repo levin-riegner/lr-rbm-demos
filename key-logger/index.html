@@ -397,10 +397,10 @@
           ctx.fillRect(0, 0, 600, 600);
         }
 
-        // hold meta live update
-        if (hold.active) {
-          const ms = Math.floor(performance.now() - hold.t0);
-          metaEl.innerHTML = `<span class="hold">▼ HOLDING · ${ms} ms</span>`;
+        // hold meta stays static (no live timer)
+        if (hold.active && !metaEl.dataset.holding) {
+          metaEl.innerHTML = `<span class="hold">▼ HOLDING</span>`;
+          metaEl.dataset.holding = '1';
         }
 
         requestAnimationFrame(frame);
@@ -456,7 +456,8 @@
         hold.active = true;
         hold.t0 = performance.now();
         hold.hue = k.hue;
-        metaEl.innerHTML = `<span class="hold">▼ HOLDING · 0 ms</span>`;
+        metaEl.innerHTML = `<span class="hold">▼ HOLDING</span>`;
+        metaEl.dataset.holding = '1';
 
         // audio: low thunk + start pad
         blip(110, 0.22, 'sine', 0.18);
@@ -479,11 +480,11 @@
         let chain = 1;
         if (heldMs < 250) chain = tapChainFor('Enter');
 
-        const heldSec = (heldMs / 1000).toFixed(2);
+        delete metaEl.dataset.holding;
         if (chain >= 2) {
           metaEl.innerHTML = multiLabel(chain);
         } else {
-          metaEl.innerHTML = `<span class="hold">▲ ${heldSec}s</span>`;
+          metaEl.innerHTML = `<span class="hold">▲ RELEASED</span>`;
         }
         punch(1.12 + Math.min(heldMs, 1500) / 12000);
 
