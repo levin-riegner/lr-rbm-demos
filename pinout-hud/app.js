@@ -729,6 +729,80 @@ function hexToRgba(hex, a) {
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
+/* ─── Optional: pre-set a screen via URL — used to generate the
+   README screenshots (e.g. ?state=custom-color-2). Harmless otherwise. */
+function applyUrlState() {
+  if (typeof URLSearchParams === 'undefined') return false;
+  const s = new URLSearchParams(location.search).get('state');
+  if (!s) return false;
+
+  /* Always start from a clean slate so screenshots are deterministic */
+  state.activeBoard = null;
+  state.customPins  = [];
+  state.customIndex = 0;
+  state.refSelected = 0;
+  state.refFocusOn  = false;
+
+  switch (s) {
+    case 'home':
+      goHome();
+      return true;
+    case 'walkthrough':
+      showWalkthrough();
+      return true;
+    case 'esp32-list':
+      openEsp32List();
+      return true;
+    case 'esp32-color-assign':
+      selectEsp32('esp32-wroom');
+      return true;
+    case 'esp32-reference':
+      selectEsp32('esp32-wroom');
+      finalizeBoard();
+      return true;
+    case 'focus-mode':
+      selectEsp32('esp32-wroom');
+      finalizeBoard();
+      state.refSelected = 3;
+      enterFocus();
+      return true;
+    case 'custom-count':
+      state.customCount = 4;
+      openCustomCount();
+      return true;
+    case 'custom-label-1':
+      state.customCount = 4;
+      startCustomBuild();
+      return true;
+    case 'custom-color-1':
+      state.customCount = 4;
+      startCustomBuild();
+      pickLabel('GND');
+      return true;
+    case 'custom-label-2':
+      state.customCount = 4;
+      startCustomBuild();
+      pickLabel('GND'); pickColor('black');
+      return true;
+    case 'custom-color-2':
+      state.customCount = 4;
+      startCustomBuild();
+      pickLabel('GND'); pickColor('black');
+      pickLabel('3V3');
+      return true;
+    case 'custom-reference':
+      state.customCount = 4;
+      startCustomBuild();
+      pickLabel('GND');   pickColor('black');
+      pickLabel('3V3');   pickColor('red');
+      pickLabel('GPIO0'); pickColor('blue');
+      pickLabel('GPIO1'); pickColor('green');
+      /* Last pickColor auto-finalizes and opens reference */
+      return true;
+  }
+  return false;
+}
+
 /* ─────────── Boot ─────────── */
 function boot() {
   initBgCanvas();
@@ -736,6 +810,8 @@ function boot() {
 
   const saved = loadActiveBoard();
   if (saved) state.activeBoard = saved;
+
+  if (applyUrlState()) return;
 
   const seen = (() => {
     try { return localStorage.getItem(WT_SEEN_KEY) === '1'; } catch { return false; }
