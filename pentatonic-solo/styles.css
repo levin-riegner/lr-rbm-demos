@@ -77,7 +77,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   flex-direction: column;
   gap: 8px;
   padding: 14px 22px 18px;
-  border-radius: 16px;
+  border-radius: 0 0 16px 16px;
   background: #000000;
   border-top:    3px solid transparent;       /* covered by ::before rainbow */
   border-left:   3px solid rgba(245, 239, 224, 0.92);
@@ -98,8 +98,6 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   background: linear-gradient(90deg,
     #ff4a5b 0%, #ffa64a 17%, #ffe24a 34%,
     #57e08a 50%, #4ad9ff 67%, #4a6cff 84%, #a96cff 100%);
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
 }
 
