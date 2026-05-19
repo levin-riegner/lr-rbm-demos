@@ -808,10 +808,17 @@
     practiceServe(-1);
 
     scoreLeftEl.textContent = '0';
-    scoreRightEl.textContent = String(best);
-    gameMetaEl.textContent = '↑ / ↓ paddle · tap fast = boost · ◀ = pause · WALL →';
+    scoreRightEl.textContent = '';
+    setPracticeLegend(best);
+    var scoreRow = document.querySelector('#screen-game .score-row');
+    if (scoreRow) scoreRow.classList.add('practice-score');
     navigateTo('game');
     sfx.join();
+  }
+
+  function setPracticeLegend(best) {
+    gameMetaEl.textContent =
+      '↑ / ↓ paddle · tap fast = boost · ◀ = pause · BEST ' + best;
   }
 
   function practiceServe(towardX) {
@@ -833,6 +840,8 @@
       el.classList.add('hidden');
       el.setAttribute('aria-hidden', 'true');
     }
+    var scoreRow = document.querySelector('#screen-game .score-row');
+    if (scoreRow) scoreRow.classList.remove('practice-score');
     sendIntent(0);
   }
 
@@ -916,7 +925,7 @@
       if (practice.hits > practice.best) {
         practice.best = practice.hits;
         try { localStorage.setItem('pong-practice-best', String(practice.best)); } catch (e) {}
-        scoreRightEl.textContent = String(practice.best);
+        setPracticeLegend(practice.best);
       }
       sfx.lose();
       practice.hits = 0;

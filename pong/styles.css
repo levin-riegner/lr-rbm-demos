@@ -510,6 +510,16 @@ body {
   font-size: 56px;
 }
 
+/* Practice mode — single score at the top. */
+.score-row.practice-score .score-sep,
+.score-row.practice-score .score-right {
+  display: none;
+}
+.score-row.practice-score .score-left {
+  color: var(--accent);
+  text-shadow: 0 0 24px var(--accent-glow);
+}
+
 .court-canvas {
   width: 552px;
   height: 368px;
