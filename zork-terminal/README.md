@@ -1,101 +1,116 @@
-# zork-terminal
+# Zork Terminal
 
-A wearable-sized tribute to early-1980s text adventures, built for the
-600×600 HUD of the Ray-Ban Meta Display. Plain HTML / CSS / JS, no build
-step, no dependencies.
+A wearable-sized tribute to early-1980s text adventures, built for the 600×600 Meta Display HUD. Every action is picked from a chip — no typing, no microphone — with a smart "look closer" suggestion on top, every legal verb ranked underneath, and a green-phosphor CRT wrapped around the whole thing.
 
-| Boot screen | Gameplay | All-actions panel |
-|:---:|:---:|:---:|
-| ![Boot / instructions](screenshots/01-boot.png) | ![Gameplay](screenshots/02-gameplay.png) | ![MORE panel](screenshots/03-more.png) |
-
-## What it is
-
-A small, single-screen text-adventure UI that captures the feel of a
-green-phosphor CRT and a paper-tape teletype, sized for a HUD that's
-read at arm's length. The game world is a compact subset (~14 rooms,
-three treasures, one nasty monster) so a full run fits in a glasses-
-length sitting.
-
-## Highlights
-
-- **CRT terminal aesthetic** — green-on-black with scanlines, vignette,
-  phosphor flicker, an inverted status bar at the top, and the iconic
-  blocky monospace look (VT323 with system-monospace fallback).
-- **Typewriter output** — every line types in at ~220 chars/sec, paced
-  by real time via a `MessageChannel` loop so it stays smooth even when
-  the tab is throttled. Tap anywhere mid-type to skip to the end.
-- **Chip-based input** — no keyboard, no mic. A single big primary chip
-  at the bottom plus a row (or two) of smaller secondary chips.
-  - The **primary chip** is a *flavor* hint: "examine the most
-    interesting unseen thing here". It never advances the puzzle — and
-    it disappears entirely once you've examined what's around, so you
-    can't tap-tap-tap your way through.
-  - The **secondary chips** hold every actionable choice for this turn
-    — open / take / move / read / attack / put / go &lt;dir&gt; — pulled
-    from a tiered priority ranking. Primary and secondary come from the
-    same de-duped list, so a chip never appears twice.
-  - The **MORE…** chip opens a full-screen "All actions" panel with
-    every contextually-valid command laid out in a grid; selecting a
-    chip there closes the panel, runs the command, and returns focus
-    to the main screen.
-- **Filled-green = selected** — the focused chip is the one filled
-  green, on every screen. Keyboard arrows and touch swipes navigate in
-  2D using bounding-rect geometry, with row wrap-around: swipe right
-  off the end of a row lands on the first chip of the next row, and
-  vice versa.
-- **Synthesized audio** — Web Audio `AudioContext` driving a tiny synth
-  for typewriter ticks, chip taps, boot zap, point chimes, combat hits
-  and misses, grue death sweep, and a victory arpeggio. No audio files.
-- **Smart "next step" logic** — story-critical chips are ranked highest
-  so the right action (open the mailbox, take the sword, attack the
-  troll, deposit a treasure, etc.) is always near the front of the
-  secondary row. The primary stays out of the way unless the player
-  walks into something new.
-
-## How to play
-
-1. Tap **BEGIN** to enter the world.
-2. Read the room description. The big bright chip (when it appears)
-   tells you to look closer at something new — tapping it never moves
-   the story forward, just describes.
-3. Pick an action from the smaller chips below — or tap **MORE…** to
-   see every contextually-valid verb at once.
-4. Use arrow keys / temple-touchpad swipes to move between chips. The
-   currently-focused chip is the one filled green.
-5. Find the three treasures of the underground empire, return them to
-   the trophy case in the living room, and don't get eaten by a grue.
-
-## Running locally
-
-```
-npx serve -l 4203 zork-terminal
-```
-
-Then open `http://localhost:4203/`.
-
-URL hash routes (handy for sharing or for re-shooting screenshots):
-
-- `/` — instructions screen
-- `/#gameplay` — auto-taps **BEGIN**
-- `/#more` — auto-taps **BEGIN** then opens the **All actions** panel
-
-## Files
-
-- `index.html` — the CRT shell (status bar, output area, chip bar,
-  MORE… panel).
-- `styles.css` — green phosphor palette, scanlines/vignette/flicker,
-  chip and focus styling.
-- `world.js` — every room, item, and the initial game state.
-- `app.js` — typewriter queue, parser, verbs, chip ranking + 2D
-  navigation, Web Audio synth, URL-hash router.
-
-## Case study
-
-A longer write-up of how this was made, with motion and design notes,
-lives at the L+R portfolio:
-
-→ <https://www.levinriegner.com/work/zork-i-tribute/>
+> 📖 **Case study:** [levinriegner.com/work/zork-i-tribute](https://www.levinriegner.com/work/zork-i-tribute/)
 
 ---
 
-<sub>Built by Alex Levin · [L+R](https://levinriegner.com)</sub>
+## What it does
+
+- **CRT terminal aesthetic.** Green-on-black with scanlines, vignette, phosphor flicker, an inverted status bar at the top (room name + score + moves), and an inverted line for each new room title — the look of an Apple ][ booting an Infocom title in 1981. VT323 webfont with a system-monospace fallback.
+- **Typewriter output.** Every line types in at ~220 chars/sec, paced by real time via a `MessageChannel` loop so it stays smooth even when the browser tab is throttled in the background. Tap anywhere mid-type to skip to the end.
+- **Smart primary chip — *flavor only, never auto-progresses.*** The big bright chip at the bottom is always an `examine X` for the most narratively interesting unseen object in the room (or held). It describes; it does not advance the story. Once you've examined what's around, the chip disappears entirely — there's no tap-tap-tap-to-win loop.
+- **Secondary chips hold every real action.** Open, take, move, read, attack, put, climb, `go <dir>` — pulled from a tiered priority ranking (story-critical → smart suggested direction → other exits → flavor → utility). Primary and secondary come from the same de-duped ranked list, so no chip ever appears twice.
+- **MORE… panel.** A full-screen "All actions" grid with every contextually-valid command available this turn. Selecting any chip closes the panel, runs the command, and returns focus to the main screen's primary chip.
+- **Filled-green = selected, on every screen.** The focused chip is the one filled green. Keyboard arrows and touch swipes both navigate in 2D using bounding-rect geometry. Row wrap-around: swipe right off the end of a row jumps to the leftmost chip of the next row, and the reverse on swipe left.
+- **Synthesized audio (no audio files).** Web Audio `AudioContext` driving a tiny synth for typewriter ticks (throttled to ~50 Hz), chip taps, boot zap, score chimes, combat hits and misses, grue death sweep, and a four-note victory arpeggio. Created lazily inside the first user gesture to respect autoplay policy.
+- **Compact world, full arc.** ~14 rooms covering the open field, the white house interior, and the early underground (cellar → troll → gallery), three treasures to recover and deposit in the trophy case, one nasty monster — a complete winnable run sized for a glasses-length sitting.
+
+---
+
+## Controls
+
+| Where | Input | Result |
+| --- | --- | --- |
+| Anywhere | Tap a chip | Run that command |
+| Anywhere | ▲ ▼ ◀ ▶ / swipe | Move focus between chips (2D) |
+| Anywhere | Enter / Space | Activate the focused chip |
+| Output area | Tap | Skip the current typewriter line |
+| Secondary row | ▶ on rightmost chip | Wrap to leftmost chip of next row |
+| Secondary row | ◀ on leftmost chip | Wrap to rightmost chip of previous row |
+| Primary | ▼ / swipe down | Jump to first secondary chip on the left |
+| MORE… panel | Tap a chip | Run command, close panel, refocus primary |
+| MORE… panel | × button / Esc | Close panel without acting |
+
+Touch swipes mirror the arrow keys everywhere — primary, secondary, and the MORE panel grid share one navigation model.
+
+---
+
+## Screenshots
+
+### Boot / instructions
+
+| Default boot screen |
+| :---: |
+| ![Boot — instructions screen with BEGIN](screenshots/01-boot.png) |
+
+### Gameplay
+
+| First room — primary chip suggests an `examine` | After examining — primary hidden, only real actions remain |
+| --- | --- |
+| ![First room with primary chip](screenshots/02-gameplay.png) | ![Primary chip hidden after examining](screenshots/03-explored.png) |
+
+### All-actions panel
+
+| MORE… opens a full-grid view of every contextually-valid command |
+| :---: |
+| ![All Actions panel](screenshots/04-more.png) |
+
+---
+
+## Running locally
+
+The app is a single static HTML/CSS/JS bundle — no build step.
+
+```bash
+npx serve -l 4203 zork-terminal
+# then open http://localhost:4203
+```
+
+Inside the `meta-display-glasses-webapps` workspace it's also wired into `.claude/launch.json` as the `zork-terminal` preview target on port **4203**.
+
+### Regenerating screenshots
+
+The screenshots above come from headless Chrome against the `?state=…` URL parameter the app reads on load:
+
+```bash
+npx serve -l 4203 zork-terminal &
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+"$CHROME" --headless=new --disable-gpu --hide-scrollbars \
+  --window-size=600,600 --virtual-time-budget=4000  \
+  --screenshot=zork-terminal/screenshots/01-boot.png      \
+  "http://localhost:4203/"
+"$CHROME" --headless=new --disable-gpu --hide-scrollbars \
+  --window-size=600,600 --virtual-time-budget=9000  \
+  --screenshot=zork-terminal/screenshots/02-gameplay.png  \
+  "http://localhost:4203/?state=gameplay"
+"$CHROME" --headless=new --disable-gpu --hide-scrollbars \
+  --window-size=600,600 --virtual-time-budget=10000 \
+  --screenshot=zork-terminal/screenshots/03-explored.png  \
+  "http://localhost:4203/?state=explored"
+"$CHROME" --headless=new --disable-gpu --hide-scrollbars \
+  --window-size=600,600 --virtual-time-budget=11000 \
+  --screenshot=zork-terminal/screenshots/04-more.png      \
+  "http://localhost:4203/?state=more"
+```
+
+`?state=` values: `boot` (default), `gameplay`, `explored`, `more`.
+
+---
+
+## Files
+
+```
+zork-terminal/
+├── index.html      # CRT shell: status bar, output, chip bar, MORE panel
+├── styles.css      # Green-phosphor palette, scanlines/vignette/flicker, chips
+├── world.js        # Rooms, items, initial game state
+├── app.js          # Typewriter queue, parser, verbs, chip ranking + 2D nav,
+│                   #   Web Audio synth, ?state= URL router
+└── screenshots/    # Generated state captures used by this README
+```
+
+---
+
+<sub>Made by Alex Levin at [L+R](https://www.levinriegner.com).</sub>

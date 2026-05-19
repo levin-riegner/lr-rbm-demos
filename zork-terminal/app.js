@@ -1331,15 +1331,24 @@ document.addEventListener("keydown", (e) => {
 
 // ── boot ──────────────────────────────────────────────────────
 
-// Tiny URL-hash router for screenshot capture / sharable deep links.
-//   #gameplay → auto-tap BEGIN so the screenshot lands on the first room
-//   #more     → auto-tap BEGIN, then open the MORE… panel
-//   #boot     → no-op (default instructions screen)
-function applyHashState() {
-  const h = location.hash || "";
-  if (h === "#gameplay") {
+// Tiny URL state router for screenshot capture / sharable deep links.
+//   ?state=boot     → instructions screen (default, no-op)
+//   ?state=gameplay → auto-tap BEGIN; lands on the first room
+//   ?state=explored → BEGIN, then tap the primary "examine X" chip so
+//                     the primary chip disappears, showing the "you've
+//                     seen what's here, pick a real action" state
+//   ?state=more     → BEGIN, then open the All Actions panel
+function applyStateParam() {
+  const s = new URLSearchParams(location.search).get("state") || "boot";
+  if (s === "gameplay") {
     setTimeout(() => { if (state.flags.awaitingStart) startGame(); }, 1500);
-  } else if (h === "#more") {
+  } else if (s === "explored") {
+    setTimeout(() => { if (state.flags.awaitingStart) startGame(); }, 1500);
+    setTimeout(() => {
+      const p = primaryRow.querySelector(".chip");
+      if (p) p.click();
+    }, 4500);
+  } else if (s === "more") {
     setTimeout(() => { if (state.flags.awaitingStart) startGame(); }, 1500);
     setTimeout(openMorePanel, 4500);
   }
@@ -1357,7 +1366,7 @@ function boot() {
 
   snapshotRoomItems();
   bootStart();
-  applyHashState();
+  applyStateParam();
 
   // Boot zap on the first user gesture (autoplay policy compliance).
   const onFirstGesture = () => {
