@@ -177,8 +177,7 @@
       document.getElementById('last-code').textContent  = last.code;
       document.getElementById('last-route').textContent = last.route;
       card.classList.remove('hidden');
-      // Default home focus to LAST FLIGHT when present so reopening is instant.
-      state.homeFocus = state.homeFocus === 'start' ? 'last' : state.homeFocus;
+      // Default home focus stays on FIND FLIGHT; user can ▲ to reach LAST FLIGHT.
       if (hint) hint.innerHTML =
         '<span class="hint-keys"><span class="key">▲</span><span class="key">▼</span> CHOOSE</span>' +
         '<span class="hint-keys"><span class="key">ENTER</span> OPEN</span>';
