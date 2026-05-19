@@ -484,7 +484,7 @@
         if (chain >= 2) {
           metaEl.innerHTML = multiLabel(chain);
         } else {
-          metaEl.innerHTML = `<span class="hold">▲ RELEASED</span>`;
+          metaEl.innerHTML = '&nbsp;';
         }
         punch(1.12 + Math.min(heldMs, 1500) / 12000);
 
