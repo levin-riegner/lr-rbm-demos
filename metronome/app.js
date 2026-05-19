@@ -389,7 +389,15 @@
     if (name === 'step-note') renderNoteSelection();
     // Stop nod listening when navigating away from the tempo step.
     if (name !== 'step-tempo' && nod.active) stopNod();
-    setTimeout(focusFirst, 60);
+    setTimeout(function () {
+      // Came in via EDIT → focus NOD instead of the default first focusable.
+      if (name === 'step-tempo' && state.editFocusNod) {
+        state.editFocusNod = false;
+        var nodBtn = document.getElementById('nod-btn');
+        if (nodBtn) { nodBtn.focus(); return; }
+      }
+      focusFirst();
+    }, 60);
   }
 
   function startWizard() {
@@ -563,7 +571,12 @@
   function handleAction(action, el) {
     switch (action) {
       case 'quick-start':    playUI('start');  startMetronome();             break;
-      case 'setup-begin':    playUI('next');   if (state.playing) stopMetronome(); startWizard(); break;
+      case 'setup-begin':
+        playUI('next');
+        // Coming from the play screen (EDIT) → jump straight to NOD focused.
+        if (state.playing) { stopMetronome(); state.editFocusNod = true; }
+        startWizard();
+        break;
       case 'step-back':      playUI('back');   stepBack();                   break;
       case 'step-next':      playUI('next');   stepNext();                   break;
       case 'step-finish':    playUI('start');  startMetronome();             break;
@@ -681,7 +694,7 @@
     var startX = 0, startY = 0, tracking = false, originatesOnButton = false;
 
     function onDown(e) {
-      if (state.screen !== 'home' && state.screen !== 'playing') return;
+      if (state.screen !== 'home' && state.screen !== 'playing' && state.screen !== 'step-tempo') return;
       var p = e.touches ? e.touches[0] : e;
       startX = p.clientX;
       startY = p.clientY;
@@ -692,24 +705,40 @@
     function onUp(e) {
       if (!tracking) return;
       tracking = false;
-      if (originatesOnButton) return;
       var p = (e.changedTouches && e.changedTouches[0]) || e;
       var dx = p.clientX - startX;
       var dy = p.clientY - startY;
       var absX = Math.abs(dx), absY = Math.abs(dy);
 
-      // Vertical-dominant swipe: while in compact mode on the playing screen,
-      // a downward swipe expands the UI back to full size.
+      // Vertical-dominant swipe.
       if (absY > absX && absX < V_HORIZ_MAX && absY >= V_MIN) {
+        // Compact mode on the playing screen: swipe down to expand.
         if (state.screen === 'playing' && state.smallMode && dy > 0) {
           playUI('next');
           toggleSmallMode();
+          return;
+        }
+        // TEMPO step: while focus is on the BPM control row, swipe up
+        // jumps to BACK, swipe down jumps to NEXT.
+        if (state.screen === 'step-tempo') {
+          var ae = document.activeElement;
+          var onRow = ae && ae.closest && ae.closest('.bpm-controls');
+          if (onRow) {
+            var sel = dy < 0
+              ? '#step-tempo [data-action="step-back"]'
+              : '#step-tempo [data-action="step-next"]';
+            var target = document.querySelector(sel);
+            if (target) { target.focus(); playUI('focus'); }
+          }
+          return;
         }
         return;
       }
 
-      // Horizontal-dominant swipe: nudge BPM by ±1.
-      if (absY <= H_VERT_MAX && absX >= H_MIN) {
+      if (originatesOnButton) return;
+      // Horizontal-dominant swipe on home/playing: nudge BPM by ±1.
+      if ((state.screen === 'home' || state.screen === 'playing')
+          && absY <= H_VERT_MAX && absX >= H_MIN) {
         playUI('tick');
         adjustBpm(dx > 0 ? 1 : -1);
       }
