@@ -147,13 +147,18 @@
     <!-- Compact strip: shown when status is collapsed via swipe-up.
          Sits at the top of the lens and holds all critical info on one line. -->
     <div class="status-compact hidden" id="status-compact">
-      <span class="cs-flight mono" id="cs-flight">AA·0007</span>
-      <span class="cs-dot">·</span>
-      <span class="cs-pair"><span class="cs-key">T</span><span class="cs-val mono" id="cs-terminal">6</span></span>
-      <span class="cs-pair"><span class="cs-key">G</span><span class="cs-val mono cs-amber" id="cs-gate">B49</span></span>
-      <span class="cs-pair"><span class="cs-val mono cs-amber" id="cs-board">20:37</span></span>
-      <span class="cs-pair"><span class="cs-key">CR</span><span class="cs-val mono" id="cs-carousel">12</span></span>
-      <span class="cs-hint">▼&nbsp;EXPAND</span>
+      <div class="cs-top">
+        <span class="cs-flight mono" id="cs-flight">AA·0007</span>
+      </div>
+      <div class="cs-row">
+        <span class="cs-val mono" id="cs-terminal">6</span>
+        <span class="cs-dot">·</span>
+        <span class="cs-val mono cs-amber" id="cs-gate">B49</span>
+        <span class="cs-dot">·</span>
+        <span class="cs-val mono cs-amber" id="cs-board">20:37</span>
+        <span class="cs-dot">·</span>
+        <span class="cs-val mono" id="cs-carousel">12</span>
+      </div>
     </div>
 
     <header class="status-head">

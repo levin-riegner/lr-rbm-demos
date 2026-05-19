@@ -440,14 +440,22 @@
         e.preventDefault();
       } else if (k === 'ArrowLeft' || k === 'ArrowRight') {
         if (state.statusMode === 'compact') {
-          setStatusMode('full');                                  // any horizontal flick also expands
+          // ◀/▶ in compact: jump to the seat view (expanded)
+          setStatusMode('full');
+          setStatusView('seat');
         } else {
           setStatusView(state.statusView === 'main' ? 'seat' : 'main');
         }
         e.preventDefault();
       } else if (k === 'Enter' || k === ' ') {
-        state.status = null;
-        startWizard();
+        if (state.statusMode === 'compact') {
+          // Enter in compact: just expand back to the full status display.
+          setStatusMode('full');
+        } else {
+          // Enter in full: restart the wizard (CHANGE FLIGHT).
+          state.status = null;
+          startWizard();
+        }
         e.preventDefault();
       }
       return;
@@ -490,7 +498,9 @@
       } else {
         // horizontal swipe
         if (state.statusMode === 'compact') {
+          // From compact, ←/→ jumps to the seat view (expanded).
           setStatusMode('full');
+          setStatusView('seat');
         } else {
           setStatusView(state.statusView === 'main' ? 'seat' : 'main');
         }
