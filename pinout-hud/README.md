@@ -5,7 +5,12 @@ designed for electrical engineers actively soldering ESP32s and custom
 microcontrollers. Glance at the schematic in your periphery instead of
 putting the iron down to check a pinout.
 
-![Home](screenshots/01-home.png)
+<p align="center">
+  <img src="screenshots/01-home.png" width="23%" />
+  <img src="screenshots/02-walkthrough.png" width="23%" />
+  <img src="screenshots/03-esp32-list.png" width="23%" />
+  <img src="screenshots/04-esp32-color-assign.png" width="23%" />
+</p>
 
 ---
 
@@ -31,58 +36,65 @@ directional swipes plus a tap** — the same gestures the temples expose.
 A browser preview maps **arrow keys** to swipes and **Enter / Space** to
 tap so you can rehearse a flow at your desk.
 
-## Flows
+---
 
-### 1. Pick a board
+## ESP32 templates
 
-Start from one of four preloaded ESP32 templates or build a custom board
-pin-by-pin.
+Four preloaded boards (WROOM-32, CAM, ESP8266 NodeMCU, S3-Mini). Pick
+one, optionally tap any pin to cycle its wire colour, finalize, and
+you're in the live reference HUD. Right-swipe enters Focus Mode — the
+selected pin is rendered huge and everything else dims so you can never
+solder the wrong pad by accident.
 
-![ESP32 list](screenshots/03-esp32-list.png)
+<p align="center">
+  <img src="screenshots/03-esp32-list.png" width="23%" />
+  <img src="screenshots/04-esp32-color-assign.png" width="23%" />
+  <img src="screenshots/05-esp32-reference.png" width="23%" />
+  <img src="screenshots/06-focus-mode.png" width="23%" />
+</p>
 
-### 2. Confirm wire colours
+---
 
-Each pin starts with a sensible default (GND→black, 3V3→red, GPIO→blue,
-TX→green, RX→yellow, SPI→purple/white). Tap any row to cycle through the
-eight wire colours.
+## Custom boards
 
-![Color assign](screenshots/04-color-assign.png)
+For one-off perfboards and unlabelled modules. The flow walks one pin at
+a time — pick a label, pick a wire colour, advance.
 
-### 3. Custom boards — label grid
+The label step uses a **5 × 9 spatial grid** of the most common pin
+labels (power · control · I²C · SPI · GPIO0–39 · analog / digital).
+Swipe to land on any label in ≤4 moves, tap to confirm. Picking a label
+auto-suggests its conventional wire colour (GND→black, 3V3→red, GPIO→blue,
+TX→green, RX→yellow, SPI→purple / white) so the colour step is usually
+just a confirmation tap.
 
-The custom flow uses a **5 × 9 spatial grid** of the most common pin
-labels (power, control, I²C, SPI, GPIO0–39, analog, digital). Swipe to
-land on any label in ≤4 moves, tap to confirm. Picking a label
-auto-suggests its conventional wire colour so the second tap is usually
-just confirmation.
+<p align="center">
+  <img src="screenshots/07-custom-count.png" width="23%" />
+  <img src="screenshots/08-custom-label-1.png" width="23%" />
+  <img src="screenshots/09-custom-color-1.png" width="23%" />
+  <img src="screenshots/10-custom-label-2.png" width="23%" />
+</p>
 
-![Label grid](screenshots/08-label-grid.png)
+The next pin opens with **its** sensible default pre-focused — pin 2 is
+3V3 in red. Two taps per pin gets you through the full build. When the
+last pin is committed the app jumps straight into the live reference
+HUD with a `BOARD READY` toast.
 
-![Color pick](screenshots/09-color-pick.png)
+<p align="center">
+  <img src="screenshots/11-custom-color-2.png" width="23%" />
+  <img src="screenshots/12-custom-reference.png" width="23%" />
+</p>
 
-### 4. Active reference
+---
 
-The home HUD for the bench. Pins listed in their physical breadboard
-order, each with its wire colour and a glowing schematic stub.
+## Focus Mode
 
-![Reference](screenshots/05-reference.png)
+The home HUD for the bench. Right-swipe from the overview to enter Focus
+Mode; Up / Down step pins; Left-swipe exits.
 
-### 5. Focus Mode
-
-Right-swipe from the reference list to enter Focus Mode. The pin under
-the iron is rendered huge in your peripheral vision while everything
-else dims — so you cannot solder the wrong pad by accident.
-
-![Focus mode](screenshots/06-focus-mode.png)
-
-Up / Down step pins. Left-swipe exits back to the full overview.
-
-## Onboarding
-
-A three-step walkthrough on first launch (clear
-`pinout.walkthrough.seen` in `localStorage` to replay).
-
-![Walkthrough](screenshots/02-walkthrough.png)
+<p align="center">
+  <img src="screenshots/05-esp32-reference.png" width="23%" />
+  <img src="screenshots/06-focus-mode.png" width="23%" />
+</p>
 
 ## Design notes
 
@@ -117,14 +129,6 @@ npx serve -l 4208 pinout-hud
 ```
 
 Then open `http://localhost:4208` and use arrow keys + Enter to drive.
-
-## Custom-pin count
-
-The Custom flow opens with a `+ / −` stepper for the pin count. The pin
-list is then walked one pin at a time — label step, then colour step,
-then next pin.
-
-![Custom pin count](screenshots/07-custom-count.png)
 
 ---
 
