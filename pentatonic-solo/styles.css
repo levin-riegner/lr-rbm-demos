@@ -19,10 +19,10 @@
   --prism-r:   #ff4a5b;
   --prism-c:   #4ad9ff;
 
-  --pad-l:  136px;
-  --pad-r:  32px;
-  --pad-t:  26px;
-  --pad-b:  26px;
+  --pad-l:  14px;
+  --pad-r:  14px;
+  --pad-t:  14px;
+  --pad-b:  14px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -75,9 +75,9 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   z-index: 5;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 16px 18px 14px;
-  border-radius: 14px;
+  gap: 14px;
+  padding: 22px 26px 26px;
+  border-radius: 16px;
   background: #000000;
   border: 1px solid rgba(245, 239, 224, 0.10);
   box-shadow:
@@ -85,10 +85,9 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
     0 6px 30px rgba(0, 0, 0, 0.8);
 }
 .panel::before {
-  /* thin spectrum rim along the top */
   content: '';
   position: absolute;
-  left: 14px; right: 14px; top: 0;
+  left: 28px; right: 28px; top: 0;
   height: 1px;
   background: linear-gradient(90deg,
     transparent 0%,
@@ -100,35 +99,40 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 }
 
 /* ============================================================
-   HEADER — prism + title
+   HEADER — prism + centered title stack
    ============================================================ */
 .hdr {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding-bottom: 8px;
+  gap: 4px;
+  padding: 6px 0 14px;
   border-bottom: 1px solid rgba(245, 239, 224, 0.06);
 }
 .prism {
-  width: 48px;
-  height: 22px;
-  flex: 0 0 auto;
+  width: 64px;
+  height: 28px;
+  margin-bottom: 2px;
   filter: drop-shadow(0 0 6px rgba(255, 248, 220, 0.35));
 }
-.hdr-titles {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  flex: 1;
-  min-width: 0;
+.hdr-sub {
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  text-align: center;
 }
 .hdr-main {
   position: relative;
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.28em;
+  font-family: "Georgia", "Didot", "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 38px;
+  letter-spacing: 0.005em;
   color: var(--ink);
-  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.05;
+  text-shadow: 0 0 18px rgba(255, 248, 220, 0.25);
 }
 /* chromatic aberration on the title — Dark Side prism split */
 .hdr-main::before,
@@ -136,21 +140,16 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   content: attr(data-text);
   position: absolute;
   top: 0; left: 0;
+  width: 100%;
+  font: inherit;
   letter-spacing: inherit;
-  font-weight: inherit;
+  text-align: inherit;
   pointer-events: none;
   mix-blend-mode: screen;
-  opacity: 0.55;
+  opacity: 0.6;
 }
-.hdr-main::before { color: var(--prism-r); transform: translate(-0.6px, 0); }
-.hdr-main::after  { color: var(--prism-c); transform: translate( 0.6px, 0); }
-
-.hdr-sub {
-  font-size: 9px;
-  letter-spacing: 0.22em;
-  color: var(--ink-dim);
-  text-transform: uppercase;
-}
+.hdr-main::before { color: var(--prism-r); transform: translate(-1.2px, 0.4px); }
+.hdr-main::after  { color: var(--prism-c); transform: translate( 1.2px,-0.4px); }
 
 /* ============================================================
    STAGE / NOW PLAYING
@@ -192,13 +191,13 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   position: relative;
   z-index: 2;
   font-family: "Georgia", "Didot", "Times New Roman", serif;
-  font-size: 64px;
+  font-size: 84px;
   font-weight: 400;
   font-style: italic;
   letter-spacing: 0.02em;
   line-height: 1;
   color: var(--ink);
-  text-shadow: 0 0 22px rgba(255, 248, 220, 0.45);
+  text-shadow: 0 0 26px rgba(255, 248, 220, 0.45);
 }
 /* chromatic split on the played note */
 .now-note::before,
@@ -247,10 +246,11 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
-  gap: 5px;
+  gap: 10px;
   width: 100%;
   height: 100%;
-  max-height: 190px;
+  max-height: 270px;
+  max-width: 440px;
 }
 .pad-up    { grid-column: 2; grid-row: 1; }
 .pad-left  { grid-column: 1; grid-row: 2; }
@@ -294,13 +294,13 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .pad-note {
   font-family: "Georgia", "Didot", serif;
   font-style: italic;
-  font-size: 22px;
+  font-size: 30px;
   font-weight: 400;
   color: var(--ink);
   line-height: 1;
 }
 .pad-deg {
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.18em;
   color: var(--ink-dim);
 }
@@ -333,33 +333,3 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   box-shadow: 0 0 14px var(--spot-glow);
 }
 
-/* ============================================================
-   FOOTER
-   ============================================================ */
-.ftr {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 6px;
-  border-top: 1px solid rgba(245, 239, 224, 0.06);
-}
-.ftr-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  text-align: center;
-  flex: 1;
-}
-.ftr-k {
-  font-size: 7.5px;
-  letter-spacing: 0.26em;
-  color: var(--ink-dim);
-}
-.ftr-v {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--ink);
-  font-weight: 600;
-  font-family: "Georgia", "Didot", serif;
-  font-style: italic;
-}
