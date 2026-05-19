@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#000000"/>
+  <g transform="translate(32 32) rotate(-35)">
+    <path fill="#ffb84d" d="
+      M0 -24
+      L4 -6
+      L24 4
+      L24 8
+      L4 4
+      L2 18
+      L9 22
+      L9 24
+      L0 22
+      L-9 24
+      L-9 22
+      L-2 18
+      L-4 4
+      L-24 8
+      L-24 4
+      L-4 -6
+      Z"/>
+  </g>
+</svg>

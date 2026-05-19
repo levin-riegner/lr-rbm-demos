@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
   <title>Flight Status</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -150,23 +151,40 @@
 
     <div class="status-badge" id="s-badge">ON TIME</div>
 
-    <div class="info-grid">
-      <div class="info-tile">
-        <div class="info-label">TERMINAL</div>
-        <div class="info-value mono" id="s-terminal">8</div>
+    <div class="status-views" id="status-views">
+      <div class="status-view view-main" id="view-main">
+        <div class="info-grid">
+          <div class="info-tile">
+            <div class="info-label">TERMINAL</div>
+            <div class="info-value mono" id="s-terminal">8</div>
+          </div>
+          <div class="info-tile info-accent">
+            <div class="info-label">GATE</div>
+            <div class="info-value mono" id="s-gate">B42</div>
+          </div>
+          <div class="info-tile info-accent">
+            <div class="info-label">BOARD</div>
+            <div class="info-value mono" id="s-board">14:25</div>
+          </div>
+          <div class="info-tile">
+            <div class="info-label">CAROUSEL</div>
+            <div class="info-value mono" id="s-carousel">6</div>
+          </div>
+        </div>
       </div>
-      <div class="info-tile info-accent">
-        <div class="info-label">GATE</div>
-        <div class="info-value mono" id="s-gate">B42</div>
+
+      <div class="status-view view-seat hidden" id="view-seat">
+        <div class="seat-card">
+          <div class="seat-label">SEAT</div>
+          <div class="seat-value mono" id="s-seat">14C</div>
+          <div class="seat-sub" id="s-seat-sub">ECONOMY · WINDOW</div>
+        </div>
       </div>
-      <div class="info-tile info-accent">
-        <div class="info-label">BOARD</div>
-        <div class="info-value mono" id="s-board">14:25</div>
-      </div>
-      <div class="info-tile">
-        <div class="info-label">CAROUSEL</div>
-        <div class="info-value mono" id="s-carousel">6</div>
-      </div>
+    </div>
+
+    <div class="status-dots">
+      <i class="dot on" id="dot-main"></i>
+      <i class="dot" id="dot-seat"></i>
     </div>
 
     <div class="status-foot">
@@ -176,6 +194,7 @@
         <span class="time-label">ARR</span><span class="time-val" id="s-arr">18:32</span>
       </div>
       <div class="hint-bar">
+        <span class="hint-keys"><span class="key">◀</span><span class="key">▶</span> SEAT</span>
         <span class="hint-keys"><span class="key">ENTER</span> CHANGE&nbsp;FLIGHT</span>
       </div>
     </div>

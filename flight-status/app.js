@@ -38,7 +38,15 @@
     digitIdx:      0,
     dateOffset:    0,
     status:        null,
+    statusView:    'main',  // 'main' | 'seat'
   };
+
+  var SEAT_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+  function seatRoleFor(letter) {
+    if (letter === 'A' || letter === 'F') return 'WINDOW';
+    if (letter === 'C' || letter === 'D') return 'AISLE';
+    return 'MIDDLE';
+  }
 
   // ===========================================================
   //  DETERMINISTIC RNG (so the same flight gives the same status)
@@ -106,6 +114,17 @@
     else if (statusRoll < 0.30) { statusLabel = 'BOARDING'; statusClass = 'boarding'; }
     else                        { statusLabel = 'ON TIME';  statusClass = ''; }
 
+    // Seat — row + letter, plus class
+    var row        = 1 + Math.floor(r() * 42);
+    var seatLetter = SEAT_LETTERS[Math.floor(r() * SEAT_LETTERS.length)];
+    var seat       = String(row) + seatLetter;
+    var classRoll  = r();
+    var seatClass;
+    if (classRoll < 0.04)      seatClass = 'FIRST';
+    else if (classRoll < 0.12) seatClass = 'BUSINESS';
+    else if (classRoll < 0.25) seatClass = 'PREMIUM ECONOMY';
+    else                       seatClass = 'ECONOMY';
+
     return {
       airline:     airline,
       flightNo:    flightNo,
@@ -119,6 +138,9 @@
       arr:         fmtTime(arrMin),
       statusLabel: statusLabel,
       statusClass: statusClass,
+      seat:        seat,
+      seatRole:    seatRoleFor(seatLetter),
+      seatClass:   seatClass,
     };
   }
 
@@ -220,11 +242,27 @@
     document.getElementById('s-carousel').textContent = s.carousel;
     document.getElementById('s-dep').textContent      = s.dep;
     document.getElementById('s-arr').textContent      = s.arr;
+    document.getElementById('s-seat').textContent     = s.seat;
+    document.getElementById('s-seat-sub').textContent = s.seatClass + ' · ' + s.seatRole;
+
+    setStatusView(state.statusView);
 
     saveLast({
       code:  s.airline.code + ' · ' + s.flightNo,
       route: s.origin + ' → ' + s.dest,
     });
+  }
+
+  function setStatusView(view) {
+    state.statusView = view;
+    var main = document.getElementById('view-main');
+    var seat = document.getElementById('view-seat');
+    var dotM = document.getElementById('dot-main');
+    var dotS = document.getElementById('dot-seat');
+    if (main) main.classList.toggle('hidden', view !== 'main');
+    if (seat) seat.classList.toggle('hidden', view !== 'seat');
+    if (dotM) dotM.classList.toggle('on', view === 'main');
+    if (dotS) dotS.classList.toggle('on', view === 'seat');
   }
 
   // ===========================================================
@@ -236,6 +274,7 @@
     state.digitIdx     = 0;
     state.dateOffset   = 0;
     state.status       = null;
+    state.statusView   = 'main';
     showScreen('step-airline');
   }
 
@@ -314,13 +353,47 @@
     }
 
     if (state.screen === 'status') {
-      if (k === 'Enter' || k === ' ') {
+      if (k === 'ArrowLeft' || k === 'ArrowRight') {
+        setStatusView(state.statusView === 'main' ? 'seat' : 'main');
+        e.preventDefault();
+      } else if (k === 'Enter' || k === ' ') {
         state.status = null;
         startWizard();
         e.preventDefault();
       }
       return;
     }
+  }
+
+  // ===========================================================
+  //  SWIPE on status screen — toggles main <-> seat
+  // ===========================================================
+  function setupSwipe() {
+    var SWIPE_MIN = 36;   // px to register a swipe
+    var VERT_MAX  = 60;   // tolerance for vertical drift
+    var startX = 0, startY = 0, tracking = false;
+
+    function onDown(e) {
+      if (state.screen !== 'status') return;
+      var p = e.touches ? e.touches[0] : e;
+      startX = p.clientX;
+      startY = p.clientY;
+      tracking = true;
+    }
+    function onUp(e) {
+      if (!tracking) return;
+      tracking = false;
+      var p = (e.changedTouches && e.changedTouches[0]) || e;
+      var dx = p.clientX - startX;
+      var dy = p.clientY - startY;
+      if (Math.abs(dy) > VERT_MAX) return;
+      if (Math.abs(dx) < SWIPE_MIN) return;
+      setStatusView(state.statusView === 'main' ? 'seat' : 'main');
+    }
+    document.addEventListener('touchstart', onDown, { passive: true });
+    document.addEventListener('touchend',   onUp);
+    document.addEventListener('mousedown',  onDown);
+    document.addEventListener('mouseup',    onUp);
   }
 
   // ===========================================================
@@ -366,6 +439,7 @@
   function init() {
     document.addEventListener('keydown', onKey);
     document.addEventListener('click', onClick);
+    setupSwipe();
     tickClock();
     setInterval(tickClock, 1000);
     showScreen('home');
