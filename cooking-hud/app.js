@@ -941,6 +941,76 @@ function handleAction(a, target) {
   }
 }
 
+/* URL state routing — used for reproducible README screenshots.
+   `?state=<key>` pre-sets app state, then opens the right screen.
+   Keys mirror the screenshot filenames so the regen loop stays
+   in sync with what the README displays.
+
+   Also still supports the legacy hash form:
+     #recipe=carbonara&phase=cook   → open carbonara on cook phase
+     #seethrough=1                  → enable see-through mode */
+function applyUrlState() {
+  const state_ = new URLSearchParams(location.search).get('state');
+  if (state_) {
+    switch (state_) {
+      case 'home':
+        return;
+      case 'home-seethrough':
+        applySeeThrough(true);
+        return;
+      case 'shop':
+        openRecipe('carbonara');
+        return;
+      case 'prep': {
+        // pretend shop is already done so prep is the natural landing
+        const r = RECIPES.find(x => x.id === 'carbonara');
+        if (r) r.shop.forEach(it => setChecked(r.id, it.id, true));
+        openRecipe('carbonara');
+        state.currentPhase = 'prep';
+        renderRecipe();
+        return;
+      }
+      case 'cook': {
+        const r = RECIPES.find(x => x.id === 'carbonara');
+        if (r) {
+          r.shop.forEach(it => setChecked(r.id, it.id, true));
+          r.prep.forEach(it => setChecked(r.id, it.id, true));
+          // two timers running on c1 (BOIL) and c2 (PASTA)
+          const now = Date.now();
+          state.timers = [
+            { id: 't-boil', recipeId: r.id, stepId: 'c1',
+              label: r.cook[0].text, recipeName: r.name, tag: 'BOIL',
+              endTs: now + 354 * 1000, expired: false },
+            { id: 't-pasta', recipeId: r.id, stepId: 'c2',
+              label: r.cook[1].text, recipeName: r.name, tag: 'PASTA',
+              endTs: now + 534 * 1000, expired: false }
+          ];
+          saveTimers();
+          renderTimerRail();
+        }
+        openRecipe('carbonara');
+        state.currentPhase = 'cook';
+        renderRecipe();
+        return;
+      }
+    }
+  }
+  // Legacy hash form
+  const hash = (location.hash || '').replace(/^#/, '');
+  if (!hash) return;
+  const params = new URLSearchParams(hash);
+  if (params.get('seethrough') === '1') applySeeThrough(true);
+  const recipeId = params.get('recipe');
+  if (recipeId && RECIPES.some(r => r.id === recipeId)) {
+    openRecipe(recipeId);
+    const phase = params.get('phase');
+    if (phase && PHASES.includes(phase)) {
+      state.currentPhase = phase;
+      renderRecipe();
+    }
+  }
+}
+
 /* ─────────── Boot ─────────── */
 function boot() {
   // Restore see-through preference before first paint
@@ -949,6 +1019,7 @@ function boot() {
   renderHome();
   renderTimerRail();
   startUiTick();
+  applyUrlState();
 
   if (state.timers.length) {
     const r = RECIPES.find(x => x.id === state.timers[0].recipeId);
