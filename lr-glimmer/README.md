@@ -46,19 +46,39 @@ A Tamagotchi-inspired virtual companion for Meta Display glasses that lives at t
 
 | Welcome | Name your companion | Pick your egg |
 | --- | --- | --- |
-| ![Welcome screen](screenshots/01-welcome.png) | ![Naming screen](screenshots/02-naming.png) | ![Egg selection](screenshots/03-egg-select.png) |
+| ![Welcome screen](screenshots/welcome.png) | ![Naming screen](screenshots/naming.png) | ![Egg selection](screenshots/egg-select.png) |
 
 ### Main game
 
 | Healthy companion (SPRITE stage) | Pause menu |
 | --- | --- |
-| ![Main game view](screenshots/04-game.png) | ![Pause menu](screenshots/05-menu.png) |
+| ![Main game view](screenshots/game.png) | ![Pause menu](screenshots/menu.png) |
 
 ### Death & adoption
 
 | Companion death | New companion flow |
 | --- | --- |
-| ![RIP screen](screenshots/06-dead.png) | ![Adoption — egg select](screenshots/07-adopt.png) |
+| ![RIP screen](screenshots/dead.png) | ![Adoption — egg select](screenshots/adopt.png) |
+
+---
+
+## Egg Variants
+
+Choose your egg at the start — each colour is purely cosmetic and sets the companion's palette for its whole life.
+
+| Amethyst | Jade | Ember |
+| --- | --- | --- |
+| ![Amethyst egg](screenshots/egg-amethyst.png) | ![Jade egg](screenshots/egg-jade.png) | ![Ember egg](screenshots/egg-ember.png) |
+
+---
+
+## Evolution Stages
+
+The companion grows through five stages as it ages. Each stage unlocks a new visual form and increases stat decay rate — the older it gets, the more care it needs.
+
+| EGG | SPRITE | DRONE | ORACLE | ARCHON |
+| --- | --- | --- | --- | --- |
+| ![EGG stage](screenshots/stage-egg.png) | ![SPRITE stage](screenshots/stage-sprite.png) | ![DRONE stage](screenshots/stage-drone.png) | ![ORACLE stage](screenshots/stage-oracle.png) | ![ARCHON stage](screenshots/stage-archon.png) |
 
 ---
 
@@ -75,19 +95,21 @@ For development inside the meta-display-glasses-webapps workspace it's also wire
 
 ### Regenerating screenshots
 
+The screenshots above are produced from headless Chrome against the `?state=…` URL parameter the app reads on load:
+
 ```bash
 npx serve -l 4301 lr-glimmer &
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 mkdir -p lr-glimmer/screenshots
 
-# Welcome (walkthrough step 0 — shown after the 3.6s splash)
-"$CHROME" --headless --disable-gpu --hide-scrollbars \
-  --window-size=600,600 --virtual-time-budget=5000 \
-  --screenshot="lr-glimmer/screenshots/01-welcome.png" \
-  "http://localhost:4301"
-
-# For subsequent screens, clear localStorage and use browser automation
-# or capture manually from the running preview.
+for STATE in welcome naming egg-select game menu dead adopt \
+             egg-amethyst egg-jade egg-ember \
+             stage-egg stage-sprite stage-drone stage-oracle stage-archon; do
+  "$CHROME" --headless=new --disable-gpu --hide-scrollbars \
+    --window-size=600,600 --virtual-time-budget=3000 \
+    --screenshot="lr-glimmer/screenshots/$STATE.png" \
+    "http://localhost:4301/?state=$STATE"
+done
 ```
 
 ---

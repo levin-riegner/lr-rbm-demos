@@ -54,12 +54,209 @@
   const seenWalk = () => { try { return localStorage.getItem(WALK_KEY) === '1'; } catch (e) { return false; } };
   const markWalked = () => { try { localStorage.setItem(WALK_KEY, '1'); } catch (e) {} };
 
+  // ───────── ?state= URL routing (for README screenshot generation) ─────────
+  // Each named state pre-sets app state then opens the relevant screen.
+  // Usage: http://localhost:4201/?state=game  (or naming, egg-select, menu, dead, adopt,
+  //         egg-amethyst, egg-jade, egg-ember, stage-egg, stage-sprite, stage-drone,
+  //         stage-oracle, stage-archon)
+  function applyUrlState() {
+    const urlState = new URLSearchParams(location.search).get('state');
+    if (!urlState) return false;
+
+    // Suppress localStorage so screenshots use deterministic state
+    const freshState = defaultState();
+    freshState.name = 'EMBER-7';
+    freshState.generation = 1;
+
+    const show = (screenId) => {
+      $('splash').classList.add('hidden');
+      ['walk', 'game', 'menu', 'about'].forEach(id => {
+        const el = $(id);
+        if (el) el.classList.add('hidden');
+      });
+      document.body.classList.remove('dead');
+      const el = $(screenId);
+      if (el) el.classList.remove('hidden');
+    };
+
+    if (urlState === 'welcome') {
+      // Walkthrough step 0 — GLIMMER title + creature
+      state = freshState;
+      $('splash').classList.add('hidden');
+      walkStep = 0;
+      pendingName = state.name;
+      pendingEgg = state.eggVariant;
+      syncNamingScreen();
+      const walk = $('walk');
+      walk.classList.remove('hidden');
+      walk.dataset.step = '0';
+      bindWalkButtons();
+      startWalkAnimations();
+      focusFirstInWalk();
+      return true;
+    }
+    if (urlState === 'naming') {
+      // Walkthrough step 2 — GIVE IT A NAME + input
+      state = freshState;
+      $('splash').classList.add('hidden');
+      walkStep = 2;
+      pendingName = 'EMBER-7';
+      pendingEgg = state.eggVariant;
+      syncNamingScreen();
+      const walk = $('walk');
+      walk.classList.remove('hidden');
+      walk.dataset.step = '2';
+      bindWalkButtons();
+      startWalkAnimations();
+      focusFirstInWalk();
+      return true;
+    }
+    if (urlState === 'egg-select') {
+      // Walkthrough step 3 — PICK YOUR EGG
+      state = freshState;
+      $('splash').classList.add('hidden');
+      walkStep = 3;
+      pendingName = 'EMBER-7';
+      pendingEgg = null;
+      syncNamingScreen();
+      const walk = $('walk');
+      walk.classList.remove('hidden');
+      walk.dataset.step = '3';
+      bindWalkButtons();
+      startWalkAnimations();
+      focusFirstInWalk();
+      return true;
+    }
+    if (urlState === 'egg-amethyst' || urlState === 'egg-jade' || urlState === 'egg-ember') {
+      // Egg select screen with a specific egg pre-selected
+      const variant = urlState.replace('egg-', '');
+      state = freshState;
+      state.eggVariant = variant;
+      $('splash').classList.add('hidden');
+      walkStep = 3;
+      pendingName = 'EMBER-7';
+      pendingEgg = variant;
+      refreshPalette();
+      syncNamingScreen();
+      const walk = $('walk');
+      walk.classList.remove('hidden');
+      walk.dataset.step = '3';
+      bindWalkButtons();
+      startWalkAnimations();
+      // Pre-select the egg card
+      document.querySelectorAll('.egg-card').forEach(c => {
+        c.classList.toggle('selected', c.dataset.variant === variant);
+      });
+      const hatch = $('hatchBtn');
+      if (hatch) hatch.removeAttribute('disabled');
+      focusFirstInWalk();
+      return true;
+    }
+    if (urlState === 'game' || urlState.startsWith('stage-')) {
+      // Main game — healthy companion, all stats high
+      state = freshState;
+      state.hunger = 95; state.happy = 90; state.energy = 88; state.hygiene = 92; state.health = 100;
+      if (urlState === 'stage-sprite' || urlState === 'game') { state.stageIdx = 1; state.age = STAGE_HOURS[1] + 0.01; }
+      else if (urlState === 'stage-drone')  { state.stageIdx = 2; state.age = STAGE_HOURS[2] + 0.01; }
+      else if (urlState === 'stage-oracle') { state.stageIdx = 3; state.age = STAGE_HOURS[3] + 0.01; }
+      else if (urlState === 'stage-archon') { state.stageIdx = 4; state.age = STAGE_HOURS[4] + 0.01; }
+      else { state.stageIdx = 0; } // stage-egg
+      refreshPalette();
+      show('game');
+      started = true;
+      document.querySelectorAll('.act').forEach(btn => {
+        if (btn._bound) return;
+        btn._bound = true;
+        btn.addEventListener('click', () => {
+          if (btn.dataset.action === 'menu') return openMenu();
+          doAction(btn.dataset.action, btn);
+        });
+      });
+      document.querySelectorAll('.menu-item').forEach(btn => {
+        if (btn._bound) return;
+        btn._bound = true;
+        btn.addEventListener('click', () => doMenu(btn.dataset.menu));
+      });
+      const deadBtn = document.querySelector('.dead-btn');
+      if (deadBtn && !deadBtn._bound) {
+        deadBtn._bound = true;
+        deadBtn.addEventListener('click', () => doMenu('reset'));
+      }
+      render();
+      focusFirstAction();
+      return true;
+    }
+    if (urlState === 'menu') {
+      // Pause menu open
+      state = freshState;
+      state.stageIdx = 1; state.age = STAGE_HOURS[1] + 0.01;
+      state.hunger = 95; state.happy = 90; state.energy = 88; state.hygiene = 92; state.health = 100;
+      refreshPalette();
+      show('game');
+      $('menu').classList.remove('hidden');
+      menuOpen = true;
+      started = true;
+      render();
+      document.querySelectorAll('.menu-item')[0]?.focus();
+      return true;
+    }
+    if (urlState === 'dead') {
+      // RIP overlay
+      state = freshState;
+      state.dead = true;
+      state.stageIdx = 1;
+      state.name = 'EMBER-7';
+      refreshPalette();
+      show('game');
+      document.body.classList.add('dead');
+      const deadMsg = $('deadMessage');
+      if (deadMsg) deadMsg.textContent = `RIP ${state.name}`;
+      started = true;
+      document.querySelectorAll('.act').forEach(btn => {
+        if (btn._bound) return;
+        btn._bound = true;
+        btn.addEventListener('click', () => {
+          if (btn.dataset.action === 'menu') return openMenu();
+          doAction(btn.dataset.action, btn);
+        });
+      });
+      const deadBtn = document.querySelector('.dead-btn');
+      if (deadBtn && !deadBtn._bound) {
+        deadBtn._bound = true;
+        deadBtn.addEventListener('click', () => doMenu('reset'));
+      }
+      render();
+      document.querySelector('.dead-btn')?.focus();
+      return true;
+    }
+    if (urlState === 'adopt') {
+      // Adoption flow — egg select screen (same as egg-select but from post-death flow)
+      state = freshState;
+      state.generation = 2;
+      $('splash').classList.add('hidden');
+      walkStep = 3;
+      pendingName = 'EMBER-7';
+      pendingEgg = null;
+      syncNamingScreen();
+      const walk = $('walk');
+      walk.classList.remove('hidden');
+      walk.dataset.step = '3';
+      bindWalkButtons();
+      startWalkAnimations();
+      focusFirstInWalk();
+      return true;
+    }
+    return false;
+  }
+
   // ───────── Splash → Walk or Game ─────────
-  setTimeout(() => {
-    $('splash').classList.add('hidden');
-    if (seenWalk()) startGame();
-    else startWalkthrough();
-  }, SPLASH_MS);
+  if (!applyUrlState()) {
+    setTimeout(() => {
+      $('splash').classList.add('hidden');
+      if (seenWalk()) startGame();
+      else startWalkthrough();
+    }, SPLASH_MS);
+  }
 
   // ───────── Walkthrough ─────────
   function startWalkthrough() {
