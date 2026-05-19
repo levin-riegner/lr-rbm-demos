@@ -808,6 +808,57 @@ body::after {
   line-height: 1;
 }
 
+/* compact SEAT sub-view: big seat code + class/role subtitle */
+.cs-view.hidden { display: none !important; }
+.cs-seat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 2px 6px;
+}
+.cs-val.cs-cyan {
+  color: var(--cyan);
+  text-shadow: 0 0 10px var(--cyan-glow);
+}
+.cs-seat-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  border-left: 1px solid var(--line-2);
+  padding-left: 14px;
+}
+.cs-seat-meta .cs-label { color: var(--cyan); }
+.cs-seat-sub {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--text-3);
+  line-height: 1;
+}
+
+/* mini page dots inside the compact strip */
+.cs-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+.cs-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  display: inline-block;
+  transition: background .15s, border-color .15s;
+}
+.cs-dot.on {
+  background: var(--text-2);
+  border-color: var(--text-2);
+}
+
 /* When compact mode is active on the status screen, hide everything
    except the compact strip. */
 #status.compact .status-head,

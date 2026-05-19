@@ -145,28 +145,49 @@
        =========================================================== -->
   <section id="status" class="screen hidden">
     <!-- Compact strip: shown when status is collapsed via swipe-up.
-         Sits at the top of the lens and holds all critical info on one line. -->
+         Has two sub-views (main / seat) that mirror the full screen. -->
     <div class="status-compact hidden" id="status-compact">
       <div class="cs-top">
         <span class="cs-flight mono" id="cs-flight">AA·0007</span>
       </div>
-      <div class="cs-row">
-        <div class="cs-col">
-          <span class="cs-val mono" id="cs-terminal">6</span>
-          <span class="cs-label">TERM</span>
+
+      <!-- Compact MAIN: TERM · GATE · BOARDS · CARO. -->
+      <div class="cs-view cs-view-main" id="cs-view-main">
+        <div class="cs-row">
+          <div class="cs-col">
+            <span class="cs-val mono" id="cs-terminal">6</span>
+            <span class="cs-label">TERM</span>
+          </div>
+          <div class="cs-col">
+            <span class="cs-val mono cs-amber" id="cs-gate">B49</span>
+            <span class="cs-label">GATE</span>
+          </div>
+          <div class="cs-col">
+            <span class="cs-val mono cs-amber" id="cs-board">20:37</span>
+            <span class="cs-label">BOARDS</span>
+          </div>
+          <div class="cs-col">
+            <span class="cs-val mono" id="cs-carousel">12</span>
+            <span class="cs-label">CARO.</span>
+          </div>
         </div>
-        <div class="cs-col">
-          <span class="cs-val mono cs-amber" id="cs-gate">B49</span>
-          <span class="cs-label">GATE</span>
+      </div>
+
+      <!-- Compact SEAT: seat code + class/role -->
+      <div class="cs-view cs-view-seat hidden" id="cs-view-seat">
+        <div class="cs-seat">
+          <span class="cs-val cs-cyan mono" id="cs-seat">15F</span>
+          <div class="cs-seat-meta">
+            <span class="cs-label">SEAT</span>
+            <span class="cs-seat-sub" id="cs-seat-sub">ECONOMY · AISLE</span>
+          </div>
         </div>
-        <div class="cs-col">
-          <span class="cs-val mono cs-amber" id="cs-board">20:37</span>
-          <span class="cs-label">BOARDS</span>
-        </div>
-        <div class="cs-col">
-          <span class="cs-val mono" id="cs-carousel">12</span>
-          <span class="cs-label">CARO.</span>
-        </div>
+      </div>
+
+      <!-- mini page dots so you know swipes change which compact view -->
+      <div class="cs-dots">
+        <i class="cs-dot on" id="cs-dot-main"></i>
+        <i class="cs-dot" id="cs-dot-seat"></i>
       </div>
     </div>
 
@@ -223,7 +244,7 @@
       <div class="hint-bar">
         <span class="hint-keys"><span class="key">◀</span><span class="key">▶</span> SEAT</span>
         <span class="hint-keys"><span class="key">▲</span> HIDE</span>
-        <span class="hint-keys"><span class="key">ENTER</span> CHANGE</span>
+        <span class="hint-keys"><span class="key">ENTER</span> HOME</span>
       </div>
     </div>
   </section>

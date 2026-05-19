@@ -279,6 +279,7 @@
 
   function setStatusView(view) {
     state.statusView = view;
+    // full mode tiles
     var main = document.getElementById('view-main');
     var seat = document.getElementById('view-seat');
     var dotM = document.getElementById('dot-main');
@@ -287,6 +288,15 @@
     if (seat) seat.classList.toggle('hidden', view !== 'seat');
     if (dotM) dotM.classList.toggle('on', view === 'main');
     if (dotS) dotS.classList.toggle('on', view === 'seat');
+    // compact strip sub-views mirror the same selection
+    var csMain = document.getElementById('cs-view-main');
+    var csSeat = document.getElementById('cs-view-seat');
+    var csDotM = document.getElementById('cs-dot-main');
+    var csDotS = document.getElementById('cs-dot-seat');
+    if (csMain) csMain.classList.toggle('hidden', view !== 'main');
+    if (csSeat) csSeat.classList.toggle('hidden', view !== 'seat');
+    if (csDotM) csDotM.classList.toggle('on', view === 'main');
+    if (csDotS) csDotS.classList.toggle('on', view === 'seat');
   }
 
   function setStatusMode(mode) {
@@ -295,7 +305,7 @@
     var compact = document.getElementById('status-compact');
     if (!sec || !compact) return;
     if (mode === 'compact') {
-      // populate the compact strip from current status
+      // populate both compact sub-views from current status
       var s = state.status;
       if (s) {
         document.getElementById('cs-flight').textContent   = s.airline.code + '·' + s.flightNo;
@@ -303,6 +313,8 @@
         document.getElementById('cs-gate').textContent     = s.gate;
         document.getElementById('cs-board').textContent    = s.board;
         document.getElementById('cs-carousel').textContent = s.carousel;
+        document.getElementById('cs-seat').textContent     = s.seat;
+        document.getElementById('cs-seat-sub').textContent = s.seatClass + ' · ' + s.seatRole;
       }
       compact.classList.remove('hidden');
       sec.classList.add('compact');
@@ -439,30 +451,24 @@
 
     if (state.screen === 'status') {
       if (k === 'ArrowUp') {
-        // collapse
+        // collapse — keeps current view (main/seat)
         setStatusMode('compact');
         e.preventDefault();
       } else if (k === 'ArrowDown') {
-        // expand
+        // expand — keeps current view (main/seat)
         setStatusMode('full');
         e.preventDefault();
       } else if (k === 'ArrowLeft' || k === 'ArrowRight') {
-        if (state.statusMode === 'compact') {
-          // ◀/▶ in compact: jump to the seat view (expanded)
-          setStatusMode('full');
-          setStatusView('seat');
-        } else {
-          setStatusView(state.statusView === 'main' ? 'seat' : 'main');
-        }
+        // toggle main ↔ seat in whichever mode we're in
+        setStatusView(state.statusView === 'main' ? 'seat' : 'main');
         e.preventDefault();
       } else if (k === 'Enter' || k === ' ') {
         if (state.statusMode === 'compact') {
-          // Enter in compact: just expand back to the full status display.
+          // Enter in compact: expand to full of current view
           setStatusMode('full');
         } else {
-          // Enter in full: restart the wizard (CHANGE FLIGHT).
-          state.status = null;
-          startWizard();
+          // Enter in full: go HOME (user can pick LAST FLIGHT or FIND FLIGHT)
+          showScreen('home');
         }
         e.preventDefault();
       }
@@ -504,14 +510,8 @@
         if (dy < 0) setStatusMode('compact');
         else        setStatusMode('full');
       } else {
-        // horizontal swipe
-        if (state.statusMode === 'compact') {
-          // From compact, ←/→ jumps to the seat view (expanded).
-          setStatusMode('full');
-          setStatusView('seat');
-        } else {
-          setStatusView(state.statusView === 'main' ? 'seat' : 'main');
-        }
+        // horizontal swipe → toggle main ↔ seat (in whichever mode we're in)
+        setStatusView(state.statusView === 'main' ? 'seat' : 'main');
       }
     }
     document.addEventListener('touchstart', onDown, { passive: true });
