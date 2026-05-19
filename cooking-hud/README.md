@@ -33,7 +33,6 @@ A hands-free cooking companion for the Meta Display glasses that walks you throu
 | Cook (done) | Enter on timer cell | Open `RESET STEP?` confirm |
 | Confirm | ◀ ▶ | Move between CANCEL / CONFIRM (CANCEL default) |
 | Timer alert | Enter on `GOT IT` | Dismiss + auto-check the step |
-| Recipe | Esc | Back to home |
 
 Touch swipes mirror the arrow keys; Enter mirrors Tap on the actual hardware.
 
