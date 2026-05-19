@@ -213,6 +213,12 @@
 
   function setOperator(op) {
     if (state.error) return;
+    // If the previous keypress was an operator (no second operand entered yet),
+    // just swap to the new operator instead of recomputing with the same value.
+    if (state.pendingClear) {
+      state.operator = op;
+      return;
+    }
     const currentNum = parseFloat(state.current);
     if (state.operator && state.previous != null && !state.justEvaluated) {
       const result = compute(state.previous, state.operator, currentNum);

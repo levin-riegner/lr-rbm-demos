@@ -216,13 +216,13 @@ body {
   font-weight: var(--tag-weight);
   letter-spacing: var(--tag-spacing);
   text-transform: uppercase;
-  color: var(--tag-text);
+  color: #FFFFFF;
   background: transparent;
   border: 0;
   padding: 0;
   cursor: pointer;
   outline: none;
-  transition: opacity 120ms ease;
+  transition: opacity 120ms ease, color 120ms ease;
 }
 .tag:hover  { opacity: 0.7; }
 .tag:active { opacity: 0.5; }
