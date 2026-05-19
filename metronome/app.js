@@ -225,53 +225,75 @@
   }
 
   // ===========================================================
-  //  NOD TEMPO — head-nod detection via deviceorientation
+  //  NOD TEMPO — peak/trough detection on head pitch
+  //
+  //  Strategy: smooth the pitch reading, track its velocity, and emit
+  //  a tick every time velocity reverses sign (i.e. an extremum — the
+  //  bottom of a down-nod, or the top of the recovery). That gives 2
+  //  ticks per full nod cycle, which feels natural: at 120 BPM the
+  //  user just bobs their head at ~1 Hz.
   // ===========================================================
   var nod = {
     active: false,
-    baseline: null,    // drifting reference pitch
-    state: 'idle',     // 'idle' | 'away'
-    awaySign: 0,       // direction of current excursion
-    peak: 0,           // max |rel| reached in this excursion
-    lastTickAt: 0,
     handler: null,
+    smoothed: null,    // EMA-smoothed pitch
+    prevSmoothed: null,
+    dir: 0,            // current motion direction: -1, 0, +1
+    extremum: null,    // pitch at the last detected extremum (or initial)
+    extremumAt: 0,     // timestamp of last extremum
+    lastTickAt: 0,
   };
-  // Pitch thresholds (degrees from baseline).
-  var NOD_AWAY = 9;          // must swing this far from baseline
-  var NOD_RETURN = 3;        // and return within this band → register tick
-  var NOD_MIN_GAP = 180;     // ms — debounce duplicate ticks
+  // Tuning knobs.
+  var NOD_SMOOTH    = 0.55;  // EMA weight on new sample (higher = less smoothing)
+  var NOD_MIN_VEL   = 0.25;  // deg/event — anything smaller is treated as still
+  var NOD_MIN_AMP   = 4.0;   // deg — minimum swing between consecutive extrema
+  var NOD_MIN_GAP   = 90;    // ms — debounce between ticks (allows up to ~660 BPM)
 
   function onOrient(e) {
     if (e == null || e.beta == null) return;
     var b = e.beta;
-    if (nod.baseline == null) {
-      nod.baseline = b;
+
+    // Initialize on first sample.
+    if (nod.smoothed == null) {
+      nod.smoothed = b;
+      nod.prevSmoothed = b;
+      nod.extremum = b;
+      nod.extremumAt = (typeof performance !== 'undefined' ? performance.now() : Date.now());
       return;
     }
-    // Slow baseline drift so a long-held tilt doesn't lock the detector.
-    nod.baseline += (b - nod.baseline) * 0.004;
-    var rel = b - nod.baseline;
 
-    if (nod.state === 'idle') {
-      if (Math.abs(rel) >= NOD_AWAY) {
-        nod.state = 'away';
-        nod.awaySign = rel > 0 ? 1 : -1;
-        nod.peak = Math.abs(rel);
-      }
-    } else {
-      // Track peak magnitude during the excursion.
-      if (Math.abs(rel) > nod.peak) nod.peak = Math.abs(rel);
-      // Tick when head returns near baseline.
-      if (Math.abs(rel) <= NOD_RETURN) {
+    // Light EMA smoothing to kill sensor jitter.
+    nod.smoothed = nod.smoothed + NOD_SMOOTH * (b - nod.smoothed);
+    var s = nod.smoothed;
+    var dv = s - nod.prevSmoothed;
+
+    // Determine motion direction with a small dead band.
+    var newDir = 0;
+    if (dv >  NOD_MIN_VEL) newDir =  1;
+    else if (dv < -NOD_MIN_VEL) newDir = -1;
+
+    if (newDir !== 0) {
+      if (nod.dir === 0) {
+        // First real motion since rest — seed direction; the rest point
+        // is implicitly the previous extremum.
+        nod.dir = newDir;
+      } else if (newDir !== nod.dir) {
+        // Direction just reversed → the previous smoothed value is the
+        // extremum. Check amplitude/time gates before firing.
         var now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-        nod.state = 'idle';
-        nod.awaySign = 0;
-        nod.peak = 0;
-        if (now - nod.lastTickAt < NOD_MIN_GAP) return;
-        nod.lastTickAt = now;
-        registerNodTick();
+        var amp = Math.abs(nod.prevSmoothed - nod.extremum);
+        var gap = now - nod.lastTickAt;
+        if (amp >= NOD_MIN_AMP && gap >= NOD_MIN_GAP) {
+          nod.lastTickAt = now;
+          registerNodTick();
+        }
+        nod.extremum = nod.prevSmoothed;
+        nod.extremumAt = now;
+        nod.dir = newDir;
       }
     }
+
+    nod.prevSmoothed = s;
   }
 
   function registerNodTick() {
@@ -287,10 +309,16 @@
   function startNod() {
     if (nod.active) return;
     nod.active = true;
-    nod.baseline = null;
-    nod.state = 'idle';
+    nod.smoothed = null;
+    nod.prevSmoothed = null;
+    nod.dir = 0;
+    nod.extremum = null;
+    nod.extremumAt = 0;
+    nod.lastTickAt = 0;
     nod.handler = onOrient;
     window.addEventListener('deviceorientation', nod.handler);
+    // Reset the tap-tempo buffer so old taps don't get averaged with new nods.
+    state.tapTimes.length = 0;
     var btn = document.getElementById('nod-btn');
     if (btn) btn.classList.add('listening');
   }
