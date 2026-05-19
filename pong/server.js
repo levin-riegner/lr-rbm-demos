@@ -577,7 +577,10 @@ function handleInput(ws, data) {
     return;
   }
   var intent = Number(data && data.intent);
-  if (!(intent === -1 || intent === 0 || intent === 1)) {
+  // Clients can boost paddle speed by rapid-tapping (or via the mobile swipe
+  // surface). Anything in [-4, 4] is fair game; the physics tick multiplies
+  // by PADDLE_SPEED, so |intent|=2 is 2× speed, etc.
+  if (!Number.isFinite(intent) || intent < -4 || intent > 4) {
     send(ws, { type: 'error', reason: 'bad-intent' });
     return;
   }

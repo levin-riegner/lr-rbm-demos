@@ -13,10 +13,19 @@
   </head>
   <body>
     <div id="app">
-      <!-- 1. Connecting — while the WS is handshaking. -->
+      <!-- 1. Connecting — playful loading fragments cycle here. -->
       <section id="screen-connecting" class="screen">
-        <div class="spinner" aria-hidden="true"></div>
-        <div class="screen-title">Connecting</div>
+        <div class="loader-bricks" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div
+          class="fragment"
+          id="connecting-fragment"
+          aria-live="polite"
+          aria-label="Connecting"
+        >
+          connecting the dots<span class="blinker" aria-hidden="true"></span>
+        </div>
         <button
           class="focusable"
           type="button"
@@ -179,7 +188,7 @@
         ></canvas>
         <div class="game-legend">
           <span class="legend-side legend-left">P1</span>
-          <span class="legend-meta" id="game-meta">↑ / ↓ moves your paddle &middot; Esc leaves</span>
+          <span class="legend-meta" id="game-meta">↑ / ↓ paddle &middot; tap fast = boost</span>
           <span class="legend-side legend-right">P2</span>
         </div>
       </section>
