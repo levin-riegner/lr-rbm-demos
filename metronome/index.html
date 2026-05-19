@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
   <title>Metronome</title>
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -142,25 +141,57 @@
        PLAYING — beat indicator + stop
        ============================================================ -->
   <section id="playing" class="screen hidden">
-    <div class="play-header">
-      <span class="play-tag" id="play-time-tag">4/4</span>
-      <span class="play-tag" id="play-note-tag">♩</span>
-    </div>
 
-    <div class="play-stage">
-      <div class="beat-dots" id="beat-dots"></div>
-      <div class="play-bpm">
-        <span class="play-bpm-num" id="play-bpm">80</span>
-        <span class="play-bpm-unit">BPM</span>
+    <!-- COMPACT / HUD MODE — a single horizontal strip at the very top -->
+    <div class="play-mini" id="play-mini">
+      <div class="mini-dots" id="mini-dots"></div>
+      <div class="mini-readout">
+        <span class="mini-note" id="mini-note">♩</span>
+        <span class="mini-equals">=</span>
+        <span class="mini-bpm" id="mini-bpm">80</span>
+        <span class="mini-divider">·</span>
+        <span class="mini-time" id="mini-time">4/4</span>
       </div>
-      <div class="pulse-ring" id="pulse-ring"></div>
+      <button class="mini-btn focusable" data-action="toggle-small" aria-label="Expand">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="14 4 20 4 20 10"></polyline>
+          <polyline points="10 20 4 20 4 14"></polyline>
+          <line x1="20" y1="4" x2="14" y2="10"></line>
+          <line x1="4" y1="20" x2="10" y2="14"></line>
+        </svg>
+      </button>
     </div>
 
-    <div class="play-foot">
-      <button class="btn btn-stop focusable" data-action="toggle-play" id="stop-btn">
-        <span class="btn-icon">■</span><span class="btn-label">STOP</span>
-      </button>
-      <button class="btn btn-ghost btn-edit focusable" data-action="setup-begin">EDIT</button>
+    <!-- FULL MODE -->
+    <div class="play-full" id="play-full">
+      <div class="play-header">
+        <span class="play-tag" id="play-time-tag">4/4</span>
+        <span class="play-tag" id="play-note-tag">♩</span>
+        <button class="play-shrink focusable" data-action="toggle-small" aria-label="Compact mode">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 10 14 10 14 4"></polyline>
+            <polyline points="4 14 10 14 10 20"></polyline>
+            <line x1="14" y1="10" x2="20" y2="4"></line>
+            <line x1="10" y1="14" x2="4" y2="20"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="play-stage">
+        <div class="beat-dots" id="beat-dots"></div>
+        <div class="play-bpm">
+          <span class="play-bpm-num" id="play-bpm">80</span>
+          <span class="play-bpm-unit">BPM</span>
+        </div>
+        <div class="pulse-ring" id="pulse-ring"></div>
+      </div>
+
+      <div class="play-foot">
+        <button class="btn btn-stop focusable" data-action="toggle-play" id="stop-btn">
+          <span class="btn-icon">■</span><span class="btn-label">STOP</span>
+        </button>
+        <button class="btn btn-ghost btn-edit focusable" data-action="setup-begin">EDIT</button>
+      </div>
     </div>
   </section>
 

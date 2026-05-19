@@ -21,7 +21,7 @@ html, body {
   width: 600px;
   height: 600px;
   overflow: hidden;
-  background: radial-gradient(ellipse at top, #0e1424 0%, #05060a 65%);
+  background: #000;
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -84,8 +84,7 @@ html, body {
 
 .summary-card {
   flex: 1;
-  background: linear-gradient(180deg, rgba(0,212,255,0.06), rgba(0,212,255,0.02));
-  border: 1px solid var(--line);
+  background: #000;
   border-radius: 22px;
   padding: 28px 24px 22px;
   display: flex;
@@ -126,8 +125,8 @@ html, body {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: var(--bg-2);
-  border: 1px solid var(--line);
+  background: #000;
+  border: 1px solid #1a1f2e;
   border-radius: 14px;
   padding: 14px 22px;
 }
@@ -267,8 +266,7 @@ html, body {
   gap: 22px;
 }
 .bpm-stage {
-  background: var(--bg-1);
-  border: 1px solid var(--line);
+  background: #000;
   border-radius: 22px;
   padding: 24px 16px 18px;
   text-align: center;
@@ -412,17 +410,46 @@ html, body {
 /* ============================================================
    PLAYING SCREEN
    ============================================================ */
-#playing { padding: 24px; }
+#playing { padding: 24px; background: #000; }
+
+.play-full {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 0;
+}
 
 .play-header {
   display: flex;
+  align-items: center;
   justify-content: center;
   gap: 14px;
+  position: relative;
   flex-shrink: 0;
 }
+
+.play-shrink {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #000;
+  border: 2px solid #1a1f2e;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.play-shrink:focus {
+  color: var(--accent);
+}
 .play-tag {
-  background: var(--bg-2);
-  border: 1px solid var(--line);
+  background: #000;
+  border: 1px solid #1a1f2e;
   color: var(--text);
   font-size: 26px;
   font-weight: 800;
@@ -550,6 +577,93 @@ html, body {
   min-height: 42px;
   padding: 10px;
 }
+
+/* ============================================================
+   COMPACT / HUD MODE — single-line readout pinned to the top
+   ============================================================ */
+.play-mini {
+  display: none;
+  align-items: center;
+  gap: 14px;
+  height: 64px;
+  padding: 0 16px;
+  background: #000;
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+
+#playing.small-mode { padding: 8px; justify-content: flex-start; gap: 0; }
+#playing.small-mode .play-mini { display: flex; }
+#playing.small-mode .play-full { display: none; }
+
+.mini-dots {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.mini-dots .beat-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1a1f2e;
+  border: 2px solid #1a1f2e;
+  transition: background 0.04s, border-color 0.04s, box-shadow 0.04s, transform 0.06s;
+}
+.mini-dots .beat-dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+  transform: scale(1.2);
+}
+.mini-dots .beat-dot.accent {
+  background: var(--warm);
+  border-color: var(--warm);
+  box-shadow: 0 0 14px var(--warm-glow);
+  transform: scale(1.25);
+}
+
+.mini-readout {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-family: 'Courier New', 'SF Mono', monospace;
+}
+.mini-note { font-size: 26px; color: var(--accent); line-height: 1; }
+.mini-equals { font-size: 20px; color: var(--text-3); font-weight: 300; }
+.mini-bpm {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  transition: color 0.06s, text-shadow 0.06s;
+}
+.mini-bpm.flash-beat   { color: var(--accent); text-shadow: 0 0 12px var(--accent-glow); }
+.mini-bpm.flash-accent { color: var(--warm);   text-shadow: 0 0 14px var(--warm-glow); }
+.mini-divider { font-size: 22px; color: var(--text-3); }
+.mini-time {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-2);
+  letter-spacing: 1px;
+}
+
+.mini-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #000;
+  border: 2px solid #1a1f2e;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mini-btn:focus { color: var(--accent); }
 
 /* ============================================================
    UTILITY

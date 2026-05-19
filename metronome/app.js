@@ -27,6 +27,7 @@
     volume: 0.7,
     accent: true,
     playing: false,
+    smallMode: false,
     screen: 'home',
     wizardIdx: 0,
     currentBeat: 0,
@@ -294,10 +295,13 @@
   }
 
   function renderBpm() {
+    var bpmStr = String(state.bpm);
     var big = document.getElementById('bpm-big');
-    if (big) big.textContent = String(state.bpm);
+    if (big) big.textContent = bpmStr;
     var play = document.getElementById('play-bpm');
-    if (play) play.textContent = String(state.bpm);
+    if (play) play.textContent = bpmStr;
+    var mini = document.getElementById('mini-bpm');
+    if (mini) mini.textContent = bpmStr;
     renderHome();
   }
 
@@ -314,39 +318,52 @@
   }
 
   function renderPlaying() {
+    var glyph = NOTE_VALUES[state.noteValue].glyph;
+    var timeStr = state.beatsPerMeasure + (state.beatsPerMeasure >= 6 ? '/8' : '/4');
     var t = document.getElementById('play-time-tag');
     var n = document.getElementById('play-note-tag');
-    if (t) t.textContent = state.beatsPerMeasure + (state.beatsPerMeasure >= 6 ? '/8' : '/4');
-    if (n) n.textContent = NOTE_VALUES[state.noteValue].glyph;
+    if (t) t.textContent = timeStr;
+    if (n) n.textContent = glyph;
+    var mt = document.getElementById('mini-time');
+    var mn = document.getElementById('mini-note');
+    if (mt) mt.textContent = timeStr;
+    if (mn) mn.textContent = glyph;
     renderBpm();
     renderBeatDots();
+    applySmallMode();
   }
 
   function renderBeatDots() {
-    var c = document.getElementById('beat-dots');
-    if (!c) return;
-    c.innerHTML = '';
-    for (var i = 0; i < state.beatsPerMeasure; i++) {
-      var d = document.createElement('span');
-      d.className = 'beat-dot';
-      d.id = 'dot-' + i;
-      c.appendChild(d);
-    }
+    [['beat-dots', ''], ['mini-dots', 'mini-']].forEach(function (cfg) {
+      var c = document.getElementById(cfg[0]);
+      if (!c) return;
+      c.innerHTML = '';
+      for (var i = 0; i < state.beatsPerMeasure; i++) {
+        var d = document.createElement('span');
+        d.className = 'beat-dot';
+        d.dataset.beat = String(i);
+        c.appendChild(d);
+      }
+    });
   }
 
   function flashBeat(beat, isAccent, isBeat) {
+    // Clear all dots in both displays.
     document.querySelectorAll('.beat-dot').forEach(function (d) {
       d.classList.remove('active', 'accent');
     });
     var ring = document.getElementById('pulse-ring');
     var num = document.getElementById('play-bpm');
+    var miniNum = document.getElementById('mini-bpm');
     if (beat < 0) {
       if (ring) ring.classList.remove('pulse', 'pulse-accent');
       if (num) num.classList.remove('flash-beat', 'flash-accent');
+      if (miniNum) miniNum.classList.remove('flash-beat', 'flash-accent');
       return;
     }
-    var dot = document.getElementById('dot-' + beat);
-    if (dot) dot.classList.add(isAccent ? 'accent' : 'active');
+    document.querySelectorAll('.beat-dot[data-beat="' + beat + '"]').forEach(function (d) {
+      d.classList.add(isAccent ? 'accent' : 'active');
+    });
 
     if (isBeat) {
       if (ring) {
@@ -358,13 +375,26 @@
           ring.classList.remove('pulse', 'pulse-accent');
         }, 180);
       }
-      if (num) {
-        num.classList.add(isAccent ? 'flash-accent' : 'flash-beat');
+      [num, miniNum].forEach(function (el) {
+        if (!el) return;
+        el.classList.add(isAccent ? 'flash-accent' : 'flash-beat');
         setTimeout(function () {
-          num.classList.remove('flash-accent', 'flash-beat');
+          el.classList.remove('flash-accent', 'flash-beat');
         }, 90);
-      }
+      });
     }
+  }
+
+  function applySmallMode() {
+    var p = document.getElementById('playing');
+    if (p) p.classList.toggle('small-mode', !!state.smallMode);
+  }
+
+  function toggleSmallMode() {
+    state.smallMode = !state.smallMode;
+    applySmallMode();
+    saveData();
+    setTimeout(focusFirst, 30);
   }
 
   // ===========================================================
@@ -380,6 +410,7 @@
       if (d.noteValue && NOTE_VALUES[d.noteValue]) state.noteValue = d.noteValue;
       if (typeof d.volume === 'number') state.volume = d.volume;
       if (typeof d.accent === 'boolean') state.accent = d.accent;
+      if (typeof d.smallMode === 'boolean') state.smallMode = d.smallMode;
     } catch (e) { /* ignore */ }
   }
   function saveData() {
@@ -390,6 +421,7 @@
         noteValue: state.noteValue,
         volume: state.volume,
         accent: state.accent,
+        smallMode: state.smallMode,
       }));
     } catch (e) { /* ignore */ }
   }
@@ -422,6 +454,10 @@
       case 'toggle-play':
         if (state.playing) { playUI('stop'); stopMetronome(); }
         else               { playUI('start'); startMetronome(); }
+        break;
+      case 'toggle-small':
+        playUI('next');
+        toggleSmallMode();
         break;
     }
   }
