@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Pentatonic Solo</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- crt scanlines overlay -->
+  <div class="scanlines"></div>
+
+  <main class="panel">
+
+    <header class="hdr">
+      <span class="hdr-mark">▲</span>
+      <span class="hdr-title">PENTATONIC SOLO</span>
+      <span class="hdr-key static">
+        <span id="key-label">B</span><span class="key-mode">m</span>
+      </span>
+    </header>
+
+    <!-- big now-playing readout -->
+    <section class="now">
+      <div class="now-stage">
+        <div class="now-ring" id="now-ring"></div>
+        <div class="now-note" id="now-note">—</div>
+        <div class="now-sub" id="now-sub">READY</div>
+      </div>
+      <canvas class="scope" id="scope" width="320" height="64"></canvas>
+    </section>
+
+    <!-- 5-pad d-pad layout -->
+    <section class="pads">
+      <div class="pad-grid">
+        <button class="pad pad-up focusable" data-key="up" aria-label="Up arrow">
+          <span class="pad-arrow">▲</span>
+          <span class="pad-note" data-slot="up">E</span>
+          <span class="pad-deg">4</span>
+        </button>
+        <button class="pad pad-left focusable" data-key="left" aria-label="Left arrow">
+          <span class="pad-arrow">◀</span>
+          <span class="pad-note" data-slot="left">D</span>
+          <span class="pad-deg">b3</span>
+        </button>
+        <button class="pad pad-enter focusable" data-key="enter" aria-label="Enter">
+          <span class="pad-arrow">●</span>
+          <span class="pad-note" data-slot="enter">A</span>
+          <span class="pad-deg">b7</span>
+        </button>
+        <button class="pad pad-right focusable" data-key="right" aria-label="Right arrow">
+          <span class="pad-arrow">▶</span>
+          <span class="pad-note" data-slot="right">F#</span>
+          <span class="pad-deg">5</span>
+        </button>
+        <button class="pad pad-down focusable" data-key="down" aria-label="Down arrow">
+          <span class="pad-arrow">▼</span>
+          <span class="pad-note" data-slot="down">B</span>
+          <span class="pad-deg">1</span>
+        </button>
+      </div>
+    </section>
+
+    <footer class="ftr">
+      <span class="ftr-cell"><span class="ftr-k">SCALE</span><span class="ftr-v">B MINOR PENT</span></span>
+      <span class="ftr-cell"><span class="ftr-k">HOLD</span><span class="ftr-v">SUSTAIN</span></span>
+      <span class="ftr-cell"><span class="ftr-k">VOICE</span><span class="ftr-v" id="voice-name">SAW</span></span>
+    </footer>
+
+  </main>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
