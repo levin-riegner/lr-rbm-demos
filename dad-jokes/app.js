@@ -367,13 +367,29 @@
     });
   }
 
+  // Screenshot / preview override: load a fixed joke via URL param
+  // instead of hitting the API. Used by the README regen-screenshot
+  // script (e.g. `?joke=hello%20world&heard=3&groans=1`).
+  function applyUrlOverride() {
+    if (typeof location === 'undefined') return false;
+    var p = new URLSearchParams(location.search);
+    var j = p.get('joke');
+    if (!j) return false;
+    state.heard  = parseInt(p.get('heard')  || '1', 10) || 1;
+    state.groans = parseInt(p.get('groans') || '0', 10) || 0;
+    applyJoke(j.replace(/\\n/g, '\n'));
+    renderCounters();
+    return true;
+  }
+
   function init() {
     loadData();
     renderCounters();
     renderJoke();
     setupEvents();
     setTimeout(focusForState, 50);
-    fetchJoke();
+
+    if (!applyUrlOverride()) fetchJoke();
 
     // Re-fit once the Caveat webfont actually loads — metrics shift
     // noticeably between the fallback and the loaded font.
