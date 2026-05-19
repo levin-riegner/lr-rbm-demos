@@ -1,63 +1,112 @@
 # Metronome
 
-A focused, hands-free metronome built for the Ray-Ban Meta Display wearable. 600×600, single-screen at a time, big targets, AudioContext throughout. Set a tempo, a time signature, a subdivision — then collapse the UI down to a single 64px strip so the rest of your view stays unobstructed.
+A hands-free metronome for Meta Display glasses — set tempo, time signature, and subdivision in three large, single-question steps, then either keep the full readout up or collapse it to a **single 64px strip** at the top of the lens so the rest of your view stays clear. Tap a button, **tap your foot**, or **nod your head** to dial in BPM.
 
-The original metronome crammed BPM, time signature, note value, volume, accent, and start/stop onto one screen. This rebuild splits the decisions into clear, large steps and lets the play screen disappear when you don't need it.
+> 📖 **Case study:** [levinriegner.com/work/metronome](https://www.levinriegner.com/work/metronome/)
 
 ---
 
-## The wizard
+## What it does
 
-Three steps, each with one job and one large target. Big enough to read at glance distance, simple enough that the wrong button is hard to hit.
+- **Step-by-step wizard.** Three screens, each with one job: TEMPO, TIME SIGNATURE, SUBDIVISION. Selecting a tile on steps 2 and 3 auto-advances — no extra NEXT button to hunt for.
+- **Three ways to set tempo.** ±10 / ±1 buttons, **TAP** for tap-tempo averaging, or **NOD** — a head-nod picker that listens to `deviceorientation` and counts each full down-and-back nod cycle as one tap, fed into the same averager.
+- **Quick-start home.** Saved BPM / time / note shown as a card on home; **START** plays with the current config, **CHANGE TEMPO** drops into the wizard.
+- **Big-mode play screen.** Time + note tags, four big beat dots that scale + glow on hit, 130px BPM that flashes cyan on each beat and warm orange on the downbeat, an expanding pulse ring behind it, and STOP + EDIT below.
+- **Compact HUD mode.** A pinned 64px strip across the top of the lens — beat dots, ♩ = BPM, time signature. The rest of the 600×600 stays pure black so the wearer can see through it. Tap the expand icon or **swipe down anywhere** to return to full mode.
+- **Persistent + audible UI.** Every interaction plays a short AudioContext-synthesised UI cue (`tick`, `focus`, `select`, `next`, `back`, `start`, `stop`) routed straight to `ctx.destination` so it doesn't ride the metronome volume gain. Tempo / time / subdivision / compact-mode preferences persist in `localStorage`.
 
-| Home | Tempo | Time signature | Subdivision |
-| --- | --- | --- | --- |
-| ![Home](docs/screens/01-home.png) | ![Tempo](docs/screens/02-step-tempo.png) | ![Time signature](docs/screens/03-step-time.png) | ![Subdivision](docs/screens/04-step-note.png) |
+All metronome clicks are synthesised on the fly as 28ms damped sinusoids — 1500 Hz on the accent, 1050 Hz on regular beats, 700 Hz on subdivisions — scheduled with a 120ms lookahead so timing stays rock-solid.
 
-**Home** shows the saved config as a card; **START** uses it as-is, **CHANGE TEMPO** drops into the wizard. On step 1 you set BPM via −10/−1/+1/+10, **TAP** (averages the last N taps), or **NOD** — a head-nod tempo picker that listens to `deviceorientation`, detects each full down-and-back nod cycle as one tap, and feeds it into the same averager. On steps 2 and 3, tapping a tile auto-advances; the active tile glows warm orange and the d-pad focus ring is cyan, so "selected" and "highlighted" never look the same.
+---
 
-## The play screen
+## Controls
 
-Big mode shows everything (time sig + note tags, four beat dots, large flashing BPM, pulse ring, STOP, EDIT). Compact mode collapses the whole UI to a single 64px strip at the top of the display so the rest of your field of view stays clear — beat dots, ♩ = BPM, time signature, and an expand button. Pinching back to full mode is a tap on the expand icon or a swipe down anywhere on the screen.
+| Where | Input | Result |
+| --- | --- | --- |
+| Home | ▲ ▼ | Focus START / CHANGE TEMPO |
+| Home | ◀ ▶ | Nudge BPM ±1 |
+| Home | Enter | Open focused option |
+| Tempo step | ◀ ▶ buttons | Adjust BPM by ±1 / ±10 |
+| Tempo step | TAP | Add one beat to the running tap-tempo average |
+| Tempo step | NOD | Toggle head-nod listening (one nod = one tap) |
+| Tempo step (focus on row) | Swipe ▲ | Jump to BACK arrow |
+| Tempo step (focus on row) | Swipe ▼ | Jump to NEXT button |
+| Time / Subdivision | ▲ ▼ | Move between rows (3-col / 2-col grid) |
+| Time / Subdivision | ◀ ▶ | Move between columns |
+| Time / Subdivision | Enter / tap tile | Auto-select + advance |
+| Playing (full) | ▲ ▼ | Focus expand-icon / STOP / EDIT |
+| Playing (full) | ◀ ▶ | Nudge BPM ±1 |
+| Playing (full) | EDIT | Return to TEMPO step with NOD pre-focused |
+| Playing (any) | Tap expand-icon | Toggle compact ↔ full mode |
+| Playing (compact) | Swipe ▼ anywhere | Expand back to full mode |
+| Anywhere | Esc | Stop playing, then back out a step at a time |
 
-| Full mode (3/4, quarter notes, beat 1 accented) | Compact HUD mode |
+Horizontal swipes mirror ◀ ▶ for BPM on the home and play screens.
+
+---
+
+## Screenshots
+
+### Home
+
+| Saved config + START |
+| --- |
+| ![Home](screenshots/home.png) |
+
+### Wizard
+
+| 1 · TEMPO | 2 · TIME SIGNATURE | 3 · SUBDIVISION |
+| --- | --- | --- |
+| ![Tempo step](screenshots/step-tempo.png) | ![Time signature step](screenshots/step-time.png) | ![Subdivision step](screenshots/step-note.png) |
+
+### Playing
+
+| Full mode (downbeat accent) | Compact HUD mode |
 | --- | --- |
-| ![Playing — full](docs/screens/05-playing-full.png) | ![Playing — compact](docs/screens/06-playing-small.png) |
+| ![Playing — full](screenshots/playing-full.png) | ![Playing — compact](screenshots/playing-small.png) |
 
-## Interactions
+---
 
-| Gesture / key | Effect |
-| --- | --- |
-| Tap **TAP** | Add a beat to the running tempo average |
-| Tap **NOD** then nod your head | Each full nod cycle counts as one tap; tempo updates live |
-| **←** / **→** on home or play | Nudge BPM by ±1 |
-| Horizontal swipe on home or play | Same as ←/→ |
-| Swipe down in compact mode | Expand to full mode |
-| Swipe up / down on the BPM control row | Jump focus to BACK / NEXT |
-| Tap **EDIT** while playing | Open the TEMPO step with **NOD** pre-focused |
-| **Esc** | Stop playing, then back out a step at a time |
+## Running locally
 
-Every interaction also plays a short AudioContext-synthesised UI cue (`tick`, `focus`, `select`, `next`, `back`, `start`, `stop`) routed straight to `ctx.destination` so it doesn't ride the metronome volume gain.
+The app is a single static HTML/CSS/JS bundle — no build step.
 
-## Audio engine
+```bash
+npx serve -l 4209 metronome
+# then open http://localhost:4209
+```
 
-A scheduled lookahead loop synthesises each click as a 28ms damped sinusoid into an `AudioBuffer`: 1500 Hz on the accent, 1050 Hz on regular beats, 700 Hz on subdivisions. The first metronome tick is pushed out by 280ms after START so the louder `start` UI cue lands cleanly first; on STOP the master gain is ramped to silence over 20ms to mute any clicks the scheduler's 120ms lookahead has already queued.
+For development inside the meta-display-glasses-webapps workspace it's also wired into `.claude/launch.json` as the `metronome` preview target on port **4209**.
+
+### Regenerating screenshots
+
+The screenshots above are produced from headless Chrome against the `?state=…` URL parameter the app reads on load:
+
+```bash
+npx serve -l 4309 metronome &
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+for STATE in home step-tempo step-time step-note \
+             playing-full playing-small; do
+  "$CHROME" --headless --disable-gpu --hide-scrollbars \
+    --window-size=600,600 --virtual-time-budget=3000 \
+    --screenshot="metronome/screenshots/$STATE.png" \
+    "http://localhost:4309/?state=$STATE"
+done
+```
+
+---
 
 ## Files
 
 ```
 metronome/
-├── index.html
-├── styles.css
-├── app.js
-├── favicon.svg
-└── docs/screens/      ← README screenshots
+├── index.html      # home, wizard steps, play screen (full + compact)
+├── styles.css      # 600×600 pure-black HUD; cyan focus + warm-orange accent
+├── app.js          # state machine, audio engine, nod detector, swipe/d-pad
+├── favicon.svg     # cyan quarter note on black
+└── screenshots/    # generated state captures used by this README
 ```
-
-No build step, no dependencies. Runs as static files. Local dev: `npx serve -l 4209 metronome`.
 
 ---
 
-📖 Case study: [levinriegner.com/work/metronome](https://www.levinriegner.com/work/metronome/)
-
-<sub>By Alex Levin · [L+R](https://www.levinriegner.com)</sub>
+<sub>Made by Alex Levin at [L+R](https://www.levinriegner.com).</sub>

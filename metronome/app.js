@@ -797,11 +797,37 @@
     });
   }
 
+  // Map ?state=... URL params to a starting screen — used by the
+  // screenshot-regeneration script so headless Chrome can capture each
+  // state without scripting clicks. Falls back to 'home'.
+  function applyStateParam() {
+    var m = /[?&]state=([a-z\-]+)/.exec(window.location.search || '');
+    if (!m) { showScreen('home'); return; }
+    var s = m[1];
+    if (s === 'home') { showScreen('home'); return; }
+    if (s === 'step-tempo') { state.wizardIdx = 0; showScreen('step-tempo'); return; }
+    if (s === 'step-time')  { state.wizardIdx = 1; showScreen('step-time');  return; }
+    if (s === 'step-note')  { state.wizardIdx = 2; showScreen('step-note');  return; }
+    if (s === 'playing-full' || s === 'playing-small') {
+      state.smallMode = (s === 'playing-small');
+      // Render the playing screen WITHOUT actually scheduling audio — we
+      // just need the visual. Manually flash beat 0 as an accent so the
+      // dot/BPM-flash state is visible in the capture.
+      state.playing = true;
+      state.beatsPerMeasure = state.beatsPerMeasure || 4;
+      showScreen('playing');
+      renderPlaying();
+      flashBeat(0, !!state.accent, true);
+      return;
+    }
+    showScreen('home');
+  }
+
   function init() {
     loadData();
     setupEvents();
     setupSwipe();
-    showScreen('home');
+    applyStateParam();
   }
 
   if (document.readyState === 'loading') {
