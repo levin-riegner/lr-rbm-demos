@@ -536,8 +536,10 @@
   //  SWIPE — adjust BPM ±1 on home/playing screens
   // ===========================================================
   function setupSwipe() {
-    var SWIPE_MIN = 40;       // px to register a swipe
-    var VERT_MAX  = 50;       // tolerance for vertical drift
+    var H_MIN = 40;          // horizontal swipe distance to nudge BPM
+    var H_VERT_MAX = 50;     // vertical tolerance for a horizontal swipe
+    var V_MIN = 50;          // vertical swipe distance to expand from small mode
+    var V_HORIZ_MAX = 60;    // horizontal tolerance for a vertical swipe
     var startX = 0, startY = 0, tracking = false, originatesOnButton = false;
 
     function onDown(e) {
@@ -556,10 +558,23 @@
       var p = (e.changedTouches && e.changedTouches[0]) || e;
       var dx = p.clientX - startX;
       var dy = p.clientY - startY;
-      if (Math.abs(dy) > VERT_MAX) return;
-      if (Math.abs(dx) < SWIPE_MIN) return;
-      playUI('tick');
-      adjustBpm(dx > 0 ? 1 : -1);
+      var absX = Math.abs(dx), absY = Math.abs(dy);
+
+      // Vertical-dominant swipe: while in compact mode on the playing screen,
+      // a downward swipe expands the UI back to full size.
+      if (absY > absX && absX < V_HORIZ_MAX && absY >= V_MIN) {
+        if (state.screen === 'playing' && state.smallMode && dy > 0) {
+          playUI('next');
+          toggleSmallMode();
+        }
+        return;
+      }
+
+      // Horizontal-dominant swipe: nudge BPM by ±1.
+      if (absY <= H_VERT_MAX && absX >= H_MIN) {
+        playUI('tick');
+        adjustBpm(dx > 0 ? 1 : -1);
+      }
     }
 
     document.addEventListener('touchstart', onDown, { passive: true });
