@@ -1,15 +1,25 @@
 :root {
-  --bg-app:       #17181B;
-  --surface-1:    #212326;
-  --surface-2:    #2B2E33;
-  --text-primary: #F2F3F5;
-  --text-secondary: #B7BBC2;
-  --text-muted:   #7A7F88;
-  --accent:       #5EE7DF;
-  --accent-dim:   #2F8C88;
-  --accent-strong:#7FF0E9;
-  --border:       #2E3136;
-  --ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --bg-app:           #0E0E0E;
+  --surface-display:  #050505;
+
+  --key-digit:        #E8E2D2;
+  --key-digit-press:  #D6D0C0;
+  --key-fn:           #1F1F1F;
+  --key-fn-press:     #2A2A2A;
+  --key-op:           #2A2A2A;
+  --key-op-press:     #363636;
+
+  --accent:           #ED7B1F;
+  --accent-press:     #FF9036;
+
+  --text-on-cream:    #0E0E0E;
+  --text-on-dark:     #F4EFE0;
+  --text-secondary:   #B3AE9F;
+  --text-muted:       #6F6A60;
+
+  --hairline:         rgba(255,255,255,0.05);
+
+  --ui:   "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 
@@ -27,7 +37,7 @@ html, body {
 body {
   font-family: var(--ui);
   -webkit-font-smoothing: antialiased;
-  color: var(--text-primary);
+  color: var(--text-on-dark);
 }
 
 .stage { width: 600px; height: 600px; position: relative; }
@@ -35,10 +45,10 @@ body {
 .screen {
   position: absolute;
   inset: 0;
-  padding: 28px 36px 24px;
+  padding: 18px 22px 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 /* ---- Top bar ---- */
@@ -47,52 +57,63 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  padding: 0 6px;
+  height: 24px;
 }
 
 .tag {
-  display: inline-block;
-  font-family: var(--mono);
-  font-size: 11px;
+  font-family: var(--ui);
+  font-size: 16px;
   font-weight: 600;
+  letter-spacing: 0.34em;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  padding: 3px 8px;
-  border-radius: 2px;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
+  color: var(--text-on-dark);
   background: transparent;
+  border: 0;
+  padding: 0;
 }
-.tag.accent { color: var(--accent); border-color: #2F5E5B; }
+
+.tag.accent {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-secondary);
+  text-transform: none;
+}
 
 /* ---- Display ---- */
 .display {
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 16px 20px;
-  min-height: 74px;
+  background: var(--surface-display);
+  border-radius: 10px;
+  padding: 22px 28px 24px;
+  min-height: 128px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   position: relative;
+  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 .display::before {
   content: '';
   position: absolute;
-  left: 0; top: 10%; bottom: 10%;
-  width: 2px;
+  left: 20px;
+  top: 22px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   background: var(--accent);
-  opacity: 0.5;
+  box-shadow: 0 0 14px rgba(237,123,31,0.6);
 }
 
 .result {
   font-family: var(--mono);
-  font-size: 48px;
+  font-size: 96px;
   font-weight: 500;
-  line-height: 1.05;
-  color: var(--text-primary);
+  line-height: 1.0;
+  color: var(--text-on-dark);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -100,84 +121,95 @@ body {
   direction: ltr;
   text-align: right;
 }
-.result.error { color: #FF6E6E; font-size: 32px; }
+.result.error {
+  color: var(--accent);
+  font-size: 64px;
+  letter-spacing: 0.06em;
+}
 
 /* ---- Keypad ---- */
 .pad {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(5, 1fr);
-  gap: 8px;
+  gap: 7px;
   flex: 1;
   min-height: 0;
 }
 
 .key {
-  font-family: var(--mono);
-  font-size: 22px;
+  font-family: var(--ui);
+  font-size: 40px;
   font-weight: 500;
-  color: var(--text-primary);
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  color: var(--text-on-cream);
+  background: var(--key-digit);
+  border: 0;
+  border-radius: 8px;
   cursor: pointer;
   outline: none;
   position: relative;
-  transition: background 100ms cubic-bezier(0.2, 0, 0, 1),
-              border-color 100ms cubic-bezier(0.2, 0, 0, 1);
+  transition: background 90ms cubic-bezier(0.2, 0, 0, 1),
+              transform   80ms cubic-bezier(0.2, 0, 0, 1);
   font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.06);
 }
 
 .key.fn {
-  color: var(--text-secondary);
-  font-family: var(--ui);
-  font-size: 16px;
-  font-weight: 500;
-}
-.key.op {
-  color: var(--accent);
-  font-size: 24px;
+  color: var(--text-on-dark);
+  background: var(--key-fn);
+  font-size: 28px;
   font-weight: 600;
-  background: #1A2524;
-  border-color: #233A38;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
-.key.wide { grid-column: span 2; }
+.key.op {
+  color: var(--text-on-dark);
+  background: var(--key-op);
+  font-size: 46px;
+  font-weight: 500;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.key.wide {
+  grid-column: span 2;
+  text-align: left;
+  padding-left: 64px;
+}
 
 .key:focus {
-  border-color: var(--accent);
-  background: var(--surface-2);
-  box-shadow: inset 3px 0 0 0 var(--accent);
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
 }
 
 .key.op.primary {
-  background: var(--accent-dim);
-  border-color: var(--accent);
-  color: #06201F;
-  font-weight: 700;
+  background: var(--accent);
+  color: #1A0E00;
+  font-size: 52px;
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18);
 }
 .key.op.primary:focus {
-  background: var(--accent-strong);
-  border-color: var(--accent-strong);
-  box-shadow: none;
+  outline-color: var(--text-on-dark);
 }
 
-.key.pressed {
-  background: var(--surface-2);
-}
+.key.pressed                  { transform: scale(0.96); background: var(--key-digit-press); }
+.key.fn.pressed               { background: var(--key-fn-press); }
+.key.op.pressed               { background: var(--key-op-press); }
+.key.op.primary.pressed       { background: var(--accent-press); }
 
 /* ---- Hints ---- */
 .hints {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  padding-top: 2px;
+  gap: 32px;
+  padding-top: 4px;
 }
 .hint {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--text-muted);
 }

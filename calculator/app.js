@@ -16,6 +16,65 @@
   const exprEl   = document.getElementById('expression');
   const pad      = document.getElementById('pad');
 
+  // ---- Audio (Braun-style synthesized clicks) ----
+  let audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) {
+      const Ctor = window.AudioContext || window.webkitAudioContext;
+      if (!Ctor) return;
+      try { audioCtx = new Ctor(); } catch (_) { return; }
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function tone(freq, dur, vol, when, type) {
+    const ctx = audioCtx;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, when);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0, when);
+    gain.gain.linearRampToValueAtTime(vol, when + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+    osc.start(when);
+    osc.stop(when + dur + 0.02);
+  }
+
+  function click(kind) {
+    ensureAudio();
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    switch (kind) {
+      case 'digit':
+        tone(1100, 0.05, 0.07, t, 'sine');
+        tone(2400, 0.02, 0.025, t, 'square');
+        break;
+      case 'op':
+        tone(720,  0.06, 0.08, t, 'sine');
+        break;
+      case 'fn':
+        tone(560,  0.05, 0.07, t, 'triangle');
+        break;
+      case 'clear':
+        tone(260,  0.10, 0.10, t, 'sine');
+        break;
+      case 'eq':
+        tone(880,  0.09, 0.09, t,          'sine');
+        tone(1318, 0.11, 0.09, t + 0.055,  'sine');
+        break;
+    }
+  }
+
+  function soundFor(key) {
+    if (key === '=') return 'eq';
+    if (key === 'ac') return 'clear';
+    if (key === 'sign' || key === 'percent') return 'fn';
+    if (key === '+' || key === '-' || key === '*' || key === '/') return 'op';
+    return 'digit';
+  }
+
   // ---- Formatting ----
   function formatNumber(n) {
     if (!isFinite(n)) return 'ERR';
@@ -152,6 +211,7 @@
 
   // ---- Dispatch ----
   function press(key) {
+    click(soundFor(key));
     if (/^[0-9]$/.test(key)) {
       consumePendingClear();
       inputDigit(key);
