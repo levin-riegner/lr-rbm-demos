@@ -1,5 +1,5 @@
 :root {
-  --bg:           #08080a;
+  --bg:           #000000;
   --bg-2:         #111114;
   --ink:          #f2efe6;
   --ink-soft:     #b8b5ac;
@@ -72,10 +72,7 @@ body::after {
   width: 600px;
   height: 600px;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse at 80% 30%, rgba(255,181,71,0.06), transparent 55%),
-    radial-gradient(ellipse at 20% 90%, rgba(216,221,226,0.05), transparent 55%),
-    var(--bg);
+  background: var(--bg);
 }
 
 /* ────────── Screen base ────────── */
