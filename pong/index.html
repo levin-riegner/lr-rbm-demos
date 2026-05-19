@@ -2,12 +2,31 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script>
+      // Device sense — runs before anything else loads. If we look like a
+      // phone (mobile UA + touch capability), hand off to the phone build.
+      // Overrides: ?desktop=1 forces the glasses build, ?mobile=1 forces
+      // the phone build.
+      (function () {
+        try {
+          var qs = location.search || '';
+          if (/[?&]desktop=1\b/.test(qs)) return;
+          var force = /[?&]mobile=1\b/.test(qs);
+          var ua = navigator.userAgent || '';
+          var mobileUA = /Mobi|Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+          var hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+          if (force || (mobileUA && hasTouch)) {
+            location.replace('/mobile.html' + qs);
+          }
+        } catch (e) { /* if detection blows up, stay here */ }
+      })();
+    </script>
     <!-- Glasses viewport: fixed 600x600, no scaling. -->
     <meta
       name="viewport"
       content="width=600, height=600, initial-scale=1.0, user-scalable=no"
     />
-    <meta name="theme-color" content="#0a0a0f" />
+    <meta name="theme-color" content="#000000" />
     <title>Pong</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
