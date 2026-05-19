@@ -75,20 +75,21 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   z-index: 5;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 22px 26px 26px;
+  gap: 8px;
+  padding: 14px 22px 18px;
   border-radius: 16px;
   background: #000000;
-  border: 1px solid rgba(245, 239, 224, 0.10);
+  border: 3px solid rgba(245, 239, 224, 0.28);
   box-shadow:
-    inset 0 1px 0 rgba(245, 239, 224, 0.06),
-    0 6px 30px rgba(0, 0, 0, 0.8);
+    inset 0 1px 0 rgba(245, 239, 224, 0.10),
+    0 0 0 1px rgba(245, 239, 224, 0.08),
+    0 8px 36px rgba(0, 0, 0, 0.85);
 }
 .panel::before {
   content: '';
   position: absolute;
-  left: 28px; right: 28px; top: 0;
-  height: 1px;
+  left: 28px; right: 28px; top: 1px;
+  height: 1.5px;
   background: linear-gradient(90deg,
     transparent 0%,
     #ff4a5b 14%, #ffa64a 28%, #ffe24a 42%,
@@ -105,14 +106,14 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 6px 0 14px;
+  gap: 2px;
+  padding: 2px 0 8px;
   border-bottom: 1px solid rgba(245, 239, 224, 0.06);
 }
 .prism {
-  width: 64px;
-  height: 28px;
-  margin-bottom: 2px;
+  width: 56px;
+  height: 24px;
+  margin-bottom: 0;
   filter: drop-shadow(0 0 6px rgba(255, 248, 220, 0.35));
 }
 .hdr-sub {
@@ -127,7 +128,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   font-family: "Georgia", "Didot", "Times New Roman", serif;
   font-style: italic;
   font-weight: 400;
-  font-size: 38px;
+  font-size: 34px;
   letter-spacing: 0.005em;
   color: var(--ink);
   text-align: center;
@@ -160,9 +161,8 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 4px 0 4px;
-  min-height: 130px;
+  gap: 2px;
+  padding: 2px 0;
 }
 .spot {
   position: absolute;
@@ -191,13 +191,13 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   position: relative;
   z-index: 2;
   font-family: "Georgia", "Didot", "Times New Roman", serif;
-  font-size: 84px;
+  font-size: 54px;
   font-weight: 400;
   font-style: italic;
   letter-spacing: 0.02em;
   line-height: 1;
   color: var(--ink);
-  text-shadow: 0 0 26px rgba(255, 248, 220, 0.45);
+  text-shadow: 0 0 22px rgba(255, 248, 220, 0.45);
 }
 /* chromatic split on the played note */
 .now-note::before,
@@ -226,10 +226,10 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 
 .scope {
   width: 100%;
-  height: 30px;
+  height: 36px;
   display: block;
   margin-top: 4px;
-  opacity: 0.85;
+  opacity: 1;
 }
 
 /* ============================================================
@@ -249,8 +249,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   gap: 10px;
   width: 100%;
   height: 100%;
-  max-height: 270px;
-  max-width: 440px;
+  max-width: 500px;
 }
 .pad-up    { grid-column: 2; grid-row: 1; }
 .pad-left  { grid-column: 1; grid-row: 2; }
@@ -294,7 +293,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .pad-note {
   font-family: "Georgia", "Didot", serif;
   font-style: italic;
-  font-size: 30px;
+  font-size: 60px;
   font-weight: 400;
   color: var(--ink);
   line-height: 1;

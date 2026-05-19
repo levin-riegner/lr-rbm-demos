@@ -333,29 +333,47 @@ function drawScope() {
 
   scopeCtx.clearRect(0, 0, scopeW, scopeH);
 
-  scopeCtx.strokeStyle = 'rgba(106, 86, 135, 0.4)';
-  scopeCtx.lineWidth = 1;
-  scopeCtx.beginPath();
-  scopeCtx.moveTo(0, scopeH / 2);
-  scopeCtx.lineTo(scopeW, scopeH / 2);
-  scopeCtx.stroke();
-
   const ringing = !!currentVoice;
-  scopeCtx.strokeStyle = ringing ? '#25f4ff' : 'rgba(106, 86, 135, 0.5)';
-  scopeCtx.lineWidth = 1.6;
-  scopeCtx.shadowColor = ringing ? 'rgba(37, 244, 255, 0.85)' : 'transparent';
-  scopeCtx.shadowBlur = ringing ? 6 : 0;
-  scopeCtx.beginPath();
-  const step = scopeW / analyserData.length;
-  for (let i = 0; i < analyserData.length; i++) {
-    const v = analyserData[i] / 128.0 - 1;
-    const x = i * step;
-    const y = scopeH / 2 + v * (scopeH / 2 - 2);
-    if (i === 0) scopeCtx.moveTo(x, y);
-    else scopeCtx.lineTo(x, y);
+
+  if (ringing) {
+    // thick rainbow waveform when playing
+    const grad = scopeCtx.createLinearGradient(0, 0, scopeW, 0);
+    grad.addColorStop(0,    '#ff4a5b');
+    grad.addColorStop(0.17, '#ffa64a');
+    grad.addColorStop(0.34, '#ffe24a');
+    grad.addColorStop(0.50, '#57e08a');
+    grad.addColorStop(0.67, '#4ad9ff');
+    grad.addColorStop(0.84, '#4a6cff');
+    grad.addColorStop(1,    '#a96cff');
+    scopeCtx.strokeStyle = grad;
+    scopeCtx.lineWidth = 5;
+    scopeCtx.lineJoin = 'round';
+    scopeCtx.lineCap  = 'round';
+    scopeCtx.shadowColor = 'rgba(255, 255, 255, 0.45)';
+    scopeCtx.shadowBlur = 10;
+    scopeCtx.beginPath();
+    const step = scopeW / analyserData.length;
+    for (let i = 0; i < analyserData.length; i++) {
+      const v = analyserData[i] / 128.0 - 1;
+      const x = i * step;
+      const y = scopeH / 2 + v * (scopeH / 2 - 6);
+      if (i === 0) scopeCtx.moveTo(x, y);
+      else scopeCtx.lineTo(x, y);
+    }
+    scopeCtx.stroke();
+    scopeCtx.shadowBlur = 0;
+  } else {
+    // thin white straight line when idle
+    scopeCtx.strokeStyle = 'rgba(245, 239, 224, 0.85)';
+    scopeCtx.lineWidth = 1.4;
+    scopeCtx.shadowColor = 'rgba(255, 255, 255, 0.35)';
+    scopeCtx.shadowBlur = 4;
+    scopeCtx.beginPath();
+    scopeCtx.moveTo(0, scopeH / 2);
+    scopeCtx.lineTo(scopeW, scopeH / 2);
+    scopeCtx.stroke();
+    scopeCtx.shadowBlur = 0;
   }
-  scopeCtx.stroke();
-  scopeCtx.shadowBlur = 0;
 
   requestAnimationFrame(drawScope);
 }
