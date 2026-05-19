@@ -471,7 +471,13 @@
   function focusables() {
     var s = visibleScreen();
     if (!s) return [];
-    return Array.from(s.querySelectorAll('.focusable:not([disabled])'));
+    // Exclude focusables that aren't currently rendered (e.g. mini-mode
+    // controls while in full mode, or vice versa). offsetParent is null
+    // for any element whose ancestor chain has display:none.
+    return Array.from(s.querySelectorAll('.focusable:not([disabled])'))
+      .filter(function (el) {
+        return el.offsetParent !== null || el === document.body;
+      });
   }
   function focusFirst() {
     var els = focusables();
