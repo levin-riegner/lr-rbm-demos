@@ -8,13 +8,71 @@
     operator: null,   // '+', '-', '*', '/'
     justEvaluated: false,
     error: false,
-    pendingClear: false
+    pendingClear: false,
+    userTouched: false  // true once user has pressed any input key this session
   };
 
   // ---- DOM ----
   const resultEl = document.getElementById('result');
   const exprEl   = document.getElementById('expression');
   const pad      = document.getElementById('pad');
+  const themeTag = document.getElementById('theme-tag');
+
+  // ---- Themes ----
+  const THEMES = [
+    { id: 'braun', label: 'ET · 26',   clock: false },
+    { id: 'casio', label: 'F-91 · W',  clock: true  },
+    { id: 'ti83',  label: 'TI-83 +',   clock: false },
+  ];
+  let themeIndex = 0;
+  try {
+    const saved = localStorage.getItem('calc-theme');
+    const idx = THEMES.findIndex(t => t.id === saved);
+    if (idx >= 0) themeIndex = idx;
+  } catch (_) {}
+
+  function applyTheme() {
+    const t = THEMES[themeIndex];
+    document.body.dataset.theme = t.id;
+    themeTag.textContent = t.label;
+    try { localStorage.setItem('calc-theme', t.id); } catch (_) {}
+    renderDisplay();
+  }
+
+  function cycleTheme() {
+    themeIndex = (themeIndex + 1) % THEMES.length;
+    applyTheme();
+  }
+
+  // ---- Casio clock ----
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  function currentTimeStr() {
+    const d = new Date();
+    return pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+  }
+  function currentDateStr() {
+    const d = new Date();
+    const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    return days[d.getDay()] + ' ' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+  function isIdle() {
+    return !state.error
+      && state.current === '0'
+      && state.previous === null
+      && state.operator === null
+      && !state.justEvaluated
+      && !state.userTouched;
+  }
+  function showingClock() {
+    return THEMES[themeIndex].clock && isIdle();
+  }
+  let clockTimer = null;
+  function ensureClockTimer() {
+    if (clockTimer) return;
+    clockTimer = setInterval(() => {
+      if (showingClock()) renderDisplay();
+    }, 1000);
+  }
 
   // ---- Audio (Braun-style synthesized clicks) ----
   let audioCtx = null;
@@ -100,6 +158,9 @@
     if (state.error) {
       resultEl.classList.add('error');
       resultEl.textContent = 'ERR';
+    } else if (showingClock()) {
+      resultEl.classList.remove('error');
+      resultEl.textContent = currentTimeStr();
     } else {
       resultEl.classList.remove('error');
       resultEl.textContent = state.current;
@@ -108,6 +169,8 @@
       const head = `${formatNumber(state.previous)} ${formatOpLabel(state.operator)}`;
       // After an operator, `current` still holds the first operand until digits are entered.
       exprEl.textContent = state.pendingClear ? head : `${head} ${state.current}`;
+    } else if (showingClock()) {
+      exprEl.textContent = currentDateStr();
     } else {
       exprEl.textContent = '—';
     }
@@ -199,6 +262,7 @@
     state.justEvaluated = false;
     state.error = false;
     state.pendingClear = false;
+    state.userTouched = false;
   }
 
   // Entry continuation after operator
@@ -212,6 +276,7 @@
   // ---- Dispatch ----
   function press(key) {
     click(soundFor(key));
+    if (key !== 'ac') state.userTouched = true;
     if (/^[0-9]$/.test(key)) {
       consumePendingClear();
       inputDigit(key);
@@ -317,7 +382,22 @@
     return pad.querySelector(`[data-key="${CSS.escape(key)}"]`);
   }
 
+  // ---- Theme tag click + 'T' hotkey ----
+  themeTag.addEventListener('click', (e) => {
+    e.preventDefault();
+    cycleTheme();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 't' || e.key === 'T') {
+      if (document.activeElement && document.activeElement.matches('input,textarea')) return;
+      e.preventDefault();
+      cycleTheme();
+    }
+  });
+
   // ---- Init ----
+  applyTheme();
+  ensureClockTimer();
   renderDisplay();
   // Auto-focus the primary action so D-pad works immediately
   (findByKey('=') || getKeys()[0])?.focus();

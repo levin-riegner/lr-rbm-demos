@@ -1,43 +1,192 @@
 :root {
-  --bg-app:           #0E0E0E;
-  --surface-display:  #050505;
+  /* ---- Default theme: BRAUN ET·26 ---- */
+  --body-bg:             #000000;
 
-  --key-digit:        #E8E2D2;
-  --key-digit-press:  #D6D0C0;
-  --key-fn:           #1F1F1F;
-  --key-fn-press:     #2A2A2A;
-  --key-op:           #2A2A2A;
-  --key-op-press:     #363636;
+  --display-bg:          #000000;
+  --display-text:        #F4EFE0;
+  --display-pip:         #A78BFA;
+  --display-radius:      10px;
+  --display-font:        "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --result-size:         96px;
+  --result-spacing:      -0.04em;
+  --result-weight:       500;
 
-  --accent:           #ED7B1F;
-  --accent-press:     #FF9036;
+  --secondary-text:      #B3AE9F;
 
-  --text-on-cream:    #0E0E0E;
-  --text-on-dark:     #F4EFE0;
-  --text-secondary:   #B3AE9F;
-  --text-muted:       #6F6A60;
+  --key-digit-bg:        #E8E2D2;
+  --key-digit-bg-press:  #D6D0C0;
+  --key-digit-text:      #0E0E0E;
+  --key-digit-shadow:    inset 0 -2px 0 rgba(0,0,0,0.06);
 
-  --hairline:         rgba(255,255,255,0.05);
+  --key-fn-bg:           #1F1F1F;
+  --key-fn-bg-press:     #2A2A2A;
+  --key-fn-text:         #F4EFE0;
+
+  --key-op-bg:           #2A2A2A;
+  --key-op-bg-press:     #363636;
+  --key-op-text:         #F4EFE0;
+
+  --key-eq-bg:           #8B5CF6;
+  --key-eq-bg-press:     #A78BFA;
+  --key-eq-text:         #FFFFFF;
+
+  --tag-text:            #F4EFE0;
+  --tag-size:            16px;
+  --tag-spacing:         0.34em;
+  --tag-weight:          600;
+
+  --hint-text:           #6F6A60;
+  --hairline:            rgba(255,255,255,0.05);
+
+  --key-radius:          8px;
+  --key-digit-size:      40px;
+  --key-fn-size:         28px;
+  --key-op-size:         46px;
+  --key-eq-size:         52px;
+  --key-font:            "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --key-weight:          500;
+  --key-fn-weight:       600;
 
   --ui:   "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 
+/* ============================================================
+   THEME: CASIO F-91W (simplified)
+   ============================================================ */
+body[data-theme="casio"] {
+  --body-bg:             #2E3133;
+
+  --display-bg:          #A8B398;          /* LCD gray-green */
+  --display-text:        #0F1308;
+  --display-pip:         #C8423B;
+  --display-radius:      4px;
+  --display-font:        "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --result-size:         78px;
+  --result-spacing:      0.02em;
+  --result-weight:       700;
+
+  --secondary-text:      #444B36;
+
+  --key-digit-bg:        #44484A;
+  --key-digit-bg-press:  #54585A;
+  --key-digit-text:      #E8E5DA;
+  --key-digit-shadow:    inset 0 -2px 0 rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
+
+  --key-fn-bg:           #5C6062;
+  --key-fn-bg-press:     #6C7072;
+  --key-fn-text:         #F0EDE2;
+
+  --key-op-bg:           #44484A;
+  --key-op-bg-press:     #54585A;
+  --key-op-text:         #E8E5DA;
+
+  --key-eq-bg:           #C8423B;
+  --key-eq-bg-press:     #D8524B;
+  --key-eq-text:         #FFFFFF;
+
+  --tag-text:            #C8423B;
+  --tag-spacing:         0.30em;
+  --tag-weight:          700;
+
+  --hint-text:           #6A6D62;
+  --hairline:            rgba(0,0,0,0.25);
+
+  --key-radius:          6px;
+  --key-digit-size:      34px;
+  --key-fn-size:         22px;
+  --key-op-size:         34px;
+  --key-eq-size:         34px;
+}
+
+body[data-theme="casio"] .display {
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.4), inset 0 0 18px rgba(0,0,0,0.15);
+  background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0 1px, transparent 1px 3px);
+}
+body[data-theme="casio"] .tag {
+  font-family: var(--ui);
+}
+
+/* ============================================================
+   THEME: TI-83 PLUS (simplified)
+   ============================================================ */
+body[data-theme="ti83"] {
+  --body-bg:             #2E3133;
+
+  --display-bg:          #9CB37E;          /* faded LCD green */
+  --display-text:        #0A1606;
+  --display-pip:         #1E3A8A;
+  --display-radius:      6px;
+  --display-font:        "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --result-size:         88px;
+  --result-spacing:      -0.02em;
+  --result-weight:       600;
+
+  --secondary-text:      #2A3920;
+
+  --key-digit-bg:        #15171A;
+  --key-digit-bg-press:  #25272A;
+  --key-digit-text:      #F2F2F2;
+  --key-digit-shadow:    inset 0 -2px 0 rgba(0,0,0,0.5);
+
+  --key-fn-bg:           #4A4D50;
+  --key-fn-bg-press:     #5A5D60;
+  --key-fn-text:         #FFFFFF;
+
+  --key-op-bg:           #2D3033;
+  --key-op-bg-press:     #3D4043;
+  --key-op-text:         #FFFFFF;
+
+  --key-eq-bg:           #1E3A8A;
+  --key-eq-bg-press:     #2E4A9A;
+  --key-eq-text:         #FFFFFF;
+
+  --tag-text:            #DCDDDE;
+  --tag-spacing:         0.22em;
+  --tag-weight:          700;
+  --tag-size:            17px;
+
+  --hint-text:           #7A7D7F;
+  --hairline:            rgba(255,255,255,0.06);
+
+  --key-radius:          3px;
+  --key-digit-size:      32px;
+  --key-fn-size:         18px;
+  --key-op-size:         34px;
+  --key-eq-size:         28px;
+}
+
+body[data-theme="ti83"] .display {
+  box-shadow: inset 0 0 0 3px #1A1D1F;
+  background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0 1px, transparent 1px 3px);
+}
+body[data-theme="ti83"] .key {
+  box-shadow: var(--key-digit-shadow), inset 0 0 0 1px rgba(255,255,255,0.04);
+}
+body[data-theme="ti83"] .key.op.primary {
+  font-family: var(--ui);
+  letter-spacing: 0.06em;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
   width: 600px;
   height: 600px;
-  background: var(--bg-app);
+  background: var(--body-bg);
   overflow: hidden;
   -webkit-user-select: none;
   user-select: none;
+  transition: background 240ms ease;
 }
 
 body {
   font-family: var(--ui);
   -webkit-font-smoothing: antialiased;
-  color: var(--text-on-dark);
+  color: var(--tag-text);
 }
 
 .stage { width: 600px; height: 600px; position: relative; }
@@ -63,29 +212,35 @@ body {
 
 .tag {
   font-family: var(--ui);
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.34em;
+  font-size: var(--tag-size);
+  font-weight: var(--tag-weight);
+  letter-spacing: var(--tag-spacing);
   text-transform: uppercase;
-  color: var(--text-on-dark);
+  color: var(--tag-text);
   background: transparent;
   border: 0;
   padding: 0;
+  cursor: pointer;
+  outline: none;
+  transition: opacity 120ms ease;
 }
+.tag:hover  { opacity: 0.7; }
+.tag:active { opacity: 0.5; }
 
 .tag.accent {
   font-family: var(--mono);
   font-size: 18px;
   font-weight: 500;
   letter-spacing: 0;
-  color: var(--text-secondary);
+  color: var(--secondary-text);
   text-transform: none;
+  cursor: default;
 }
 
 /* ---- Display ---- */
 .display {
-  background: var(--surface-display);
-  border-radius: 10px;
+  background: var(--display-bg);
+  border-radius: var(--display-radius);
   padding: 22px 28px 24px;
   min-height: 128px;
   display: flex;
@@ -93,6 +248,7 @@ body {
   justify-content: flex-end;
   position: relative;
   box-shadow: inset 0 0 0 1px var(--hairline);
+  transition: background 240ms ease;
 }
 .display::before {
   content: '';
@@ -102,18 +258,18 @@ body {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 14px rgba(237,123,31,0.6);
+  background: var(--display-pip);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--display-pip) 50%, transparent);
 }
 
 .result {
-  font-family: var(--mono);
-  font-size: 96px;
-  font-weight: 500;
+  font-family: var(--display-font);
+  font-size: var(--result-size);
+  font-weight: var(--result-weight);
   line-height: 1.0;
-  color: var(--text-on-dark);
+  color: var(--display-text);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.04em;
+  letter-spacing: var(--result-spacing);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -122,7 +278,7 @@ body {
   text-align: right;
 }
 .result.error {
-  color: var(--accent);
+  color: var(--key-eq-bg);
   font-size: 64px;
   letter-spacing: 0.06em;
 }
@@ -138,36 +294,36 @@ body {
 }
 
 .key {
-  font-family: var(--ui);
-  font-size: 40px;
-  font-weight: 500;
-  color: var(--text-on-cream);
-  background: var(--key-digit);
+  font-family: var(--key-font);
+  font-size: var(--key-digit-size);
+  font-weight: var(--key-weight);
+  color: var(--key-digit-text);
+  background: var(--key-digit-bg);
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--key-radius);
   cursor: pointer;
   outline: none;
   position: relative;
   transition: background 90ms cubic-bezier(0.2, 0, 0, 1),
               transform   80ms cubic-bezier(0.2, 0, 0, 1);
   font-variant-numeric: tabular-nums;
-  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.06);
+  box-shadow: var(--key-digit-shadow);
 }
 
 .key.fn {
-  color: var(--text-on-dark);
-  background: var(--key-fn);
-  font-size: 28px;
-  font-weight: 600;
+  color: var(--key-fn-text);
+  background: var(--key-fn-bg);
+  font-size: var(--key-fn-size);
+  font-weight: var(--key-fn-weight);
   letter-spacing: 0.02em;
   box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
 .key.op {
-  color: var(--text-on-dark);
-  background: var(--key-op);
-  font-size: 46px;
-  font-weight: 500;
+  color: var(--key-op-text);
+  background: var(--key-op-bg);
+  font-size: var(--key-op-size);
+  font-weight: var(--key-weight);
   box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
@@ -178,25 +334,25 @@ body {
 }
 
 .key:focus {
-  outline: 3px solid var(--accent);
+  outline: 3px solid var(--key-eq-bg);
   outline-offset: -3px;
 }
 
 .key.op.primary {
-  background: var(--accent);
-  color: #1A0E00;
-  font-size: 52px;
+  background: var(--key-eq-bg);
+  color: var(--key-eq-text);
+  font-size: var(--key-eq-size);
   font-weight: 600;
   box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18);
 }
 .key.op.primary:focus {
-  outline-color: var(--text-on-dark);
+  outline-color: var(--tag-text);
 }
 
-.key.pressed                  { transform: scale(0.96); background: var(--key-digit-press); }
-.key.fn.pressed               { background: var(--key-fn-press); }
-.key.op.pressed               { background: var(--key-op-press); }
-.key.op.primary.pressed       { background: var(--accent-press); }
+.key.pressed                  { transform: scale(0.96); background: var(--key-digit-bg-press); }
+.key.fn.pressed               { background: var(--key-fn-bg-press); }
+.key.op.pressed               { background: var(--key-op-bg-press); }
+.key.op.primary.pressed       { background: var(--key-eq-bg-press); }
 
 /* ---- Hints ---- */
 .hints {
@@ -211,7 +367,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--hint-text);
 }
 
 @media (prefers-reduced-motion: reduce) {
