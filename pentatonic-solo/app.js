@@ -436,3 +436,9 @@ document.querySelectorAll('.pad').forEach((pad) => {
 
 // kick off the particle canvas loop (runs always, idle until a note plays)
 initParticles();
+
+// screenshot helper: visit ?demo=left to auto-play a note ~600ms after load
+if (/[?&]demo(=|$|&)/.test(location.search)) {
+  const slot = new URLSearchParams(location.search).get('demo') || 'down';
+  setTimeout(() => playNote(slot), 600);
+}
