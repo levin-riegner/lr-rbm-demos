@@ -20,9 +20,9 @@
 
   // ---- Themes ----
   const THEMES = [
-    { id: 'braun', label: 'ET · 26',   clock: false },
-    { id: 'casio', label: 'F-91 · W',  clock: true  },
-    { id: 'ti83',  label: 'TI-83 +',   clock: false },
+    { id: 'braun', clock: false },
+    { id: 'casio', clock: true  },
+    { id: 'ti83',  clock: false },
   ];
   let themeIndex = 0;
   try {
@@ -34,7 +34,6 @@
   function applyTheme() {
     const t = THEMES[themeIndex];
     document.body.dataset.theme = t.id;
-    themeTag.textContent = t.label;
     try { localStorage.setItem('calc-theme', t.id); } catch (_) {}
     renderDisplay();
   }
@@ -276,7 +275,7 @@
   // ---- Dispatch ----
   function press(key) {
     click(soundFor(key));
-    if (key !== 'ac') state.userTouched = true;
+    if (key !== 'ac' && key !== 'theme') state.userTouched = true;
     if (/^[0-9]$/.test(key)) {
       consumePendingClear();
       inputDigit(key);
@@ -293,6 +292,9 @@
       toggleSign();
     } else if (key === 'percent') {
       percent();
+    } else if (key === 'theme') {
+      cycleTheme();
+      return;
     }
     renderDisplay();
   }
@@ -314,14 +316,16 @@
 
   // ---- 2D D-pad navigation over a sparse 5x4 grid ----
   function getKeys() {
-    return Array.from(pad.querySelectorAll('[data-focusable]'));
+    return Array.from(document.querySelectorAll('[data-focusable]'));
   }
 
   function keyAt(row, col) {
-    // Handle wide "0" that occupies col 0 and col 1 in row 4.
+    // Theme tag occupies row -1 and spans the full top — match any col.
+    if (row === -1) return themeTag;
     const keys = getKeys();
     let target = keys.find(k => +k.dataset.row === row && +k.dataset.col === col);
     if (target) return target;
+    // Wide "0" occupies col 0 and col 1 in row 4.
     if (row === 4 && col === 1) {
       return keys.find(k => +k.dataset.row === 4 && +k.dataset.col === 0) || null;
     }
@@ -329,7 +333,7 @@
   }
 
   function focusedKey() {
-    return document.activeElement && document.activeElement.matches('[data-key]')
+    return document.activeElement && document.activeElement.matches('[data-focusable]')
       ? document.activeElement : null;
   }
 
@@ -343,12 +347,12 @@
     let r = +btn.dataset.row;
     let c = +btn.dataset.col;
     // Search step-by-step so we can skip empty grid cells (row 4 col 1).
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       r += dr; c += dc;
-      if (r < 0) r = 4;
-      if (r > 4) r = 0;
-      if (c < 0) c = 3;
-      if (c > 3) c = 0;
+      if (r < -1) r = 4;
+      if (r > 4)  r = -1;
+      if (c < 0)  c = 3;
+      if (c > 3)  c = 0;
       const next = keyAt(r, c);
       if (next && next !== btn) { next.focus(); return; }
     }
@@ -382,18 +386,14 @@
     return pad.querySelector(`[data-key="${CSS.escape(key)}"]`);
   }
 
-  // ---- Theme tag click + 'T' hotkey ----
+  // ---- Theme tag click ----
   themeTag.addEventListener('click', (e) => {
     e.preventDefault();
-    cycleTheme();
+    pulse(themeTag);
+    press('theme');
   });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 't' || e.key === 'T') {
-      if (document.activeElement && document.activeElement.matches('input,textarea')) return;
-      e.preventDefault();
-      cycleTheme();
-    }
-  });
+  themeTag.addEventListener('focus', () => themeTag.classList.add('is-focused'));
+  themeTag.addEventListener('blur',  () => themeTag.classList.remove('is-focused'));
 
   // ---- Init ----
   applyTheme();
