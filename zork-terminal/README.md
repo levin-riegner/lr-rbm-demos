@@ -23,15 +23,13 @@ A wearable-sized tribute to early-1980s text adventures, built for the 600×600 
 
 | Where | Input | Result |
 | --- | --- | --- |
-| Anywhere | Tap a chip | Run that command |
+| Anywhere | Enter | Run the focused chip |
 | Anywhere | ▲ ▼ ◀ ▶ / swipe | Move focus between chips (2D) |
-| Anywhere | Enter / Space | Activate the focused chip |
-| Output area | Tap | Skip the current typewriter line |
+| Output area | Enter | Skip the current typewriter line |
 | Secondary row | ▶ on rightmost chip | Wrap to leftmost chip of next row |
 | Secondary row | ◀ on leftmost chip | Wrap to rightmost chip of previous row |
 | Primary | ▼ / swipe down | Jump to first secondary chip on the left |
-| MORE… panel | Tap a chip | Run command, close panel, refocus primary |
-| MORE… panel | × button / Esc | Close panel without acting |
+| MORE… panel | Enter | Run focused command, close panel, refocus primary |
 
 Touch swipes mirror the arrow keys everywhere — primary, secondary, and the MORE panel grid share one navigation model.
 
