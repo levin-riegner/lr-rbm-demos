@@ -167,7 +167,7 @@ body::after {
 }
 
 .last-card {
-  background: var(--bg-2);
+  background: var(--bg-1);
   border: 2px solid var(--line);
   border-radius: 14px;
   padding: 14px 18px;
@@ -177,17 +177,23 @@ body::after {
   gap: 6px;
   text-align: left;
   width: 100%;
+  opacity: 0.78;
+  transition: background .12s ease, border-color .12s ease,
+              box-shadow .12s ease, opacity .12s ease,
+              transform .12s ease;
 }
 .last-card:focus {
   border-color: var(--cyan);
   background: var(--bg-3);
-  box-shadow: 0 0 22px var(--cyan-glow);
+  box-shadow: 0 0 26px var(--cyan-glow);
+  opacity: 1;
+  transform: translateY(-1px);
 }
 .last-label {
   font-size: 20px;
   font-weight: 800;
   letter-spacing: 6px;
-  color: var(--cyan);
+  color: var(--text-2);
   margin-bottom: 2px;
 }
 .last-card:focus .last-label { color: var(--cyan-hi); }
@@ -202,17 +208,20 @@ body::after {
   font-weight: 800;
   color: var(--amber);
   letter-spacing: 1px;
+  opacity: 0.85;
 }
+.last-card:focus .last-code { opacity: 1; }
 .last-route {
   font-size: 14px;
-  color: var(--text-2);
+  color: var(--text-3);
   letter-spacing: 1px;
 }
+.last-card:focus .last-route { color: var(--text-2); }
 .last-go {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 3px;
-  color: var(--text-3);
+  color: var(--text-4);
   margin-top: 2px;
 }
 .last-card:focus .last-go { color: var(--cyan); }
