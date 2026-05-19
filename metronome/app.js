@@ -689,8 +689,8 @@
   function setupSwipe() {
     var H_MIN = 40;          // horizontal swipe distance to nudge BPM
     var H_VERT_MAX = 50;     // vertical tolerance for a horizontal swipe
-    var V_MIN = 50;          // vertical swipe distance to expand from small mode
-    var V_HORIZ_MAX = 60;    // horizontal tolerance for a vertical swipe
+    var V_MIN = 32;          // vertical swipe distance to register
+    var V_HORIZ_MAX = 120;   // horizontal tolerance for a vertical swipe
     var startX = 0, startY = 0, tracking = false, originatesOnButton = false;
 
     function onDown(e) {
