@@ -403,11 +403,6 @@
   var tapLastAt = 0;
   var impulseTimer = null;
 
-  // Long-press ↑ (held > LONG_PRESS_UP_MS) opens the pause prompt. Works
-  // for both practice and multiplayer.
-  var LONG_PRESS_UP_MS = 520;
-  var longPressUpTimer = null;
-
   // Practice mode (solo vs the right-side wall).
   var isPractice = false;
   var practice = null;
@@ -417,8 +412,6 @@
   var PRACTICE_BALL_GAIN = 1.04;
   var PRACTICE_MAX_VYVX = 3;
   var practicePromptVisible = false;
-  var ENTER_DOUBLE_TAP_MS = 450;
-  var lastEnterAt = 0;
 
   // ============================================================
   // 8. WebSocket lifecycle
@@ -799,7 +792,6 @@
     tapCount = 0;
     tapDirection = 0;
     clearImpulse();
-    clearLongPressUp();
 
     var best = 0;
     try { best = parseInt(localStorage.getItem('pong-practice-best') || '0', 10) || 0; }
@@ -816,7 +808,7 @@
 
     scoreLeftEl.textContent = '0';
     scoreRightEl.textContent = String(best);
-    gameMetaEl.textContent = '↑ / ↓ paddle · tap fast = boost · hold ↑ = pause · WALL →';
+    gameMetaEl.textContent = '↑ / ↓ paddle · tap fast = boost · ◀ = pause · WALL →';
     navigateTo('game');
     sfx.join();
   }
@@ -835,7 +827,6 @@
     isPractice = false;
     practice = null;
     practicePromptVisible = false;
-    lastEnterAt = 0;
     var el = getPausePromptEl();
     if (el) {
       el.classList.add('hidden');
@@ -964,7 +955,6 @@
     tapCount = 0;
     tapDirection = 0;
     clearImpulse();
-    clearLongPressUp();
     var el = getPausePromptEl();
     if (!el) return;
     el.classList.remove('hidden');
@@ -989,7 +979,6 @@
     }
     // Reset dt so resumed practice physics doesn't fast-forward.
     if (practice) practice.lastT = performance.now();
-    lastEnterAt = 0;
     sfx.click();
   }
 
@@ -1026,9 +1015,9 @@
 
   function updateLegendForSide() {
     if (mySide === 'left') {
-      gameMetaEl.textContent = '↑ / ↓ LEFT paddle · tap fast = boost · hold ↑ = pause';
+      gameMetaEl.textContent = '↑ / ↓ LEFT paddle · tap fast = boost · ◀ = pause';
     } else if (mySide === 'right') {
-      gameMetaEl.textContent = '↑ / ↓ RIGHT paddle · tap fast = boost · hold ↑ = pause';
+      gameMetaEl.textContent = '↑ / ↓ RIGHT paddle · tap fast = boost · ◀ = pause';
     }
   }
 
@@ -1073,10 +1062,6 @@
       tapDirection = 0;
       sendIntent(0);
     }, IMPULSE_MS);
-  }
-
-  function clearLongPressUp() {
-    if (longPressUpTimer) { clearTimeout(longPressUpTimer); longPressUpTimer = null; }
   }
 
   function registerArrowTap(direction) {
@@ -1151,40 +1136,20 @@
       switch (ev.key) {
         case 'ArrowUp':
           ev.preventDefault();
-          if (!ev.repeat) {
-            registerArrowTap(-1);
-            // Hold ↑ for > LONG_PRESS_UP_MS to open the pause prompt.
-            clearLongPressUp();
-            longPressUpTimer = setTimeout(function () {
-              longPressUpTimer = null;
-              tapCount = 0;
-              tapDirection = 0;
-              clearImpulse();
-              sendIntent(0);
-              showPausePrompt();
-            }, LONG_PRESS_UP_MS);
-          } else {
-            refreshImpulse();
-          }
+          if (!ev.repeat) registerArrowTap(-1);
+          else            refreshImpulse();
           break;
         case 'ArrowDown':
           ev.preventDefault();
           if (!ev.repeat) registerArrowTap(1);
           else            refreshImpulse();
           break;
-        case 'Enter':
-        case ' ':
-          // Double-tap Enter (in either mode) also opens the pause prompt.
+        case 'ArrowLeft':
+          // Swipe-left on the glasses = ArrowLeft = open the pause prompt.
+          // Practice OR multiplayer; the prompt itself is the confirm
+          // (default focus on Resume, deliberate nav to Quit).
           ev.preventDefault();
-          if (!ev.repeat) {
-            var nowE = performance.now();
-            if (lastEnterAt && (nowE - lastEnterAt) < ENTER_DOUBLE_TAP_MS) {
-              lastEnterAt = 0;
-              showPausePrompt();
-            } else {
-              lastEnterAt = nowE;
-            }
-          }
+          if (!ev.repeat) showPausePrompt();
           break;
         case 'Escape':
         case 'Backspace':
@@ -1316,9 +1281,7 @@
     if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') {
       // Don't reset intent here — let the impulse timer run so a brief
       // discrete swipe (glasses touchpad) still produces real paddle
-      // motion. Only cancel the long-press-pause timer if ↑ was released
-      // before the threshold.
-      if (ev.key === 'ArrowUp') clearLongPressUp();
+      // motion.
       ev.preventDefault();
     }
   });
@@ -1399,7 +1362,6 @@
     tapCount = 0;
     tapDirection = 0;
     clearImpulse();
-    clearLongPressUp();
     stopCodeTtlCountdown();
     navigateTo('home');
   }
