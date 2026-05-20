@@ -44,13 +44,14 @@ var HOST = process.env.HOST || '0.0.0.0';
 
 // Room / pairing.
 var CODE_TTL_MS = 5 * 60 * 1000;              // Unpaired room expires after 5 min.
-var KEEPALIVE_MS = 30 * 1000;                 // WS ping cadence (defeats ngrok ~60s idle).
+var KEEPALIVE_MS = 15 * 1000;                 // WS ping cadence (defeats ngrok ~60s idle).
 var MSG_MAX_BYTES = 4 * 1024;                 // Hard cap on any incoming WS frame.
 var JOIN_RATE_PER_MIN = 10;                   // Per-IP code-guess budget.
 var CREATE_RATE_PER_MIN = 20;                 // Per-IP code-allocation budget.
 var CODE_ALLOC_MAX_RETRIES = 20;              // Collision retries before server-full.
 var IDLE_TIMEOUT_MS = 60 * 1000;              // Tear down a room with zero input from both sides.
 var INPUT_STALE_MS = 2 * 1000;                // Auto-clamp paddle intent to 0 after this.
+var GRACE_MS = 10 * 1000;                     // Mid-match disconnect window — peer can rejoin within this.
 
 // Physics / gameplay (px and px/s on the canonical 600×400 court).
 var TICK_HZ = 60;
@@ -178,7 +179,7 @@ function ipOf(req) {
  * @property {Side} left
  * @property {Side|null} right
  * @property {Ball} ball
- * @property {'waiting'|'playing'|'serving'|'won'} phase
+ * @property {'waiting'|'playing'|'serving'|'paused'|'won'} phase
  * @property {string|null} winner       // 'left' | 'right' | null
  * @property {number} lastSnapshotSeq
  * @property {NodeJS.Timeout|null} tickTimer
@@ -186,6 +187,10 @@ function ipOf(req) {
  * @property {NodeJS.Timeout|null} idleTimer
  * @property {NodeJS.Timeout|null} codeExpireTimer
  * @property {NodeJS.Timeout|null} serveTimer
+ * @property {NodeJS.Timeout|null} graceTimer
+ * @property {string} leftToken         // Per-match rejoin token for the left seat.
+ * @property {string|null} rightToken
+ * @property {number|null} pausedAt     // ms timestamp the room entered the paused-awaiting-rejoin state.
  * @property {number} createdAt
  * @property {number|null} pairedAt
  */
@@ -207,6 +212,10 @@ function createRoom(leftWs) {
     idleTimer: null,
     codeExpireTimer: null,
     serveTimer: null,
+    graceTimer: null,
+    leftToken: crypto.randomBytes(12).toString('hex'),
+    rightToken: null,
+    pausedAt: null,
     createdAt: Date.now(),
     pairedAt: null,
   };
@@ -250,6 +259,7 @@ function attachRight(room, rightWs) {
     room.codeExpireTimer = null;
   }
   room.right = makeSide(rightWs);
+  room.rightToken = crypto.randomBytes(12).toString('hex');
   room.pairedAt = Date.now();
   codeByRightSocket.set(rightWs, room.code);
 
@@ -258,9 +268,11 @@ function attachRight(room, rightWs) {
   resetBall(room, serveTo);
   room.phase = 'playing';
 
-  // Tell both peers their assigned side.
-  send(room.left.ws, { type: 'paired', side: 'left' });
-  send(rightWs, { type: 'paired', side: 'right' });
+  // Tell both peers their assigned side + a per-match rejoin token. If the
+  // socket drops mid-match, the client can present this token within
+  // GRACE_MS to slip back into the same seat.
+  send(room.left.ws, { type: 'paired', side: 'left',  token: room.leftToken });
+  send(rightWs,      { type: 'paired', side: 'right', token: room.rightToken });
 
   startRoomLoops(room);
   resetIdleTimer(room);
@@ -319,6 +331,10 @@ function destroyRoom(code, reason) {
   if (room.codeExpireTimer) {
     clearTimeout(room.codeExpireTimer);
     room.codeExpireTimer = null;
+  }
+  if (room.graceTimer) {
+    clearTimeout(room.graceTimer);
+    room.graceTimer = null;
   }
   rooms.delete(code);
   log('info', 'room.destroyed', { code: code, reason: reason });
@@ -624,6 +640,73 @@ function handleLeave(ws) {
   notifyAndDestroy(room, 'peer-left');
 }
 
+function handleRejoin(ws, data) {
+  if (typeof data.code !== 'string' || typeof data.token !== 'string') {
+    send(ws, { type: 'rejoin-fail', reason: 'bad-format' });
+    return;
+  }
+  if (codeByLeftSocket.has(ws) || codeByRightSocket.has(ws)) {
+    send(ws, { type: 'rejoin-fail', reason: 'already-in-room' });
+    return;
+  }
+  var room = rooms.get(data.code);
+  if (!room) {
+    send(ws, { type: 'rejoin-fail', reason: 'unknown-code' });
+    return;
+  }
+  var seatKey =
+    room.leftToken  === data.token ? 'left'  :
+    room.rightToken === data.token ? 'right' : null;
+  if (!seatKey) {
+    send(ws, { type: 'rejoin-fail', reason: 'bad-token' });
+    return;
+  }
+  var seat = room[seatKey];
+  if (seat.ws && seat.ws.readyState === 1) {
+    // Old socket somehow still open — close it before re-binding.
+    try { seat.ws.close(1000, 'replaced'); } catch (e) { /* ignore */ }
+  }
+  seat.ws = ws;
+  seat.intent = 0;
+  seat.lastInputAt = Date.now();
+  if (seatKey === 'left') codeByLeftSocket.set(ws, room.code);
+  else                    codeByRightSocket.set(ws, room.code);
+
+  if (room.graceTimer) {
+    clearTimeout(room.graceTimer);
+    room.graceTimer = null;
+  }
+  room.pausedAt = null;
+
+  // Resume from the paused phase. A mid-serve pause restarts with a fresh
+  // serve so the ball isn't stuck at center with zero velocity.
+  if (room.phase === 'paused') {
+    var resumePhase = room.pausedFromPhase || 'playing';
+    room.pausedFromPhase = null;
+    if (resumePhase === 'serving') {
+      resetBall(room, Math.random() < 0.5 ? 'left' : 'right');
+    }
+    room.phase = 'playing';
+    sendBoth(room, { type: 'phase', phase: 'playing' });
+  }
+
+  send(ws, {
+    type: 'rejoined',
+    side: seatKey,
+    score: { l: room.left.score, r: room.right ? room.right.score : 0 },
+  });
+  var peer = seatKey === 'left' ? room.right : room.left;
+  if (peer && peer.ws) send(peer.ws, { type: 'peer-resumed', side: seatKey });
+  resetIdleTimer(room);
+  log('info', 'room.rejoined', { code: room.code, side: seatKey });
+}
+
+function handlePing(ws, data) {
+  send(ws, { type: 'pong', t: data && data.t });
+  var assoc = sideForSocket(ws);
+  if (assoc) resetIdleTimer(assoc.room);
+}
+
 function sideForSocket(ws) {
   var leftCode = codeByLeftSocket.get(ws);
   if (leftCode) {
@@ -675,6 +758,9 @@ wss.on('connection', function (ws, req) {
       case 'join':
         handleJoin(ws, data, ip);
         break;
+      case 'rejoin':
+        handleRejoin(ws, data);
+        break;
       case 'input':
         handleInput(ws, data);
         break;
@@ -684,13 +770,21 @@ wss.on('connection', function (ws, req) {
       case 'leave':
         handleLeave(ws);
         break;
+      case 'ping':
+        handlePing(ws, data);
+        break;
       default:
         send(ws, { type: 'error', reason: 'unknown-type', detail: data.type });
     }
   });
 
-  ws.on('close', function (code, reason) {
-    onSocketClosed(ws, code, reason && reason.toString ? reason.toString() : '');
+  ws.on('close', function (closeCode, reason) {
+    var reasonStr = '';
+    if (reason) {
+      try { reasonStr = Buffer.isBuffer(reason) ? reason.toString('utf8') : String(reason); }
+      catch (e) { reasonStr = ''; }
+    }
+    onSocketClosed(ws, closeCode, reasonStr);
   });
 
   ws.on('error', function (err) {
@@ -698,45 +792,77 @@ wss.on('connection', function (ws, req) {
   });
 });
 
-function onSocketClosed(ws, code) {
+function onSocketClosed(ws, code, reason) {
+  // Locate the seat by walking both index maps. We can't use sideForSocket
+  // here because the room may still have the closed socket bound to the
+  // seat (we haven't unhooked it yet).
   var leftCode = codeByLeftSocket.get(ws);
-  if (leftCode) {
-    codeByLeftSocket.delete(ws);
-    var lroom = rooms.get(leftCode);
-    if (lroom) {
-      if (lroom.right && lroom.right.ws) {
-        codeByRightSocket.delete(lroom.right.ws);
-        send(lroom.right.ws, { type: 'opponent-disconnected', reason: 'peer-closed' });
-        try {
-          lroom.right.ws.close(1000, 'peer-closed');
-        } catch (e) {
-          /* ignore */
-        }
-      }
-      destroyRoom(leftCode, 'left-closed');
-    }
-    log('info', 'left.closed', { code: leftCode, wsCode: code });
+  var rightCode = codeByRightSocket.get(ws);
+  var seatKey = leftCode ? 'left' : (rightCode ? 'right' : null);
+  if (!seatKey) return;
+  var roomCode = leftCode || rightCode;
+  var room = rooms.get(roomCode);
+
+  if (seatKey === 'left') codeByLeftSocket.delete(ws);
+  else                    codeByRightSocket.delete(ws);
+
+  if (!room) {
+    log('info', seatKey + '.closed', { code: roomCode, wsCode: code, wsReason: reason });
     return;
   }
 
-  var rightCode = codeByRightSocket.get(ws);
-  if (rightCode) {
-    codeByRightSocket.delete(ws);
-    var rroom = rooms.get(rightCode);
-    if (rroom) {
-      if (rroom.left && rroom.left.ws) {
-        codeByLeftSocket.delete(rroom.left.ws);
-        send(rroom.left.ws, { type: 'opponent-disconnected', reason: 'peer-closed' });
-        try {
-          rroom.left.ws.close(1000, 'peer-closed');
-        } catch (e) {
-          /* ignore */
-        }
-      }
-      destroyRoom(rightCode, 'right-closed');
-    }
-    log('info', 'right.closed', { code: rightCode, wsCode: code });
+  log('info', seatKey + '.closed', {
+    code: room.code,
+    wsCode: code,
+    wsReason: reason,
+    phase: room.phase,
+    elapsedMs: Date.now() - (room.pairedAt || room.createdAt),
+  });
+
+  // Unpaired room (left disconnects before anyone joined): nothing to
+  // preserve — fall back to the old destroy behavior.
+  if (!room.right) {
+    destroyRoom(room.code, 'left-closed-pre-pair');
+    return;
   }
+
+  // Detach the dead socket from the seat but keep the seat reserved.
+  var seat = room[seatKey];
+  seat.ws = null;
+  seat.intent = 0;
+
+  var peer = seatKey === 'left' ? room.right : room.left;
+
+  // If a grace window is already running (shouldn't normally happen, but
+  // could after a server-replaced socket), don't restart it.
+  if (room.graceTimer) return;
+
+  if (peer && peer.ws) {
+    send(peer.ws, { type: 'peer-paused', side: seatKey, graceMs: GRACE_MS });
+  }
+
+  // Freeze the ball during the grace window so the surviving client
+  // doesn't watch it run away through the empty seat. Carry the original
+  // phase through `pausedFromPhase` so a mid-serve disconnect resumes with
+  // a fresh serve instead of an unresponsive frozen-at-center ball.
+  if (room.phase === 'playing' || room.phase === 'serving') {
+    if (room.serveTimer) {
+      clearTimeout(room.serveTimer);
+      room.serveTimer = null;
+    }
+    room.pausedFromPhase = room.phase;
+    room.phase = 'paused';
+    sendBoth(room, { type: 'phase', phase: 'paused' });
+  }
+  room.pausedAt = Date.now();
+
+  room.graceTimer = setTimeout(function () {
+    if (rooms.get(room.code) !== room) return;
+    if (room[seatKey].ws) return; // peer made it back in time
+    log('info', 'room.grace-expired', { code: room.code, side: seatKey });
+    notifyAndDestroy(room, 'peer-closed');
+  }, GRACE_MS);
+  room.graceTimer.unref();
 }
 
 // Keepalive: ping every peer; drop anything that misses a pong.
@@ -867,6 +993,22 @@ server.listen(PORT, HOST, function () {
   }
   lines.push('');
   console.log(lines.join('\n'));
+});
+
+// Don't let a single thrown error take down the entire game server. The
+// demo has no DB, no persistence — a process crash kicks every active
+// room. We'd rather log and keep serving the rest of the matches than
+// be strictly idiomatic about "fail fast" here.
+process.on('uncaughtException', function (err) {
+  log('error', 'uncaughtException', {
+    message: err && err.message,
+    stack: err && err.stack,
+  });
+});
+process.on('unhandledRejection', function (reason) {
+  log('error', 'unhandledRejection', {
+    reason: reason && (reason.stack || String(reason)),
+  });
 });
 
 // Graceful shutdown.

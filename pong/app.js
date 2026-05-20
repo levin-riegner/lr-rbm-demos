@@ -374,6 +374,7 @@
 
   var mySide = null;       // 'left' | 'right' | null
   var roomCode = null;
+  var rejoinToken = null;  // Per-match secret; set on `paired`, used on reconnect.
   var prevSnapshot = null;
   var latestSnapshot = null;
   var latestRecvAt = 0;
@@ -418,17 +419,53 @@
   // ============================================================
 
   var conn = null;
+
+  // App-level heartbeat. WS-frame ping/pong is fine on a clean link but
+  // some proxies (ngrok free, some corporate NATs) silently drop control
+  // frames; a JSON ping rides on the same channel as gameplay and gives
+  // the server a fresh `lastInputAt` so the idle-timer never kills an
+  // otherwise-healthy paired room.
+  var HEARTBEAT_MS = 10 * 1000;
+  var pingTimer = null;
+  function startHeartbeat() {
+    stopHeartbeat();
+    pingTimer = setInterval(function () {
+      send({ type: 'ping', t: Date.now() });
+    }, HEARTBEAT_MS);
+  }
+  function stopHeartbeat() {
+    if (pingTimer) { clearInterval(pingTimer); pingTimer = null; }
+  }
+
   function send(obj) { if (conn) conn.send(obj); }
 
   function startConnection() {
     navigateTo('connecting');
     conn = connectWebSocket(WS_URL, {
-      onOpen: function () { navigateTo('home'); },
+      onOpen: function () {
+        startHeartbeat();
+        // If we have a token and were in the middle of a match, try to
+        // slip back into our seat before showing any UI.
+        if (rejoinToken && roomCode &&
+            (currentScreen === 'disconnected' || currentScreen === 'connecting' ||
+             currentScreen === 'game' || currentScreen === 'gameover')) {
+          disconnectedDetailEl.textContent = 'Reconnecting to your match…';
+          if (currentScreen !== 'disconnected') navigateTo('disconnected');
+          send({ type: 'rejoin', code: roomCode, token: rejoinToken });
+          return;
+        }
+        navigateTo('home');
+      },
       onMessage: handleMessage,
       onClose: function () {
+        stopHeartbeat();
         stopCodeTtlCountdown();
-        if (currentScreen === 'game' || currentScreen === 'gameover' ||
-            currentScreen === 'waiting' || currentScreen === 'join') {
+        if (rejoinToken && roomCode &&
+            (currentScreen === 'game' || currentScreen === 'gameover')) {
+          disconnectedDetailEl.textContent = 'Connection blip — reconnecting…';
+          navigateTo('disconnected');
+        } else if (currentScreen === 'game' || currentScreen === 'gameover' ||
+                   currentScreen === 'waiting' || currentScreen === 'join') {
           disconnectedDetailEl.textContent =
             'Lost connection to the server. Reconnecting…';
           navigateTo('disconnected');
@@ -455,6 +492,7 @@
         break;
       case 'paired':
         mySide = msg.side === 'right' ? 'right' : 'left';
+        rejoinToken = msg.token || null;
         stopCodeTtlCountdown();
         scoreLeftEl.textContent = '0';
         scoreRightEl.textContent = '0';
@@ -463,6 +501,36 @@
         updateLegendForSide();
         navigateTo('game');
         sfx.join();
+        break;
+      case 'rejoined':
+        mySide = msg.side === 'right' ? 'right' : 'left';
+        if (msg.score) {
+          scoreLeftEl.textContent = String(msg.score.l);
+          scoreRightEl.textContent = String(msg.score.r);
+        }
+        prevSnapshot = null;
+        latestSnapshot = null;
+        updateLegendForSide();
+        if (currentScreen !== 'game') navigateTo('game');
+        sfx.join();
+        break;
+      case 'rejoin-fail':
+        // Token bad, room gone, or grace expired — give up cleanly.
+        rejoinToken = null;
+        roomCode = null;
+        disconnectedDetailEl.textContent = 'Could not reconnect to the match.';
+        navigateTo('disconnected');
+        sfx.error();
+        break;
+      case 'peer-paused':
+        // Stay on the game screen but flag the freeze in the legend.
+        gameMetaEl.textContent = 'Opponent reconnecting…';
+        break;
+      case 'peer-resumed':
+        updateLegendForSide();
+        break;
+      case 'pong':
+        // Heartbeat ack — nothing to do.
         break;
       case 'state':
         onSnapshot(msg);
@@ -474,15 +542,27 @@
           var iWon = msg.winner === mySide;
           if (iWon) sfx.win(); else sfx.lose();
         } else if (msg.phase === 'playing') {
-          scoreLeftEl.textContent = '0';
-          scoreRightEl.textContent = '0';
+          // Two cases:
+          //   - Rematch from `gameover` (scores were reset server-side to 0).
+          //   - Resume from a `paused` pause inside the same match.
+          // In both, drop interpolation history so we don't lerp across
+          // a discontinuity; the next 20 Hz snapshot will repaint scores.
+          if (currentScreen === 'gameover') {
+            scoreLeftEl.textContent = '0';
+            scoreRightEl.textContent = '0';
+            sfx.join();
+          }
           prevSnapshot = null;
           latestSnapshot = null;
-          navigateTo('game');
-          sfx.join();
+          updateLegendForSide();
+          if (currentScreen !== 'game') navigateTo('game');
+        } else if (msg.phase === 'paused') {
+          gameMetaEl.textContent = 'Match paused — waiting for opponent…';
         }
         break;
       case 'opponent-disconnected':
+        rejoinToken = null;
+        roomCode = null;
         stopCodeTtlCountdown();
         disconnectedDetailEl.textContent =
           msg.reason === 'idle-timeout'
@@ -1366,6 +1446,7 @@
     if (isPractice) endPractice();
     mySide = null;
     roomCode = null;
+    rejoinToken = null;
     prevSnapshot = null;
     latestSnapshot = null;
     myIntent = 0;

@@ -293,6 +293,7 @@
 
   var mySide = null;
   var roomCode = null;
+  var rejoinToken = null;
   var prevSnapshot = null;
   var latestSnapshot = null;
   var latestRecvAt = 0;
@@ -306,17 +307,46 @@
   // ============================================================
 
   var conn = null;
+
+  var HEARTBEAT_MS = 10 * 1000;
+  var pingTimer = null;
+  function startHeartbeat() {
+    stopHeartbeat();
+    pingTimer = setInterval(function () {
+      send({ type: 'ping', t: Date.now() });
+    }, HEARTBEAT_MS);
+  }
+  function stopHeartbeat() {
+    if (pingTimer) { clearInterval(pingTimer); pingTimer = null; }
+  }
+
   function send(obj) { if (conn) conn.send(obj); }
 
   function startConnection() {
     navigateTo('connecting');
     conn = connectWebSocket(WS_URL, {
-      onOpen: function () { navigateTo('home'); },
+      onOpen: function () {
+        startHeartbeat();
+        if (rejoinToken && roomCode &&
+            (currentScreen === 'disconnected' || currentScreen === 'connecting' ||
+             currentScreen === 'game' || currentScreen === 'gameover')) {
+          disconnectedDetailEl.textContent = 'Reconnecting to your match…';
+          if (currentScreen !== 'disconnected') navigateTo('disconnected');
+          send({ type: 'rejoin', code: roomCode, token: rejoinToken });
+          return;
+        }
+        navigateTo('home');
+      },
       onMessage: handleMessage,
       onClose: function () {
+        stopHeartbeat();
         stopCodeTtlCountdown();
-        if (currentScreen === 'game' || currentScreen === 'gameover' ||
-            currentScreen === 'waiting' || currentScreen === 'join') {
+        if (rejoinToken && roomCode &&
+            (currentScreen === 'game' || currentScreen === 'gameover')) {
+          disconnectedDetailEl.textContent = 'Connection blip — reconnecting…';
+          navigateTo('disconnected');
+        } else if (currentScreen === 'game' || currentScreen === 'gameover' ||
+                   currentScreen === 'waiting' || currentScreen === 'join') {
           disconnectedDetailEl.textContent =
             'Lost connection to the server. Reconnecting…';
           navigateTo('disconnected');
@@ -343,6 +373,7 @@
         break;
       case 'paired':
         mySide = msg.side === 'right' ? 'right' : 'left';
+        rejoinToken = msg.token || null;
         stopCodeTtlCountdown();
         scoreLeftEl.textContent = '0';
         scoreRightEl.textContent = '0';
@@ -350,6 +381,34 @@
         latestSnapshot = null;
         navigateTo('game');
         sfx.join();
+        break;
+      case 'rejoined':
+        mySide = msg.side === 'right' ? 'right' : 'left';
+        if (msg.score) {
+          scoreLeftEl.textContent = String(msg.score.l);
+          scoreRightEl.textContent = String(msg.score.r);
+        }
+        prevSnapshot = null;
+        latestSnapshot = null;
+        if (currentScreen !== 'game') navigateTo('game');
+        sfx.join();
+        break;
+      case 'rejoin-fail':
+        rejoinToken = null;
+        roomCode = null;
+        disconnectedDetailEl.textContent = 'Could not reconnect to the match.';
+        navigateTo('disconnected');
+        sfx.error();
+        break;
+      case 'peer-paused':
+        // Best-effort hint on the boost meter row — the mobile UI doesn't
+        // have a dedicated status line on the game screen.
+        if (paddlePadHintEl) paddlePadHintEl.textContent = 'OPPONENT RECONNECTING';
+        break;
+      case 'peer-resumed':
+        if (paddlePadHintEl) paddlePadHintEl.textContent = 'DRAG UP / DOWN';
+        break;
+      case 'pong':
         break;
       case 'state':
         onSnapshot(msg);
@@ -360,15 +419,22 @@
           navigateTo('gameover');
           (msg.winner === mySide ? sfx.win : sfx.lose)();
         } else if (msg.phase === 'playing') {
-          scoreLeftEl.textContent = '0';
-          scoreRightEl.textContent = '0';
+          if (currentScreen === 'gameover') {
+            scoreLeftEl.textContent = '0';
+            scoreRightEl.textContent = '0';
+            sfx.join();
+          }
+          if (paddlePadHintEl) paddlePadHintEl.textContent = 'DRAG UP / DOWN';
           prevSnapshot = null;
           latestSnapshot = null;
-          navigateTo('game');
-          sfx.join();
+          if (currentScreen !== 'game') navigateTo('game');
+        } else if (msg.phase === 'paused') {
+          if (paddlePadHintEl) paddlePadHintEl.textContent = 'MATCH PAUSED — WAITING';
         }
         break;
       case 'opponent-disconnected':
+        rejoinToken = null;
+        roomCode = null;
         stopCodeTtlCountdown();
         disconnectedDetailEl.textContent =
           msg.reason === 'idle-timeout'
@@ -773,6 +839,7 @@
   function leaveToHome() {
     mySide = null;
     roomCode = null;
+    rejoinToken = null;
     prevSnapshot = null;
     latestSnapshot = null;
     myIntent = 0;

@@ -139,7 +139,7 @@ ngrok http 3000
 # → https://xxxx.ngrok-free.app
 ```
 
-ngrok serves HTTP and WSS on the same origin, so `wss://xxxx.ngrok-free.app/ws` just works. The server's 30 s WebSocket keepalive defeats ngrok's ~60 s idle disconnect.
+ngrok serves HTTP and WSS on the same origin, so `wss://xxxx.ngrok-free.app/ws` just works. The server's 15 s WebSocket keepalive plus a 10 s app-level JSON heartbeat defeat ngrok's ~60 s idle disconnect. If a WS still blips, the client auto-rejoins with the per-match token within a 10 s grace window so the game survives transient cross-continent drops.
 
 ### 2. Add the webapp to two pairs of glasses
 
@@ -176,7 +176,9 @@ Every frame carries `v: 1`, a monotonic `id`, and `ts`. Messages are small JSON 
 |---|---|---|
 | `create` | — | Allocate a new 4-digit code, become the left paddle. |
 | `join` | `code` (4-digit string) | Try to pair into an existing room as the right paddle. |
-| `input` | `intent ∈ {-1, 0, 1}` | Paddle direction: −1 up, 0 idle, 1 down. Send on key change. |
+| `rejoin` | `code`, `token` | After a mid-match WS drop, present the per-match token to slip back into the same seat (within `GRACE_MS` ≈ 10 s). |
+| `input` | `intent ∈ [-4, 4]` | Paddle direction: −1 up, 0 idle, 1 down. Magnitudes 2–4 boost paddle speed (rapid-tap / fast swipe). |
+| `ping` | `t` | App-level heartbeat. Server echoes a `pong` and bumps the idle timer. |
 | `ready` | — | After `phase: 'won'`, request a rematch. Both players must send. |
 | `leave` | — | Graceful leave. Server tears down the room. |
 
@@ -185,10 +187,15 @@ Every frame carries `v: 1`, a monotonic `id`, and `ts`. Messages are small JSON 
 | `type` | Fields | Meaning |
 |---|---|---|
 | `created` | `code`, `ttlMs` | Room created. Show the code; expires in `ttlMs` if no one joins. |
-| `paired` | `side ∈ {'left','right'}` | Both peers connected. Start playing. |
+| `paired` | `side ∈ {'left','right'}`, `token` | Both peers connected. Stash the `token` — you'll need it to rejoin after a drop. |
+| `rejoined` | `side`, `score` | Server matched your `rejoin` and reseated you. Resume the game UI; scores echoed in case you missed snapshots. |
+| `rejoin-fail` | `reason ∈ 'unknown-code' \| 'bad-token' \| 'bad-format' \| 'already-in-room'` | Token / room couldn't be matched (or grace already expired). Drop the token and treat the match as ended. |
+| `peer-paused` | `side`, `graceMs` | Your opponent's WS dropped; physics is frozen until they rejoin or `graceMs` elapses. |
+| `peer-resumed` | `side` | Opponent rejoined inside the grace window. |
 | `state` | `seq`, `t`, `ball:{x,y}`, `paddles:{l,r}`, `score:{l,r}`, `phase` | 20 Hz snapshot. Drop if `seq < lastSeq`. |
-| `phase` | `phase`, `winner?`, `score?` | Match-level transitions: `'won'` (with `winner`) or `'playing'` (rematch confirmed). |
-| `opponent-disconnected` | `reason` | Peer left or idle-timed-out. |
+| `phase` | `phase`, `winner?`, `score?` | Match-level transitions: `'paused'` (peer dropped), `'playing'` (resumed / rematch), `'won'` (with `winner`). |
+| `pong` | `t` | Echo of the client's `ping` heartbeat. |
+| `opponent-disconnected` | `reason` | Peer left, idle-timed-out, or failed to rejoin within the grace window. |
 | `join-fail` | `reason ∈ 'unknown-code' \| 'already-paired' \| 'rate-limited' \| 'bad-format' \| 'already-in-room'` | Show a tailored error. |
 | `error` | `reason`, `detail?` | Protocol-level error. |
 
@@ -223,7 +230,8 @@ A `Room` carries `{ left, right, ball, phase, winner, lastSnapshotSeq, tickTimer
 | Idle GC | Room destroyed after 60 s with no `input` from either side. |
 | Rate limits (per IP, token bucket) | `join`: 10/min · `create`: 20/min. |
 | WS frame cap | 4 KB via `ws` `maxPayload`. |
-| Keepalive | WS `ping` every 30 s. Sockets that miss a pong are terminated (defeats ngrok's ~60 s idle drop). |
+| Keepalive | WS `ping` every 15 s; app-level `ping`/`pong` JSON every 10 s from the client. Sockets that miss a pong are terminated (defeats ngrok's ~60 s idle drop and intermediaries that swallow WS control frames). |
+| Reconnect | Each `paired` ships a 96-bit per-match `token`. A dropped peer can `rejoin` the same seat within `GRACE_MS` (10 s) — physics freezes, then resumes; score is preserved. |
 | Static serving | Plain `http` + `fs`. 6 MIME types. Path traversal blocked. `Cache-Control: no-store`. |
 | Logs | One-line JSON to stdout. |
 | Health check | `GET /health` → `{ ok: true, rooms: N }`. |
@@ -255,6 +263,8 @@ npm start
 - **Idle GC**: open the game, both go idle (no key presses) for >60 s → both clients drop to **Disconnected** (idle timeout).
 - **Code expiry**: open the home, **Create room**, leave it for >5 min without anyone joining → server emits `code-expired`, client lands on **Disconnected**.
 - **Big junk frame**: send a 5 KB blob over the WS → server closes with `payload-too-large`.
+- **Brief mid-match drop**: open two tabs, start a game, toggle the Network panel to Offline for one tab for ~2 s, then back online → that tab shows "Connection blip — reconnecting…", the other tab shows "Match paused — waiting for opponent…", both resume with scores preserved.
+- **Drop longer than the grace window**: same setup but stay offline > 10 s → both tabs land on the Disconnected screen; server logs `room.grace-expired`.
 
 ### On-device dry run
 
@@ -364,7 +374,7 @@ The included `vercel.json` is kept for **parity with other examples in this repo
 
 ## Limitations (by design)
 
-- **No mid-match reconnect.** If either peer drops, the room is torn down. Mirrors `pair-hud`.
+- **10-second mid-match reconnect window.** If a peer's WS drops, the room is paused and held for ~10 s. The client auto-reconnects with the per-match `rejoin` token and resumes; longer drops still tear the room down.
 - **No AI / single-player.** Strict 2-player only. To smoke-test alone, open two tabs.
 - **One match per room.** Game over → both press **Play again** to rematch with reset scores. No best-of-N.
 - **No spectators, chat, replay.** Just the game.
