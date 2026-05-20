@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Device Info</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- Home / Category Menu -->
+    <div id="home" class="screen">
+      <header class="header">
+        <h1>Device Info</h1>
+        <span class="header-meta" id="home-time"></span>
+      </header>
+      <div class="content">
+        <div class="menu-list" id="category-list">
+          <button class="menu-item focusable" data-action="go-screen" data-target="browser">
+            <span class="menu-icon">&#127760;</span>
+            <span class="menu-label">Browser</span>
+            <span class="menu-chevron">&#8250;</span>
+          </button>
+          <button class="menu-item focusable" data-action="go-screen" data-target="useragent">
+            <span class="menu-icon">&#128196;</span>
+            <span class="menu-label">User Agent</span>
+            <span class="menu-chevron">&#8250;</span>
+          </button>
+          <button class="menu-item focusable" data-action="go-screen" data-target="screen-info">
+            <span class="menu-icon">&#128444;</span>
+            <span class="menu-label">Screen &amp; Display</span>
+            <span class="menu-chevron">&#8250;</span>
+          </button>
+          <button class="menu-item focusable" data-action="go-screen" data-target="network">
+            <span class="menu-icon">&#128246;</span>
+            <span class="menu-label">Network</span>
+            <span class="menu-chevron">&#8250;</span>
+          </button>
+          <button class="menu-item focusable" data-action="go-screen" data-target="hardware">
+            <span class="menu-icon">&#128187;</span>
+            <span class="menu-label">Hardware</span>
+            <span class="menu-chevron">&#8250;</span>
+          </button>
+          <button class="menu-item focusable" data-action="go-screen" data-target="performance">
+            <span class="menu-icon">&#9201;</span>
+            <span class="menu-label">Performance</span>
+            <span class="menu-chevron">&#8250;</span>
+          </button>
+          <button class="menu-item focusable" data-action="go-screen" data-target="apis">
+            <span class="menu-icon">&#128273;</span>
+            <span class="menu-label">APIs &amp; Features</span>
+            <span class="menu-chevron">&#8250;</span>
+          </button>
+          <button class="menu-item focusable" data-action="go-screen" data-target="location">
+            <span class="menu-icon">&#128205;</span>
+            <span class="menu-label">Location</span>
+            <span class="menu-chevron">&#8250;</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Browser Info Screen -->
+    <div id="browser" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>Browser</h1>
+      </header>
+      <div class="content scrollable" id="browser-content"></div>
+    </div>
+
+    <!-- User Agent Screen -->
+    <div id="useragent" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>User Agent</h1>
+      </header>
+      <div class="content scrollable" id="useragent-content"></div>
+    </div>
+
+    <!-- Screen & Display Screen -->
+    <div id="screen-info" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>Screen &amp; Display</h1>
+      </header>
+      <div class="content scrollable" id="screen-info-content"></div>
+    </div>
+
+    <!-- Network Screen -->
+    <div id="network" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>Network</h1>
+      </header>
+      <div class="content scrollable" id="network-content"></div>
+    </div>
+
+    <!-- Hardware Screen -->
+    <div id="hardware" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>Hardware</h1>
+      </header>
+      <div class="content scrollable" id="hardware-content"></div>
+    </div>
+
+    <!-- Performance Screen -->
+    <div id="performance" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>Performance</h1>
+      </header>
+      <div class="content scrollable" id="performance-content"></div>
+    </div>
+
+    <!-- APIs & Features Screen -->
+    <div id="apis" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>APIs &amp; Features</h1>
+      </header>
+      <div class="content scrollable" id="apis-content"></div>
+    </div>
+
+    <!-- Location Screen -->
+    <div id="location" class="screen hidden">
+      <header class="header">
+        <button class="back-btn focusable" data-action="back">&#8592;</button>
+        <h1>Location</h1>
+      </header>
+      <div class="content scrollable" id="location-content">
+        <div class="info-row">
+          <span class="info-label">Status</span>
+          <span class="info-value" id="location-status">Press Enter to fetch</span>
+        </div>
+      </div>
+      <nav class="nav-bar">
+        <button class="nav-btn focusable primary" data-action="fetch-location">Get Location</button>
+      </nav>
+    </div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
