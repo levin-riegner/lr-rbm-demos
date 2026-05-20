@@ -36,19 +36,6 @@
 
   var DEVICE = (document.documentElement.dataset && document.documentElement.dataset.device) || 'glasses';
 
-  // 3-2-1 countdown shown over the canvas before each match's first
-  // serve. The server holds the ball still for COUNTDOWN_MS during this
-  // window; the client times the overlay locally to keep tick + label
-  // in sync without trusting a clock the server might not share.
-  var COUNTDOWN_MS = 3000;
-  var countdownEndsAt = 0;
-  var countdownLastBeepSec = 0;
-
-  function startCountdown() {
-    countdownEndsAt = performance.now() + COUNTDOWN_MS;
-    countdownLastBeepSec = 0;
-  }
-
   // ============================================================
   // 1. WebSocket URL resolution
   // ============================================================
@@ -521,7 +508,6 @@
         prevSnapshot = null;
         latestSnapshot = null;
         updateLegendForSide();
-        startCountdown();
         navigateTo('game');
         sfx.join();
         break;
@@ -574,7 +560,6 @@
             scoreLeftEl.textContent = '0';
             scoreRightEl.textContent = '0';
             sfx.join();
-            startCountdown();
           }
           prevSnapshot = null;
           latestSnapshot = null;
@@ -824,14 +809,10 @@
 
     if (isPractice) {
       practiceTickAndRender();
-      drawCountdown();
       return;
     }
 
-    if (!latestSnapshot) {
-      drawCountdown();
-      return;
-    }
+    if (!latestSnapshot) return;
 
     var t = 1;
     if (prevSnapshot) {
@@ -870,8 +851,6 @@
 
     // Ball — square, not circle (true 8-bit pong).
     drawBall(ballX, ballY);
-
-    drawCountdown();
   }
 
   function drawPaddle(x, y, color) {
@@ -880,29 +859,6 @@
     ctx.shadowBlur = 14;
     ctx.fillStyle = color;
     ctx.fillRect(Math.round(x), Math.round(y), PADDLE_W, PADDLE_H);
-    ctx.restore();
-  }
-
-  function drawCountdown() {
-    var remaining = countdownEndsAt - performance.now();
-    if (remaining <= 0) return;
-    var sec = Math.ceil(remaining / 1000); // 3, 2, 1
-    if (sec < 1) return;
-    if (sec !== countdownLastBeepSec) {
-      countdownLastBeepSec = sec;
-      sfx.focus();
-    }
-    var label = String(sec);
-    var pulse = 1 - (remaining % 1000) / 1000; // 0 → 1 across each second
-    var size = 160 + Math.round(pulse * 24);
-    ctx.save();
-    ctx.fillStyle = '#00ff88';
-    ctx.font = 'bold ' + size + 'px "Press Start 2P", "JetBrains Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,255,136,0.65)';
-    ctx.shadowBlur = 28;
-    ctx.fillText(label, COURT_W / 2, COURT_H / 2);
     ctx.restore();
   }
 
@@ -937,17 +893,8 @@
       hits: 0,
       best: best,
       lastT: performance.now(),
-      ballX: COURT_W / 2,
-      ballY: COURT_H / 2,
-      vx: 0,
-      vy: 0,
     };
-    // Defer the actual serve until after the 3-2-1 countdown so the
-    // ball sits still at center while the overlay plays.
-    startCountdown();
-    setTimeout(function () {
-      if (practice) practiceServe(-1);
-    }, COUNTDOWN_MS);
+    practiceServe(-1);
 
     scoreLeftEl.textContent = '0';
     scoreRightEl.textContent = '';
@@ -992,8 +939,8 @@
     if (!practice) return;
     var now = performance.now();
 
-    // Prompt open OR pre-serve countdown — freeze physics, keep rendering.
-    if (practicePromptVisible || countdownEndsAt > now) {
+    // Prompt open — freeze physics but keep rendering the frozen state.
+    if (practicePromptVisible) {
       practice.lastT = now;
       drawPaddle(PADDLE_MARGIN, practice.paddleY, '#00ff88');
       drawPracticeWall();
