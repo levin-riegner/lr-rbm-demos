@@ -334,14 +334,21 @@ body.drag-active #sim-viewport {
   box-shadow: 0 0 0 1px rgba(100,175,255,0.35);
 }
 
-/* ── Slider rows ──────────────────────────────────────────────── */
+/* ── Slider / control rows ────────────────────────────────────── */
 .slider-row {
   display: grid;
   grid-template-columns: 78px 1fr 40px;
   align-items: center;
   gap: 10px;
 }
-.slider-row label {
+.control-row {
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.slider-row label,
+.control-row > label {
   font-size: 11px;
   color: rgba(255,255,255,0.55);
   white-space: nowrap;

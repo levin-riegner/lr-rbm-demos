@@ -15,9 +15,7 @@
   const bgVid         = document.getElementById('bg-vid');
   const urlInput      = document.getElementById('url-input');
   const slOpacity     = document.getElementById('sl-opacity');
-  const slScale       = document.getElementById('sl-scale');
   const lblOpacity    = document.getElementById('lbl-opacity');
-  const lblScale      = document.getElementById('lbl-scale');
   const slBgBright    = document.getElementById('sl-bg-brightness');
   const lblBgBright   = document.getElementById('lbl-bg-brightness');
   const loadError     = document.getElementById('load-error');
@@ -25,44 +23,46 @@
   const appChips      = document.getElementById('app-chips');
   const bgStrip       = document.getElementById('bg-strip');
   const positionSeg   = document.getElementById('position-seg');
+  const sizeSeg       = document.getElementById('size-seg');
   const exitFsBtn     = document.getElementById('exit-fullscreen-btn');
 
   /* ── Config ────────────────────────────────────────────────────── */
   const HUD_MARGIN = 24;
 
   const APP_PRESETS = [
-    { name: 'Brusher',                url: 'https://rbm-demos.lnr.io/brusher/' },
     { name: 'Calculator',             url: 'https://rbm-demos.lnr.io/calculator/' },
+    { name: 'Crypto Tracker',         url: 'https://rbm-demos.lnr.io/crypto-tracker/' },
+    { name: 'Pong',                   url: 'https://rbm-demos.lnr.io/pong/' },
+    { name: 'Pomodoro',               url: 'https://rbm-demos.lnr.io/pomodoro/' },
+    { name: 'Weather',      url: 'https://rbm-demos.lnr.io/weather-dashboard/' },
+    { name: 'Flight Status',          url: 'https://rbm-demos.lnr.io/flight-status/' },
+    { name: 'Snake',                  url: 'https://rbm-demos.lnr.io/snake/' },
+    { name: 'Metronome',              url: 'https://rbm-demos.lnr.io/metronome/' },
+    { name: 'IP Info',                url: 'https://rbm-demos.lnr.io/ip-info/' },
+    { name: 'Key Logger',             url: 'https://rbm-demos.lnr.io/key-logger/' },
     { name: 'Chores',                 url: 'https://rbm-demos.lnr.io/chores/' },
     { name: 'Cooking HUD',            url: 'https://rbm-demos.lnr.io/cooking-hud/' },
-    { name: 'Crypto Tracker',         url: 'https://rbm-demos.lnr.io/crypto-tracker/' },
     { name: 'Dad Jokes',              url: 'https://rbm-demos.lnr.io/dad-jokes/' },
     { name: 'Deep Link Launcher',     url: 'https://rbm-demos.lnr.io/deep-link-launcher/' },
     { name: 'Deep Link Target',       url: 'https://rbm-demos.lnr.io/deep-link-target/' },
+    { name: 'Brusher',                url: 'https://rbm-demos.lnr.io/brusher/' },
     { name: 'Find My Car',            url: 'https://rbm-demos.lnr.io/find-my-car/' },
     { name: 'Flashcards (Serbian)',   url: 'https://rbm-demos.lnr.io/flashcards-serbian/' },
-    { name: 'Flight Status',          url: 'https://rbm-demos.lnr.io/flight-status/' },
     { name: 'Glasses API Test',       url: 'https://rbm-demos.lnr.io/glasses-api-test/' },
     { name: 'Head Gesture Prototype', url: 'https://rbm-demos.lnr.io/head-gesture-prototype/' },
     { name: 'Headprint',              url: 'https://rbm-demos.lnr.io/headprint/' },
-    { name: 'IP Info',                url: 'https://rbm-demos.lnr.io/ip-info/' },
     { name: 'Kairos Calendar HUD',    url: 'https://rbm-demos.lnr.io/kairos-calendar-hud/' },
-    { name: 'Key Logger',             url: 'https://rbm-demos.lnr.io/key-logger/' },
     { name: 'Levin Riegner',          url: 'https://rbm-demos.lnr.io/levinriegner/' },
     { name: 'LR Glimmer',             url: 'https://rbm-demos.lnr.io/lr-glimmer/' },
     { name: 'Meditation',             url: 'https://rbm-demos.lnr.io/meditation/' },
-    { name: 'Metronome',              url: 'https://rbm-demos.lnr.io/metronome/' },
     { name: 'Origami Sensei',         url: 'https://rbm-demos.lnr.io/origami-sensei/' },
     { name: 'Pair HUD',               url: 'https://rbm-demos.lnr.io/pair-hud/' },
     { name: 'Pentatonic Solo',        url: 'https://rbm-demos.lnr.io/pentatonic-solo/' },
     { name: 'Periff',                 url: 'https://rbm-demos.lnr.io/periff/' },
     { name: 'Pinout HUD',             url: 'https://rbm-demos.lnr.io/pinout-hud/' },
     { name: 'Plane Spotter',          url: 'https://rbm-demos.lnr.io/plane-spotter/' },
-    { name: 'Pomodoro',               url: 'https://rbm-demos.lnr.io/pomodoro/' },
-    { name: 'Pong',                   url: 'https://rbm-demos.lnr.io/pong/' },
     { name: 'Presto',                 url: 'https://rbm-demos.lnr.io/presto/' },
     { name: 'Recipe Stepper',         url: 'https://rbm-demos.lnr.io/recipe-stepper/' },
-    { name: 'Snake',                  url: 'https://rbm-demos.lnr.io/snake/' },
     { name: 'Speedometer',            url: 'https://rbm-demos.lnr.io/speedometer/' },
     { name: 'Spireworks',             url: 'https://rbm-demos.lnr.io/spireworks/' },
     { name: 'Tally Counter',          url: 'https://rbm-demos.lnr.io/tally-counter/' },
@@ -70,7 +70,6 @@
     { name: 'Teleprompter (glasses)', url: 'https://rbm-demos.lnr.io/teleprompter/glasses/' },
     { name: 'Tiltscroll Tales',       url: 'https://rbm-demos.lnr.io/tiltscroll-tales/' },
     { name: 'Trivia Live',            url: 'https://rbm-demos.lnr.io/trivia-live/' },
-    { name: 'Weather Dashboard',      url: 'https://rbm-demos.lnr.io/weather-dashboard/' },
     { name: 'Zork Terminal',          url: 'https://rbm-demos.lnr.io/zork-terminal/' },
   ];
 
@@ -86,42 +85,47 @@
   ];
 
   /* ── State ─────────────────────────────────────────────────────── */
-  let displayPx   = 300;
-  let scaleRatio  = 0.5;
-  let hudCentered = false;
+  let displayPx  = 300;
+  let scaleRatio = 0.5;
+  let hudAnchor  = 'bottom'; // 'top' | 'middle' | 'bottom' (all right-aligned)
 
-  /* ── HUD position (anchored within #sim-viewport) ──────────────── */
-  function setHudPosition(centered) {
-    hudCentered = centered;
-    if (centered) {
-      wrap.style.left   = '50%';
-      wrap.style.top    = '50%';
-      wrap.style.right  = 'auto';
-      wrap.style.bottom = 'auto';
-      wrap.style.transform = 'translate(-50%, -50%)';
-    } else {
-      wrap.style.left   = 'auto';
-      wrap.style.top    = 'auto';
-      wrap.style.right  = HUD_MARGIN + 'px';
-      wrap.style.bottom = HUD_MARGIN + 'px';
+  /* ── HUD position — always right-aligned, vertical anchor only ─── */
+  function setHudPosition(anchor) {
+    hudAnchor = anchor;
+
+    // Right edge is fixed; only the vertical anchor changes.
+    wrap.style.left  = 'auto';
+    wrap.style.right = HUD_MARGIN + 'px';
+
+    if (anchor === 'top') {
+      wrap.style.top       = HUD_MARGIN + 'px';
+      wrap.style.bottom    = 'auto';
+      wrap.style.transform = '';
+    } else if (anchor === 'middle') {
+      wrap.style.top       = '50%';
+      wrap.style.bottom    = 'auto';
+      wrap.style.transform = 'translateY(-50%)';
+    } else { // bottom
+      wrap.style.top       = 'auto';
+      wrap.style.bottom    = HUD_MARGIN + 'px';
       wrap.style.transform = '';
     }
+
     positionSeg.querySelectorAll('button').forEach(btn => {
-      const isActive =
-        (centered && btn.dataset.pos === 'center') ||
-        (!centered && btn.dataset.pos === 'corner');
-      btn.classList.toggle('active', isActive);
+      btn.classList.toggle('active', btn.dataset.pos === anchor);
     });
   }
 
+  /* ── HUD size — three discrete presets ────────────────────────── */
   function applyScale(pct) {
-    scaleRatio  = pct / 100;
-    displayPx   = Math.round(600 * scaleRatio);
+    scaleRatio = pct / 100;
+    displayPx  = Math.round(600 * scaleRatio);
     wrap.style.width  = displayPx + 'px';
     wrap.style.height = displayPx + 'px';
     iframe.style.transform = `scale(${scaleRatio})`;
-    slScale.value        = pct;
-    lblScale.textContent = pct + '%';
+    sizeSeg.querySelectorAll('button').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.size, 10) === pct);
+    });
   }
 
   /* ── Load URL ───────────────────────────────────────────────────── */
@@ -154,7 +158,13 @@
   positionSeg.addEventListener('click', e => {
     const btn = e.target.closest('button[data-pos]');
     if (!btn) return;
-    setHudPosition(btn.dataset.pos === 'center');
+    setHudPosition(btn.dataset.pos);
+  });
+
+  sizeSeg.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-size]');
+    if (!btn) return;
+    applyScale(parseInt(btn.dataset.size, 10));
   });
 
   /* ── App preset chips ──────────────────────────────────────────── */
@@ -330,9 +340,6 @@
     wrap.style.opacity = this.value / 100;
     lblOpacity.textContent = this.value + '%';
   });
-  slScale.addEventListener('input', function () {
-    applyScale(parseInt(this.value, 10));
-  });
   slBgBright.addEventListener('input', function () {
     scene.style.opacity = this.value / 100;
     lblBgBright.textContent = this.value + '%';
@@ -341,8 +348,8 @@
   /* ── Init ──────────────────────────────────────────────────────── */
   buildAppChips();
   buildBgStrip();
-  applyScale(50);
-  setHudPosition(false);
+  applyScale(50);          // Medium
+  setHudPosition('bottom'); // matches the right-aligned glasses HUD default
 
   setBackgroundFromUrl(BG_PRESETS[0].file);
   markActiveBg(BG_PRESETS[0].file);

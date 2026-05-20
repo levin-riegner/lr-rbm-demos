@@ -57,22 +57,26 @@
   <section class="side-section">
     <h2>HUD Position</h2>
     <div class="seg-control" id="position-seg" role="tablist">
-      <button type="button" data-pos="corner" class="active">Corner</button>
-      <button type="button" data-pos="center">Center</button>
+      <button type="button" data-pos="top">Top</button>
+      <button type="button" data-pos="middle">Middle</button>
+      <button type="button" data-pos="bottom" class="active">Bottom</button>
     </div>
   </section>
 
   <section class="side-section">
     <h2>HUD</h2>
+    <div class="control-row">
+      <label>Size</label>
+      <div class="seg-control" id="size-seg" role="tablist">
+        <button type="button" data-size="25">Small</button>
+        <button type="button" data-size="50" class="active">Medium</button>
+        <button type="button" data-size="80">Large</button>
+      </div>
+    </div>
     <div class="slider-row">
       <label for="sl-opacity">Brightness</label>
       <input type="range" id="sl-opacity" min="30" max="100" value="100">
       <span id="lbl-opacity">100%</span>
-    </div>
-    <div class="slider-row">
-      <label for="sl-scale">Size</label>
-      <input type="range" id="sl-scale" min="15" max="80" value="50" step="5">
-      <span id="lbl-scale">50%</span>
     </div>
   </section>
 
