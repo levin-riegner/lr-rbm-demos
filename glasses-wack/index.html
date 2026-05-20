@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=600, initial-scale=1" />
+<title>Glasses Wack</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>GLASSES <span class="bolt">/</span> WACK</h1>
+    <span class="subtitle" id="counter">00 / 00</span>
+  </header>
+
+  <div class="list" id="list">
+    <div class="row" data-id="vibrate">
+      <div class="row-head">
+        <div class="name"><span class="idx">01</span>VIBRATE</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Buzz pattern <span class="mono">[100,50,100,50,200]</span></div>
+    </div>
+
+    <div class="row" data-id="webgl2">
+      <div class="row-head">
+        <div class="name"><span class="idx">02</span>WEBGL2</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Rotating textured cube</div>
+      <div class="preview"><canvas id="glcv" width="120" height="80"></canvas></div>
+    </div>
+
+    <div class="row" data-id="canvas2d">
+      <div class="row-head">
+        <div class="name"><span class="idx">03</span>CANVAS 2D</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Lissajous + particle field</div>
+      <div class="preview"><canvas id="c2dcv" width="120" height="80"></canvas></div>
+    </div>
+
+    <div class="row" data-id="webnfc">
+      <div class="row-head">
+        <div class="name"><span class="idx">04</span>WEBNFC</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Scan for NDEF tag (5s)</div>
+    </div>
+
+    <div class="row" data-id="battery">
+      <div class="row-head">
+        <div class="name"><span class="idx">05</span>BATTERY</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Charge level + state</div>
+      <div class="preview"><div class="bar"><div class="bar-fill" id="batfill"></div></div></div>
+    </div>
+
+    <div class="row" data-id="wakelock">
+      <div class="row-head">
+        <div class="name"><span class="idx">06</span>WAKE LOCK</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Keep screen on (toggle)</div>
+    </div>
+
+    <div class="row" data-id="network">
+      <div class="row-head">
+        <div class="name"><span class="idx">07</span>NETWORK</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Connection type + downlink</div>
+    </div>
+
+    <div class="row" data-id="speak">
+      <div class="row-head">
+        <div class="name"><span class="idx">08</span>SPEAK</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">SpeechSynthesis "hello from the lens"</div>
+    </div>
+
+    <div class="row" data-id="gamepad">
+      <div class="row-head">
+        <div class="name"><span class="idx">09</span>GAMEPAD</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Poll for connected controllers</div>
+    </div>
+
+    <div class="row" data-id="storage">
+      <div class="row-head">
+        <div class="name"><span class="idx">10</span>STORAGE</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Quota + persisted state</div>
+    </div>
+
+    <div class="row" data-id="share">
+      <div class="row-head">
+        <div class="name"><span class="idx">11</span>SHARE</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">navigator.share availability</div>
+    </div>
+
+    <div class="row" data-id="hwconc">
+      <div class="row-head">
+        <div class="name"><span class="idx">12</span>HARDWARE</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Cores, memory, pixel ratio</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><kbd>▲</kbd><kbd>▼</kbd> nav</span>
+    <span><kbd>▶</kbd> run</span>
+    <span><kbd>Enter</kbd> run all</span>
+    <span><kbd>◀</kbd> stop</span>
+  </footer>
+
+<script src="app.js"></script>
+</body>
+</html>
