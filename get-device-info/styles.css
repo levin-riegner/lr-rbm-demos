@@ -1,250 +1,301 @@
-/* ==================== BASE ==================== */
+/* ============================================================
+   DEVICE INFO — Meta Display HUD
+   600 × 600, D-pad, pure black (transparent) background.
+   Stacked label/value pattern so long strings never overflow.
+   ============================================================ */
+
 :root {
-  --bg-primary: #000000;
-  --bg-secondary: #0a0a12;
-  --bg-tertiary: #14141f;
-  --bg-card: #16162a;
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0b0;
-  --text-muted: #606070;
-  --accent-primary: #00d4ff;
-  --success: #00ff88;
-  --danger: #ff4466;
-  --warn: #facc15;
-  --focus-ring: #00d4ff;
-  --focus-glow: rgba(0, 212, 255, 0.4);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --bg-0:        #000000;       /* transparent on additive display */
+  --bg-1:        #0a0a14;
+  --bg-2:        #14141f;
+  --bg-card:     #16162a;
+  --bg-card-hi:  #1d1d33;
+
+  --text:        #ffffff;
+  --text-2:      #b8bcc8;
+  --text-3:      #7a7e8c;
+  --text-4:      #4a4d5a;
+
+  --cyan:        #00d4ff;
+  --cyan-glow:   rgba(0, 212, 255, 0.45);
+  --green:       #00ff88;
+  --amber:       #ffb84d;
+  --red:         #ff5e7e;
+
+  --radius:      10px;
+  --radius-lg:   14px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+html, body {
   width: 600px;
   height: 600px;
   overflow: hidden;
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
 }
+
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.mono {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.hidden { display: none !important; }
 
 #app { width: 100%; height: 100%; position: relative; }
 
+/* ──────────────────────────────────────────────────────────
+   Screen layout
+   The flex children need min-height:0 so .content can scroll
+   ────────────────────────────────────────────────────────── */
 .screen {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  position: absolute;
-  top: 0;
-  left: 0;
+  min-height: 0;
 }
-.screen.hidden { display: none; }
 
-/* ==================== HEADER ==================== */
+/* ──────────────────────────────────────────────────────────
+   Header
+   ────────────────────────────────────────────────────────── */
 .header {
   display: flex;
   align-items: center;
-  padding: 14px 20px;
-  background: var(--bg-secondary);
-  gap: 12px;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--bg-1);
   flex-shrink: 0;
+  border-bottom: 1px solid var(--bg-2);
 }
-.header h1 { font-size: 22px; font-weight: 600; flex: 1; }
-.header-meta { font-size: 13px; color: var(--text-secondary); }
-
-.back-btn {
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 22px;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  border: 2px solid transparent;
-  cursor: pointer;
-}
-
-/* ==================== CONTENT ==================== */
-.content {
+.header h1 {
   flex: 1;
-  padding: 12px 16px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
-
-/* ==================== FOCUS ==================== */
-.focusable {
-  transition: all 0.15s ease;
-  border: 2px solid transparent;
-  cursor: pointer;
-  background: none;
-  font-family: inherit;
-  color: inherit;
-}
-.focusable:focus {
-  outline: none;
-  border-color: var(--focus-ring);
-  box-shadow: 0 0 20px var(--focus-glow);
-}
-
-/* ==================== NAV BAR ==================== */
-.nav-bar {
-  display: flex;
-  gap: 8px;
-  padding: 10px 16px;
-  background: var(--bg-secondary);
-  flex-shrink: 0;
-}
-.nav-item {
-  flex: 1;
-  padding: 12px 14px;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-size: 15px;
+.header-meta {
+  font-size: 14px;
+  color: var(--text-3);
   font-weight: 500;
-  text-align: center;
+}
+.back-btn {
+  font-size: 26px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 44px;
+  border-radius: var(--radius);
+  color: var(--text);
+  flex-shrink: 0;
 }
-.nav-item:focus { background: var(--bg-card); }
-.nav-item.primary { background: var(--accent-primary); color: #000; }
-.nav-item.primary:focus { background: #33ddff; }
 
-/* ==================== HOME MENU ==================== */
+/* ──────────────────────────────────────────────────────────
+   Scrollable content
+   min-height:0 is critical so flex:1 + overflow-y:auto actually
+   scrolls inside the 600px viewport.
+   ────────────────────────────────────────────────────────── */
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-card-hi) transparent;
+}
+.content::-webkit-scrollbar { width: 4px; }
+.content::-webkit-scrollbar-track { background: transparent; }
+.content::-webkit-scrollbar-thumb { background: var(--bg-card-hi); border-radius: 2px; }
+
+/* ──────────────────────────────────────────────────────────
+   Focus ring — applies to ALL focusable elements uniformly
+   ────────────────────────────────────────────────────────── */
+.focusable {
+  outline: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+.focusable:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 22px var(--cyan-glow);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Home menu — large tappable rows
+   ────────────────────────────────────────────────────────── */
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  background: var(--bg-card);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-size: 18px;
-  font-weight: 500;
+  gap: 16px;
   width: 100%;
+  padding: 16px 18px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  color: var(--text);
   text-align: left;
-  min-height: 60px;
+  min-height: 64px;
 }
-.menu-item:focus { background: #1d1d33; }
-
+.menu-item:focus { background: var(--bg-card-hi); }
 .menu-icon {
-  font-size: 22px;
+  font-size: 24px;
   width: 32px;
   text-align: center;
   flex-shrink: 0;
 }
-.menu-label { flex: 1; }
+.menu-label {
+  flex: 1;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
 .menu-chevron {
-  font-size: 20px;
-  color: var(--text-muted);
+  font-size: 22px;
+  color: var(--text-3);
   flex-shrink: 0;
 }
 
-/* ==================== INFO ROWS ==================== */
+/* ──────────────────────────────────────────────────────────
+   Section headings inside info screens
+   ────────────────────────────────────────────────────────── */
 .section-title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--accent-primary);
-  padding: 10px 4px 4px;
+  letter-spacing: 0.12em;
+  color: var(--cyan);
+  padding: 14px 4px 4px;
 }
+.section-title:first-child { padding-top: 2px; }
 
+/* ──────────────────────────────────────────────────────────
+   Info row — STACKED label-on-top, value-below
+   This is the key fix: long strings (UAs, paths) wrap to a
+   second line instead of overflowing the container.
+   ────────────────────────────────────────────────────────── */
 .info-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
   padding: 12px 14px;
   background: var(--bg-card);
-  border-radius: var(--radius-sm);
-  gap: 12px;
-  min-height: 52px;
+  border-radius: var(--radius);
+  min-height: 64px;
 }
-
 .info-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-  max-width: 44%;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+}
+.info-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+.info-value .good  { color: var(--green); }
+.info-value .warn  { color: var(--amber); }
+.info-value .bad   { color: var(--red); }
+.info-value .muted { color: var(--text-3); }
+
+/* mono variant for IDs, codes, raw strings */
+.info-value.mono {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+  letter-spacing: -0.01em;
+  line-height: 1.45;
 }
 
-.info-value {
+/* ──────────────────────────────────────────────────────────
+   Nav bar (bottom action row)
+   ────────────────────────────────────────────────────────── */
+.nav-bar {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--bg-1);
+  border-top: 1px solid var(--bg-2);
+  flex-shrink: 0;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  color: var(--text);
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary);
-  text-align: right;
-  word-break: break-word;
+  min-height: 52px;
 }
-
-.info-value.mono {
-  font-family: 'SF Mono', Menlo, Consolas, monospace;
-  font-size: 14px;
-  letter-spacing: -0.3px;
+.nav-item:focus { background: var(--bg-card-hi); }
+.nav-item.primary {
+  background: var(--cyan);
+  color: var(--bg-0);
 }
+.nav-item.primary:focus { background: #33ddff; }
 
-.info-value.good  { color: var(--success); }
-.info-value.warn  { color: var(--warn); }
-.info-value.bad   { color: var(--danger); }
-.info-value.muted { color: var(--text-muted); font-size: 14px; }
-
-/* full-width row for long strings like UA */
-.info-row.stacked {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-}
-.info-row.stacked .info-label { max-width: 100%; }
-.info-row.stacked .info-value {
-  font-size: 13px;
-  font-family: 'SF Mono', Menlo, Consolas, monospace;
-  text-align: left;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  word-break: break-all;
-}
-
-/* ==================== FEATURE GRID ==================== */
+/* ──────────────────────────────────────────────────────────
+   Feature grid — APIs & Features screen
+   2-column compact grid of supported/unsupported badges
+   ────────────────────────────────────────────────────────── */
 .feature-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
-
 .feature-badge {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 12px;
   background: var(--bg-card);
-  border-radius: var(--radius-sm);
-  min-height: 44px;
+  border-radius: var(--radius);
+  min-height: 48px;
 }
-
 .feature-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
 }
-.feature-dot.yes { background: var(--success); }
-.feature-dot.no  { background: var(--danger); }
-
+.feature-dot.yes { background: var(--green); box-shadow: 0 0 8px rgba(0, 255, 136, 0.5); }
+.feature-dot.no  { background: var(--red); }
 .feature-name {
   font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
+  font-weight: 600;
+  color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-.hidden { display: none !important; }
+.feature-badge.disabled .feature-name { color: var(--text-3); }

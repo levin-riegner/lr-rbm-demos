@@ -4,18 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
   <title>Device Info</title>
-  <link rel="icon" href="favicon.png" type="image/png">
-  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="app">
 
     <!-- Home / Category Menu -->
-    <div id="home" class="screen">
+    <section id="home" class="screen">
       <header class="header">
         <h1>Device Info</h1>
-        <span class="header-meta" id="home-time"></span>
+        <span class="header-meta mono" id="home-time"></span>
       </header>
       <div class="content">
         <button class="menu-item focusable" data-action="go-screen" data-target="browser">
@@ -59,73 +61,73 @@
           <span class="menu-chevron">&#8250;</span>
         </button>
       </div>
-    </div>
+    </section>
 
-    <!-- Browser Info Screen -->
-    <div id="browser" class="screen hidden">
+    <!-- Browser -->
+    <section id="browser" class="screen hidden">
       <header class="header">
         <button class="back-btn focusable" data-action="back">&#8592;</button>
         <h1>Browser</h1>
       </header>
       <div class="content" id="browser-content"></div>
-    </div>
+    </section>
 
-    <!-- User Agent Screen -->
-    <div id="useragent" class="screen hidden">
+    <!-- User Agent -->
+    <section id="useragent" class="screen hidden">
       <header class="header">
         <button class="back-btn focusable" data-action="back">&#8592;</button>
         <h1>User Agent</h1>
       </header>
       <div class="content" id="useragent-content"></div>
-    </div>
+    </section>
 
-    <!-- Screen & Display Screen -->
-    <div id="screen-info" class="screen hidden">
+    <!-- Screen & Display -->
+    <section id="screen-info" class="screen hidden">
       <header class="header">
         <button class="back-btn focusable" data-action="back">&#8592;</button>
         <h1>Screen &amp; Display</h1>
       </header>
       <div class="content" id="screen-info-content"></div>
-    </div>
+    </section>
 
-    <!-- Network Screen -->
-    <div id="network" class="screen hidden">
+    <!-- Network -->
+    <section id="network" class="screen hidden">
       <header class="header">
         <button class="back-btn focusable" data-action="back">&#8592;</button>
         <h1>Network</h1>
       </header>
       <div class="content" id="network-content"></div>
-    </div>
+    </section>
 
-    <!-- Hardware Screen -->
-    <div id="hardware" class="screen hidden">
+    <!-- Hardware -->
+    <section id="hardware" class="screen hidden">
       <header class="header">
         <button class="back-btn focusable" data-action="back">&#8592;</button>
         <h1>Hardware</h1>
       </header>
       <div class="content" id="hardware-content"></div>
-    </div>
+    </section>
 
-    <!-- Performance Screen -->
-    <div id="performance" class="screen hidden">
+    <!-- Performance -->
+    <section id="performance" class="screen hidden">
       <header class="header">
         <button class="back-btn focusable" data-action="back">&#8592;</button>
         <h1>Performance</h1>
       </header>
       <div class="content" id="performance-content"></div>
-    </div>
+    </section>
 
-    <!-- APIs & Features Screen -->
-    <div id="apis" class="screen hidden">
+    <!-- APIs & Features -->
+    <section id="apis" class="screen hidden">
       <header class="header">
         <button class="back-btn focusable" data-action="back">&#8592;</button>
         <h1>APIs &amp; Features</h1>
       </header>
       <div class="content" id="apis-content"></div>
-    </div>
+    </section>
 
-    <!-- Location Screen -->
-    <div id="location" class="screen hidden">
+    <!-- Location -->
+    <section id="location" class="screen hidden">
       <header class="header">
         <button class="back-btn focusable" data-action="back">&#8592;</button>
         <h1>Location</h1>
@@ -134,7 +136,7 @@
       <nav class="nav-bar">
         <button class="nav-item primary focusable" data-action="fetch-location">&#128205; Get Location</button>
       </nav>
-    </div>
+    </section>
 
   </div>
   <script src="app.js"></script>
