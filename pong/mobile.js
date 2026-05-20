@@ -199,14 +199,25 @@
     if (name === 'game') { resetGameClientState(); startRenderLoop(); }
     if (name === 'join') {
       joinTyped = [];
+      if (codeFieldEl) codeFieldEl.value = '';
       renderJoinSlots();
       setJoinStatus('');
+      // Pop the native numeric keyboard. iOS only honors focus() when
+      // it's still inside the same gesture that opened this screen,
+      // which is the case when the user taps "JOIN ROOM" or pressed
+      // navigateTo from a tap handler.
+      if (codeFieldEl) {
+        try { codeFieldEl.focus(); } catch (e) { /* iOS may refuse */ }
+      }
     }
     if (name === 'gameover') readyStatusEl.textContent = '';
   }
   function onScreenExit(name) {
     if (name === 'game') stopRenderLoop();
     if (name === 'connecting') stopFragmentCycle();
+    if (name === 'join' && codeFieldEl) {
+      try { codeFieldEl.blur(); } catch (e) {}
+    }
   }
 
   // ============================================================
@@ -228,6 +239,7 @@
   var fragmentEl = document.getElementById('connecting-fragment');
   var slotEls = Array.prototype.slice.call(document.querySelectorAll('.m-slot'));
   var keypadEl = document.getElementById('m-keypad');
+  var codeFieldEl = document.getElementById('m-code-field');
   var paddlePadEl = document.getElementById('paddle-pad');
   var paddlePadHintEl = document.getElementById('paddle-pad-hint');
   var boostMeterEl = document.getElementById('boost-meter');
@@ -515,10 +527,15 @@
     }
   }
 
+  function syncCodeFieldFromTyped() {
+    if (codeFieldEl) codeFieldEl.value = joinTyped.join('');
+  }
+
   function keypadPress(key) {
     if (key === 'back') {
       if (joinTyped.length > 0) {
         joinTyped.pop();
+        syncCodeFieldFromTyped();
         sfx.keypad();
         renderJoinSlots();
         setJoinStatus('');
@@ -528,6 +545,7 @@
     if (key === 'clear') {
       if (joinTyped.length > 0) {
         joinTyped = [];
+        syncCodeFieldFromTyped();
         sfx.keypad();
         renderJoinSlots();
         setJoinStatus('');
@@ -536,12 +554,28 @@
     }
     if (/^[0-9]$/.test(key) && joinTyped.length < 4) {
       joinTyped.push(parseInt(key, 10));
+      syncCodeFieldFromTyped();
       sfx.keypad();
       renderJoinSlots();
       if (joinTyped.length === 4) {
         submitJoinCode();
       }
     }
+  }
+
+  // Native numeric keyboard: any input event on the hidden field
+  // rewrites joinTyped from the field's value (digits only, max 4) and
+  // auto-submits on the 4th digit.
+  if (codeFieldEl) {
+    codeFieldEl.addEventListener('input', function () {
+      var v = (codeFieldEl.value || '').replace(/[^0-9]/g, '').slice(0, 4);
+      if (v !== codeFieldEl.value) codeFieldEl.value = v;
+      joinTyped = v.split('').map(function (c) { return parseInt(c, 10); });
+      sfx.keypad();
+      renderJoinSlots();
+      setJoinStatus('');
+      if (joinTyped.length === 4) submitJoinCode();
+    });
   }
 
   function submitJoinCode() {
@@ -573,6 +607,7 @@
     });
     setTimeout(function () {
       joinTyped = [];
+      if (codeFieldEl) codeFieldEl.value = '';
       renderJoinSlots();
     }, 700);
   }

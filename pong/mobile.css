@@ -271,7 +271,34 @@ html, body {
   font-family: var(--mono);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  position: relative;
 }
+
+/* Invisible <input> stretched over the slot row. Tapping anywhere on
+   the row gives this input focus, which pops the iOS / Android native
+   numeric keyboard. font-size: 16px on iOS suppresses auto-zoom. */
+.m-code-field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  font-size: 16px;
+  text-align: center;
+  z-index: 2;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.m-code-field::selection { background: transparent; }
 
 .m-slot {
   display: inline-flex;

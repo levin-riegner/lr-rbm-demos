@@ -1347,6 +1347,36 @@
         }
       }
       // joinFocusZone === 'lock'
+      // Desktop typing: keys 0-9 fill the active digit and advance;
+      // Backspace clears / steps back. On the 4th typed digit we
+      // auto-submit so the user doesn't need a separate Enter press.
+      if (DEVICE === 'desktop' && /^[0-9]$/.test(ev.key)) {
+        joinDigits[activeCol] = parseInt(ev.key, 10);
+        renderJoinColumn(activeCol);
+        sfx.focus();
+        if (activeCol < 3) {
+          activeCol += 1;
+          renderJoinAll();
+        } else {
+          submitJoinCode();
+          sfx.click();
+        }
+        ev.preventDefault();
+        return;
+      }
+      if (DEVICE === 'desktop' && ev.key === 'Backspace') {
+        if (joinDigits[activeCol] !== 0) {
+          joinDigits[activeCol] = 0;
+        } else if (activeCol > 0) {
+          activeCol -= 1;
+          joinDigits[activeCol] = 0;
+        }
+        renderJoinAll();
+        sfx.focus();
+        ev.preventDefault();
+        return;
+      }
+
       switch (ev.key) {
         case 'ArrowUp':    joinRotateUp();   ev.preventDefault(); return;
         case 'ArrowDown':  joinRotateDown(); ev.preventDefault(); return;

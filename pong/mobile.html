@@ -64,10 +64,23 @@
         </button>
       </section>
 
-      <!-- 4. Join — big number keypad. -->
+      <!-- 4. Join — native numeric keyboard + visible keypad. -->
       <section id="screen-join" class="screen hidden">
         <div class="m-label">ENTER ROOM CODE</div>
         <div class="m-code-input" id="m-code-input">
+          <input
+            type="tel"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="4"
+            class="m-code-field"
+            id="m-code-field"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            aria-label="Room code"
+          />
           <span class="m-slot" data-slot="0">·</span>
           <span class="m-slot" data-slot="1">·</span>
           <span class="m-slot" data-slot="2">·</span>
