@@ -24,7 +24,7 @@
   // 1. WS URL (mirrors glasses client)
   // ============================================================
 
-  var WS_PROD = 'wss://spry-polka-splurge.ngrok-free.dev/ws';
+  var WS_PROD = 'wss://pong-demo.fly.dev/ws';
   function isLocalHostname(host) {
     if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;
     if (/^10\./.test(host)) return true;
