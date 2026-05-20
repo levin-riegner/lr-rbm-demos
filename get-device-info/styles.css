@@ -123,6 +123,20 @@ button {
   scrollbar-width: thin;
   scrollbar-color: var(--bg-card-hi) transparent;
 }
+/* Children must NOT shrink — otherwise flex tries to fit them all into the
+   viewport, crushing each row down to its min-height and forcing the inner
+   text to overflow its card. With flex-shrink: 0, rows keep their natural
+   height and .content actually scrolls. */
+.content > * { flex-shrink: 0; }
+
+/* Async-rendered groups (battery, storage) need the same column gap so
+   their nested rows space consistently with the rest of the screen. */
+.row-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
 .content::-webkit-scrollbar { width: 4px; }
 .content::-webkit-scrollbar-track { background: transparent; }
 .content::-webkit-scrollbar-thumb { background: var(--bg-card-hi); border-radius: 2px; }

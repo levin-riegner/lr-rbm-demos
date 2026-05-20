@@ -271,10 +271,10 @@ function renderHardware() {
   html += row('Max touch points', nav.maxTouchPoints);
 
   html += section('Battery');
-  html += `<div id="battery-mount">${row('Status', muted('Loading…'), { raw: true })}</div>`;
+  html += `<div class="row-group" id="battery-mount">${row('Status', muted('Loading…'), { raw: true })}</div>`;
 
   html += section('Storage');
-  html += `<div id="storage-mount">${row('Status', muted('Loading…'), { raw: true })}</div>`;
+  html += `<div class="row-group" id="storage-mount">${row('Status', muted('Loading…'), { raw: true })}</div>`;
 
   html += section('Plugins');
   const plugins = Array.from(nav.plugins || []);
@@ -541,4 +541,10 @@ document.addEventListener('keydown', e => {
 });
 
 // ─── Boot ───────────────────────────────────────────────────
-navigateTo('home');
+const VALID_SCREENS = ['home','browser','useragent','screen-info','network','hardware','performance','apis','location'];
+const params = new URLSearchParams(location.search);
+const startScreen = params.get('state') || params.get('screen') || 'home';
+// Hide every screen up front so direct-link starts (?screen=useragent) don't
+// leave the default home screen visible behind the target.
+document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+navigateTo(VALID_SCREENS.includes(startScreen) ? startScreen : 'home');
