@@ -296,6 +296,15 @@
   // 6. Room / game state
   // ============================================================
 
+  // 3-2-1 countdown overlay before each match's first serve.
+  var COUNTDOWN_MS = 3000;
+  var countdownEndsAt = 0;
+  var countdownLastBeepSec = 0;
+  function startCountdown() {
+    countdownEndsAt = performance.now() + COUNTDOWN_MS;
+    countdownLastBeepSec = 0;
+  }
+
   var COURT_W = 600;
   var COURT_H = 400;
   var PADDLE_W = 14;
@@ -401,6 +410,7 @@
         scoreRightEl.textContent = '0';
         prevSnapshot = null;
         latestSnapshot = null;
+        startCountdown();
         navigateTo('game');
         sfx.join();
         break;
@@ -445,6 +455,7 @@
             scoreLeftEl.textContent = '0';
             scoreRightEl.textContent = '0';
             sfx.join();
+            startCountdown();
           }
           if (paddlePadHintEl) paddlePadHintEl.textContent = 'DRAG UP / DOWN';
           prevSnapshot = null;
@@ -673,9 +684,13 @@
     }
     if (isPractice) {
       practiceTickAndRender();
+      drawCountdown();
       return;
     }
-    if (!latestSnapshot) return;
+    if (!latestSnapshot) {
+      drawCountdown();
+      return;
+    }
     var t = 1;
     if (prevSnapshot) {
       t = (performance.now() - latestRecvAt) / SNAPSHOT_INTERVAL_MS;
@@ -704,6 +719,7 @@
     drawPaddle(PADDLE_MARGIN, leftY, leftColor);
     drawPaddle(COURT_W - PADDLE_MARGIN - PADDLE_W, rightY, rightColor);
     drawBall(ballX, ballY);
+    drawCountdown();
   }
   function drawPaddle(x, y, color) {
     ctx.save();
@@ -720,6 +736,27 @@
     ctx.fillStyle = '#ffffff';
     var s = BALL_R * 2;
     ctx.fillRect(Math.round(x - BALL_R), Math.round(y - BALL_R), s, s);
+    ctx.restore();
+  }
+  function drawCountdown() {
+    var remaining = countdownEndsAt - performance.now();
+    if (remaining <= 0) return;
+    var sec = Math.ceil(remaining / 1000);
+    if (sec < 1) return;
+    if (sec !== countdownLastBeepSec) {
+      countdownLastBeepSec = sec;
+      sfx.focus();
+    }
+    var pulse = 1 - (remaining % 1000) / 1000;
+    var size = 160 + Math.round(pulse * 24);
+    ctx.save();
+    ctx.fillStyle = '#00ff88';
+    ctx.font = 'bold ' + size + 'px "Press Start 2P", "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,255,136,0.65)';
+    ctx.shadowBlur = 28;
+    ctx.fillText(String(sec), COURT_W / 2, COURT_H / 2);
     ctx.restore();
   }
   function drawPracticeWall() {
@@ -749,8 +786,16 @@
       hits: 0,
       best: best,
       lastT: performance.now(),
+      ballX: COURT_W / 2,
+      ballY: COURT_H / 2,
+      vx: 0,
+      vy: 0,
     };
-    practiceServe(-1);
+    // Hold the ball still while the 3-2-1 overlay plays, then serve.
+    startCountdown();
+    setTimeout(function () {
+      if (practice) practiceServe(-1);
+    }, COUNTDOWN_MS);
 
     scoreLeftEl.textContent = '0';
     scoreRightEl.textContent = '';
@@ -786,6 +831,17 @@
   function practiceTickAndRender() {
     if (!practice) return;
     var now = performance.now();
+
+    // Pre-serve countdown — freeze physics, keep rendering the frozen
+    // state so the overlay sits on top of a still scene.
+    if (countdownEndsAt > now) {
+      practice.lastT = now;
+      drawPaddle(PADDLE_MARGIN, practice.paddleY, '#00ff88');
+      drawPracticeWall();
+      drawBall(practice.ballX, practice.ballY);
+      return;
+    }
+
     var dt = Math.min(0.05, (now - practice.lastT) / 1000);
     practice.lastT = now;
 

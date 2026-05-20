@@ -52,6 +52,7 @@ var CODE_ALLOC_MAX_RETRIES = 20;              // Collision retries before server
 var IDLE_TIMEOUT_MS = 60 * 1000;              // Tear down a room with zero input from both sides.
 var INPUT_STALE_MS = 2 * 1000;                // Auto-clamp paddle intent to 0 after this.
 var GRACE_MS = 10 * 1000;                     // Mid-match disconnect window — peer can rejoin within this.
+var COUNTDOWN_MS = 3000;                      // Initial 3-2-1 countdown before the first serve.
 
 // Physics / gameplay (px and px/s on the canonical 600×400 court).
 var TICK_HZ = 60;
@@ -212,6 +213,7 @@ function createRoom(leftWs) {
     idleTimer: null,
     codeExpireTimer: null,
     serveTimer: null,
+    countdownTimer: null,
     graceTimer: null,
     leftToken: crypto.randomBytes(12).toString('hex'),
     rightToken: null,
@@ -263,16 +265,15 @@ function attachRight(room, rightWs) {
   room.pairedAt = Date.now();
   codeByRightSocket.set(rightWs, room.code);
 
-  // Coin-flip serving side.
-  var serveTo = Math.random() < 0.5 ? 'left' : 'right';
-  resetBall(room, serveTo);
-  room.phase = 'playing';
-
   // Tell both peers their assigned side + a per-match rejoin token. If the
   // socket drops mid-match, the client can present this token within
   // GRACE_MS to slip back into the same seat.
   send(room.left.ws, { type: 'paired', side: 'left',  token: room.leftToken });
   send(rightWs,      { type: 'paired', side: 'right', token: room.rightToken });
+
+  // Hold the ball at center during the 3-second countdown; both clients
+  // render a 3-2-1 overlay locally and the server serves when it expires.
+  startCountdown(room);
 
   startRoomLoops(room);
   resetIdleTimer(room);
@@ -332,6 +333,10 @@ function destroyRoom(code, reason) {
     clearTimeout(room.codeExpireTimer);
     room.codeExpireTimer = null;
   }
+  if (room.countdownTimer) {
+    clearTimeout(room.countdownTimer);
+    room.countdownTimer = null;
+  }
   if (room.graceTimer) {
     clearTimeout(room.graceTimer);
     room.graceTimer = null;
@@ -359,6 +364,27 @@ function notifyAndDestroy(room, reason) {
     }
   }
   destroyRoom(room.code, reason);
+}
+
+// ---------- Countdown ---------------------------------------------------------
+
+function startCountdown(room) {
+  // Hold ball still at center; tickRoom skips physics when phase isn't
+  // 'playing' so this is enough to freeze the court.
+  room.ball.x = COURT_W / 2;
+  room.ball.y = COURT_H / 2;
+  room.ball.vx = 0;
+  room.ball.vy = 0;
+  room.phase = 'countdown';
+  if (room.countdownTimer) clearTimeout(room.countdownTimer);
+  room.countdownTimer = setTimeout(function () {
+    if (rooms.get(room.code) !== room) return;
+    if (room.phase !== 'countdown') return;
+    var serveTo = Math.random() < 0.5 ? 'left' : 'right';
+    resetBall(room, serveTo);
+    room.phase = 'playing';
+  }, COUNTDOWN_MS);
+  room.countdownTimer.unref();
 }
 
 // ---------- Physics -----------------------------------------------------------
@@ -623,10 +649,10 @@ function handleReady(ws) {
     room.left.y = (COURT_H - PADDLE_H) / 2;
     room.right.y = (COURT_H - PADDLE_H) / 2;
     room.winner = null;
-    var serveTo = Math.random() < 0.5 ? 'left' : 'right';
-    resetBall(room, serveTo);
-    room.phase = 'playing';
+    // Tell clients to switch to the game screen, then run the same 3-2-1
+    // countdown the initial pairing uses.
     sendBoth(room, { type: 'phase', phase: 'playing' });
+    startCountdown(room);
     startRoomLoops(room);
     resetIdleTimer(room);
     log('info', 'room.rematch', { code: room.code });
