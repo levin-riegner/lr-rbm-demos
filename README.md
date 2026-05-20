@@ -39,12 +39,15 @@ Each app is a small, self-contained web project designed for the 600x600 display
 - [LR Glimmer](https://rbm-demos.lnr.io/lr-glimmer/)
 - [Meditation](https://rbm-demos.lnr.io/meditation/)
 - [Metronome](https://rbm-demos.lnr.io/metronome/)
+- [Origami Sensei](https://rbm-demos.lnr.io/origami-sensei/)
 - [Pair HUD](https://rbm-demos.lnr.io/pair-hud/)
+- [Pentatonic Solo](https://rbm-demos.lnr.io/pentatonic-solo/)
 - [Periff](https://rbm-demos.lnr.io/periff/)
 - [Pinout HUD](https://rbm-demos.lnr.io/pinout-hud/)
 - [Plane Spotter](https://rbm-demos.lnr.io/plane-spotter/)
 - [Pomodoro](https://rbm-demos.lnr.io/pomodoro/)
 - [Pong](https://rbm-demos.lnr.io/pong/)
+- [Presto](https://rbm-demos.lnr.io/presto/)
 - [Recipe Stepper](https://rbm-demos.lnr.io/recipe-stepper/)
 - [Snake](https://rbm-demos.lnr.io/snake/)
 - [Speedometer](https://rbm-demos.lnr.io/speedometer/)
@@ -61,7 +64,7 @@ Each app is a small, self-contained web project designed for the 600x600 display
 
 A browser-based simulator that previews how any web app would look on the display glasses. It applies the additive waveguide blend (plus-lighter) over a real-world background image, so you can judge contrast and legibility without a physical device.
 
-Try it live: [https://rbm-demos.lnr.io/simulator/](https://rbm-demos.lnr.io/simulator/)
+Try it live: [https://displayglasses.dev](https://displayglasses.dev)
 
 Features:
 - Load any URL into the simulated 600x600 HUD

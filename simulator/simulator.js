@@ -6,78 +6,112 @@
   'use strict';
 
   /* ── DOM refs ──────────────────────────────────────────────────── */
-  const wrap         = document.getElementById('display-wrap');
-  const iframe       = document.getElementById('app-iframe');
-  const placeholder  = document.getElementById('wg-placeholder');
-  const bgImg        = document.getElementById('bg-img');
-  const bgVid        = document.getElementById('bg-vid');
-  const urlInput     = document.getElementById('url-input');
-  const scaleBadge   = document.getElementById('scale-badge');
-  const resizeHandle = document.getElementById('resize-handle');
-  const slOpacity    = document.getElementById('sl-opacity');
-  const slScale      = document.getElementById('sl-scale');
-  const lblOpacity   = document.getElementById('lbl-opacity');
-  const lblScale     = document.getElementById('lbl-scale');
-  const loadError    = document.getElementById('load-error');
-  const fileInput    = document.getElementById('file-input');
-  const appChips     = document.getElementById('app-chips');
-  const bgStrip      = document.getElementById('bg-strip');
+  const simViewport   = document.getElementById('sim-viewport');
+  const scene         = document.getElementById('scene');
+  const wrap          = document.getElementById('display-wrap');
+  const iframe        = document.getElementById('app-iframe');
+  const placeholder   = document.getElementById('wg-placeholder');
+  const bgImg         = document.getElementById('bg-img');
+  const bgVid         = document.getElementById('bg-vid');
+  const urlInput      = document.getElementById('url-input');
+  const slOpacity     = document.getElementById('sl-opacity');
+  const slScale       = document.getElementById('sl-scale');
+  const lblOpacity    = document.getElementById('lbl-opacity');
+  const lblScale      = document.getElementById('lbl-scale');
+  const slBgBright    = document.getElementById('sl-bg-brightness');
+  const lblBgBright   = document.getElementById('lbl-bg-brightness');
+  const loadError     = document.getElementById('load-error');
+  const fileInput     = document.getElementById('file-input');
+  const appChips      = document.getElementById('app-chips');
+  const bgStrip       = document.getElementById('bg-strip');
+  const positionSeg   = document.getElementById('position-seg');
+  const exitFsBtn     = document.getElementById('exit-fullscreen-btn');
 
   /* ── Config ────────────────────────────────────────────────────── */
-  const HUD_MARGIN = 24; // px gap from window edges (matches CSS default)
+  const HUD_MARGIN = 24;
 
-  // App URL presets — clickable chips at the top.
   const APP_PRESETS = [
-    { name: 'Calculator',     url: 'https://mdg-calculator.vercel.app'     },
-    { name: 'Pomodoro',       url: 'https://mdg-pomodoro.vercel.app'       },
-    { name: 'Meditation',     url: 'https://mdg-meditation.vercel.app'     },
-    { name: 'Crypto Tracker', url: 'https://mdg-crypto-tracker.vercel.app' },
-    { name: 'Trivia Live',    url: 'https://mdg-trivia-live.vercel.app'    },
-    { name: 'IP Info',        url: 'https://mdg-ip-info.vercel.app'        },
+    { name: 'Brusher',                url: 'https://rbm-demos.lnr.io/brusher/' },
+    { name: 'Calculator',             url: 'https://rbm-demos.lnr.io/calculator/' },
+    { name: 'Chores',                 url: 'https://rbm-demos.lnr.io/chores/' },
+    { name: 'Cooking HUD',            url: 'https://rbm-demos.lnr.io/cooking-hud/' },
+    { name: 'Crypto Tracker',         url: 'https://rbm-demos.lnr.io/crypto-tracker/' },
+    { name: 'Dad Jokes',              url: 'https://rbm-demos.lnr.io/dad-jokes/' },
+    { name: 'Deep Link Launcher',     url: 'https://rbm-demos.lnr.io/deep-link-launcher/' },
+    { name: 'Deep Link Target',       url: 'https://rbm-demos.lnr.io/deep-link-target/' },
+    { name: 'Find My Car',            url: 'https://rbm-demos.lnr.io/find-my-car/' },
+    { name: 'Flashcards (Serbian)',   url: 'https://rbm-demos.lnr.io/flashcards-serbian/' },
+    { name: 'Flight Status',          url: 'https://rbm-demos.lnr.io/flight-status/' },
+    { name: 'Glasses API Test',       url: 'https://rbm-demos.lnr.io/glasses-api-test/' },
+    { name: 'Head Gesture Prototype', url: 'https://rbm-demos.lnr.io/head-gesture-prototype/' },
+    { name: 'Headprint',              url: 'https://rbm-demos.lnr.io/headprint/' },
+    { name: 'IP Info',                url: 'https://rbm-demos.lnr.io/ip-info/' },
+    { name: 'Kairos Calendar HUD',    url: 'https://rbm-demos.lnr.io/kairos-calendar-hud/' },
+    { name: 'Key Logger',             url: 'https://rbm-demos.lnr.io/key-logger/' },
+    { name: 'Levin Riegner',          url: 'https://rbm-demos.lnr.io/levinriegner/' },
+    { name: 'LR Glimmer',             url: 'https://rbm-demos.lnr.io/lr-glimmer/' },
+    { name: 'Meditation',             url: 'https://rbm-demos.lnr.io/meditation/' },
+    { name: 'Metronome',              url: 'https://rbm-demos.lnr.io/metronome/' },
+    { name: 'Origami Sensei',         url: 'https://rbm-demos.lnr.io/origami-sensei/' },
+    { name: 'Pair HUD',               url: 'https://rbm-demos.lnr.io/pair-hud/' },
+    { name: 'Pentatonic Solo',        url: 'https://rbm-demos.lnr.io/pentatonic-solo/' },
+    { name: 'Periff',                 url: 'https://rbm-demos.lnr.io/periff/' },
+    { name: 'Pinout HUD',             url: 'https://rbm-demos.lnr.io/pinout-hud/' },
+    { name: 'Plane Spotter',          url: 'https://rbm-demos.lnr.io/plane-spotter/' },
+    { name: 'Pomodoro',               url: 'https://rbm-demos.lnr.io/pomodoro/' },
+    { name: 'Pong',                   url: 'https://rbm-demos.lnr.io/pong/' },
+    { name: 'Presto',                 url: 'https://rbm-demos.lnr.io/presto/' },
+    { name: 'Recipe Stepper',         url: 'https://rbm-demos.lnr.io/recipe-stepper/' },
+    { name: 'Snake',                  url: 'https://rbm-demos.lnr.io/snake/' },
+    { name: 'Speedometer',            url: 'https://rbm-demos.lnr.io/speedometer/' },
+    { name: 'Spireworks',             url: 'https://rbm-demos.lnr.io/spireworks/' },
+    { name: 'Tally Counter',          url: 'https://rbm-demos.lnr.io/tally-counter/' },
+    { name: 'Teleprompter (admin)',   url: 'https://rbm-demos.lnr.io/teleprompter/admin/' },
+    { name: 'Teleprompter (glasses)', url: 'https://rbm-demos.lnr.io/teleprompter/glasses/' },
+    { name: 'Tiltscroll Tales',       url: 'https://rbm-demos.lnr.io/tiltscroll-tales/' },
+    { name: 'Trivia Live',            url: 'https://rbm-demos.lnr.io/trivia-live/' },
+    { name: 'Weather Dashboard',      url: 'https://rbm-demos.lnr.io/weather-dashboard/' },
+    { name: 'Zork Terminal',          url: 'https://rbm-demos.lnr.io/zork-terminal/' },
   ];
 
-  // Background presets — files in simulator/background/.
-  // Note: parkin.jpeg is the on-disk filename; the displayed label is "Parking".
+  // How many app chips to render before the "Show more" toggle.
+  const APP_CHIPS_INITIAL = 10;
+
   const BG_PRESETS = [
-    { name: 'Office',  file: 'background/office.png'  },
-    { name: 'Garden',  file: 'background/garden.jpg'  },
-    { name: 'Sky',     file: 'background/sky.jpeg'    },
-    { name: 'Car',     file: 'background/car.png'     },
+    { name: 'Office',  file: 'background/office.png' },
+    { name: 'Garden',  file: 'background/garden.jpg' },
+    { name: 'Sky',     file: 'background/sky.jpeg'   },
+    { name: 'Car',     file: 'background/car.png'    },
     { name: 'Parking', file: 'background/parkin.png' },
   ];
 
   /* ── State ─────────────────────────────────────────────────────── */
   let displayPx   = 300;
   let scaleRatio  = 0.5;
+  let hudCentered = false;
 
-  let dragging   = false;
-  let resizing   = false;
-  let dragOrig   = {};
-  let resizeOrig = {};
-
-  /* ── HUD position helpers ──────────────────────────────────────── */
-  // Switch the wrap from its CSS bottom/right anchor to inline left/top.
-  function applyPosition(left, top) {
-    wrap.style.left   = left + 'px';
-    wrap.style.top    = top  + 'px';
-    wrap.style.right  = 'auto';
-    wrap.style.bottom = 'auto';
-    wrap.style.transform = '';
-  }
-
-  // Snap back to the bottom-right corner anchor.
-  function resetPosition() {
-    wrap.style.left   = 'auto';
-    wrap.style.top    = 'auto';
-    wrap.style.right  = HUD_MARGIN + 'px';
-    wrap.style.bottom = HUD_MARGIN + 'px';
-    wrap.style.transform = '';
-  }
-
-  // True iff the user has dragged the HUD (positioned via inline left/top).
-  function isFreePositioned() {
-    const l = wrap.style.left;
-    return !!l && l !== 'auto';
+  /* ── HUD position (anchored within #sim-viewport) ──────────────── */
+  function setHudPosition(centered) {
+    hudCentered = centered;
+    if (centered) {
+      wrap.style.left   = '50%';
+      wrap.style.top    = '50%';
+      wrap.style.right  = 'auto';
+      wrap.style.bottom = 'auto';
+      wrap.style.transform = 'translate(-50%, -50%)';
+    } else {
+      wrap.style.left   = 'auto';
+      wrap.style.top    = 'auto';
+      wrap.style.right  = HUD_MARGIN + 'px';
+      wrap.style.bottom = HUD_MARGIN + 'px';
+      wrap.style.transform = '';
+    }
+    positionSeg.querySelectorAll('button').forEach(btn => {
+      const isActive =
+        (centered && btn.dataset.pos === 'center') ||
+        (!centered && btn.dataset.pos === 'corner');
+      btn.classList.toggle('active', isActive);
+    });
   }
 
   function applyScale(pct) {
@@ -86,9 +120,8 @@
     wrap.style.width  = displayPx + 'px';
     wrap.style.height = displayPx + 'px';
     iframe.style.transform = `scale(${scaleRatio})`;
-    scaleBadge.textContent = pct + '%';
-    slScale.value          = pct;
-    lblScale.textContent   = pct + '%';
+    slScale.value        = pct;
+    lblScale.textContent = pct + '%';
   }
 
   /* ── Load URL ───────────────────────────────────────────────────── */
@@ -117,21 +150,40 @@
 
   document.getElementById('load-btn').addEventListener('click', () => loadURL());
   urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadURL(); });
-  document.getElementById('reset-btn').addEventListener('click', resetPosition);
+
+  positionSeg.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-pos]');
+    if (!btn) return;
+    setHudPosition(btn.dataset.pos === 'center');
+  });
 
   /* ── App preset chips ──────────────────────────────────────────── */
   function buildAppChips() {
     appChips.innerHTML = '';
-    APP_PRESETS.forEach(p => {
+    APP_PRESETS.forEach((p, i) => {
       const chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'app-chip';
+      if (i >= APP_CHIPS_INITIAL) chip.classList.add('chip-extra');
       chip.textContent = p.name;
       chip.dataset.appUrl = p.url;
       chip.title = p.url;
       chip.addEventListener('click', () => loadURL(p.url));
       appChips.appendChild(chip);
     });
+
+    if (APP_PRESETS.length > APP_CHIPS_INITIAL) {
+      const hiddenCount = APP_PRESETS.length - APP_CHIPS_INITIAL;
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'app-chip chip-toggle';
+      toggle.textContent = `Show ${hiddenCount} more`;
+      toggle.addEventListener('click', () => {
+        const expanded = appChips.classList.toggle('expanded');
+        toggle.textContent = expanded ? 'Show less' : `Show ${hiddenCount} more`;
+      });
+      appChips.appendChild(toggle);
+    }
   }
 
   function markActiveApp(url) {
@@ -142,7 +194,7 @@
     });
   }
 
-  /* ── Background position (drag-to-pan) ────────────────────────── */
+  /* ── Background pan ────────────────────────────────────────────── */
   let bgOffset = { x: 50, y: 50 };
 
   function applyBgPosition() {
@@ -204,7 +256,7 @@
     });
   }
 
-  /* ── Background — drag-and-drop / file picker ──────────────────── */
+  /* ── Drag-and-drop background ──────────────────────────────────── */
   function loadBackgroundFile(file) {
     const url = URL.createObjectURL(file);
     if (file.type.startsWith('video/')) {
@@ -243,8 +295,7 @@
     e.target.value = '';
   });
 
-  /* ── Background drag-to-pan ───────────────────────────────────── */
-  const scene = document.getElementById('scene');
+  /* ── Background drag-to-pan (within sim viewport) ─────────────── */
   let bgDragging = false;
   let bgDragStart = {};
 
@@ -259,8 +310,9 @@
 
   document.addEventListener('mousemove', e => {
     if (!bgDragging) return;
-    const dx = (bgDragStart.mx - e.clientX) / window.innerWidth * 100;
-    const dy = (bgDragStart.my - e.clientY) / window.innerHeight * 100;
+    const rect = simViewport.getBoundingClientRect();
+    const dx = (bgDragStart.mx - e.clientX) / rect.width  * 100;
+    const dy = (bgDragStart.my - e.clientY) / rect.height * 100;
     bgOffset.x = Math.max(0, Math.min(100, bgDragStart.ox + dx));
     bgOffset.y = Math.max(0, Math.min(100, bgDragStart.oy + dy));
     applyBgPosition();
@@ -273,49 +325,7 @@
     }
   });
 
-  /* ── HUD drag + resize ─────────────────────────────────────────── */
-  wrap.addEventListener('mousedown', e => {
-    if (resizeHandle.contains(e.target)) return;
-    if (e.target === iframe) return; // let iframe capture its own events
-
-    dragging = true;
-    wrap.classList.add('dragging');
-    const rect = wrap.getBoundingClientRect();
-    applyPosition(rect.left, rect.top);
-    dragOrig = { mx: e.clientX, my: e.clientY, elLeft: rect.left, elTop: rect.top };
-    e.preventDefault();
-  });
-
-  resizeHandle.addEventListener('mousedown', e => {
-    resizing = true;
-    resizeOrig = { mx: e.clientX, sz: displayPx };
-    e.preventDefault();
-    e.stopPropagation();
-  });
-
-  document.addEventListener('mousemove', e => {
-    if (dragging) {
-      const dx = e.clientX - dragOrig.mx;
-      const dy = e.clientY - dragOrig.my;
-      applyPosition(dragOrig.elLeft + dx, dragOrig.elTop + dy);
-    }
-    if (resizing) {
-      const dx = e.clientX - resizeOrig.mx;
-      const newSz = Math.max(90, Math.min(600, resizeOrig.sz + dx));
-      const pct = Math.round(newSz / 6) * 5; // snap to nearest 5%
-      applyScale(pct);
-    }
-  });
-
-  document.addEventListener('mouseup', () => {
-    dragging = false;
-    resizing = false;
-    wrap.classList.remove('dragging');
-  });
-
   /* ── Sliders ───────────────────────────────────────────────────── */
-  // Brightness — under plus-lighter, alpha scales the additive contribution
-  // of every pixel, so opacity is a physically correct dim.
   slOpacity.addEventListener('input', function () {
     wrap.style.opacity = this.value / 100;
     lblOpacity.textContent = this.value + '%';
@@ -323,58 +333,60 @@
   slScale.addEventListener('input', function () {
     applyScale(parseInt(this.value, 10));
   });
-
-  const slBgBrightness  = document.getElementById('sl-bg-brightness');
-  const lblBgBrightness = document.getElementById('lbl-bg-brightness');
-
-  slBgBrightness.addEventListener('input', function () {
+  slBgBright.addEventListener('input', function () {
     scene.style.opacity = this.value / 100;
-    lblBgBrightness.textContent = this.value + '%';
+    lblBgBright.textContent = this.value + '%';
   });
 
   /* ── Init ──────────────────────────────────────────────────────── */
   buildAppChips();
   buildBgStrip();
   applyScale(50);
+  setHudPosition(false);
 
-  // Default to the first background so the additive blend has something
-  // to composite against from the moment the simulator opens.
   setBackgroundFromUrl(BG_PRESETS[0].file);
   markActiveBg(BG_PRESETS[0].file);
 
-  window.addEventListener('resize', () => {
-    if (!isFreePositioned()) return; // anchored bottom-right → CSS handles it
-    const rect = wrap.getBoundingClientRect();
-    let l = rect.left, t = rect.top;
-    l = Math.min(l, window.innerWidth  - displayPx - 10);
-    t = Math.min(t, window.innerHeight - displayPx - 10);
-    applyPosition(Math.max(0, l), Math.max(0, t));
-  });
+  /* ── Fullscreen sim mode (sidebar hidden, HUD focused) ─────────
+        Once focus is inside the (likely cross-origin) iframe, the parent
+        can't capture key events anymore — so 'H' alone can't reopen the
+        sidebar. The floating #exit-fullscreen-btn is the escape hatch.
+        It fades out when idle so it stays out of screen recordings, and
+        re-appears on any mouse activity in the sim viewport. ──────── */
+  let exitBtnHideTimer = null;
+  function pingExitBtn() {
+    if (!document.body.classList.contains('fullscreen-sim')) return;
+    document.body.classList.add('show-exit-btn');
+    clearTimeout(exitBtnHideTimer);
+    exitBtnHideTimer = setTimeout(() => {
+      document.body.classList.remove('show-exit-btn');
+    }, 2500);
+  }
 
-  /* ── "H" key — hide/show overlay UI for clean screen recordings ─ */
-  const overlayEls = [
-    document.getElementById('top-controls'),
-    document.getElementById('scene-controls'),
-    scaleBadge,
-  ];
-  let overlaysVisible = true;
-
-  function toggleOverlays() {
-    overlaysVisible = !overlaysVisible;
-    overlayEls.forEach(el => {
-      el.style.display = overlaysVisible ? '' : 'none';
-    });
-    wrap.classList.toggle('clean-mode', !overlaysVisible);
+  function setFullscreenSim(on) {
+    document.body.classList.toggle('fullscreen-sim', on);
+    if (on) {
+      pingExitBtn();
+      // Defer one tick — the iframe is briefly inert mid-toggle on some browsers.
+      setTimeout(() => iframe.focus(), 0);
+    } else {
+      document.body.classList.remove('show-exit-btn');
+      clearTimeout(exitBtnHideTimer);
+      iframe.blur();
+    }
   }
 
   document.addEventListener('keydown', e => {
     if (document.activeElement === urlInput) return;
     if (e.key === 'h' || e.key === 'H') {
-      toggleOverlays();
+      setFullscreenSim(!document.body.classList.contains('fullscreen-sim'));
     }
   }, true);
 
-  // When the iframe steals focus, clicks outside it should reclaim it so "h" works.
+  exitFsBtn.addEventListener('click', () => setFullscreenSim(false));
+  simViewport.addEventListener('mousemove', pingExitBtn);
+
+  // Iframe steals focus on click; reclaim it on outside clicks so "h" still works.
   document.addEventListener('click', e => {
     if (e.target !== iframe) iframe.blur();
   }, true);

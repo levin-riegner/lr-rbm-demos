@@ -10,18 +10,32 @@
   --glass-bg: rgba(255,255,255,0.06);
   --glass-bg-strong: rgba(255,255,255,0.07);
   --glass-border: rgba(255,255,255,0.10);
+  --sidebar-w: 25vw;
+  --sidebar-bg: #0b0b13;
 }
 
+html, body { width: 100vw; height: 100vh; overflow: hidden; }
+
 body {
-  width: 100vw; height: 100vh; overflow: hidden;
   background: #07070f;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
   color: #fff;
+  display: flex;
 }
 
-/* ── SCENE (background layer) ─────────────────────────────────── */
+/* ──────────────────────────────────────────────────────────────────────────
+   LEFT — Simulator viewport (background + HUD only, screen-record ready)
+   ────────────────────────────────────────────────────────────────────────── */
+#sim-viewport {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  background: #000;
+}
+
 #scene {
-  position: fixed; inset: 0; z-index: 0;
+  position: absolute; inset: 0;
   cursor: grab;
 }
 
@@ -32,80 +46,242 @@ body {
   display: none;
 }
 
-/* Drag-active outline (visual feedback while dragging files over the page) */
-body.drag-active {
+body.drag-active #sim-viewport {
   outline: 2px dashed rgba(100,180,255,0.30);
   outline-offset: -8px;
 }
 
-/* ── TOP CONTROLS (chips + URL bar, stacked, top-center) ──────── */
-#top-controls {
-  position: fixed;
-  top: 20px; left: 50%; transform: translateX(-50%);
-  z-index: 300;
+/* ── Waveguide HUD ─────────────────────────────────────────────── */
+#display-wrap {
+  position: absolute;
+
+  /* Default: bottom-right corner of the sim viewport. */
+  right: 24px;
+  bottom: 24px;
+
+  width: 300px; height: 300px;
+  user-select: none;
+  z-index: 200;
+
+  /* Additive (plus-lighter) blend — matches the real waveguide:
+     black emits zero light → transparent on the lens; bright pixels add. */
+  mix-blend-mode: plus-lighter;
+  isolation: isolate;
+
+  filter:
+    drop-shadow(0 0 18px rgba(80,140,255,0.22))
+    drop-shadow(0 0 6px rgba(80,140,255,0.14));
+
+  transition: right 0.25s ease, bottom 0.25s ease, left 0.25s ease, top 0.25s ease;
+}
+#display-wrap.hidden { display: none; }
+
+.wg-frame {
+  position: relative;
+  width: 100%; height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(100,180,255,0.22),
+    inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.wg-frame::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 5;
+  pointer-events: none; border-radius: 10px;
+  background: linear-gradient(
+    125deg,
+    rgba(255,30,100,0.05) 0%,
+    transparent 40%,
+    rgba(0,210,255,0.05) 100%
+  );
+}
+
+.wg-frame::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 6;
+  pointer-events: none; border-radius: 10px;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.018) 3px,
+    rgba(0,0,0,0.018) 4px
+  );
+}
+
+#app-iframe {
+  position: absolute; top: 0; left: 0;
+  width: var(--app-native); height: var(--app-native);
+  border: none;
+  transform-origin: top left;
+  transform: scale(0.5);
+}
+
+#wg-placeholder {
+  position: absolute; inset: 0; z-index: 4;
   display: flex; flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  pointer-events: none;
+  align-items: center; justify-content: center;
+  gap: 9px;
+  background: rgba(5, 5, 15, 0.85);
+  border-radius: 10px;
 }
-#top-controls > * { pointer-events: auto; }
+.ph-diamond {
+  width: 32px; height: 32px;
+  border: 1.5px solid rgba(100,180,255,0.30);
+  border-radius: 3px;
+  transform: rotate(45deg);
+}
+.ph-text {
+  font-size: 11px; color: rgba(100,180,255,0.40);
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
 
+/* ── Load error toast (scoped to the simulator viewport) ──────── */
+#load-error {
+  position: absolute;
+  top: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(255,60,60,0.15);
+  border: 1px solid rgba(255,60,60,0.30);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 12px; color: rgba(255,140,140,0.90);
+  z-index: 400;
+  display: none;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   RIGHT — Settings sidebar
+   ────────────────────────────────────────────────────────────────────────── */
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: 300px;
+  max-width: 480px;
+  height: 100vh;
+  background: var(--sidebar-bg);
+  border-left: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.side-header {
+  padding: 22px 22px 18px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.side-header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.side-header p {
+  font-size: 10px;
+  color: rgba(255,255,255,0.40);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.side-section {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.side-section:last-of-type {
+  border-bottom: none;
+}
+.side-section h2 {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 2px;
+}
+
+.side-footer {
+  margin-top: auto;
+  padding: 14px 22px 18px;
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.30);
+  letter-spacing: 0.3px;
+  border-top: 1px solid var(--glass-border);
+}
+.side-footer kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.70);
+}
+
+/* ── App chips ────────────────────────────────────────────────── */
 #app-chips {
-  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
-  padding: 7px 10px;
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(28px) saturate(1.6);
-  -webkit-backdrop-filter: blur(28px) saturate(1.6);
-  border: 1px solid var(--glass-border);
-  border-radius: 22px;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.45);
-  max-width: calc(100vw - 40px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
-
 .app-chip {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.09);
   color: rgba(255,255,255,0.78);
-  padding: 6px 13px;
-  border-radius: 16px;
-  font-size: 12px; font-weight: 500;
+  padding: 6px 11px;
+  border-radius: 14px;
+  font-size: 11.5px;
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 .app-chip:hover {
   background: rgba(255,255,255,0.10);
   border-color: rgba(100,180,255,0.40);
   color: #fff;
-  transform: translateY(-1px);
 }
 .app-chip.active {
   background: rgba(0,212,255,0.18);
   border-color: rgba(0,212,255,0.70);
   color: #fff;
-  box-shadow: 0 0 14px rgba(0,212,255,0.25);
+  box-shadow: 0 0 12px rgba(0,212,255,0.20);
 }
 
+#app-chips:not(.expanded) .chip-extra { display: none; }
+
+.chip-toggle {
+  background: transparent;
+  border-style: dashed;
+  border-color: rgba(100,180,255,0.30);
+  color: rgba(100,180,255,0.85);
+}
+.chip-toggle:hover {
+  background: rgba(100,180,255,0.10);
+  border-color: rgba(100,180,255,0.55);
+  color: #fff;
+}
+
+/* ── URL bar ──────────────────────────────────────────────────── */
 #url-bar {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(28px) saturate(1.6);
-  -webkit-backdrop-filter: blur(28px) saturate(1.6);
-  border: 1px solid var(--glass-border);
-  border-radius: 50px;
-  padding: 7px 10px;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.50);
-  white-space: nowrap;
+  display: flex;
+  gap: 6px;
+  align-items: center;
 }
-
 #url-input {
-  width: 340px;
+  flex: 1;
+  min-width: 0;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 22px;
-  padding: 7px 15px;
+  border-radius: 8px;
+  padding: 8px 12px;
   color: #fff;
-  font-size: 13px;
+  font-size: 12px;
   outline: none;
   transition: border-color 0.2s, background 0.2s;
 }
@@ -119,73 +295,67 @@ body.drag-active {
   background: rgba(80,150,255,0.18);
   border: 1px solid rgba(80,150,255,0.28);
   color: rgba(160,205,255,1);
-  padding: 7px 15px;
-  border-radius: 22px;
-  font-size: 13px; font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 500;
   cursor: pointer; white-space: nowrap;
   transition: background 0.15s;
 }
 .pill-btn:hover { background: rgba(80,150,255,0.30); }
 
-.icon-btn {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.09);
-  color: rgba(255,255,255,0.50);
-  font-size: 15px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s, color 0.15s;
-  flex-shrink: 0;
-}
-.icon-btn:hover { background: rgba(255,255,255,0.13); color: #fff; }
-
-/* ── SCENE CONTROLS (bottom-left: sliders row + bg thumbs row) ─ */
-#scene-controls {
-  position: fixed;
-  left: 24px; bottom: 24px;
-  z-index: 300;
-  display: flex; flex-direction: column;
-  gap: 10px;
-  padding: 10px 12px;
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.45);
-  max-width: calc(100vw - 48px);
-}
-
-.sc-row {
+/* ── Segmented control ────────────────────────────────────────── */
+.seg-control {
   display: flex;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 2px;
+}
+.seg-control button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: rgba(255,255,255,0.55);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.seg-control button:hover {
+  color: #fff;
+}
+.seg-control button.active {
+  background: rgba(100,175,255,0.20);
+  color: #fff;
+  box-shadow: 0 0 0 1px rgba(100,175,255,0.35);
+}
+
+/* ── Slider rows ──────────────────────────────────────────────── */
+.slider-row {
+  display: grid;
+  grid-template-columns: 78px 1fr 40px;
   align-items: center;
   gap: 10px;
 }
-.sc-sliders { gap: 14px; padding: 0 4px; }
-.sc-bgs {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
-.sc-bgs::-webkit-scrollbar { height: 6px; }
-.sc-bgs::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.12);
-  border-radius: 3px;
-}
-
-.bc-group { display: flex; align-items: center; gap: 8px; }
-.bc-label {
-  font-size: 10px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.45);
+.slider-row label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
   white-space: nowrap;
+}
+.slider-row > span {
+  font-size: 11px;
+  color: rgba(100,175,255,0.75);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 input[type=range] {
   -webkit-appearance: none; appearance: none;
-  width: 88px; height: 3px;
+  width: 100%; height: 3px;
   background: rgba(255,255,255,0.12);
   border-radius: 3px;
   outline: none; cursor: pointer;
@@ -199,28 +369,22 @@ input[type=range]::-webkit-slider-thumb {
   box-shadow: 0 0 6px rgba(100,175,255,0.40);
 }
 
-.bc-val {
-  font-size: 11px; color: rgba(100,175,255,0.75);
-  min-width: 32px;
-  font-variant-numeric: tabular-nums;
+/* ── Background grid ──────────────────────────────────────────── */
+#bg-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
 }
 
-.sep {
-  width: 1px; height: 18px;
-  background: rgba(255,255,255,0.10);
-}
-
-/* BG thumbnail tiles — always visible, click to set background. */
 .bg-tile {
   position: relative;
-  width: 96px; height: 60px;
+  width: 100%; aspect-ratio: 4 / 3;
   border-radius: 8px;
   border: 1.5px solid rgba(255,255,255,0.10);
   background-size: cover;
   background-position: center;
   background-color: rgba(255,255,255,0.04);
   cursor: pointer;
-  flex-shrink: 0;
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   overflow: hidden;
 }
@@ -255,143 +419,40 @@ input[type=range]::-webkit-slider-thumb {
   line-height: 1;
 }
 
-/* ── WAVEGUIDE DISPLAY (additive HUD) ─────────────────────────── */
-#display-wrap {
-  position: fixed;
+/* ── Fullscreen sim mode (H key hides sidebar) ────────────────── */
+body.fullscreen-sim #sidebar { display: none; }
 
-  /* Default: bottom-right, like the real glasses HUD.
-     Drag-to-reposition switches to inline left/top via JS. */
-  right: 24px;
-  bottom: 24px;
-
-  width: 300px; height: 300px;
-  cursor: move;
-  user-select: none;
-  z-index: 200;
-
-  /* CORE FEATURE — additive waveguide blend.
-     plus-lighter strictly adds light photons (clamp(bg + fg, 0, 1)).
-     - Black pixels emit zero light → fully transparent on the display.
-     - Bright/light colors add maximum light → most visible.
-     This matches the real Meta Ray-Ban Display Glasses, per the toolkit's
-     display-guidelines.md and the official Web Apps PDF. */
-  mix-blend-mode: plus-lighter;
-  isolation: isolate;
-
-  /* Outer chromatic glow */
-  filter:
-    drop-shadow(0 0 18px rgba(80,140,255,0.22))
-    drop-shadow(0 0 6px rgba(80,140,255,0.14));
-}
-#display-wrap.hidden { display: none; }
-#display-wrap.clean-mode { filter: none; }
-.clean-mode .wg-frame { box-shadow: none; border-radius: 0; }
-.clean-mode .wg-frame::before,
-.clean-mode .wg-frame::after { display: none; }
-.clean-mode #resize-handle { display: none; }
-
-/* Inner clipping frame */
-.wg-frame {
-  position: relative;
-  width: 100%; height: 100%;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(100,180,255,0.22),
-    inset 0 0 0 1px rgba(255,255,255,0.03);
-}
-
-/* Chromatic aberration color cast */
-.wg-frame::before {
-  content: '';
-  position: absolute; inset: 0; z-index: 5;
-  pointer-events: none; border-radius: 10px;
-  background: linear-gradient(
-    125deg,
-    rgba(255,30,100,0.05) 0%,
-    transparent 40%,
-    rgba(0,210,255,0.05) 100%
-  );
-}
-
-/* Subtle scanline texture */
-.wg-frame::after {
-  content: '';
-  position: absolute; inset: 0; z-index: 6;
-  pointer-events: none; border-radius: 10px;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 3px,
-    rgba(0,0,0,0.018) 3px,
-    rgba(0,0,0,0.018) 4px
-  );
-}
-
-/* Iframe — fully interactive (click to focus, native keys go to the app).
-   Pointer events are only suppressed while the user is dragging the HUD. */
-#app-iframe {
-  position: absolute; top: 0; left: 0;
-  width: var(--app-native); height: var(--app-native);
-  border: none;
-  transform-origin: top left;
-  transform: scale(0.5);
-}
-#display-wrap.dragging #app-iframe { pointer-events: none; }
-
-/* Placeholder shown before a URL is loaded. The near-black backdrop reads
-   as near-transparent under additive blend, so the diamond + label appear
-   to float over the scene — a clean preview of the real-glasses effect. */
-#wg-placeholder {
-  position: absolute; inset: 0; z-index: 4;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 9px;
-  background: rgba(5, 5, 15, 0.85);
-  border-radius: 10px;
-}
-.ph-diamond {
-  width: 32px; height: 32px;
-  border: 1.5px solid rgba(100,180,255,0.30);
-  border-radius: 3px;
-  transform: rotate(45deg);
-}
-.ph-text {
-  font-size: 11px; color: rgba(100,180,255,0.40);
-  letter-spacing: 0.5px; text-transform: uppercase;
-}
-
-/* Resize handle (bottom-right corner of the HUD) */
-#resize-handle {
-  position: absolute; bottom: -5px; right: -5px;
-  width: 18px; height: 18px;
-  cursor: se-resize; z-index: 10;
-}
-#resize-handle::after {
-  content: '';
-  position: absolute; bottom: 3px; right: 3px;
-  width: 9px; height: 9px;
-  border-right: 2px solid rgba(100,180,255,0.45);
-  border-bottom: 2px solid rgba(100,180,255,0.45);
-  border-radius: 0 0 2px 0;
-}
-
-/* Scale badge */
-#scale-badge {
-  position: absolute; top: -18px; left: 0;
-  font-size: 10px; color: rgba(100,180,255,0.35);
-  pointer-events: none; white-space: nowrap;
-}
-
-/* Load error toast — top-center, below the URL pill */
-#load-error {
-  position: fixed;
-  top: 140px; left: 50%; transform: translateX(-50%);
-  background: rgba(255,60,60,0.15);
-  border: 1px solid rgba(255,60,60,0.30);
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 12px; color: rgba(255,140,140,0.90);
-  z-index: 400;
+/* Floating "Show sidebar" button — visible only in fullscreen-sim.
+   Faded by default so it doesn't bleed into screen recordings; on
+   mouse movement (`.show-exit-btn`) or hover it animates back in. */
+#exit-fullscreen-btn {
   display: none;
+  position: absolute;
+  top: 18px; right: 18px;
+  z-index: 500;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(11,11,19,0.70);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.85);
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, background 0.15s, color 0.15s;
+}
+body.fullscreen-sim #exit-fullscreen-btn { display: flex; }
+body.fullscreen-sim.show-exit-btn #exit-fullscreen-btn,
+body.fullscreen-sim #exit-fullscreen-btn:hover {
+  opacity: 1;
+  pointer-events: auto;
+}
+#exit-fullscreen-btn:hover {
+  background: rgba(11,11,19,0.95);
+  color: #fff;
 }

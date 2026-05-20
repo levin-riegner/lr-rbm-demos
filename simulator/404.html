@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Display Glasses Simulator</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --accent: #00d4ff;
+    }
+
+    html, body {
+      width: 100vw; height: 100vh; overflow: hidden;
+      background: #07070f;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    }
+
+    .wrap {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 24px;
+      padding: 32px;
+      text-align: center;
+    }
+
+    .code {
+      font-size: clamp(96px, 18vw, 220px);
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      background: linear-gradient(180deg, #fff 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .title {
+      font-size: clamp(18px, 2.4vw, 24px);
+      font-weight: 500;
+      opacity: 0.92;
+    }
+
+    .subtitle {
+      font-size: clamp(14px, 1.5vw, 16px);
+      opacity: 0.55;
+      max-width: 480px;
+      line-height: 1.5;
+    }
+
+    .home {
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+    }
+    .home:hover {
+      border-color: var(--accent);
+      background: rgba(0, 212, 255, 0.08);
+    }
+    .home:active { transform: scale(0.98); }
+
+    .arrow { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="code">404</div>
+    <div class="title">No signal on this lens.</div>
+    <div class="subtitle">The page you're looking for doesn't exist on the Display Glasses Simulator.</div>
+    <a class="home" href="/"><span class="arrow">←</span> Back to the simulator</a>
+  </div>
+</body>
+</html>
