@@ -58,7 +58,10 @@ function row(label, value, opts = {}) {
   const cls = opts.mono ? 'info-value mono' : 'info-value';
   // value may already contain spans (good/bad/muted) — don't escape it
   const safeValue = opts.raw ? v : esc(v);
-  return `<div class="info-row">
+  // Every row is focusable: on glasses, scroll happens via D-pad moving focus
+  // through items and scrollIntoView bringing them into view. Without this,
+  // the user can't scroll past the first viewport of content.
+  return `<div class="info-row focusable" tabindex="0">
     <span class="info-label">${esc(label)}</span>
     <span class="${cls}">${safeValue}</span>
   </div>`;
@@ -437,7 +440,7 @@ function renderApis() {
   html += section(`Feature support — ${ok}/${checks.length}`);
   html += '<div class="feature-grid">';
   checks.forEach(([name, supported]) => {
-    html += `<div class="feature-badge${supported ? '' : ' disabled'}">
+    html += `<div class="feature-badge focusable${supported ? '' : ' disabled'}" tabindex="0">
       <div class="feature-dot ${supported ? 'yes' : 'no'}"></div>
       <span class="feature-name">${esc(name)}</span>
     </div>`;
@@ -548,3 +551,23 @@ const startScreen = params.get('state') || params.get('screen') || 'home';
 // leave the default home screen visible behind the target.
 document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
 navigateTo(VALID_SCREENS.includes(startScreen) ? startScreen : 'home');
+
+// Dev/screenshot helper: ?row=N focuses the Nth focusable on the current
+// screen (or ?row=last). Used to verify scroll-by-focus works deterministically.
+const focusParam = params.get('row');
+if (focusParam) {
+  // Wait a tick so any async rendering settles before we focus.
+  setTimeout(() => {
+    const current = document.querySelector('.screen:not(.hidden)');
+    if (!current) return;
+    const focusables = current.querySelectorAll('.focusable');
+    const idx = focusParam === 'last'
+      ? focusables.length - 1
+      : Math.min(focusables.length - 1, Math.max(0, parseInt(focusParam, 10) || 0));
+    const target = focusables[idx];
+    if (target) {
+      target.focus();
+      target.scrollIntoView({ block: 'nearest' });
+    }
+  }, 100);
+}
