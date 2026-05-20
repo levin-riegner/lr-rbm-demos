@@ -29,6 +29,7 @@ Each app is a small, self-contained web project designed for the 600x600 display
 - [Flashcards (Serbian)](https://rbm-demos.lnr.io/flashcards-serbian/)
 - [Flight Status](https://rbm-demos.lnr.io/flight-status/)
 - [Glasses API Test](https://rbm-demos.lnr.io/glasses-api-test/)
+- [Glasses Wack](https://rbm-demos.lnr.io/glasses-wack/)
 - [Head Gesture Prototype](https://rbm-demos.lnr.io/head-gesture-prototype/)
 - [Headprint](https://rbm-demos.lnr.io/headprint/)
 - [IP Info](https://rbm-demos.lnr.io/ip-info/)
