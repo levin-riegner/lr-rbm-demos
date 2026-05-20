@@ -16,7 +16,7 @@ Like `pair-hud`, this is one of the few examples in `/examples` that:
 
 Unlike `pair-hud`, both clients are interactive game peers — no phone control surface, both ends are the glasses webapp. The protocol carries paddle intent in and authoritative snapshots out.
 
-Vercel's serverless tier **cannot** host a persistent WebSocket. Use local Node + an ngrok tunnel for the demo. Production paths are noted at the bottom of this file.
+Vercel's serverless tier **cannot** host a persistent WebSocket. The deployed demo runs on **Fly.io** (Newark / `ewr`) at <https://pong-demo.fly.dev/> — that's where the client routes its WSS by default. Local Node + ngrok still works for fast iteration without redeploying; see [Production hosting](#production-hosting-netlify--flyio) at the bottom of this file for the deploy recipe.
 
 ---
 
@@ -132,6 +132,8 @@ You can also force any URL with `?ws=wss://…/ws` — handy for testing differe
 
 ## On-device demo (ngrok + QR)
 
+> The live demo at <https://pong-demo.fly.dev/> is what the QR ships to glasses by default. The recipe below is for iterating on glasses against a local server (`server.js` running on your laptop), without redeploying to Fly for every change.
+
 ### 1. Expose the local server
 
 ```bash
@@ -139,7 +141,7 @@ ngrok http 3000
 # → https://xxxx.ngrok-free.app
 ```
 
-ngrok serves HTTP and WSS on the same origin, so `wss://xxxx.ngrok-free.app/ws` just works. The server's 15 s WebSocket keepalive plus a 10 s app-level JSON heartbeat defeat ngrok's ~60 s idle disconnect. If a WS still blips, the client auto-rejoins with the per-match token within a 10 s grace window so the game survives transient cross-continent drops.
+ngrok serves HTTP and WSS on the same origin, so `wss://xxxx.ngrok-free.app/ws` just works. The server's 15 s WebSocket keepalive plus a 10 s app-level JSON heartbeat defeat ngrok's ~60 s idle disconnect. If a WS still blips, the client auto-rejoins with the per-match token within a 10 s grace window so the game survives transient drops. Beware the tunnel's region — a transatlantic ngrok adds enough latency that *every* drop is a candidate for the 10 s grace; that's exactly why production runs on Fly in `ewr` instead.
 
 ### 2. Add the webapp to two pairs of glasses
 
@@ -279,12 +281,12 @@ Follow the [ngrok + QR](#on-device-demo-ngrok--qr) flow above. Things to test sp
 
 ## Production hosting (Netlify + Fly.io)
 
-A persistent WebSocket server cannot run on Netlify or Vercel — their function runtimes terminate long-lived connections. The recommended production setup splits the deploy:
+A persistent WebSocket server cannot run on Netlify or Vercel — their function runtimes terminate long-lived connections. The current production setup splits the deploy:
 
 - **Static files (index.html, app.js, styles.css)** → **Netlify** (free, instant CDN, HTTPS).
-- **WebSocket server (server.js)** → **Fly.io** (free tier, persistent Node process, WSS).
+- **WebSocket server (server.js)** → **Fly.io** (pay-as-you-go; ~$0.40/mo at 20 games/day with `auto_stop_machines = 'suspend'`).
 
-The `app.js` config knows about this split automatically once you set `WS_PROD`.
+The `app.js` / `mobile.js` config knows about this split automatically because `WS_PROD` is set to the Fly hostname at the top of each file.
 
 ```
                   ┌──────────────────────────┐
@@ -294,8 +296,8 @@ The `app.js` config knows about this split automatically once you set `WS_PROD`.
                                │  (browser opens WSS to …)
                                ▼
                   ┌──────────────────────────┐
-                  │         Fly.io           │
-                  │  pong-ws.fly.dev/ws      │  Node + ws (your server.js verbatim)
+                  │      Fly.io (ewr)        │
+                  │  pong-demo.fly.dev/ws    │  Node + ws (your server.js verbatim)
                   └──────────────────────────┘
 ```
 
@@ -308,44 +310,59 @@ This directory already ships everything you need: a `Dockerfile`, `fly.toml`, `n
 curl -L https://fly.io/install.sh | sh
 flyctl auth login
 
-cd examples/pong
-flyctl launch --copy-config --no-deploy
-#   Prompts for an app name (e.g. "pong-ws"). Writes it back to fly.toml.
+cd pong
+# First time: create the app under the name in fly.toml ('pong-demo').
+# If that name is taken, edit fly.toml's `app = '...'` line first.
+flyctl apps create pong-demo --org personal
 flyctl deploy
 ```
 
-After `flyctl deploy` succeeds, copy the public hostname it prints — e.g. `https://pong-ws.fly.dev`. Smoke-test it:
+Smoke-test the deploy:
 
 ```bash
-curl https://pong-ws.fly.dev/health   # → {"ok":true,"rooms":0}
+curl https://pong-demo.fly.dev/health   # → {"ok":true,"rooms":0}
+flyctl status                            # one machine in ewr
+flyctl logs                              # tail the server's JSON log
 ```
 
 ### 2. Point the client at the Fly server
 
-Open `app.js` and set `WS_PROD` near the top:
+`WS_PROD` is already set near the top of both `app.js` and `mobile.js`:
 
 ```js
-var WS_PROD = 'wss://pong-ws.fly.dev/ws';
+var WS_PROD = 'wss://pong-demo.fly.dev/ws';
 ```
 
-(Use `wss://` — secure WebSocket — to match Netlify's HTTPS. Mixed-content rules will block a plain `ws://` from an HTTPS page.)
+If you forked and want to point at a different Fly app, edit that one constant in both files. (Use `wss://` to match Netlify's HTTPS — mixed-content rules block plain `ws://` from an HTTPS page.) `localhost`, LAN (`192.168.*`, `10.*`), and `*.local` hostnames bypass `WS_PROD` automatically and use same-origin, so `npm start` still works unchanged.
+
+### Cost & spending cap
+
+Fly.io retired its free tier in late 2024. For this app at the documented traffic profile expect **under $1/mo**: a shared-cpu-1x VM at 256 MB suspended-by-default costs ~$1.94/mo if always-on, and `auto_stop_machines = 'suspend'` plus `min_machines_running = 0` (both in `fly.toml`) keep it asleep when nobody's playing. Egress is $0.02/GB and a 3-minute pong match transfers under 1 MB total, so bandwidth is rounding error.
+
+To cap downside risk, set a monthly **Spending Limit** in the Fly dashboard at <https://fly.io/dashboard/personal/billing>. Fly emails you at 75% / 100% and stops machines past the limit on a best-effort basis. $5 is a comfortable cap.
+
+Other belts-and-suspenders worth keeping:
+
+- Don't add Fly **volumes** — billed monthly regardless of use; the pong server is in-memory only.
+- Don't claim a **dedicated IPv4** (~$2/mo); the shared one Fly assigns is free.
+- Stay on **one machine in one region**. Don't `flyctl scale count 2` or add regions.
 
 ### 3. Deploy the static files to Netlify
 
 Easiest path — drag-and-drop:
 
 1. Open <https://app.netlify.com/drop>.
-2. Drop the `examples/pong/` folder onto the page.
+2. Drop the `pong/` folder onto the page.
 3. Netlify prints a public URL like `https://random-name.netlify.app`. Done.
 
 Alternative — CLI:
 
 ```bash
 npm i -g netlify-cli
-netlify deploy --prod --dir=examples/pong
+netlify deploy --prod --dir=pong
 ```
 
-Alternative — Git: connect this repo in the Netlify dashboard and set the **base directory** to `examples/pong`. `netlify.toml` skips the build step entirely (pure static).
+Alternative — Git: connect this repo in the Netlify dashboard and set the **base directory** to `pong`. `netlify.toml` skips the build step entirely (pure static).
 
 ### 4. Play
 
@@ -354,16 +371,16 @@ Share the Netlify URL with the other player. Both of you click **Create room** /
 ### Updating
 
 - **Client change** (any file in `app.js`, `index.html`, `styles.css`): redeploy to Netlify only. Drag-and-drop again, or `netlify deploy --prod`, or push to the connected branch.
-- **Server change** (`server.js`): `flyctl deploy` from `examples/pong/`. The Netlify side doesn't need to know.
+- **Server change** (`server.js`): `flyctl deploy` from `pong/`. The Netlify side doesn't need to know.
 - **Both:** deploy server first, client second — the client should never be ahead of a protocol the server doesn't yet speak.
 
 ### Other options
 
 | Option | Trade-off |
 |---|---|
-| **All-in-one on Fly.io** | The Dockerfile already includes the static files (`index.html`, `app.js`, `styles.css`), so a single `flyctl deploy` actually serves both. Skip Netlify entirely and use the Fly URL. Simplest setup; only downside is the Fly free tier has fewer edge POPs than Netlify's CDN. |
+| **All-in-one on Fly.io** | The Dockerfile already includes the static files (`index.html`, `app.js`, `styles.css`), so a single `flyctl deploy` actually serves both. Skip Netlify entirely and use the Fly URL. Simplest setup; only downside is fewer edge POPs than Netlify's CDN. |
 | **Render** | Free Web Service tier (750 h/mo). Same shape as Fly but free instances spin down after 15 min idle and take ~30–60 s to wake. Painful for an interactive game. |
-| **Railway** | Pay-as-you-go ($5 free credit/month). Best DX, no cold starts. Use if Fly free tier becomes a constraint. |
+| **Railway** | Pay-as-you-go ($5 free credit/month). Best DX, no cold starts. Use if Fly billing gets out of hand. |
 | **Self-host on a VPS** (Hetzner / DO / Linode, $4–6/mo) | Full control, always-on, no cold starts. Manual setup (systemd + Caddy for TLS). |
 | **Cloudflare Workers + Durable Objects** | Would work via hibernating WebSockets, but requires rewriting `server.js` to the DO model. Overkill for Pong. |
 | **Vercel / Netlify Functions** | ❌ Not supported. Their function runtimes terminate persistent WebSockets. Same constraint as `pair-hud`. |
