@@ -27,14 +27,14 @@
           var forceMobile  = /[?&]mobile=1\b/.test(qs);
 
           if (forceMobile) {
-            location.replace('/mobile.html' + qs);
+            location.replace('mobile.html' + qs);
             return;
           }
           if (forceGlasses)      device = 'glasses';
           else if (forceDesktop) device = 'desktop';
           else if (isGlassesUA)  device = 'glasses';
           else if (isPhoneUA) {
-            location.replace('/mobile.html' + qs);
+            location.replace('mobile.html' + qs);
             return;
           }
           else device = 'desktop';
