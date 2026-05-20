@@ -600,16 +600,17 @@
       default:               msg = reason || 'Could not join.';
     }
     setJoinStatus(msg);
-    // Pulse the slot row.
+    // Pulse the slot row (visual only).
     slotEls.forEach(function (s) {
       s.classList.add('filled');
       setTimeout(function () { s.classList.remove('filled'); }, 200);
     });
-    setTimeout(function () {
-      joinTyped = [];
-      if (codeFieldEl) codeFieldEl.value = '';
-      renderJoinSlots();
-    }, 700);
+    // Clear immediately so the user can start typing fresh and we don't
+    // sit on a stale 4-digit value that the native-keyboard input event
+    // could re-trigger.
+    joinTyped = [];
+    if (codeFieldEl) codeFieldEl.value = '';
+    renderJoinSlots();
   }
 
   // ============================================================
