@@ -44,10 +44,10 @@ function onScreenEnter(id) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────
-function row(label, value, cls = '', fullWidth = false) {
+function row(label, value, cls = '', stacked = false) {
   const v = value === undefined || value === null || value === '' ? '—' : String(value);
-  if (fullWidth) {
-    return `<div class="info-row full-width"><span class="info-label">${label}</span><span class="info-value">${v}</span></div>`;
+  if (stacked) {
+    return `<div class="info-row stacked"><span class="info-label">${label}</span><span class="info-value">${v}</span></div>`;
   }
   return `<div class="info-row"><span class="info-label">${label}</span><span class="info-value ${cls}">${v}</span></div>`;
 }
@@ -138,7 +138,7 @@ function renderUserAgent() {
   const ua = navigator.userAgent;
 
   let html = section('Raw User Agent');
-  html += `<div class="info-row full-width"><span class="info-label">User Agent</span><span class="info-value">${ua}</span></div>`;
+  html += row('User Agent', ua, '', true);
 
   // UA Client Hints
   const uaCH = navigator.userAgentData;
@@ -444,17 +444,10 @@ function renderApis() {
 }
 
 function renderLocationPlaceholder() {
-  const el = document.getElementById('location-content');
-  el.innerHTML = `
-    <div class="info-row">
-      <span class="info-label">API</span>
-      <span class="info-value">${'geolocation' in navigator ? '<span class="good">Available</span>' : '<span class="bad">Not available</span>'}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Instructions</span>
-      <span class="info-value muted">Press "Get Location" to request position</span>
-    </div>
-  `;
+  const available = 'geolocation' in navigator;
+  let html = row('API', available ? '<span class="good">Available</span>' : '<span class="bad">Not supported</span>');
+  html += row('Status', '<span class="muted">Press Get Location below</span>');
+  document.getElementById('location-content').innerHTML = html;
 }
 
 function fetchLocation() {
@@ -514,12 +507,12 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
     const next = focusables[(idx + 1) % focusables.length];
     next.focus();
-    next.scrollIntoView({ block: 'nearest' });
+    next.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
     const prev = focusables[(idx - 1 + focusables.length) % focusables.length];
     prev.focus();
-    prev.scrollIntoView({ block: 'nearest' });
+    prev.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   } else if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault();
     current.click();
