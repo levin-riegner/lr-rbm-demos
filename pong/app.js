@@ -28,6 +28,15 @@
   'use strict';
 
   // ============================================================
+  // 0. Device flag — set by the device-sense script in index.html.
+  //    'glasses' (default) → impulse paddle + rapid-tap boost
+  //    'desktop'           → classic held-key paddle, no boost
+  //    (mobile uses mobile.html, so we never see it here)
+  // ============================================================
+
+  var DEVICE = (document.documentElement.dataset && document.documentElement.dataset.device) || 'glasses';
+
+  // ============================================================
   // 1. WebSocket URL resolution
   // ============================================================
 
@@ -897,8 +906,9 @@
   }
 
   function setPracticeLegend(best) {
+    var boost = (DEVICE === 'glasses') ? ' · tap fast = boost' : '';
     gameMetaEl.textContent =
-      '↑ / ↓ paddle · tap fast = boost · ◀ = pause · BEST ' + best;
+      '↑ / ↓ paddle' + boost + ' · ◀ = pause · BEST ' + best;
   }
 
   function practiceServe(towardX) {
@@ -1104,10 +1114,11 @@
   }
 
   function updateLegendForSide() {
+    var boost = (DEVICE === 'glasses') ? ' · tap fast = boost' : '';
     if (mySide === 'left') {
-      gameMetaEl.textContent = '↑ / ↓ LEFT paddle · tap fast = boost · ◀ = pause';
+      gameMetaEl.textContent = '↑ / ↓ LEFT paddle' + boost + ' · ◀ = pause';
     } else if (mySide === 'right') {
-      gameMetaEl.textContent = '↑ / ↓ RIGHT paddle · tap fast = boost · ◀ = pause';
+      gameMetaEl.textContent = '↑ / ↓ RIGHT paddle' + boost + ' · ◀ = pause';
     }
   }
 
@@ -1223,6 +1234,32 @@
             return;
         }
       }
+      // Desktop: classic held-key paddle, no impulse, no boost.
+      if (DEVICE === 'desktop') {
+        switch (ev.key) {
+          case 'ArrowUp':
+            ev.preventDefault();
+            sendIntent(-1);
+            break;
+          case 'ArrowDown':
+            ev.preventDefault();
+            sendIntent(1);
+            break;
+          case 'ArrowLeft':
+            ev.preventDefault();
+            if (!ev.repeat) showPausePrompt();
+            break;
+          case 'Escape':
+          case 'Backspace':
+            handleAction('leave');
+            ev.preventDefault();
+            break;
+          default:
+            break;
+        }
+        return;
+      }
+      // Glasses: impulse paddle with rapid-tap boost.
       switch (ev.key) {
         case 'ArrowUp':
           ev.preventDefault();
@@ -1235,9 +1272,9 @@
           else            refreshImpulse();
           break;
         case 'ArrowLeft':
-          // Swipe-left on the glasses = ArrowLeft = open the pause prompt.
-          // Practice OR multiplayer; the prompt itself is the confirm
-          // (default focus on Resume, deliberate nav to Quit).
+          // Swipe-left = ArrowLeft = open the pause prompt. Practice OR
+          // multiplayer; the prompt itself is the confirm (default focus
+          // on Resume, deliberate nav to Quit).
           ev.preventDefault();
           if (!ev.repeat) showPausePrompt();
           break;
@@ -1369,9 +1406,12 @@
   document.addEventListener('keyup', function (ev) {
     if (currentScreen !== 'game') return;
     if (ev.key === 'ArrowUp' || ev.key === 'ArrowDown') {
-      // Don't reset intent here — let the impulse timer run so a brief
-      // discrete swipe (glasses touchpad) still produces real paddle
-      // motion.
+      if (DEVICE === 'desktop') {
+        // Desktop: paddle stops the instant the key is released.
+        sendIntent(0);
+      }
+      // Glasses: don't reset — let the impulse timer expire so a brief
+      // discrete swipe still produces real paddle motion.
       ev.preventDefault();
     }
   });

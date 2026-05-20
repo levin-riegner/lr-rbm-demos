@@ -2,6 +2,48 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script>
+      // Device sense — same URL works for glasses, desktop, and phone.
+      //
+      // Routing:
+      //   UA contains "greatwhite"        → glasses, no redirect, classic impulse+boost paddle
+      //   mobile phone UA                 → location.replace('/mobile.html')
+      //   anything else (incl. tablets)   → desktop, classic held-key paddle
+      //
+      // Overrides for testing: ?glasses=1, ?desktop=1, ?mobile=1.
+      // `<html data-device>` is read by app.js to pick the right input scheme.
+      (function () {
+        var device = 'glasses';
+        try {
+          var ua = navigator.userAgent || '';
+          var qs = location.search || '';
+          var isGlassesUA = /greatwhite/i.test(ua);
+          var isPhoneUA =
+            /Android.*Mobile/.test(ua) ||
+            /iPhone|iPod/.test(ua) ||
+            /Windows Phone|IEMobile|BlackBerry|Opera Mini/.test(ua);
+          var forceGlasses = /[?&]glasses=1\b/.test(qs);
+          var forceDesktop = /[?&]desktop=1\b/.test(qs);
+          var forceMobile  = /[?&]mobile=1\b/.test(qs);
+
+          if (forceMobile) {
+            location.replace('/mobile.html' + qs);
+            return;
+          }
+          if (forceGlasses)      device = 'glasses';
+          else if (forceDesktop) device = 'desktop';
+          else if (isGlassesUA)  device = 'glasses';
+          else if (isPhoneUA) {
+            location.replace('/mobile.html' + qs);
+            return;
+          }
+          else device = 'desktop';
+        } catch (e) {
+          device = 'glasses';
+        }
+        document.documentElement.dataset.device = device;
+      })();
+    </script>
     <!-- Glasses viewport: fixed 600x600, no scaling. -->
     <meta
       name="viewport"

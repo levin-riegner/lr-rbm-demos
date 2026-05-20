@@ -59,6 +59,20 @@ body {
   padding: 8px;
 }
 
+/* Desktop: let html/body fill the viewport and center the 600×600 app
+   inside. The glasses build stays fixed-size (data-device defaults to
+   "glasses" if the inline script can't tag the document). */
+html[data-device="desktop"],
+html[data-device="desktop"] body {
+  width: 100%;
+  height: 100%;
+}
+html[data-device="desktop"] body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ---------- Screens ---------- */
 
 .screen {
