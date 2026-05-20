@@ -166,7 +166,27 @@ html, body {
   min-height: 56px;
   padding: 14px 22px;
   font-size: 14px;
+  min-width: 140px;
 }
+
+/* Practice mode — single number at the top, BEST below. */
+.score-row.practice-score .score-sep,
+.score-row.practice-score .score-right {
+  display: none;
+}
+.score-row.practice-score .score-left {
+  color: var(--accent);
+  text-shadow: 0 0 24px var(--accent-glow);
+}
+
+.practice-best {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+}
+.practice-best.hidden { display: none; }
 
 .m-stack {
   display: flex;

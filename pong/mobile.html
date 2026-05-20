@@ -49,6 +49,9 @@
             JOIN ROOM
           </button>
         </div>
+        <button class="m-btn m-btn-small" type="button" data-action="practice">
+          PRACTICE
+        </button>
       </section>
 
       <!-- 3. Waiting — room code -->
@@ -118,6 +121,7 @@
           <span class="score-sep">–</span>
           <span id="score-right" class="score-right">0</span>
         </div>
+        <div id="practice-best" class="practice-best hidden" aria-live="polite">BEST 0</div>
         <canvas
           id="court"
           class="court-canvas"
