@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Display Glasses Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <script defer src="simulator.js"></script>
 </head>
@@ -13,23 +16,25 @@
 <aside id="sidebar">
 
   <header class="side-header">
-    <div class="side-header-logo">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-        <rect x="2" y="5" width="7" height="10" rx="3.5" stroke="#0866ff" stroke-width="1.6"/>
-        <rect x="11" y="5" width="7" height="10" rx="3.5" stroke="#0866ff" stroke-width="1.6"/>
-        <line x1="9" y1="10" x2="11" y2="10" stroke="#0866ff" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="side-header-text">
-      <p class="side-header-eyebrow">Meta Ray-Ban Display</p>
-      <h1>Glasses Simulator</h1>
-    </div>
+    <p class="side-header-eyebrow">Meta Ray-Ban Display</p>
+    <h1>Glasses Simulator</h1>
   </header>
 
   <nav class="side-nav">
 
+    <!-- WEB APP LINK ─────────────────────────────────────────────── -->
     <div class="nav-group">
-      <span class="nav-group-label">App</span>
+      <span class="nav-group-label">
+        <!-- Glasses icon -->
+        <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <ellipse cx="5" cy="10" rx="3.5" ry="2.8"/>
+          <ellipse cx="13" cy="10" rx="3.5" ry="2.8"/>
+          <line x1="8.5" y1="10" x2="9.5" y2="10"/>
+          <line x1="1.5" y1="8.8" x2="1" y2="7.5"/>
+          <line x1="16.5" y1="8.8" x2="17" y2="7.5"/>
+        </svg>
+        Web App Link
+      </span>
       <div class="nav-group-body">
         <div id="url-bar">
           <input id="url-input" type="url" placeholder="https://your-app.vercel.app" autocomplete="off" spellcheck="false">
@@ -39,13 +44,15 @@
       </div>
     </div>
 
+    <!-- PLACEMENT ───────────────────────────────────────────────── -->
     <div class="nav-group">
       <span class="nav-group-label">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="1" y="2" width="14" height="10" rx="1.5"/>
-          <path d="M5 14h6M8 12v2"/>
+        <!-- Screen with HUD block in top-right corner -->
+        <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="1" y="3" width="16" height="11" rx="1.5"/>
+          <rect x="11.5" y="5" width="3.5" height="3.5" rx="0.7"/>
         </svg>
-        Display
+        Placement
       </span>
       <div class="nav-group-body">
         <div class="control-row">
@@ -70,12 +77,14 @@
       </div>
     </div>
 
+    <!-- BACKGROUND ──────────────────────────────────────────────── -->
     <div class="nav-group">
       <span class="nav-group-label">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <rect x="1" y="3" width="14" height="10" rx="1.5"/>
-          <circle cx="5.5" cy="7.5" r="1.2"/>
-          <path d="M1 11.5l3.5-3.5 3 3 2-2 5.5 5"/>
+        <!-- Landscape/image icon -->
+        <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="1" y="3" width="16" height="12" rx="1.5"/>
+          <circle cx="6" cy="8" r="1.6"/>
+          <path d="M1 13l4.5-4.5 3.5 3.5 2.5-2.5 6.5 6"/>
         </svg>
         Background
       </span>
@@ -91,15 +100,15 @@
 
   </nav>
 
-  <!-- Share CTA pinned to bottom -->
+  <!-- Share CTA -->
   <div id="share-cta">
     <button id="share-btn" type="button">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="13" cy="3" r="1.8"/>
-        <circle cx="13" cy="13" r="1.8"/>
-        <circle cx="3" cy="8" r="1.8"/>
-        <line x1="4.8" y1="7" x2="11.2" y2="4"/>
-        <line x1="4.8" y1="9" x2="11.2" y2="12"/>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="13" cy="3" r="1.6"/>
+        <circle cx="13" cy="13" r="1.6"/>
+        <circle cx="3" cy="8" r="1.6"/>
+        <line x1="4.6" y1="7.1" x2="11.4" y2="4.1"/>
+        <line x1="4.6" y1="8.9" x2="11.4" y2="11.9"/>
       </svg>
       Share Prototype
     </button>
