@@ -529,14 +529,14 @@ button {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 18px;
+  bottom: 22px;
   text-align: center;
-  font-size: 10px;
+  font-size: 20px;
   font-weight: 800;
-  letter-spacing: 3px;
+  letter-spacing: 5px;
   color: var(--purple-hi);
-  text-shadow: 0 0 10px var(--purple-glow);
-  opacity: 0.85;
+  text-shadow: 0 0 12px var(--purple-glow);
+  opacity: 0.9;
 }
 .cz-scan-line {
   position: absolute;
@@ -555,38 +555,17 @@ button {
   100% { top: 100%; opacity: 0.0; }
 }
 
-/* Top-right header for the capture screen */
-.cap-head {
-  position: absolute;
-  top: 28px;
-  right: 30px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.cap-head-mark {
-  font-size: 18px;
-  color: var(--purple);
-  text-shadow: 0 0 10px var(--purple-glow);
-}
-.cap-head-text {
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 5px;
-  color: var(--text-2);
-}
-
-/* Big "PINCH TO CAPTURE" instruction, placed in the diagonal-opposite
+/* Big "NEW CAPTURE" instruction, placed in the diagonal-opposite
    corner from the camera zone so the eye lands on it next. */
 .cap-instruction {
   position: absolute;
-  right: 30px;
-  bottom: 78px;
+  right: 28px;
+  bottom: 44px;
   text-align: right;
   max-width: 340px;
 }
 .cap-pinch {
-  font-size: 60px;
+  font-size: 64px;
   font-weight: 800;
   line-height: 0.92;
   letter-spacing: -2.5px;
@@ -599,18 +578,12 @@ button {
   text-shadow: 0 0 18px var(--purple-glow);
 }
 .cap-sub {
-  margin-top: 10px;
-  font-size: 12px;
+  margin-top: 18px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: var(--text-3);
-}
-
-#capture .hint-bar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 20px;
+  line-height: 1.3;
+  color: var(--text-2);
 }
 
 /* ============================================================

@@ -529,7 +529,7 @@
     document.addEventListener('click', onClick);
     tickClock();
     setInterval(tickClock, 1000);
-    if (!applyUrlState()) goHome();
+    if (!applyUrlState()) startCapture();
   }
 
   if (document.readyState === 'loading') {
