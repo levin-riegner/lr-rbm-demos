@@ -38,10 +38,18 @@
     digitIdx:      0,
     dateOffset:    0,
     status:        null,
-    statusView:    'main',  // 'main' | 'seat'
+    statusView:    'main',  // 'main' | 'seat' | 'carousel'
     statusMode:    'full',  // 'full' | 'compact'
     homeFocus:     'start', // 'start' | 'last'
   };
+
+  var STATUS_VIEWS = ['main', 'seat', 'carousel'];
+  function nextStatusView(cur, dir) {
+    var i = STATUS_VIEWS.indexOf(cur);
+    if (i < 0) i = 0;
+    var n = (i + (dir < 0 ? -1 : 1) + STATUS_VIEWS.length) % STATUS_VIEWS.length;
+    return STATUS_VIEWS[n];
+  }
 
   var SEAT_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
   function seatRoleFor(letter) {
@@ -170,22 +178,14 @@
   function renderHome() {
     var last = loadLast();
     var card = document.getElementById('last-card');
-    var cta  = document.getElementById('cta-start');
-    var hint = document.getElementById('home-hint');
 
     if (last && card) {
       document.getElementById('last-code').textContent  = last.code;
       document.getElementById('last-route').textContent = last.route;
       card.classList.remove('hidden');
-      // Default home focus stays on FIND FLIGHT; user can ▲ to reach LAST FLIGHT.
-      if (hint) hint.innerHTML =
-        '<span class="hint-keys"><span class="key">▲</span><span class="key">▼</span> CHOOSE</span>' +
-        '<span class="hint-keys"><span class="key">ENTER</span> OPEN</span>';
     } else if (card) {
       card.classList.add('hidden');
       state.homeFocus = 'start';
-      if (hint) hint.innerHTML =
-        '<span class="hint-keys"><span class="key">ENTER</span> START</span>';
     }
     applyHomeFocus();
   }
@@ -282,21 +282,29 @@
     // full mode tiles
     var main = document.getElementById('view-main');
     var seat = document.getElementById('view-seat');
+    var caro = document.getElementById('view-carousel');
     var dotM = document.getElementById('dot-main');
     var dotS = document.getElementById('dot-seat');
+    var dotC = document.getElementById('dot-carousel');
     if (main) main.classList.toggle('hidden', view !== 'main');
     if (seat) seat.classList.toggle('hidden', view !== 'seat');
+    if (caro) caro.classList.toggle('hidden', view !== 'carousel');
     if (dotM) dotM.classList.toggle('on', view === 'main');
     if (dotS) dotS.classList.toggle('on', view === 'seat');
+    if (dotC) dotC.classList.toggle('on', view === 'carousel');
     // compact strip sub-views mirror the same selection
     var csMain = document.getElementById('cs-view-main');
     var csSeat = document.getElementById('cs-view-seat');
+    var csCaro = document.getElementById('cs-view-carousel');
     var csDotM = document.getElementById('cs-dot-main');
     var csDotS = document.getElementById('cs-dot-seat');
+    var csDotC = document.getElementById('cs-dot-carousel');
     if (csMain) csMain.classList.toggle('hidden', view !== 'main');
     if (csSeat) csSeat.classList.toggle('hidden', view !== 'seat');
+    if (csCaro) csCaro.classList.toggle('hidden', view !== 'carousel');
     if (csDotM) csDotM.classList.toggle('on', view === 'main');
     if (csDotS) csDotS.classList.toggle('on', view === 'seat');
+    if (csDotC) csDotC.classList.toggle('on', view === 'carousel');
   }
 
   function setStatusMode(mode) {
@@ -458,9 +466,11 @@
         // expand — keeps current view (main/seat)
         setStatusMode('full');
         e.preventDefault();
-      } else if (k === 'ArrowLeft' || k === 'ArrowRight') {
-        // toggle main ↔ seat in whichever mode we're in
-        setStatusView(state.statusView === 'main' ? 'seat' : 'main');
+      } else if (k === 'ArrowLeft') {
+        setStatusView(nextStatusView(state.statusView, -1));
+        e.preventDefault();
+      } else if (k === 'ArrowRight') {
+        setStatusView(nextStatusView(state.statusView, +1));
         e.preventDefault();
       } else if (k === 'Enter' || k === ' ') {
         if (state.statusMode === 'compact') {
@@ -510,8 +520,8 @@
         if (dy < 0) setStatusMode('compact');
         else        setStatusMode('full');
       } else {
-        // horizontal swipe → toggle main ↔ seat (in whichever mode we're in)
-        setStatusView(state.statusView === 'main' ? 'seat' : 'main');
+        // horizontal swipe → cycle through main → seat → carousel
+        setStatusView(nextStatusView(state.statusView, dx < 0 ? +1 : -1));
       }
     }
     document.addEventListener('touchstart', onDown, { passive: true });
@@ -611,11 +621,17 @@
       case 'status-seat':
         showScreen('status'); setStatusView('seat'); setStatusMode('full');
         return true;
+      case 'status-carousel':
+        showScreen('status'); setStatusView('carousel'); setStatusMode('full');
+        return true;
       case 'compact-main':
         showScreen('status'); setStatusView('main'); setStatusMode('compact');
         return true;
       case 'compact-seat':
         showScreen('status'); setStatusView('seat'); setStatusMode('compact');
+        return true;
+      case 'compact-carousel':
+        showScreen('status'); setStatusView('carousel'); setStatusMode('compact');
         return true;
     }
     return false;
