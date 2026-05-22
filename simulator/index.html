@@ -16,9 +16,7 @@
       <h1>Display Glasses Simulator</h1>
       <p>Meta Ray-Ban Display</p>
     </div>
-    <button id="share-btn" type="button" title="Copy share link">⎘ Share</button>
   </header>
-  <div id="share-toast">Link copied!</div>
 
   <section class="side-section">
     <h2>App</h2>
@@ -62,10 +60,11 @@
     <div id="bg-strip"></div>
   </section>
 
-  <footer class="side-footer">
-    Press <kbd>H</kbd> to hide this sidebar &amp; focus the HUD.
-    Click the <kbd>☰</kbd> button to bring it back.
-  </footer>
+  <!-- Share CTA pinned to bottom of sidebar -->
+  <div id="share-cta">
+    <button id="share-btn" type="button">⎘ &nbsp;Share This View</button>
+    <div id="share-toast">Link copied to clipboard!</div>
+  </div>
 </aside>
 
 <!-- ───────── RIGHT: Simulator viewport (background + HUD only) ───────── -->
@@ -92,8 +91,10 @@
 
   <div id="load-error">App blocked iframe embedding — try opening in a tab instead</div>
 
-  <!-- Visible only in fullscreen-sim mode; fades when idle, so the iframe
-       still has a clickable escape hatch since 'H' can't escape the iframe. -->
+  <!-- H-key hint — always visible at the bottom of the sim viewport -->
+  <div id="sim-hint">Press <kbd>H</kbd> to go fullscreen &nbsp;·&nbsp; Click <kbd>☰</kbd> to show sidebar</div>
+
+  <!-- Visible only in fullscreen-sim mode; fades when idle -->
   <button id="exit-fullscreen-btn" type="button" title="Show sidebar" aria-label="Show sidebar">☰</button>
 </main>
 

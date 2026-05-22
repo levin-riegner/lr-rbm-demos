@@ -170,12 +170,7 @@ body.drag-active #sim-viewport {
 .side-header {
   padding: 16px 18px 14px;
   border-bottom: 1px solid var(--glass-border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
 }
-.side-header-text { flex: 1; min-width: 0; }
 .side-header h1 {
   font-size: 13px;
   font-weight: 600;
@@ -191,50 +186,62 @@ body.drag-active #sim-viewport {
   text-transform: uppercase;
 }
 
+/* ── Share CTA (pinned to bottom of sidebar) ──────────────────── */
+#share-cta {
+  margin-top: auto;
+  padding: 16px 18px 20px;
+  border-top: 1px solid var(--glass-border);
+  position: relative;
+}
+
 #share-btn {
-  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 5px;
-  background: rgba(0,212,255,0.10);
-  border: 1px solid rgba(0,212,255,0.25);
-  color: rgba(0,212,255,0.85);
-  padding: 6px 11px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 500;
+  justify-content: center;
+  width: 100%;
+  gap: 7px;
+  background: rgba(0,212,255,0.12);
+  border: 1px solid rgba(0,212,255,0.30);
+  color: rgba(0,212,255,0.90);
+  padding: 13px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
   font-family: inherit;
-  cursor: pointer;
   letter-spacing: 0.2px;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
 }
 #share-btn:hover {
-  background: rgba(0,212,255,0.18);
-  border-color: rgba(0,212,255,0.50);
+  background: rgba(0,212,255,0.20);
+  border-color: rgba(0,212,255,0.55);
   color: #fff;
+  box-shadow: 0 0 18px rgba(0,212,255,0.18);
+}
+#share-btn:active {
+  background: rgba(0,212,255,0.28);
 }
 
 #share-toast {
   position: absolute;
-  top: 60px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-6px);
-  background: rgba(0,212,255,0.15);
+  bottom: calc(100% - 8px);
+  left: 18px; right: 18px;
+  text-align: center;
+  background: rgba(0,212,255,0.14);
   border: 1px solid rgba(0,212,255,0.35);
   color: rgba(0,212,255,1);
-  padding: 7px 14px;
+  padding: 8px 14px;
   border-radius: 8px;
   font-size: 12px;
   font-weight: 500;
-  white-space: nowrap;
   pointer-events: none;
   opacity: 0;
+  transform: translateY(4px);
   transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 600;
 }
 #share-toast.visible {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
 }
 
 .side-section {
@@ -256,25 +263,31 @@ body.drag-active #sim-viewport {
   margin-bottom: 1px;
 }
 
-.side-footer {
-  margin-top: auto;
-  padding: 12px 18px 16px;
-  font-size: 10px;
-  color: rgba(255,255,255,0.25);
+/* ── Sim viewport hint (bottom of the scene) ──────────────────── */
+#sim-hint {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
   letter-spacing: 0.3px;
-  border-top: 1px solid var(--glass-border);
-  line-height: 1.5;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 100;
 }
-.side-footer kbd {
+#sim-hint kbd {
   display: inline-block;
   padding: 1px 5px;
   border-radius: 4px;
   background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.12);
   font-family: ui-monospace, 'JetBrains Mono', monospace;
-  font-size: 9.5px;
-  color: rgba(255,255,255,0.60);
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
 }
+/* Hide the hint in fullscreen so it doesn't bleed into recordings */
+body.fullscreen-sim #sim-hint { display: none; }
 
 /* ── App chips ────────────────────────────────────────────────── */
 #app-chips {
