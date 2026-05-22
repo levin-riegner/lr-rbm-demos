@@ -87,7 +87,7 @@
   /* ── State ─────────────────────────────────────────────────────── */
   let displayPx  = 300;
   let scaleRatio = 0.5;
-  let hudAnchor  = 'bottom'; // 'top' | 'middle' | 'bottom' (all right-aligned)
+  let hudAnchor  = 'top'; // 'top' | 'middle' (all right-aligned)
 
   /* ── HUD position — always right-aligned, vertical anchor only ─── */
   function setHudPosition(anchor) {
@@ -348,8 +348,8 @@
   /* ── Init ──────────────────────────────────────────────────────── */
   buildAppChips();
   buildBgStrip();
-  applyScale(50);          // Medium
-  setHudPosition('bottom'); // matches the right-aligned glasses HUD default
+  applyScale(50);         // Medium
+  setHudPosition('top'); // default to top-right
 
   setBackgroundFromUrl(BG_PRESETS[0].file);
   markActiveBg(BG_PRESETS[0].file);

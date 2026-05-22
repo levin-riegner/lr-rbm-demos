@@ -10,7 +10,7 @@
   --glass-bg: rgba(255,255,255,0.06);
   --glass-bg-strong: rgba(255,255,255,0.07);
   --glass-border: rgba(255,255,255,0.10);
-  --sidebar-w: 25vw;
+  --sidebar-w: 300px;
   --sidebar-bg: #0b0b13;
 }
 
@@ -156,8 +156,8 @@ body.drag-active #sim-viewport {
    ────────────────────────────────────────────────────────────────────────── */
 #sidebar {
   width: var(--sidebar-w);
-  min-width: 300px;
-  max-width: 480px;
+  min-width: var(--sidebar-w);
+  max-width: var(--sidebar-w);
   height: 100vh;
   background: var(--sidebar-bg);
   border-left: 1px solid var(--glass-border);
@@ -168,59 +168,62 @@ body.drag-active #sim-viewport {
 }
 
 .side-header {
-  padding: 22px 22px 18px;
+  padding: 16px 18px 14px;
   border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 .side-header h1 {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   color: #fff;
-  margin-bottom: 4px;
 }
 .side-header p {
   font-size: 10px;
-  color: rgba(255,255,255,0.40);
-  letter-spacing: 1px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 
 .side-section {
-  padding: 18px 22px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 .side-section:last-of-type {
   border-bottom: none;
 }
 .side-section h2 {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 600;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.45);
-  margin-bottom: 2px;
+  color: rgba(255,255,255,0.38);
+  margin-bottom: 1px;
 }
 
 .side-footer {
   margin-top: auto;
-  padding: 14px 22px 18px;
-  font-size: 10.5px;
-  color: rgba(255,255,255,0.30);
+  padding: 12px 18px 16px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
   letter-spacing: 0.3px;
   border-top: 1px solid var(--glass-border);
+  line-height: 1.5;
 }
 .side-footer kbd {
   display: inline-block;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 4px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.10);
   font-family: ui-monospace, 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: rgba(255,255,255,0.70);
+  font-size: 9.5px;
+  color: rgba(255,255,255,0.60);
 }
 
 /* ── App chips ────────────────────────────────────────────────── */
@@ -232,10 +235,10 @@ body.drag-active #sim-viewport {
 .app-chip {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.09);
-  color: rgba(255,255,255,0.78);
-  padding: 6px 11px;
-  border-radius: 14px;
-  font-size: 11.5px;
+  color: rgba(255,255,255,0.75);
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
@@ -337,25 +340,25 @@ body.drag-active #sim-viewport {
 /* ── Slider / control rows ────────────────────────────────────── */
 .slider-row {
   display: grid;
-  grid-template-columns: 78px 1fr 40px;
+  grid-template-columns: 68px 1fr 36px;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 .control-row {
   display: grid;
-  grid-template-columns: 78px 1fr;
+  grid-template-columns: 68px 1fr;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 .slider-row label,
 .control-row > label {
   font-size: 11px;
-  color: rgba(255,255,255,0.55);
+  color: rgba(255,255,255,0.50);
   white-space: nowrap;
 }
 .slider-row > span {
   font-size: 11px;
-  color: rgba(100,175,255,0.75);
+  color: rgba(100,175,255,0.70);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -379,8 +382,8 @@ input[type=range]::-webkit-slider-thumb {
 /* ── Background grid ──────────────────────────────────────────── */
 #bg-strip {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
 }
 
 .bg-tile {
