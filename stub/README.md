@@ -2,13 +2,13 @@
 
 A "photo notes" app for the Meta Display glasses — for the ephemeral receipts of daily life. **Snap the coat-check tag, the valet ticket, the locker number, the raffle stub.** The capture never goes to your camera roll. It lives in this app until you delete it.
 
-Designed for the 600×600 lens, driven by the D-pad. The camera lives on the right temple, so the capture flow tells you to **look right and tap Enter**.
+Designed for the 600×600 lens, driven by the D-pad. The camera lives on the right temple, so the capture screen highlights the **top-left quadrant** of the display — that's the sweet spot where a tag held in front of the wearer lands centered in the camera frame.
 
 ---
 
 ## What it does
 
-- **Tap-Enter capture** with a clear *"look right"* prompt — there's no preview viewfinder on a single-eye display, so the app tells you which way to point your face and shows a target reticle on the right side of the lens.
+- **One-screen capture.** The "New Stub" screen *is* the camera screen — a semi-translucent purple zone in the top-left of the lens, breathing and scanning, tells you *where* to frame the tag. A giant **PINCH TO CAPTURE** in the bottom-right tells you *how*. No intermediate aim step, no preview.
 - **OCR pass** reads the tag and pulls out **category, code, and venue** so you never have to squint at the photo later. (The demo cycles through a built-in pool of realistic tickets; production wires up Tesseract or a small vision model.)
 - **No camera roll.** Stubs live inside this app, scoped to its localStorage. They never touch Photos / Gallery, so the volunteer who hands you a numbered cardboard square in 2026 doesn't leak into your year-in-review.
 - **Carousel of saved stubs.** ◀ ▶ to flip through them; the latest is always first. A `+ NEW STUB` sentinel sits at the end of the carousel.
@@ -52,11 +52,11 @@ Anything you'd photograph as a private bookmark and then wish you could un-photo
 | Home (empty) | Enter | Start a new capture |
 | Home (carousel) | ◀ ▶ | Flip between saved stubs and the `+ NEW STUB` slot |
 | Home (carousel) | Enter | Open the focused stub, or capture if `+ NEW STUB` is focused |
-| Aim | Enter | Snap & scan |
-| Aim | ◀ | Cancel back to home |
+| Capture | Enter (= pinch on-device) | Snap & scan |
+| Capture | ◀ | Cancel back to home |
 | Scanning | ◀ | Bail out before the OCR resolves |
 | Captured | Enter | Save the stub |
-| Captured | ▼ | Retake (re-aim) |
+| Captured | ▼ | Retake |
 | Captured | ◀ | Discard and go home |
 | Detail | ◀ or Enter | Back to home |
 | Detail | ▼ | Delete… |
@@ -77,9 +77,9 @@ All inputs that exist on the device: D-pad arrows + Enter. No keyboard, no on-sc
 
 ### Capture flow
 
-| Aim — look right | Scanning · OCR | Captured · save or retake |
+| Capture — pinch to snap | Scanning · OCR | Captured · save or retake |
 | --- | --- | --- |
-| ![Aim](screenshots/aim.png) | ![Scanning](screenshots/scanning.png) | ![Confirm](screenshots/confirm.png) |
+| ![Capture](screenshots/capture.png) | ![Scanning](screenshots/scanning.png) | ![Confirm](screenshots/confirm.png) |
 
 ### Manage
 
@@ -109,7 +109,7 @@ Screenshots come from headless Chrome against the `?state=…` URL parameter the
 ```bash
 npx serve -l 4321 stub &
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-for STATE in home-empty home home-new aim scanning confirm detail delete; do
+for STATE in home-empty home home-new capture scanning confirm detail delete; do
   "$CHROME" --headless --disable-gpu --hide-scrollbars \
     --window-size=600,600 --virtual-time-budget=2000 \
     --screenshot="stub/screenshots/$STATE.png" \
@@ -123,10 +123,10 @@ done
 
 ```
 stub/
-├── index.html      # all 7 screens (empty home, home carousel, aim, scanning, confirm, detail, delete)
-├── styles.css      # 600×600 amber + cyan; ticket-stub card with side notches
+├── index.html      # all 7 screens (empty home, home carousel, capture, scanning, confirm, detail, delete)
+├── styles.css      # 600×600 purple + cyan; ticket-stub card with side notches
 ├── app.js          # state machine, localStorage persistence, demo OCR pool
-├── favicon.svg     # amber stub w/ a perforated middle
+├── favicon.svg     # purple stub w/ a perforated middle
 └── screenshots/    # generated state captures used by this README
 ```
 

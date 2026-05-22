@@ -11,17 +11,17 @@
     L 10 36
     A 4 4 0 0 0 10 28
     Z"
-    fill="#ffb627" stroke="#ffd06b" stroke-width="1.5"/>
+    fill="#c084fc" stroke="#d8b4fe" stroke-width="1.5"/>
   <!-- perforated divider down the middle -->
   <line x1="32" y1="18" x2="32" y2="46"
-        stroke="#1a0d00" stroke-width="2" stroke-linecap="round"
+        stroke="#100422" stroke-width="2" stroke-linecap="round"
         stroke-dasharray="2 3"/>
   <!-- big "1" on the left half -->
   <text x="20" y="40" font-family="JetBrains Mono, monospace"
-        font-size="20" font-weight="800" fill="#1a0d00"
+        font-size="20" font-weight="800" fill="#100422"
         text-anchor="middle">7</text>
   <!-- small "✓" on the right half -->
   <path d="M 38 33 L 41 36 L 47 30"
-        fill="none" stroke="#1a0d00" stroke-width="2.5"
+        fill="none" stroke="#100422" stroke-width="2.5"
         stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
