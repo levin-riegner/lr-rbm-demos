@@ -429,6 +429,18 @@ input[type=range]::-webkit-slider-thumb {
 /* ── Fullscreen sim mode (H key hides sidebar) ────────────────── */
 body.fullscreen-sim #sidebar { display: none; }
 
+/* In fullscreen-sim we also strip every HUD chrome the simulator adds for
+   inspection — outer chromatic glow, 1px blue ring, rounded corners, and
+   the chromatic-aberration + scanline overlays — so screen recordings show
+   exactly what the lens would emit, nothing more. */
+body.fullscreen-sim #display-wrap { filter: none; }
+body.fullscreen-sim .wg-frame {
+  border-radius: 0;
+  box-shadow: none;
+}
+body.fullscreen-sim .wg-frame::before,
+body.fullscreen-sim .wg-frame::after { display: none; }
+
 /* Floating "Show sidebar" button — visible only in fullscreen-sim.
    Faded by default so it doesn't bleed into screen recordings; on
    mouse movement (`.show-exit-btn`) or hover it animates back in. */
