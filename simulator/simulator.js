@@ -403,6 +403,9 @@
       lblBgBright.textContent = v + '%';
     }
     if (p.has('url')) loadURL(p.get('url'));
+
+    // Shared links always open in fullscreen sim mode.
+    setFullscreenSim(true);
   }
 
   let shareToastTimer = null;
