@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>Stub</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- =================================================================
+       HOME · empty
+       Shown when there are zero saved stubs.
+       ================================================================= -->
+  <section id="home-empty" class="screen hidden">
+    <header class="topbar">
+      <span class="brand-mark">▣</span>
+      <span class="brand-text">STUB</span>
+      <span class="topbar-clock mono" id="clock-empty">—:—</span>
+    </header>
+
+    <div class="hero">
+      <div class="hero-title">PHOTOS<br>YOU&nbsp;DELETE</div>
+      <div class="hero-sub">COAT CHECK · VALET · RAFFLES · LOCKERS</div>
+      <p class="hero-blurb">
+        Snap the tag, the ticket, the spot.
+        Never saved to your camera roll.
+        Tap a stub when you need it, delete when you're done.
+      </p>
+    </div>
+
+    <button class="cta focusable" data-action="capture" id="cta-empty">
+      <span class="cta-icon">＋</span>
+      <span class="cta-label">NEW&nbsp;STUB</span>
+    </button>
+
+    <div class="hint-bar">
+      <span class="hint-keys"><span class="key">ENTER</span> CAPTURE</span>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       HOME · carousel
+       Stubs as full-screen cards, "+ NEW" sentinel at the end.
+       ================================================================= -->
+  <section id="home" class="screen hidden">
+    <header class="topbar">
+      <span class="brand-mark">▣</span>
+      <span class="brand-text">STUB</span>
+      <span class="topbar-counter mono" id="home-counter">1 / 1</span>
+    </header>
+
+    <div class="carousel" id="stub-carousel">
+      <!-- card rendered into here by app.js -->
+    </div>
+
+    <div class="carousel-dots" id="carousel-dots"></div>
+
+    <div class="hint-bar" id="home-hint">
+      <span class="hint-keys"><span class="key">◀</span><span class="key">▶</span> BROWSE</span>
+      <span class="hint-keys"><span class="key">ENTER</span> OPEN</span>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       AIM · look right + tap Enter
+       ================================================================= -->
+  <section id="aim" class="screen hidden">
+    <header class="step-head">
+      <span class="step-title">NEW&nbsp;STUB</span>
+      <span class="step-pips"><i class="pip on"></i><i class="pip"></i><i class="pip"></i></span>
+    </header>
+
+    <div class="aim-stage">
+      <div class="aim-title">LOOK&nbsp;RIGHT</div>
+      <div class="aim-sub">Hold the tag to your right —<br>the camera is on the right temple.</div>
+
+      <div class="viewfinder">
+        <span class="vf-corner vf-tl"></span>
+        <span class="vf-corner vf-tr"></span>
+        <span class="vf-corner vf-bl"></span>
+        <span class="vf-corner vf-br"></span>
+
+        <div class="vf-arrows">
+          <span class="vf-arrow vf-arrow-1">›</span>
+          <span class="vf-arrow vf-arrow-2">›</span>
+          <span class="vf-arrow vf-arrow-3">›</span>
+          <span class="vf-arrow vf-arrow-4">›</span>
+        </div>
+
+        <div class="vf-reticle">
+          <span class="ret-ring"></span>
+          <span class="ret-dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hint-bar">
+      <span class="hint-keys"><span class="key">ENTER</span> SCAN</span>
+      <span class="hint-keys"><span class="key">◀</span> CANCEL</span>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       SCANNING · brief loading state w/ scanline + OCR feel
+       ================================================================= -->
+  <section id="scanning" class="screen hidden">
+    <header class="step-head">
+      <span class="step-title">SCANNING</span>
+      <span class="step-pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span>
+    </header>
+
+    <div class="scan-stage">
+      <div class="scan-card">
+        <div class="scan-card-inner" id="scan-card-inner">
+          <div class="scan-shimmer"></div>
+          <div class="scan-line"></div>
+          <div class="scan-glyphs mono">
+            <span>▮</span><span>0</span><span>9</span><span>7</span>
+            <span>·</span><span>A</span><span>B</span><span>?</span>
+          </div>
+        </div>
+      </div>
+      <div class="scan-status mono" id="scan-status">READING&nbsp;TEXT…</div>
+    </div>
+
+    <div class="hint-bar">
+      <span class="hint-keys"><span class="key">▶</span> WORKING</span>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       CONFIRM · captured stub, save or discard
+       ================================================================= -->
+  <section id="confirm" class="screen hidden">
+    <header class="step-head">
+      <span class="step-title">CAPTURED</span>
+      <span class="step-pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span>
+    </header>
+
+    <div class="stub-card stub-card-fresh" id="confirm-card">
+      <div class="stub-head">
+        <span class="stub-category" id="confirm-category">COAT&nbsp;CHECK</span>
+        <span class="stub-time mono" id="confirm-time">just now</span>
+      </div>
+      <div class="perforation"></div>
+      <div class="stub-code mono" id="confirm-code">247</div>
+      <div class="stub-location" id="confirm-location">The Vintage Lounge</div>
+      <div class="stub-foot mono"><span id="confirm-detect">DETECTED · COAT CHECK</span></div>
+    </div>
+
+    <div class="hint-bar">
+      <span class="hint-keys"><span class="key">ENTER</span> SAVE</span>
+      <span class="hint-keys"><span class="key">▼</span> RETAKE</span>
+      <span class="hint-keys"><span class="key">◀</span> CANCEL</span>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       DETAIL · opened existing stub
+       ================================================================= -->
+  <section id="detail" class="screen hidden">
+    <header class="topbar">
+      <span class="brand-mark">▣</span>
+      <span class="brand-text">STUB</span>
+      <span class="topbar-counter mono" id="detail-index">1 / 1</span>
+    </header>
+
+    <div class="stub-card stub-card-detail" id="detail-card">
+      <div class="stub-head">
+        <span class="stub-category" id="detail-category">COAT&nbsp;CHECK</span>
+        <span class="stub-time mono" id="detail-time">12 min ago</span>
+      </div>
+      <div class="perforation"></div>
+      <div class="stub-code mono" id="detail-code">247</div>
+      <div class="stub-location" id="detail-location">The Vintage Lounge</div>
+      <div class="stub-foot mono">NOT&nbsp;SAVED&nbsp;TO&nbsp;CAMERA&nbsp;ROLL</div>
+    </div>
+
+    <div class="hint-bar">
+      <span class="hint-keys"><span class="key">◀</span> BACK</span>
+      <span class="hint-keys"><span class="key">▼</span> DELETE</span>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       DELETE · confirm
+       ================================================================= -->
+  <section id="delete" class="screen hidden">
+    <header class="step-head">
+      <span class="step-title">DELETE&nbsp;STUB?</span>
+    </header>
+
+    <div class="delete-stage">
+      <div class="del-mini-card">
+        <span class="del-mini-cat" id="del-cat">COAT&nbsp;CHECK</span>
+        <span class="del-mini-code mono" id="del-code">247</span>
+      </div>
+      <p class="del-warn">This stub will be gone for good.<br>You never had a photo anyway.</p>
+    </div>
+
+    <div class="hint-bar">
+      <span class="hint-keys"><span class="key">ENTER</span> DELETE</span>
+      <span class="hint-keys"><span class="key">◀</span> KEEP</span>
+    </div>
+  </section>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
