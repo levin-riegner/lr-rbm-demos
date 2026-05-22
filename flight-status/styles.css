@@ -616,6 +616,7 @@ body::after {
   gap: 8px;
   min-height: 0;
 }
+.info-tile-wide { grid-column: 1 / -1; }
 .info-tile {
   background: var(--bg-1);
   border: 1px solid var(--line);
@@ -650,6 +651,42 @@ body::after {
 .info-tile.info-accent .info-value {
   color: var(--amber-hi);
   text-shadow: 0 0 18px var(--amber-glow);
+}
+
+/* CAROUSEL view (full) */
+.carousel-card-status {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: linear-gradient(180deg, rgba(255,184,77,0.10), rgba(255,184,77,0.02));
+  border: 2px solid var(--amber);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 0 28px rgba(255,184,77,0.20);
+}
+.carousel-label {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--amber);
+}
+.carousel-value {
+  font-size: 168px;
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -4px;
+  color: var(--amber-hi);
+  text-shadow: 0 0 28px var(--amber-glow);
+}
+.carousel-sub {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--text-2);
+  text-transform: uppercase;
 }
 
 /* SEAT view */
@@ -808,7 +845,15 @@ body::after {
   line-height: 1;
 }
 
-/* compact SEAT sub-view: big seat code + class/role subtitle */
+/* compact sub-views — all share the same fixed inner height so the
+   strip doesn't grow / shrink when cycling main ↔ seat ↔ carousel. */
+.cs-view {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
 .cs-view.hidden { display: none !important; }
 .cs-seat {
   display: flex;
@@ -830,6 +875,7 @@ body::after {
   padding-left: 14px;
 }
 .cs-seat-meta .cs-label { color: var(--cyan); }
+.cs-seat-meta .cs-label.cs-label-amber { color: var(--amber); }
 .cs-seat-sub {
   font-size: 11px;
   font-weight: 800;

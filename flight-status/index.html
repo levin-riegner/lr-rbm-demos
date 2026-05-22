@@ -25,7 +25,7 @@
 
     <div class="hero">
       <div class="hero-title">CHECK<br>YOUR&nbsp;FLIGHT</div>
-      <div class="hero-sub">TERMINAL · GATE · BOARD · CAROUSEL</div>
+      <div class="hero-sub">TERMINAL · GATE · SEAT · CAROUSEL</div>
     </div>
 
     <button class="last-card focusable hidden" data-action="restore" id="last-card">
@@ -41,10 +41,6 @@
       <span class="cta-icon">▶</span>
       <span class="cta-label">FIND&nbsp;FLIGHT</span>
     </button>
-
-    <div class="hint-bar" id="home-hint">
-      <span class="hint-keys"><span class="key">ENTER</span> START</span>
-    </div>
   </section>
 
   <!-- ===========================================================
@@ -64,11 +60,6 @@
         <div class="airline-count" id="airline-count">1 / 12</div>
       </div>
       <div class="carousel-side mono" id="airline-next">—</div>
-    </div>
-
-    <div class="hint-bar">
-      <span class="hint-keys"><span class="key">◀</span><span class="key">▶</span> CHOOSE</span>
-      <span class="hint-keys"><span class="key">ENTER</span> NEXT</span>
     </div>
   </section>
 
@@ -106,12 +97,6 @@
         </div>
       </div>
     </div>
-
-    <div class="hint-bar hint-bar-tri">
-      <span class="hint-keys"><span class="key">▲</span><span class="key">▼</span> DIGIT</span>
-      <span class="hint-keys"><span class="key">◀</span><span class="key">▶</span> MOVE</span>
-      <span class="hint-keys"><span class="key">ENTER</span> NEXT</span>
-    </div>
   </section>
 
   <!-- ===========================================================
@@ -133,11 +118,6 @@
         <div class="date-sub mono" id="date-tomorrow">TUE · MAY 12</div>
       </div>
     </div>
-
-    <div class="hint-bar">
-      <span class="hint-keys"><span class="key">◀</span><span class="key">▶</span> CHOOSE</span>
-      <span class="hint-keys"><span class="key">ENTER</span> CONFIRM</span>
-    </div>
   </section>
 
   <!-- ===========================================================
@@ -151,7 +131,7 @@
         <span class="cs-flight mono" id="cs-flight">AA·0007</span>
       </div>
 
-      <!-- Compact MAIN: TERM · GATE · BOARDS · CARO. -->
+      <!-- Compact MAIN: TERM · GATE · BOARDS -->
       <div class="cs-view cs-view-main" id="cs-view-main">
         <div class="cs-row">
           <div class="cs-col">
@@ -165,10 +145,6 @@
           <div class="cs-col">
             <span class="cs-val mono cs-amber" id="cs-board">20:37</span>
             <span class="cs-label">BOARDS</span>
-          </div>
-          <div class="cs-col">
-            <span class="cs-val mono" id="cs-carousel">12</span>
-            <span class="cs-label">CARO.</span>
           </div>
         </div>
       </div>
@@ -184,10 +160,22 @@
         </div>
       </div>
 
+      <!-- Compact CAROUSEL: big carousel # -->
+      <div class="cs-view cs-view-carousel hidden" id="cs-view-carousel">
+        <div class="cs-seat">
+          <span class="cs-val cs-amber mono" id="cs-carousel">12</span>
+          <div class="cs-seat-meta">
+            <span class="cs-label cs-label-amber">CAROUSEL</span>
+            <span class="cs-seat-sub">BAGGAGE&nbsp;CLAIM</span>
+          </div>
+        </div>
+      </div>
+
       <!-- mini page dots so you know swipes change which compact view -->
       <div class="cs-dots">
         <i class="cs-dot on" id="cs-dot-main"></i>
         <i class="cs-dot" id="cs-dot-seat"></i>
+        <i class="cs-dot" id="cs-dot-carousel"></i>
       </div>
     </div>
 
@@ -210,13 +198,9 @@
             <div class="info-label">GATE</div>
             <div class="info-value mono" id="s-gate">B42</div>
           </div>
-          <div class="info-tile info-accent">
+          <div class="info-tile info-accent info-tile-wide">
             <div class="info-label">BOARD</div>
             <div class="info-value mono" id="s-board">14:25</div>
-          </div>
-          <div class="info-tile">
-            <div class="info-label">CAROUSEL</div>
-            <div class="info-value mono" id="s-carousel">6</div>
           </div>
         </div>
       </div>
@@ -228,11 +212,20 @@
           <div class="seat-sub" id="s-seat-sub">ECONOMY · WINDOW</div>
         </div>
       </div>
+
+      <div class="status-view view-carousel hidden" id="view-carousel">
+        <div class="carousel-card-status">
+          <div class="carousel-label">CAROUSEL</div>
+          <div class="carousel-value mono" id="s-carousel">6</div>
+          <div class="carousel-sub">BAGGAGE&nbsp;CLAIM</div>
+        </div>
+      </div>
     </div>
 
     <div class="status-dots">
       <i class="dot on" id="dot-main"></i>
       <i class="dot" id="dot-seat"></i>
+      <i class="dot" id="dot-carousel"></i>
     </div>
 
     <div class="status-foot">
@@ -240,11 +233,6 @@
         <span class="time-label">DEP</span><span class="time-val" id="s-dep">14:55</span>
         <span class="time-sep">—</span>
         <span class="time-label">ARR</span><span class="time-val" id="s-arr">18:32</span>
-      </div>
-      <div class="hint-bar">
-        <span class="hint-keys"><span class="key">◀</span><span class="key">▶</span> SEAT</span>
-        <span class="hint-keys"><span class="key">▲</span> HIDE</span>
-        <span class="hint-keys"><span class="key">ENTER</span> HOME</span>
       </div>
     </div>
   </section>
