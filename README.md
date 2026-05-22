@@ -52,6 +52,7 @@ Each app is a small, self-contained web project designed for the 600x600 display
 - [Snake](https://rbm-demos.lnr.io/snake/)
 - [Speedometer](https://rbm-demos.lnr.io/speedometer/)
 - [Spireworks](https://rbm-demos.lnr.io/spireworks/)
+- [Stub](https://rbm-demos.lnr.io/stub/)
 - [Tally Counter](https://rbm-demos.lnr.io/tally-counter/)
 - [Teleprompter (admin)](https://rbm-demos.lnr.io/teleprompter/admin/)
 - [Teleprompter (glasses)](https://rbm-demos.lnr.io/teleprompter/glasses/)

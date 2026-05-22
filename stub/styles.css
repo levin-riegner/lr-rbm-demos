@@ -1,0 +1,690 @@
+/* ============================================================
+   STUB — Meta Display HUD
+   600 × 600 viewport. Photo-notes for ticket stubs, coat checks,
+   valet tags, lockers — ephemeral references that never go to
+   your camera roll.
+   ============================================================ */
+
+:root {
+  --bg-0:        #000000;
+  --bg-1:        #110b06;
+  --bg-2:        #1c1208;
+  --bg-3:        #29190b;
+  --line:        #3a2410;
+  --line-2:      #5b3a1c;
+
+  --text:        #fbf4e6;
+  --text-2:      #d8c79f;
+  --text-3:      #8c7a55;
+  --text-4:      #5e4f37;
+
+  --amber:       #ffb627;
+  --amber-hi:    #ffd06b;
+  --amber-dim:   #c2841a;
+  --amber-glow:  rgba(255, 182, 39, 0.55);
+
+  --cyan:        #5ee7df;
+  --cyan-hi:     #a4f4ef;
+  --cyan-glow:   rgba(94, 231, 223, 0.55);
+
+  --red:         #ff5e7e;
+  --red-glow:    rgba(255, 94, 126, 0.45);
+
+  --pad-l:       30px;
+  --pad-r:       30px;
+  --pad-t:       22px;
+  --pad-b:       22px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
+  background: #000;
+  color: var(--text);
+  font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  letter-spacing: inherit;
+  padding: 0;
+}
+
+.mono {
+  font-family: "JetBrains Mono", "SF Mono", "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.hidden { display: none !important; }
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
+  gap: 14px;
+}
+
+.focusable {
+  outline: none;
+  border: 3px solid transparent;
+  transition:
+    transform .12s ease,
+    border-color .12s ease,
+    box-shadow .12s ease,
+    background .12s ease;
+}
+.focusable:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 26px var(--cyan-glow);
+}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.brand-mark {
+  font-size: 22px;
+  color: var(--amber);
+  text-shadow: 0 0 14px var(--amber-glow);
+  line-height: 1;
+}
+.brand-text {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--text-2);
+}
+.topbar-clock,
+.topbar-counter {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: 2px;
+}
+
+/* ============================================================
+   HERO (empty home)
+   ============================================================ */
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+.hero-title {
+  font-size: 60px;
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -2.5px;
+  color: var(--text);
+}
+.hero-sub {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 3.5px;
+  color: var(--amber);
+}
+.hero-blurb {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text-2);
+  max-width: 440px;
+}
+
+/* ============================================================
+   CTA
+   ============================================================ */
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  border-radius: 16px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  padding: 20px;
+  min-height: 66px;
+  background: linear-gradient(180deg, var(--amber), var(--amber-dim));
+  color: #1a0d00;
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.12);
+  border: 3px solid transparent;
+  flex-shrink: 0;
+  opacity: 0.92;
+  transition: opacity .12s ease, background .12s ease,
+              box-shadow .12s ease, border-color .12s ease,
+              transform .12s ease;
+}
+.cta:focus {
+  background: linear-gradient(180deg, var(--amber-hi), var(--amber));
+  box-shadow: 0 0 30px var(--amber-glow);
+  border-color: var(--amber-hi);
+  opacity: 1;
+  transform: translateY(-1px);
+}
+.cta-icon { font-size: 24px; line-height: 1; font-weight: 700; }
+
+/* ============================================================
+   HINT BAR (bottom of every screen)
+   ============================================================ */
+.hint-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.hint-keys {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  color: var(--text-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.key {
+  display: inline-block;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 3px 6px;
+  color: var(--cyan);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* ============================================================
+   STEP HEADER
+   ============================================================ */
+.step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.step-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  color: var(--text-2);
+}
+.step-pips {
+  display: flex;
+  gap: 6px;
+}
+.pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  display: inline-block;
+}
+.pip.on {
+  background: var(--amber);
+  border-color: var(--amber);
+  box-shadow: 0 0 8px var(--amber-glow);
+}
+
+/* ============================================================
+   STUB CARD — used on home, confirm, detail
+   ============================================================ */
+.stub-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(255,182,39,0.10), rgba(255,182,39,0.02));
+  border: 2px solid var(--amber);
+  border-radius: 18px;
+  padding: 20px 26px 18px;
+  gap: 12px;
+  position: relative;
+  box-shadow: 0 0 28px rgba(255,182,39,0.18);
+  /* small notches at the perforation line — pure decoration */
+}
+.stub-card::before,
+.stub-card::after {
+  /* small circular notches at the perforation row to evoke a torn stub */
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #000;
+  border: 2px solid var(--amber);
+  top: 78px;
+}
+.stub-card::before { left: -10px;  }
+.stub-card::after  { right: -10px; }
+
+.stub-card-fresh {
+  animation: stub-pop .35s ease;
+}
+@keyframes stub-pop {
+  0%   { transform: scale(.94); opacity: 0; }
+  60%  { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.stub-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.stub-category {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--amber);
+  text-shadow: 0 0 10px var(--amber-glow);
+}
+.stub-time {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text-3);
+}
+
+.perforation {
+  height: 2px;
+  background-image: linear-gradient(to right,
+    var(--line-2) 50%, transparent 0%);
+  background-size: 10px 2px;
+  background-repeat: repeat-x;
+  margin: 4px 0;
+  opacity: 0.85;
+}
+
+.stub-code {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 120px;
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -3px;
+  color: var(--text);
+  text-shadow: 0 0 24px var(--amber-glow);
+  word-break: break-all;
+  text-align: center;
+  padding: 6px 0;
+  min-height: 0;
+}
+/* shrink for longer codes — class added by JS */
+.stub-code.code-long  { font-size: 78px; letter-spacing: -2px; }
+.stub-code.code-xlong { font-size: 54px; letter-spacing: -1px; }
+
+.stub-location {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-2);
+  text-align: center;
+  line-height: 1.2;
+}
+.stub-foot {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  color: var(--text-4);
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   CAROUSEL (home) — the "+ NEW STUB" sentinel re-uses the card
+   shape but with a different inner layout.
+   ============================================================ */
+.carousel {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.carousel > .stub-card,
+.carousel > .new-card {
+  width: 100%;
+}
+.new-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: var(--bg-1);
+  border: 2px dashed var(--line-2);
+  border-radius: 18px;
+  padding: 24px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color .12s ease, background .12s ease, box-shadow .12s ease;
+}
+.new-card .nc-plus {
+  font-size: 80px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--amber);
+  text-shadow: 0 0 18px var(--amber-glow);
+}
+.new-card .nc-label {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  color: var(--amber);
+}
+.new-card .nc-sub {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-3);
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 9px;
+}
+.carousel-dots .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bg-3);
+  border: 1px solid var(--line);
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.carousel-dots .dot.on {
+  background: var(--amber);
+  border-color: var(--amber);
+  transform: scale(1.15);
+  box-shadow: 0 0 6px var(--amber-glow);
+}
+.carousel-dots .dot.new {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--line-2);
+}
+.carousel-dots .dot.new.on {
+  background: transparent;
+  border-color: var(--amber);
+  box-shadow: 0 0 6px var(--amber-glow);
+}
+
+/* ============================================================
+   AIM — viewfinder with right-pointing arrows
+   ============================================================ */
+.aim-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 0;
+}
+.aim-title {
+  font-size: 46px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--amber);
+  text-shadow: 0 0 18px var(--amber-glow);
+  line-height: 1;
+}
+.aim-sub {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-2);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.viewfinder {
+  position: relative;
+  width: 380px;
+  height: 220px;
+  margin-top: 6px;
+}
+.vf-corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-color: var(--amber);
+  border-style: solid;
+  border-width: 0;
+  box-shadow: 0 0 12px var(--amber-glow);
+}
+.vf-tl { top: 0;    left: 0;    border-top-width: 3px;    border-left-width: 3px;    border-top-left-radius: 6px; }
+.vf-tr { top: 0;    right: 0;   border-top-width: 3px;    border-right-width: 3px;   border-top-right-radius: 6px; }
+.vf-bl { bottom: 0; left: 0;    border-bottom-width: 3px; border-left-width: 3px;    border-bottom-left-radius: 6px; }
+.vf-br { bottom: 0; right: 0;   border-bottom-width: 3px; border-right-width: 3px;   border-bottom-right-radius: 6px; }
+
+.vf-arrows {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--amber);
+  font-family: "JetBrains Mono", monospace;
+}
+.vf-arrow {
+  font-size: 44px;
+  font-weight: 900;
+  opacity: 0.25;
+  text-shadow: 0 0 12px var(--amber-glow);
+  animation: arrow-pulse 1.4s infinite ease-in-out;
+}
+.vf-arrow-1 { animation-delay: 0.0s; }
+.vf-arrow-2 { animation-delay: 0.18s; }
+.vf-arrow-3 { animation-delay: 0.36s; }
+.vf-arrow-4 { animation-delay: 0.54s; }
+@keyframes arrow-pulse {
+  0%, 100% { opacity: 0.18; transform: translateX(0); }
+  50%      { opacity: 1;    transform: translateX(6px); }
+}
+
+.vf-reticle {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ret-ring {
+  position: absolute;
+  inset: 0;
+  border: 2.5px solid var(--cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 18px var(--cyan-glow), inset 0 0 8px var(--cyan-glow);
+  animation: ret-pulse 1.8s infinite ease-in-out;
+}
+.ret-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cyan-hi);
+  box-shadow: 0 0 12px var(--cyan-glow);
+}
+@keyframes ret-pulse {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(1.12); opacity: 0.55; }
+}
+
+/* ============================================================
+   SCANNING
+   ============================================================ */
+.scan-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: 0;
+}
+.scan-card {
+  width: 380px;
+  height: 220px;
+  border: 2px solid var(--cyan);
+  border-radius: 16px;
+  background: rgba(94,231,223,0.05);
+  box-shadow: 0 0 30px var(--cyan-glow);
+  overflow: hidden;
+  position: relative;
+}
+.scan-card-inner {
+  position: absolute;
+  inset: 0;
+}
+.scan-shimmer {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 6px,
+      rgba(94,231,223,0.08) 7px,
+      rgba(94,231,223,0.08) 8px);
+}
+.scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: var(--cyan);
+  box-shadow: 0 0 14px var(--cyan-glow), 0 0 32px var(--cyan-glow);
+  animation: scan-sweep 1.05s linear infinite;
+}
+@keyframes scan-sweep {
+  0%   { top: 0;    opacity: 0.2; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: 100%; opacity: 0.2; }
+}
+.scan-glyphs {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  align-items: center;
+  justify-items: center;
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--cyan);
+  opacity: 0.45;
+  text-shadow: 0 0 10px var(--cyan-glow);
+}
+.scan-glyphs span {
+  animation: glyph-flicker 0.7s infinite ease-in-out;
+}
+.scan-glyphs span:nth-child(2) { animation-delay: .08s; }
+.scan-glyphs span:nth-child(3) { animation-delay: .16s; }
+.scan-glyphs span:nth-child(4) { animation-delay: .24s; }
+.scan-glyphs span:nth-child(5) { animation-delay: .32s; }
+.scan-glyphs span:nth-child(6) { animation-delay: .40s; }
+.scan-glyphs span:nth-child(7) { animation-delay: .48s; }
+.scan-glyphs span:nth-child(8) { animation-delay: .56s; }
+@keyframes glyph-flicker {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 1; }
+}
+.scan-status {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--cyan);
+  text-shadow: 0 0 10px var(--cyan-glow);
+}
+
+/* ============================================================
+   DELETE
+   ============================================================ */
+.delete-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  min-height: 0;
+}
+.del-mini-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 22px 36px;
+  border: 2px solid var(--red);
+  border-radius: 16px;
+  background: rgba(255,94,126,0.08);
+  box-shadow: 0 0 22px var(--red-glow);
+  filter: grayscale(0.3);
+}
+.del-mini-cat {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--red);
+}
+.del-mini-code {
+  font-size: 72px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: -2px;
+  word-break: break-all;
+  text-align: center;
+}
+.del-mini-code.code-long  { font-size: 52px; }
+.del-mini-code.code-xlong { font-size: 36px; }
+.del-warn {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-2);
+  text-align: center;
+  max-width: 360px;
+}
