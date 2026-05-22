@@ -617,6 +617,17 @@ body::after {
   min-height: 0;
 }
 .info-tile-wide { grid-column: 1 / -1; }
+/* BOARD value is now 12-hr ("2:25 PM") — slightly tighter to keep the
+   amber glow tidy in the wide bottom tile. */
+.info-tile-wide .info-value { font-size: 48px; letter-spacing: -1px; }
+
+/* brief pulse on the active status view when ENTER refreshes the data */
+.refresh-flash { animation: refreshFlash .42s ease; }
+@keyframes refreshFlash {
+  0%   { opacity: 0.35; transform: translateY(-4px); }
+  60%  { opacity: 1;    transform: translateY(0); }
+  100% { opacity: 1; }
+}
 .info-tile {
   background: var(--bg-1);
   border: 1px solid var(--line);
@@ -833,6 +844,8 @@ body::after {
   letter-spacing: 0px;
   line-height: 1;
 }
+/* the boarding-time column carries " AM"/" PM" so needs more horizontal room */
+#cs-board { font-size: 22px; }
 .cs-val.cs-amber {
   color: var(--amber);
   text-shadow: 0 0 10px var(--amber-glow);
