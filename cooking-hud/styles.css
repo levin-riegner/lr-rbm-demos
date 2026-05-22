@@ -11,8 +11,9 @@
   --red-2:      #ffb1ad;
   --green:      #1a7f3e;     /* checked */
 
-  --pad-l:  150px;            /* big left pad → right-aligned HUD */
-  --pad-r:  32px;
+  --panel-x: 66px;            /* gutter on each side → centers the 468px-wide HUD in 600 */
+  --pad-l:  84px;             /* var(--panel-x) + 18px inner left inset */
+  --pad-r:  98px;             /* var(--panel-x) + 32px inner right inset */
   --pad-t:  28px;
   --pad-b:  28px;
 }
@@ -104,7 +105,7 @@ body::after {
   position: absolute;
   top: 0; bottom: 0;
   left: var(--pad-l);
-  right: 0;
+  right: var(--panel-x);
   margin-left: -18px;
   background: var(--bg);
   z-index: -1;
@@ -897,7 +898,7 @@ body.see-through .key-glyph { border-color: #fff; color: #fff; }
   position: absolute;
   top: 6px;
   left: var(--pad-l);
-  right: 8px;
+  right: calc(var(--panel-x) + 8px);
   z-index: 60;
   display: flex;
   gap: 6px;
@@ -1010,7 +1011,7 @@ body.has-timers .screen { padding-top: calc(var(--pad-t) + 32px); }
   position: absolute;
   bottom: 24px;
   left: calc(var(--pad-l) - 4px);
-  right: 24px;
+  right: calc(var(--panel-x) + 24px);
   margin: 0;
   background: var(--ink);
   color: var(--bg);
@@ -1039,7 +1040,7 @@ body.has-timers .screen { padding-top: calc(var(--pad-t) + 32px); }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 30px 30px 30px calc(var(--pad-l) - 16px);
+  padding: 30px calc(var(--panel-x) + 30px) 30px calc(var(--pad-l) - 16px);
 }
 .confirm-card {
   width: 100%;
