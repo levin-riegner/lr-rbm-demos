@@ -6,25 +6,30 @@
 
 :root {
   --app-native: 600px;
-  --accent: #00d4ff;
-  --glass-bg: rgba(255,255,255,0.06);
-  --glass-bg-strong: rgba(255,255,255,0.07);
-  --glass-border: rgba(255,255,255,0.10);
-  --sidebar-w: 300px;
-  --sidebar-bg: #0b0b13;
+  --accent:       #0866ff;   /* Meta blue */
+  --accent-hover: #0756d6;
+  --accent-light: #e7f3ff;
+  --sidebar-w:    300px;
+  --sidebar-bg:   #ffffff;
+  --body-bg:      #f0f2f5;
+  --border:       #dde1e7;
+  --text-1:       #1c1e21;
+  --text-2:       #65676b;
+  --text-3:       #8a8d91;
+  --input-bg:     #f0f2f5;
 }
 
 html, body { width: 100vw; height: 100vh; overflow: hidden; }
 
 body {
-  background: #07070f;
+  background: var(--body-bg);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
-  color: #fff;
+  color: var(--text-1);
   display: flex;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   LEFT — Simulator viewport (background + HUD only, screen-record ready)
+   SIM VIEWPORT (right side — background + HUD only, screen-record ready)
    ────────────────────────────────────────────────────────────────────────── */
 #sim-viewport {
   position: relative;
@@ -47,24 +52,20 @@ body {
 }
 
 body.drag-active #sim-viewport {
-  outline: 2px dashed rgba(100,180,255,0.30);
+  outline: 2px dashed rgba(8,102,255,0.40);
   outline-offset: -8px;
 }
 
 /* ── Waveguide HUD ─────────────────────────────────────────────── */
 #display-wrap {
   position: absolute;
-
-  /* Default: bottom-right corner of the sim viewport. */
   right: 24px;
-  bottom: 24px;
+  top: 24px;
 
   width: 300px; height: 300px;
   user-select: none;
   z-index: 200;
 
-  /* Additive (plus-lighter) blend — matches the real waveguide:
-     black emits zero light → transparent on the lens; bright pixels add. */
   mix-blend-mode: plus-lighter;
   isolation: isolate;
 
@@ -72,7 +73,7 @@ body.drag-active #sim-viewport {
     drop-shadow(0 0 18px rgba(80,140,255,0.22))
     drop-shadow(0 0 6px rgba(80,140,255,0.14));
 
-  transition: right 0.25s ease, bottom 0.25s ease, left 0.25s ease, top 0.25s ease;
+  transition: top 0.25s ease, bottom 0.25s ease;
 }
 #display-wrap.hidden { display: none; }
 
@@ -138,140 +139,28 @@ body.drag-active #sim-viewport {
   letter-spacing: 0.5px; text-transform: uppercase;
 }
 
-/* ── Load error toast (scoped to the simulator viewport) ──────── */
+/* ── Load error toast ──────────────────────────────────────────── */
 #load-error {
   position: absolute;
   top: 24px; left: 50%; transform: translateX(-50%);
-  background: rgba(255,60,60,0.15);
-  border: 1px solid rgba(255,60,60,0.30);
+  background: #fff0f0;
+  border: 1px solid #ffcdd2;
   border-radius: 8px;
   padding: 8px 16px;
-  font-size: 12px; color: rgba(255,140,140,0.90);
+  font-size: 12px; color: #c62828;
   z-index: 400;
   display: none;
 }
 
-/* ──────────────────────────────────────────────────────────────────────────
-   RIGHT — Settings sidebar
-   ────────────────────────────────────────────────────────────────────────── */
-#sidebar {
-  width: var(--sidebar-w);
-  min-width: var(--sidebar-w);
-  max-width: var(--sidebar-w);
-  height: 100vh;
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--glass-border);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  flex-shrink: 0;
-}
-
-.side-header {
-  padding: 16px 18px 14px;
-  border-bottom: 1px solid var(--glass-border);
-}
-.side-header h1 {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.1px;
-  color: #fff;
-  margin-bottom: 3px;
-  line-height: 1.2;
-}
-.side-header p {
-  font-size: 9.5px;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-}
-
-/* ── Share CTA (pinned to bottom of sidebar) ──────────────────── */
-#share-cta {
-  margin-top: auto;
-  padding: 16px 18px 20px;
-  border-top: 1px solid var(--glass-border);
-  position: relative;
-}
-
-#share-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  gap: 7px;
-  background: rgba(0,212,255,0.12);
-  border: 1px solid rgba(0,212,255,0.30);
-  color: rgba(0,212,255,0.90);
-  padding: 13px 18px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  letter-spacing: 0.2px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
-}
-#share-btn:hover {
-  background: rgba(0,212,255,0.20);
-  border-color: rgba(0,212,255,0.55);
-  color: #fff;
-  box-shadow: 0 0 18px rgba(0,212,255,0.18);
-}
-#share-btn:active {
-  background: rgba(0,212,255,0.28);
-}
-
-#share-toast {
-  position: absolute;
-  bottom: calc(100% - 8px);
-  left: 18px; right: 18px;
-  text-align: center;
-  background: rgba(0,212,255,0.14);
-  border: 1px solid rgba(0,212,255,0.35);
-  color: rgba(0,212,255,1);
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 500;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(4px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-#share-toast.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.side-section {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--glass-border);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.side-section:last-of-type {
-  border-bottom: none;
-}
-.side-section h2 {
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.38);
-  margin-bottom: 1px;
-}
-
-/* ── Sim viewport hint (bottom of the scene) ──────────────────── */
+/* ── Sim viewport hint ─────────────────────────────────────────── */
 #sim-hint {
   position: absolute;
-  bottom: 18px;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 11px;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.3px;
+  color: rgba(255,255,255,0.40);
+  letter-spacing: 0.2px;
   white-space: nowrap;
   pointer-events: none;
   z-index: 100;
@@ -280,14 +169,68 @@ body.drag-active #sim-viewport {
   display: inline-block;
   padding: 1px 5px;
   border-radius: 4px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
   font-family: ui-monospace, 'JetBrains Mono', monospace;
   font-size: 10px;
-  color: rgba(255,255,255,0.55);
+  color: rgba(255,255,255,0.60);
 }
-/* Hide the hint in fullscreen so it doesn't bleed into recordings */
 body.fullscreen-sim #sim-hint { display: none; }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   SIDEBAR (left side — settings panel)
+   ────────────────────────────────────────────────────────────────────────── */
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  max-width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.side-header {
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.side-header h1 {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  color: var(--text-1);
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+.side-header p {
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ── Sections ──────────────────────────────────────────────────── */
+.side-section {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.side-section:last-of-type { border-bottom: none; }
+.side-section h2 {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.0px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 1px;
+}
 
 /* ── App chips ────────────────────────────────────────────────── */
 #app-chips {
@@ -296,44 +239,43 @@ body.fullscreen-sim #sim-hint { display: none; }
   gap: 6px;
 }
 .app-chip {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.09);
-  color: rgba(255,255,255,0.75);
-  padding: 5px 10px;
-  border-radius: 12px;
-  font-size: 11px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  padding: 5px 11px;
+  border-radius: 20px;
+  font-size: 11.5px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 .app-chip:hover {
-  background: rgba(255,255,255,0.10);
-  border-color: rgba(100,180,255,0.40);
-  color: #fff;
+  background: #e4e6ea;
+  border-color: #c5c8ce;
+  color: var(--text-1);
 }
 .app-chip.active {
-  background: rgba(0,212,255,0.18);
-  border-color: rgba(0,212,255,0.70);
-  color: #fff;
-  box-shadow: 0 0 12px rgba(0,212,255,0.20);
+  background: var(--accent-light);
+  border-color: #b3d1ff;
+  color: var(--accent);
+  font-weight: 600;
 }
 
 #app-chips:not(.expanded) .chip-extra { display: none; }
-
 .chip-toggle {
   background: transparent;
-  border-style: dashed;
-  border-color: rgba(100,180,255,0.30);
-  color: rgba(100,180,255,0.85);
+  border: 1px dashed #b0b3b8;
+  color: var(--accent);
+  font-size: 11.5px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
 }
-.chip-toggle:hover {
-  background: rgba(100,180,255,0.10);
-  border-color: rgba(100,180,255,0.55);
-  color: #fff;
-}
+.chip-toggle:hover { background: var(--accent-light); }
 
-/* ── URL bar ──────────────────────────────────────────────────── */
+/* ── URL bar ───────────────────────────────────────────────────── */
 #url-bar {
   display: flex;
   gap: 6px;
@@ -342,39 +284,42 @@ body.fullscreen-sim #sim-hint { display: none; }
 #url-input {
   flex: 1;
   min-width: 0;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.09);
+  background: var(--input-bg);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 12px;
-  color: #fff;
+  color: var(--text-1);
   font-size: 12px;
   outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 #url-input:focus {
-  border-color: rgba(100,180,255,0.40);
-  background: rgba(255,255,255,0.09);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(8,102,255,0.15);
 }
-#url-input::placeholder { color: rgba(255,255,255,0.25); }
+#url-input::placeholder { color: var(--text-3); }
 
 .pill-btn {
-  background: rgba(80,150,255,0.18);
-  border: 1px solid rgba(80,150,255,0.28);
-  color: rgba(160,205,255,1);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
   padding: 8px 14px;
   border-radius: 8px;
-  font-size: 12px; font-weight: 500;
-  cursor: pointer; white-space: nowrap;
-  transition: background 0.15s;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
 }
-.pill-btn:hover { background: rgba(80,150,255,0.30); }
+.pill-btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 
-/* ── Segmented control ────────────────────────────────────────── */
+/* ── Segmented control ─────────────────────────────────────────── */
 .seg-control {
   display: flex;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 9px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   padding: 3px;
   gap: 2px;
 }
@@ -382,25 +327,24 @@ body.fullscreen-sim #sim-hint { display: none; }
   flex: 1;
   background: transparent;
   border: none;
-  padding: 8px 10px;
-  border-radius: 6px;
-  color: rgba(255,255,255,0.55);
+  padding: 7px 10px;
+  border-radius: 5px;
+  color: var(--text-2);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  transition: background 0.12s, color 0.12s;
   font-family: inherit;
 }
-.seg-control button:hover {
-  color: #fff;
-}
+.seg-control button:hover { color: var(--text-1); background: #e4e6ea; }
 .seg-control button.active {
-  background: rgba(100,175,255,0.20);
-  color: #fff;
-  box-shadow: 0 0 0 1px rgba(100,175,255,0.35);
+  background: #fff;
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
 }
 
-/* ── Slider / control rows ────────────────────────────────────── */
+/* ── Slider / control rows ─────────────────────────────────────── */
 .slider-row {
   display: grid;
   grid-template-columns: 68px 1fr 36px;
@@ -416,66 +360,69 @@ body.fullscreen-sim #sim-hint { display: none; }
 .slider-row label,
 .control-row > label {
   font-size: 11px;
-  color: rgba(255,255,255,0.50);
+  color: var(--text-2);
   white-space: nowrap;
+  font-weight: 500;
 }
 .slider-row > span {
   font-size: 11px;
-  color: rgba(100,175,255,0.70);
+  color: var(--accent);
   font-variant-numeric: tabular-nums;
   text-align: right;
+  font-weight: 600;
 }
 
 input[type=range] {
   -webkit-appearance: none; appearance: none;
   width: 100%; height: 3px;
-  background: rgba(255,255,255,0.12);
+  background: #dde1e7;
   border-radius: 3px;
   outline: none; cursor: pointer;
 }
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 13px; height: 13px;
+  width: 14px; height: 14px;
   border-radius: 50%;
-  background: rgba(100,175,255,0.90);
+  background: var(--accent);
   cursor: pointer;
-  box-shadow: 0 0 6px rgba(100,175,255,0.40);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(8,102,255,0.30);
 }
 
-/* ── Background grid ──────────────────────────────────────────── */
+/* ── Background grid ───────────────────────────────────────────── */
 #bg-strip {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
 }
-
 .bg-tile {
   position: relative;
   width: 100%; aspect-ratio: 4 / 3;
   border-radius: 8px;
-  border: 1.5px solid rgba(255,255,255,0.10);
+  border: 1.5px solid var(--border);
   background-size: cover;
   background-position: center;
-  background-color: rgba(255,255,255,0.04);
+  background-color: var(--input-bg);
   cursor: pointer;
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.12s, transform 0.12s, box-shadow 0.12s;
   overflow: hidden;
 }
 .bg-tile:hover {
-  border-color: rgba(100,180,255,0.50);
+  border-color: #b3d1ff;
   transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
 }
 .bg-tile.active {
-  border-color: rgba(0,212,255,0.95);
-  box-shadow: 0 0 14px rgba(0,212,255,0.35);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(8,102,255,0.25);
 }
 .bg-tile .bg-name {
   position: absolute;
-  left: 6px; bottom: 4px;
-  font-size: 10px;
-  letter-spacing: 0.3px;
+  left: 5px; bottom: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.80);
+  letter-spacing: 0.2px;
 }
 .bg-tile.upload {
   display: flex;
@@ -483,33 +430,77 @@ input[type=range]::-webkit-slider-thumb {
   flex-direction: column;
   gap: 3px;
   font-size: 10px;
-  color: rgba(255,255,255,0.55);
+  font-weight: 500;
+  color: var(--text-3);
   background-image: none;
   border-style: dashed;
 }
-.bg-tile.upload .upload-glyph {
-  font-size: 16px;
-  line-height: 1;
+.bg-tile.upload:hover { color: var(--accent); border-color: #b3d1ff; }
+.bg-tile.upload .upload-glyph { font-size: 16px; line-height: 1; }
+
+/* ── Share CTA (pinned to sidebar bottom) ──────────────────────── */
+#share-cta {
+  margin-top: auto;
+  padding: 16px 18px 20px;
+  border-top: 1px solid var(--border);
+  position: relative;
+}
+#share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 7px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+  padding: 13px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: 0.1px;
+  cursor: pointer;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+#share-btn:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: 0 2px 12px rgba(8,102,255,0.30);
+}
+#share-btn:active { background: #064bc2; }
+
+#share-toast {
+  position: absolute;
+  bottom: calc(100% - 8px);
+  left: 18px; right: 18px;
+  text-align: center;
+  background: #e7f3ff;
+  border: 1px solid #b3d1ff;
+  color: var(--accent);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+#share-toast.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-/* ── Fullscreen sim mode (H key hides sidebar) ────────────────── */
+/* ──────────────────────────────────────────────────────────────────────────
+   FULLSCREEN SIM MODE (H key)
+   ────────────────────────────────────────────────────────────────────────── */
 body.fullscreen-sim #sidebar { display: none; }
-
-/* In fullscreen-sim we also strip every HUD chrome the simulator adds for
-   inspection — outer chromatic glow, 1px blue ring, rounded corners, and
-   the chromatic-aberration + scanline overlays — so screen recordings show
-   exactly what the lens would emit, nothing more. */
 body.fullscreen-sim #display-wrap { filter: none; }
-body.fullscreen-sim .wg-frame {
-  border-radius: 0;
-  box-shadow: none;
-}
+body.fullscreen-sim .wg-frame { border-radius: 0; box-shadow: none; }
 body.fullscreen-sim .wg-frame::before,
 body.fullscreen-sim .wg-frame::after { display: none; }
 
-/* Floating "Show sidebar" button — visible only in fullscreen-sim.
-   Faded by default so it doesn't bleed into screen recordings; on
-   mouse movement (`.show-exit-btn`) or hover it animates back in. */
 #exit-fullscreen-btn {
   display: none;
   position: absolute;
@@ -517,9 +508,9 @@ body.fullscreen-sim .wg-frame::after { display: none; }
   z-index: 500;
   width: 38px; height: 38px;
   border-radius: 50%;
-  background: rgba(11,11,19,0.70);
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.90);
   font-size: 15px;
   font-family: inherit;
   cursor: pointer;
@@ -529,7 +520,7 @@ body.fullscreen-sim .wg-frame::after { display: none; }
   -webkit-backdrop-filter: blur(20px);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease, background 0.15s, color 0.15s;
+  transition: opacity 0.3s ease, background 0.15s;
 }
 body.fullscreen-sim #exit-fullscreen-btn { display: flex; }
 body.fullscreen-sim.show-exit-btn #exit-fullscreen-btn,
@@ -538,6 +529,6 @@ body.fullscreen-sim #exit-fullscreen-btn:hover {
   pointer-events: auto;
 }
 #exit-fullscreen-btn:hover {
-  background: rgba(11,11,19,0.95);
+  background: rgba(255,255,255,0.25);
   color: #fff;
 }
