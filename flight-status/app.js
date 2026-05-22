@@ -41,6 +41,7 @@
     statusView:    'main',  // 'main' | 'seat' | 'carousel'
     statusMode:    'full',  // 'full' | 'compact'
     homeFocus:     'start', // 'start' | 'last'
+    refreshCount:  0,       // bumped by ENTER on status to reroll mock data
   };
 
   var STATUS_VIEWS = ['main', 'seat', 'carousel'];
@@ -86,6 +87,14 @@
     return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
   }
 
+  function fmtTime12(totalMin) {
+    var h24 = ((Math.floor(totalMin / 60)) % 24 + 24) % 24;
+    var m   = ((totalMin % 60) + 60) % 60;
+    var period = h24 >= 12 ? 'PM' : 'AM';
+    var h12 = h24 % 12; if (h12 === 0) h12 = 12;
+    return h12 + ':' + (m < 10 ? '0' : '') + m + ' ' + period;
+  }
+
   function fmtDate(d) {
     var dn = ['SUN','MON','TUE','WED','THU','FRI','SAT'][d.getDay()];
     var mn = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][d.getMonth()];
@@ -99,7 +108,7 @@
     var airline  = AIRLINES[state.airlineIdx];
     var flightNo = state.flightDigits.join('');
     var date     = new Date(Date.now() + state.dateOffset * 86400000);
-    var seed     = hash32(airline.code + flightNo + date.toDateString());
+    var seed     = hash32(airline.code + flightNo + date.toDateString() + '#' + (state.refreshCount || 0));
     var r        = rng(seed);
 
     var origin = airline.hubs[Math.floor(r() * airline.hubs.length)];
@@ -142,7 +151,7 @@
       dest:        dest,
       terminal:    terminal,
       gate:        gate,
-      board:       fmtTime(boardMin),
+      board:       fmtTime12(boardMin),
       carousel:    carousel,
       dep:         fmtTime(depMin),
       arr:         fmtTime(arrMin),
@@ -274,6 +283,7 @@
       airlineIdx:   state.airlineIdx,
       flightDigits: state.flightDigits.slice(),
       dateOffset:   state.dateOffset,
+      refreshCount: state.refreshCount || 0,
     });
   }
 
@@ -307,6 +317,14 @@
     if (csDotC) csDotC.classList.toggle('on', view === 'carousel');
   }
 
+  function flashRefresh() {
+    var el = document.getElementById('status-views');
+    if (!el) return;
+    el.classList.remove('refresh-flash');
+    void el.offsetWidth; // restart animation
+    el.classList.add('refresh-flash');
+  }
+
   function setStatusMode(mode) {
     state.statusMode = mode;
     var sec     = document.getElementById('status');
@@ -338,6 +356,7 @@
     state.airlineIdx   = last.airlineIdx;
     state.flightDigits = last.flightDigits.slice();
     state.dateOffset   = last.dateOffset || 0;
+    state.refreshCount = last.refreshCount || 0;
     state.status       = null;       // rebuild from saved inputs (same hash → same data)
     state.statusView   = 'main';
     state.statusMode   = 'full';
@@ -353,6 +372,7 @@
     state.flightDigits = [0, 0, 0, 0];
     state.digitIdx     = 0;
     state.dateOffset   = 0;
+    state.refreshCount = 0;
     state.status       = null;
     state.statusView   = 'main';
     state.statusMode   = 'full';
@@ -477,8 +497,11 @@
           // Enter in compact: expand to full of current view
           setStatusMode('full');
         } else {
-          // Enter in full: go HOME (user can pick LAST FLIGHT or FIND FLIGHT)
-          showScreen('home');
+          // Enter in full: refresh — reroll mock data, stay on current view
+          state.refreshCount = (state.refreshCount || 0) + 1;
+          state.status = buildStatus();
+          renderStatus();
+          flashRefresh();
         }
         e.preventDefault();
       }
