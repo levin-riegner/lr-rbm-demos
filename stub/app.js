@@ -58,7 +58,7 @@
   //  STATE
   // ===========================================================
   var state = {
-    screen:    'home',     // 'home-empty' | 'home' | 'aim' | 'scanning' | 'confirm' | 'detail' | 'delete'
+    screen:    'home',     // 'home-empty' | 'home' | 'capture' | 'scanning' | 'confirm' | 'detail' | 'delete'
     stubs:     [],         // most-recent first
     carIdx:    0,          // home carousel index (0..stubs.length, where stubs.length === "+ NEW")
     detailId:  null,
@@ -66,7 +66,7 @@
     poolIdx:   3,          // start past the seeded stubs so the first demo capture is fresh content
   };
 
-  var SCREENS = ['home-empty', 'home', 'aim', 'scanning', 'confirm', 'detail', 'delete'];
+  var SCREENS = ['home-empty', 'home', 'capture', 'scanning', 'confirm', 'detail', 'delete'];
 
   // ===========================================================
   //  STORAGE
@@ -132,7 +132,7 @@
     });
     if (name === 'home-empty') renderEmpty();
     if (name === 'home')       renderHome();
-    if (name === 'aim')        renderAim();
+    if (name === 'capture')    renderCapture();
     if (name === 'scanning')   renderScanning();
     if (name === 'confirm')    renderConfirm();
     if (name === 'detail')     renderDetail();
@@ -241,9 +241,9 @@
   }
 
   // ===========================================================
-  //  RENDER — aim
+  //  RENDER — capture (static markup; animations are CSS-only)
   // ===========================================================
-  function renderAim() { /* static markup, nothing dynamic */ }
+  function renderCapture() { /* nothing dynamic */ }
 
   // ===========================================================
   //  RENDER — scanning (auto-advances to confirm)
@@ -327,7 +327,7 @@
   // ===========================================================
   function startCapture() {
     state.pending = null;
-    showScreen('aim');
+    showScreen('capture');
   }
   function saveStub() {
     if (!state.pending) return;
@@ -380,7 +380,7 @@
       return;
     }
 
-    if (state.screen === 'aim') {
+    if (state.screen === 'capture') {
       if (k === 'Enter' || k === ' ') {
         showScreen('scanning');
         e.preventDefault();
@@ -408,7 +408,7 @@
         e.preventDefault();
       } else if (k === 'ArrowDown') {
         // retake
-        showScreen('aim');
+        showScreen('capture');
         e.preventDefault();
       } else if (k === 'ArrowLeft') {
         state.pending = null;
@@ -490,8 +490,8 @@
         state.carIdx = state.stubs.length;
         showScreen('home');
         return true;
-      case 'aim':
-        showScreen('aim');
+      case 'capture':
+        showScreen('capture');
         return true;
       case 'scanning':
         showScreen('scanning');

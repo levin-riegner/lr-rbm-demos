@@ -7,21 +7,22 @@
 
 :root {
   --bg-0:        #000000;
-  --bg-1:        #110b06;
-  --bg-2:        #1c1208;
-  --bg-3:        #29190b;
-  --line:        #3a2410;
-  --line-2:      #5b3a1c;
+  --bg-1:        #0e0a18;
+  --bg-2:        #181030;
+  --bg-3:        #251745;
+  --line:        #2f1f55;
+  --line-2:      #4a2f7a;
 
-  --text:        #fbf4e6;
-  --text-2:      #d8c79f;
-  --text-3:      #8c7a55;
-  --text-4:      #5e4f37;
+  --text:        #f4eafe;
+  --text-2:      #c8b8e0;
+  --text-3:      #7d6da0;
+  --text-4:      #4d4068;
 
-  --amber:       #ffb627;
-  --amber-hi:    #ffd06b;
-  --amber-dim:   #c2841a;
-  --amber-glow:  rgba(255, 182, 39, 0.55);
+  --purple:      #c084fc;
+  --purple-hi:   #d8b4fe;
+  --purple-dim:  #7c3aed;
+  --purple-glow: rgba(192, 132, 252, 0.55);
+  --purple-wash: rgba(192, 132, 252, 0.10);
 
   --cyan:        #5ee7df;
   --cyan-hi:     #a4f4ef;
@@ -109,8 +110,8 @@ button {
 }
 .brand-mark {
   font-size: 22px;
-  color: var(--amber);
-  text-shadow: 0 0 14px var(--amber-glow);
+  color: var(--purple);
+  text-shadow: 0 0 14px var(--purple-glow);
   line-height: 1;
 }
 .brand-text {
@@ -149,7 +150,7 @@ button {
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 3.5px;
-  color: var(--amber);
+  color: var(--purple);
 }
 .hero-blurb {
   font-size: 14px;
@@ -174,9 +175,9 @@ button {
   letter-spacing: 4px;
   padding: 20px;
   min-height: 66px;
-  background: linear-gradient(180deg, var(--amber), var(--amber-dim));
-  color: #1a0d00;
-  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.12);
+  background: linear-gradient(180deg, var(--purple), var(--purple-dim));
+  color: #100422;
+  box-shadow: 0 4px 12px rgba(192, 132, 252, 0.18);
   border: 3px solid transparent;
   flex-shrink: 0;
   opacity: 0.92;
@@ -185,16 +186,16 @@ button {
               transform .12s ease;
 }
 .cta:focus {
-  background: linear-gradient(180deg, var(--amber-hi), var(--amber));
-  box-shadow: 0 0 30px var(--amber-glow);
-  border-color: var(--amber-hi);
+  background: linear-gradient(180deg, var(--purple-hi), var(--purple));
+  box-shadow: 0 0 30px var(--purple-glow);
+  border-color: var(--purple-hi);
   opacity: 1;
   transform: translateY(-1px);
 }
 .cta-icon { font-size: 24px; line-height: 1; font-weight: 700; }
 
 /* ============================================================
-   HINT BAR (bottom of every screen)
+   HINT BAR
    ============================================================ */
 .hint-bar {
   display: flex;
@@ -254,9 +255,9 @@ button {
   display: inline-block;
 }
 .pip.on {
-  background: var(--amber);
-  border-color: var(--amber);
-  box-shadow: 0 0 8px var(--amber-glow);
+  background: var(--purple);
+  border-color: var(--purple);
+  box-shadow: 0 0 8px var(--purple-glow);
 }
 
 /* ============================================================
@@ -266,25 +267,23 @@ button {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba(255,182,39,0.10), rgba(255,182,39,0.02));
-  border: 2px solid var(--amber);
+  background: linear-gradient(180deg, rgba(192,132,252,0.10), rgba(192,132,252,0.02));
+  border: 2px solid var(--purple);
   border-radius: 18px;
   padding: 20px 26px 18px;
   gap: 12px;
   position: relative;
-  box-shadow: 0 0 28px rgba(255,182,39,0.18);
-  /* small notches at the perforation line — pure decoration */
+  box-shadow: 0 0 28px rgba(192,132,252,0.18);
 }
 .stub-card::before,
 .stub-card::after {
-  /* small circular notches at the perforation row to evoke a torn stub */
   content: '';
   position: absolute;
   width: 16px;
   height: 16px;
   border-radius: 50%;
   background: #000;
-  border: 2px solid var(--amber);
+  border: 2px solid var(--purple);
   top: 78px;
 }
 .stub-card::before { left: -10px;  }
@@ -309,8 +308,8 @@ button {
   font-size: 18px;
   font-weight: 800;
   letter-spacing: 4px;
-  color: var(--amber);
-  text-shadow: 0 0 10px var(--amber-glow);
+  color: var(--purple);
+  text-shadow: 0 0 10px var(--purple-glow);
 }
 .stub-time {
   font-size: 12px;
@@ -339,13 +338,12 @@ button {
   line-height: 0.95;
   letter-spacing: -3px;
   color: var(--text);
-  text-shadow: 0 0 24px var(--amber-glow);
+  text-shadow: 0 0 24px var(--purple-glow);
   word-break: break-all;
   text-align: center;
   padding: 6px 0;
   min-height: 0;
 }
-/* shrink for longer codes — class added by JS */
 .stub-code.code-long  { font-size: 78px; letter-spacing: -2px; }
 .stub-code.code-xlong { font-size: 54px; letter-spacing: -1px; }
 
@@ -367,8 +365,7 @@ button {
 }
 
 /* ============================================================
-   CAROUSEL (home) — the "+ NEW STUB" sentinel re-uses the card
-   shape but with a different inner layout.
+   CAROUSEL (home)
    ============================================================ */
 .carousel {
   flex: 1;
@@ -398,14 +395,14 @@ button {
   font-size: 80px;
   font-weight: 700;
   line-height: 1;
-  color: var(--amber);
-  text-shadow: 0 0 18px var(--amber-glow);
+  color: var(--purple);
+  text-shadow: 0 0 18px var(--purple-glow);
 }
 .new-card .nc-label {
   font-size: 22px;
   font-weight: 800;
   letter-spacing: 5px;
-  color: var(--amber);
+  color: var(--purple);
 }
 .new-card .nc-sub {
   font-size: 12px;
@@ -430,10 +427,10 @@ button {
   transition: background .15s, border-color .15s, transform .15s;
 }
 .carousel-dots .dot.on {
-  background: var(--amber);
-  border-color: var(--amber);
+  background: var(--purple);
+  border-color: var(--purple);
   transform: scale(1.15);
-  box-shadow: 0 0 6px var(--amber-glow);
+  box-shadow: 0 0 6px var(--purple-glow);
 }
 .carousel-dots .dot.new {
   background: transparent;
@@ -442,114 +439,178 @@ button {
 }
 .carousel-dots .dot.new.on {
   background: transparent;
-  border-color: var(--amber);
-  box-shadow: 0 0 6px var(--amber-glow);
+  border-color: var(--purple);
+  box-shadow: 0 0 6px var(--purple-glow);
 }
 
 /* ============================================================
-   AIM — viewfinder with right-pointing arrows
+   CAPTURE — the "New Stub" screen IS the capture surface.
+   Top-left quadrant is highlighted as the camera's centered-frame
+   sweet spot; the rest of the canvas calls out PINCH TO CAPTURE.
    ============================================================ */
-.aim-stage {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  min-height: 0;
-}
-.aim-title {
-  font-size: 46px;
-  font-weight: 800;
-  letter-spacing: 4px;
-  color: var(--amber);
-  text-shadow: 0 0 18px var(--amber-glow);
-  line-height: 1;
-}
-.aim-sub {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.45;
-  color: var(--text-2);
-  text-align: center;
-  letter-spacing: 0.5px;
+#capture {
+  /* let the cam-zone sit in absolute coordinates */
+  position: absolute;
+  padding: var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l);
 }
 
-.viewfinder {
-  position: relative;
-  width: 380px;
-  height: 220px;
-  margin-top: 6px;
-}
-.vf-corner {
+.cam-zone {
   position: absolute;
-  width: 28px;
-  height: 28px;
-  border-color: var(--amber);
+  top: 18px;
+  left: 18px;
+  width: 282px;
+  height: 282px;
+  border-radius: 14px;
+  background: var(--purple-wash);
+  border: 1.5px solid var(--purple);
+  box-shadow:
+    0 0 24px var(--purple-glow),
+    inset 0 0 28px rgba(192, 132, 252, 0.12);
+  overflow: hidden;
+  animation: cam-breath 2.4s infinite ease-in-out;
+}
+@keyframes cam-breath {
+  0%, 100% {
+    box-shadow:
+      0 0 18px rgba(192, 132, 252, 0.32),
+      inset 0 0 22px rgba(192, 132, 252, 0.08);
+    background: rgba(192, 132, 252, 0.07);
+  }
+  50% {
+    box-shadow:
+      0 0 36px var(--purple-glow),
+      inset 0 0 32px rgba(192, 132, 252, 0.18);
+    background: rgba(192, 132, 252, 0.14);
+  }
+}
+.cz-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: var(--purple-hi);
   border-style: solid;
   border-width: 0;
-  box-shadow: 0 0 12px var(--amber-glow);
+  box-shadow: 0 0 10px var(--purple-glow);
 }
-.vf-tl { top: 0;    left: 0;    border-top-width: 3px;    border-left-width: 3px;    border-top-left-radius: 6px; }
-.vf-tr { top: 0;    right: 0;   border-top-width: 3px;    border-right-width: 3px;   border-top-right-radius: 6px; }
-.vf-bl { bottom: 0; left: 0;    border-bottom-width: 3px; border-left-width: 3px;    border-bottom-left-radius: 6px; }
-.vf-br { bottom: 0; right: 0;   border-bottom-width: 3px; border-right-width: 3px;   border-bottom-right-radius: 6px; }
+.cz-tl { top: 6px;    left: 6px;    border-top-width: 3px;    border-left-width: 3px;    border-top-left-radius: 6px; }
+.cz-tr { top: 6px;    right: 6px;   border-top-width: 3px;    border-right-width: 3px;   border-top-right-radius: 6px; }
+.cz-bl { bottom: 6px; left: 6px;    border-bottom-width: 3px; border-left-width: 3px;    border-bottom-left-radius: 6px; }
+.cz-br { bottom: 6px; right: 6px;   border-bottom-width: 3px; border-right-width: 3px;   border-bottom-right-radius: 6px; }
 
-.vf-arrows {
+.cz-reticle {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  color: var(--amber);
-  font-family: "JetBrains Mono", monospace;
+  pointer-events: none;
 }
-.vf-arrow {
-  font-size: 44px;
-  font-weight: 900;
-  opacity: 0.25;
-  text-shadow: 0 0 12px var(--amber-glow);
-  animation: arrow-pulse 1.4s infinite ease-in-out;
-}
-.vf-arrow-1 { animation-delay: 0.0s; }
-.vf-arrow-2 { animation-delay: 0.18s; }
-.vf-arrow-3 { animation-delay: 0.36s; }
-.vf-arrow-4 { animation-delay: 0.54s; }
-@keyframes arrow-pulse {
-  0%, 100% { opacity: 0.18; transform: translateX(0); }
-  50%      { opacity: 1;    transform: translateX(6px); }
-}
-
-.vf-reticle {
+.cz-ring {
   position: absolute;
-  right: 22px;
-  top: 50%;
-  transform: translateY(-50%);
   width: 56px;
   height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.ret-ring {
-  position: absolute;
-  inset: 0;
-  border: 2.5px solid var(--cyan);
+  border: 1.5px solid var(--purple-hi);
   border-radius: 50%;
-  box-shadow: 0 0 18px var(--cyan-glow), inset 0 0 8px var(--cyan-glow);
-  animation: ret-pulse 1.8s infinite ease-in-out;
+  box-shadow: 0 0 14px var(--purple-glow);
+  animation: cz-ring 2s infinite ease-in-out;
 }
-.ret-dot {
+@keyframes cz-ring {
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%      { transform: scale(1.18); opacity: 0.35; }
+}
+.cz-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--cyan-hi);
-  box-shadow: 0 0 12px var(--cyan-glow);
+  background: var(--purple-hi);
+  box-shadow: 0 0 10px var(--purple-glow);
 }
-@keyframes ret-pulse {
-  0%, 100% { transform: scale(1);    opacity: 1; }
-  50%      { transform: scale(1.12); opacity: 0.55; }
+.cz-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 18px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--purple-hi);
+  text-shadow: 0 0 10px var(--purple-glow);
+  opacity: 0.85;
+}
+.cz-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--purple-hi);
+  box-shadow: 0 0 12px var(--purple-glow);
+  opacity: 0.6;
+  animation: cz-scan 2.4s linear infinite;
+}
+@keyframes cz-scan {
+  0%   { top: 0;    opacity: 0.0; }
+  10%  { opacity: 0.9; }
+  90%  { opacity: 0.9; }
+  100% { top: 100%; opacity: 0.0; }
+}
+
+/* Top-right header for the capture screen */
+.cap-head {
+  position: absolute;
+  top: 28px;
+  right: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cap-head-mark {
+  font-size: 18px;
+  color: var(--purple);
+  text-shadow: 0 0 10px var(--purple-glow);
+}
+.cap-head-text {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  color: var(--text-2);
+}
+
+/* Big "PINCH TO CAPTURE" instruction, placed in the diagonal-opposite
+   corner from the camera zone so the eye lands on it next. */
+.cap-instruction {
+  position: absolute;
+  right: 30px;
+  bottom: 78px;
+  text-align: right;
+  max-width: 340px;
+}
+.cap-pinch {
+  font-size: 60px;
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -2.5px;
+  color: var(--text);
+  text-shadow: 0 0 22px var(--purple-glow);
+}
+.cap-pinch em {
+  font-style: normal;
+  color: var(--purple);
+  text-shadow: 0 0 18px var(--purple-glow);
+}
+.cap-sub {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-3);
+}
+
+#capture .hint-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 20px;
 }
 
 /* ============================================================
