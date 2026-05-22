@@ -3,55 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meta Display Glasses — Simulator</title>
+  <title>Display Glasses Simulator</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="simulator.js"></script>
 </head>
 <body>
 
-<!-- ───────── LEFT: Simulator viewport (background + HUD only) ───────── -->
-<main id="sim-viewport">
-  <div id="scene">
-    <img id="bg-img" alt="">
-    <video id="bg-vid" loop muted autoplay playsinline></video>
-  </div>
-
-  <div id="display-wrap">
-    <div class="wg-frame">
-      <div id="wg-placeholder">
-        <div class="ph-diamond"></div>
-        <div class="ph-text">Pick an app</div>
-      </div>
-      <iframe
-        id="app-iframe"
-        src="about:blank"
-        allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; geolocation; gyroscope; microphone"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock"
-      ></iframe>
-    </div>
-  </div>
-
-  <div id="load-error">App blocked iframe embedding — try opening in a tab instead</div>
-
-  <!-- Visible only in fullscreen-sim mode; fades when idle, so the iframe
-       still has a clickable escape hatch since 'H' can't escape the iframe. -->
-  <button id="exit-fullscreen-btn" type="button" title="Show sidebar" aria-label="Show sidebar">☰</button>
-</main>
-
-<!-- ───────── RIGHT: Settings sidebar ───────── -->
+<!-- ───────── LEFT: Settings sidebar ───────── -->
 <aside id="sidebar">
   <header class="side-header">
-    <h1>Simulator</h1>
+    <h1>Display Glasses Simulator</h1>
     <p>Meta Ray-Ban Display</p>
   </header>
 
   <section class="side-section">
     <h2>App</h2>
-    <div id="app-chips" role="toolbar" aria-label="App presets"></div>
     <div id="url-bar">
       <input id="url-input" type="url" placeholder="https://your-app.vercel.app" autocomplete="off" spellcheck="false">
       <button class="pill-btn" id="load-btn">Load</button>
     </div>
+    <div id="app-chips" role="toolbar" aria-label="App presets"></div>
   </section>
 
   <section class="side-section">
@@ -92,6 +63,35 @@
     Click the <kbd>☰</kbd> button to bring it back.
   </footer>
 </aside>
+
+<!-- ───────── RIGHT: Simulator viewport (background + HUD only) ───────── -->
+<main id="sim-viewport">
+  <div id="scene">
+    <img id="bg-img" alt="">
+    <video id="bg-vid" loop muted autoplay playsinline></video>
+  </div>
+
+  <div id="display-wrap">
+    <div class="wg-frame">
+      <div id="wg-placeholder">
+        <div class="ph-diamond"></div>
+        <div class="ph-text">Pick an app</div>
+      </div>
+      <iframe
+        id="app-iframe"
+        src="about:blank"
+        allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; geolocation; gyroscope; microphone"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock"
+      ></iframe>
+    </div>
+  </div>
+
+  <div id="load-error">App blocked iframe embedding — try opening in a tab instead</div>
+
+  <!-- Visible only in fullscreen-sim mode; fades when idle, so the iframe
+       still has a clickable escape hatch since 'H' can't escape the iframe. -->
+  <button id="exit-fullscreen-btn" type="button" title="Show sidebar" aria-label="Show sidebar">☰</button>
+</main>
 
 <input type="file" id="file-input" accept="image/*,video/*" style="display:none">
 

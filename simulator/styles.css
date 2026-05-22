@@ -160,7 +160,7 @@ body.drag-active #sim-viewport {
   max-width: var(--sidebar-w);
   height: 100vh;
   background: var(--sidebar-bg);
-  border-left: 1px solid var(--glass-border);
+  border-right: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -168,20 +168,19 @@ body.drag-active #sim-viewport {
 }
 
 .side-header {
-  padding: 16px 18px 14px;
+  padding: 18px 18px 15px;
   border-bottom: 1px solid var(--glass-border);
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
 }
 .side-header h1 {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
   color: #fff;
+  margin-bottom: 3px;
+  line-height: 1.2;
 }
 .side-header p {
-  font-size: 10px;
+  font-size: 9.5px;
   color: rgba(255,255,255,0.35);
   letter-spacing: 0.8px;
   text-transform: uppercase;
