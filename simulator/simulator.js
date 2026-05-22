@@ -48,10 +48,15 @@
     { name: 'Parking', file: 'background/parkin.png' },
   ];
 
+  /* ── DOM refs (continued) ─────────────────────────────────────── */
+  const shareBtn   = document.getElementById('share-btn');
+  const shareToast = document.getElementById('share-toast');
+
   /* ── State ─────────────────────────────────────────────────────── */
-  let displayPx  = 300;
-  let scaleRatio = 0.5;
-  let hudAnchor  = 'top'; // 'top' | 'middle' (all right-aligned)
+  let displayPx   = 300;
+  let scaleRatio  = 0.5;
+  let hudAnchor   = 'top'; // 'top' | 'middle' (all right-aligned)
+  let activeBgKey = BG_PRESETS[0].name.toLowerCase(); // tracks active preset
 
   /* ── HUD position — always right-aligned, vertical anchor only ─── */
   function setHudPosition(anchor) {
@@ -228,6 +233,8 @@
     bgStrip.querySelectorAll('.bg-tile').forEach(t => {
       t.classList.toggle('active', t.dataset.bgFile === file);
     });
+    const preset = BG_PRESETS.find(p => p.file === file);
+    activeBgKey = preset ? preset.name.toLowerCase() : null;
   }
 
   /* ── Drag-and-drop background ──────────────────────────────────── */
@@ -309,15 +316,6 @@
     lblBgBright.textContent = this.value + '%';
   });
 
-  /* ── Init ──────────────────────────────────────────────────────── */
-  buildAppChips();
-  buildBgStrip();
-  applyScale(50);         // Medium
-  setHudPosition('top'); // default to top-right
-
-  setBackgroundFromUrl(BG_PRESETS[0].file);
-  markActiveBg(BG_PRESETS[0].file);
-
   /* ── Fullscreen sim mode (sidebar hidden, HUD focused) ─────────
         Once focus is inside the (likely cross-origin) iframe, the parent
         can't capture key events anymore — so 'H' alone can't reopen the
@@ -361,5 +359,69 @@
   document.addEventListener('click', e => {
     if (e.target !== iframe) iframe.blur();
   }, true);
+
+  /* ── Share / deep-link ─────────────────────────────────────────── */
+  function buildShareURL() {
+    const p = new URLSearchParams();
+    const appUrl = urlInput.value.trim();
+    if (appUrl) p.set('url', appUrl);
+    p.set('pos',      hudAnchor);
+    p.set('size',     Math.round(scaleRatio * 100));
+    p.set('bright',   slOpacity.value);
+    if (activeBgKey)  p.set('bg', activeBgKey);
+    p.set('bg-bright', slBgBright.value);
+    return `${location.origin}${location.pathname}?${p.toString()}`;
+  }
+
+  function readStateFromURL() {
+    const p = new URLSearchParams(location.search);
+    if (!p.toString()) return; // nothing to restore
+
+    if (p.has('pos')) {
+      const pos = p.get('pos');
+      if (['top', 'middle'].includes(pos)) setHudPosition(pos);
+    }
+    if (p.has('size')) {
+      const pct = parseInt(p.get('size'), 10);
+      if ([50, 80].includes(pct)) applyScale(pct);
+    }
+    if (p.has('bright')) {
+      const v = Math.max(30, Math.min(100, parseInt(p.get('bright'), 10)));
+      slOpacity.value = v;
+      wrap.style.opacity = v / 100;
+      lblOpacity.textContent = v + '%';
+    }
+    if (p.has('bg')) {
+      const key = p.get('bg');
+      const preset = BG_PRESETS.find(pr => pr.name.toLowerCase() === key);
+      if (preset) { setBackgroundFromUrl(preset.file); markActiveBg(preset.file); }
+    }
+    if (p.has('bg-bright')) {
+      const v = Math.max(10, Math.min(100, parseInt(p.get('bg-bright'), 10)));
+      slBgBright.value = v;
+      scene.style.opacity = v / 100;
+      lblBgBright.textContent = v + '%';
+    }
+    if (p.has('url')) loadURL(p.get('url'));
+  }
+
+  let shareToastTimer = null;
+  shareBtn.addEventListener('click', () => {
+    const url = buildShareURL();
+    navigator.clipboard.writeText(url).then(() => {
+      shareToast.classList.add('visible');
+      clearTimeout(shareToastTimer);
+      shareToastTimer = setTimeout(() => shareToast.classList.remove('visible'), 2200);
+    });
+  });
+
+  /* ── Init ──────────────────────────────────────────────────────── */
+  buildAppChips();
+  buildBgStrip();
+  applyScale(50);
+  setHudPosition('top');
+  setBackgroundFromUrl(BG_PRESETS[0].file);
+  markActiveBg(BG_PRESETS[0].file);
+  readStateFromURL(); // restore shared state from URL params if present
 
 })();
