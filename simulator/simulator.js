@@ -411,7 +411,11 @@
     navigator.clipboard.writeText(url).then(() => {
       shareToast.classList.add('visible');
       clearTimeout(shareToastTimer);
-      shareToastTimer = setTimeout(() => shareToast.classList.remove('visible'), 2200);
+      // Hide toast, then auto-trigger fullscreen so the sender sees the clean sim
+      shareToastTimer = setTimeout(() => {
+        shareToast.classList.remove('visible');
+        setFullscreenSim(true);
+      }, 1400);
     });
   });
 
