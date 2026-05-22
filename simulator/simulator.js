@@ -27,7 +27,7 @@
   const exitFsBtn     = document.getElementById('exit-fullscreen-btn');
 
   /* ── Config ────────────────────────────────────────────────────── */
-  const HUD_MARGIN = 24;
+  const HUD_MARGIN = 48;
 
   const APP_PRESETS = [
     { name: 'Pong',          url: 'https://rbm-demos.lnr.io/pong/'          },
@@ -41,12 +41,25 @@
   const APP_CHIPS_INITIAL = 10;
 
   const BG_PRESETS = [
-    { name: 'Office',  file: 'background/office.png' },
-    { name: 'Garden',  file: 'background/garden.jpg' },
-    { name: 'Sky',     file: 'background/sky.jpeg'   },
-    { name: 'Car',     file: 'background/car.png'    },
-    { name: 'Parking', file: 'background/parkin.png' },
+    { name: 'Office',           file: 'background/office.png'            },
+    { name: 'Garden',           file: 'background/garden.jpg'            },
+    { name: 'Sky',              file: 'background/sky.jpeg'              },
+    { name: 'Car',              file: 'background/car.png'               },
+    { name: 'Parking',          file: 'background/parkin.png'            },
+    { name: 'Airport',          file: 'background/airport.mp4'           },
+    { name: 'Bike Riding',      file: 'background/bike-riding.mp4'       },
+    { name: 'Chopping',         file: 'background/chopping-cucumber.mp4' },
+    { name: 'Cooking Eggs',     file: 'background/cooking-eggs.mp4'      },
+    { name: 'Dishes',           file: 'background/dishes.mp4'            },
+    { name: 'Dog Walking',      file: 'background/dog-walking.mp4'       },
+    { name: 'Eating',           file: 'background/eating.mp4'            },
+    { name: 'Hiking',           file: 'background/hiking.mp4'            },
+    { name: 'Horse Riding',     file: 'background/horse-riding.mp4'      },
+    { name: 'Piano',            file: 'background/piano.mp4'             },
   ];
+
+  const VIDEO_EXT_RE = /\.(mp4|webm|mov|m4v|ogg)$/i;
+  const isVideoFile = (file) => VIDEO_EXT_RE.test(file);
 
   /* ── DOM refs (continued) ─────────────────────────────────────── */
   const shareBtn   = document.getElementById('share-btn');
@@ -189,10 +202,18 @@
 
   /* ── Background presets ────────────────────────────────────────── */
   function setBackgroundFromUrl(url) {
-    bgImg.src = url;
-    bgImg.style.display = 'block';
-    bgVid.style.display = 'none';
-    bgVid.removeAttribute('src');
+    if (isVideoFile(url)) {
+      bgVid.src = url;
+      bgVid.style.display = 'block';
+      bgImg.style.display = 'none';
+      bgImg.removeAttribute('src');
+      bgVid.play().catch(() => {});
+    } else {
+      bgImg.src = url;
+      bgImg.style.display = 'block';
+      bgVid.style.display = 'none';
+      bgVid.removeAttribute('src');
+    }
     resetBgPosition();
   }
 
@@ -203,8 +224,20 @@
       const tile = document.createElement('div');
       tile.className = 'bg-tile';
       tile.dataset.bgFile = p.file;
-      tile.style.backgroundImage = `url('${p.file}')`;
       tile.title = p.name;
+
+      if (isVideoFile(p.file)) {
+        tile.classList.add('is-video');
+        const thumb = document.createElement('video');
+        thumb.className = 'bg-thumb-vid';
+        thumb.src = p.file + '#t=0.5';
+        thumb.muted = true;
+        thumb.playsInline = true;
+        thumb.preload = 'metadata';
+        tile.appendChild(thumb);
+      } else {
+        tile.style.backgroundImage = `url('${p.file}')`;
+      }
 
       const name = document.createElement('span');
       name.className = 'bg-name';
@@ -383,7 +416,7 @@
     }
     if (p.has('size')) {
       const pct = parseInt(p.get('size'), 10);
-      if ([50, 80].includes(pct)) applyScale(pct);
+      if ([60, 90].includes(pct)) applyScale(pct);
     }
     if (p.has('bright')) {
       const v = Math.max(30, Math.min(100, parseInt(p.get('bright'), 10)));
@@ -425,7 +458,7 @@
   /* ── Init ──────────────────────────────────────────────────────── */
   buildAppChips();
   buildBgStrip();
-  applyScale(50);
+  applyScale(60);
   setHudPosition('top');
   setBackgroundFromUrl(BG_PRESETS[0].file);
   markActiveBg(BG_PRESETS[0].file);
