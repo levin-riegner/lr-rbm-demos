@@ -483,8 +483,13 @@
         setStatusMode('compact');
         e.preventDefault();
       } else if (k === 'ArrowDown') {
-        // expand — keeps current view (main/seat)
-        setStatusMode('full');
+        // From compact → expand to full of current view.
+        // From full   → go HOME.
+        if (state.statusMode === 'compact') {
+          setStatusMode('full');
+        } else {
+          showScreen('home');
+        }
         e.preventDefault();
       } else if (k === 'ArrowLeft') {
         setStatusView(nextStatusView(state.statusView, -1));
@@ -540,8 +545,13 @@
       if (ax < SWIPE_MIN && ay < SWIPE_MIN) return;
       if (ay > ax) {
         // vertical swipe
-        if (dy < 0) setStatusMode('compact');
-        else        setStatusMode('full');
+        if (dy < 0) {
+          setStatusMode('compact');
+        } else if (state.statusMode === 'compact') {
+          setStatusMode('full');
+        } else {
+          showScreen('home');
+        }
       } else {
         // horizontal swipe → cycle through main → seat → carousel
         setStatusView(nextStatusView(state.statusView, dx < 0 ? +1 : -1));
