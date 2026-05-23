@@ -62,10 +62,10 @@ html, body {
 #app {
   width: 600px;
   height: 300px;
-  padding: 8px 14px 6px;
+  padding: 6px 12px 4px;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 6px;
+  gap: 4px;
   position: relative;
 }
 
@@ -76,8 +76,9 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
   color: var(--text-3);
 }
 .topbar .brand {
@@ -85,7 +86,7 @@ html, body {
   text-shadow: 0 0 8px var(--cyan-glow);
 }
 .topbar .subnet { color: var(--text-3); }
-.topbar .clock { color: var(--text-2); }
+.topbar .clock  { color: var(--text-2); }
 
 /* ============================================================
    DECKS — two cards side by side
@@ -93,7 +94,7 @@ html, body {
 .decks {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 6px;
   min-height: 0;
 }
 
@@ -101,10 +102,10 @@ html, body {
   background: var(--panel);
   border: 1px solid var(--panel-line);
   border-radius: 4px;
-  padding: 7px 9px 8px;
+  padding: 6px 9px 7px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   position: relative;
 }
 
@@ -112,59 +113,62 @@ html, body {
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   color: var(--text-2);
 }
-.deck-model { font-weight: 700; color: var(--text); }
+.deck-model { font-weight: 800; color: var(--text); }
 .deck-num   { color: var(--text-3); }
 .deck-tag {
   margin-left: auto;
-  padding: 1px 5px;
-  font-size: 9px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: 0.14em;
-  border-radius: 2px;
-  background: rgba(255, 184, 77, 0.12);
+  border-radius: 3px;
+  background: rgba(255, 184, 77, 0.14);
   color: var(--amber);
-  border: 1px solid rgba(255, 184, 77, 0.5);
+  border: 1px solid rgba(255, 184, 77, 0.55);
 }
 .deck-tag.sync {
-  background: rgba(77, 216, 255, 0.10);
+  background: rgba(77, 216, 255, 0.12);
   color: var(--cyan);
-  border-color: rgba(77, 216, 255, 0.5);
+  border-color: rgba(77, 216, 255, 0.55);
 }
 .deck-tag.hidden-tag { visibility: hidden; }
-.deck-ip { color: var(--text-3); font-size: 10px; }
+.deck-ip { color: var(--text-3); font-size: 13px; font-weight: 500; }
 
 /* status row: LED + label + animated bar */
 .deck-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 1px;
+  margin-top: 0;
 }
 .status {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   color: var(--jade);
 }
 .status-led {
-  width: 7px; height: 7px; border-radius: 50%;
+  width: 9px; height: 9px; border-radius: 50%;
   background: var(--jade);
-  box-shadow: 0 0 6px var(--jade-glow);
+  box-shadow: 0 0 8px var(--jade-glow);
 }
 .status.paused { color: var(--amber); }
-.status.paused .status-led { background: var(--amber); box-shadow: 0 0 6px var(--amber-glow); }
+.status.paused .status-led { background: var(--amber); box-shadow: 0 0 8px var(--amber-glow); }
 .status.cue    { color: var(--red); }
-.status.cue    .status-led { background: var(--red);   box-shadow: 0 0 6px var(--red-glow); animation: cueBlink 0.9s steps(2) infinite; }
+.status.cue    .status-led { background: var(--red);   box-shadow: 0 0 8px var(--red-glow); animation: cueBlink 0.9s steps(2) infinite; }
 @keyframes cueBlink { 50% { opacity: 0.25; } }
 
 .deck-bar {
   flex: 1;
-  height: 3px;
+  height: 4px;
   background: repeating-linear-gradient(
     90deg,
     transparent 0, transparent 5px,
@@ -189,56 +193,60 @@ html, body {
   align-items: flex-end;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 2px;
+  margin-top: 0;
 }
 .bpm {
-  font-size: 36px;
+  font-size: 58px;
   font-weight: 700;
-  line-height: 0.9;
+  line-height: 0.88;
   color: var(--text);
+  letter-spacing: -0.02em;
 }
 .bpm-sub {
-  font-size: 9px;
-  letter-spacing: 0.2em;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
   color: var(--text-3);
-  margin-top: 2px;
+  margin-top: 4px;
 }
 .beat-stack {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 5px;
 }
 .beat-dots {
   display: flex;
-  gap: 5px;
+  gap: 6px;
 }
 .beat-dots i {
-  width: 8px; height: 8px;
+  width: 12px; height: 12px;
   border-radius: 50%;
   background: transparent;
-  border: 1px solid var(--line);
+  border: 1.5px solid var(--line);
   transition: background 60ms linear, box-shadow 60ms linear, transform 60ms linear;
 }
 .beat-dots i.on {
   background: var(--cyan);
   border-color: var(--cyan);
-  box-shadow: 0 0 8px var(--cyan-glow);
+  box-shadow: 0 0 10px var(--cyan-glow);
 }
 .beat-dots i.downbeat.on {
   background: var(--amber);
   border-color: var(--amber);
-  box-shadow: 0 0 9px var(--amber-glow);
-  transform: scale(1.15);
+  box-shadow: 0 0 12px var(--amber-glow);
+  transform: scale(1.18);
 }
 .beat-label {
-  font-size: 9px;
-  letter-spacing: 0.16em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   color: var(--text-3);
 }
 
 .track-line {
-  font-size: 11px;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-2);
   white-space: nowrap;
   overflow: hidden;
@@ -249,9 +257,10 @@ html, body {
 .pitch {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 9px;
-  letter-spacing: 0.14em;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   color: var(--text-3);
   margin-top: auto;
 }
@@ -259,9 +268,9 @@ html, body {
 .pitch-bar {
   flex: 1;
   position: relative;
-  height: 4px;
+  height: 5px;
   background: var(--line-dim);
-  border-radius: 2px;
+  border-radius: 3px;
 }
 .pitch-center {
   position: absolute;
@@ -271,18 +280,19 @@ html, body {
 }
 .pitch-thumb {
   position: absolute;
-  top: -3px;
-  width: 3px;
-  height: 10px;
+  top: -4px;
+  width: 4px;
+  height: 13px;
   background: var(--cyan);
   box-shadow: 0 0 6px var(--cyan-glow);
   transform: translateX(-50%);
   left: 50%;
 }
 .pitch-val {
-  font-size: 10px;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text);
-  min-width: 42px;
+  min-width: 54px;
   text-align: right;
 }
 
@@ -292,7 +302,7 @@ html, body {
 .mixer {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 14px;
+  gap: 16px;
   align-items: stretch;
   border-top: 1px solid var(--line);
   padding-top: 6px;
@@ -300,18 +310,18 @@ html, body {
 
 .channels {
   display: flex;
-  gap: 9px;
+  gap: 10px;
   align-items: stretch;
 }
 .ch {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
 }
 .ch-fader {
-  width: 6px;
-  height: 40px;
+  width: 7px;
+  height: 48px;
   background: var(--line-dim);
   border-radius: 3px;
   position: relative;
@@ -320,7 +330,7 @@ html, body {
   position: absolute;
   left: -3px;
   right: -3px;
-  height: 4px;
+  height: 5px;
   background: var(--cyan);
   box-shadow: 0 0 6px var(--cyan-glow);
   border-radius: 2px;
@@ -340,8 +350,9 @@ html, body {
 }
 .ch.dim .ch-fader::before { display: none; }
 .ch-label {
-  font-size: 9px;
-  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
   color: var(--text-3);
 }
 .ch.dim .ch-label { color: var(--text-4); }
@@ -350,25 +361,27 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
 }
 .xfade-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 9px;
-  letter-spacing: 0.16em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   color: var(--text-3);
 }
 .xfade-state {
   color: var(--text);
+  font-size: 13px;
 }
 .xfade-state.active { color: var(--amber); text-shadow: 0 0 6px var(--amber-glow); }
 .xfade {
   position: relative;
-  height: 8px;
+  height: 10px;
   background: var(--line-dim);
-  border-radius: 4px;
+  border-radius: 5px;
   border: 1px solid var(--line);
 }
 .xfade-tick {
@@ -381,12 +394,12 @@ html, body {
 }
 .xfade-thumb {
   position: absolute;
-  top: -4px;
-  width: 14px;
-  height: 14px;
+  top: -5px;
+  width: 18px;
+  height: 18px;
   background: var(--cyan);
   border: 1px solid var(--cyan-hi);
-  border-radius: 2px;
+  border-radius: 3px;
   transform: translateX(-50%);
   box-shadow: 0 0 10px var(--cyan-glow);
   transition: left 140ms ease, background 120ms linear;
@@ -395,8 +408,9 @@ html, body {
 .xfade-foot {
   display: flex;
   justify-content: space-between;
-  font-size: 9px;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   color: var(--text-3);
 }
 .xfade-foot span.hot { color: var(--amber); }
