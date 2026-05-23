@@ -106,11 +106,6 @@ html, body {
   flex-direction: column;
   gap: 4px;
   position: relative;
-  transition: border-color 120ms linear, box-shadow 120ms linear;
-}
-.deck.focused {
-  border-color: var(--cyan);
-  box-shadow: 0 0 10px rgba(77, 216, 255, 0.35);
 }
 
 .deck-head {
