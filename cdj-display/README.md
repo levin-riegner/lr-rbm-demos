@@ -9,28 +9,22 @@ A glanceable booth telemetry HUD for DJs running two CDJ-3000Xs on a Pro DJ Link
 - **Live mixer state.** Four channel faders rendered as tiny vertical strips — CH1 is wired to Deck A, CH2 to Deck B, CH3 / CH4 stay dim when nothing is routed there. You can see at a glance which channels are *up* and which are *down*.
 - **Crossfader telemetry.** A wide ribbon shows the crossfader's exact position with five tick marks; the indicator turns amber and labels `◀ A 85%` or `B 85% ▶` the moment it leaves center, so the DJ knows the room is being fed by one deck only.
 - **Half-lens layout.** The bottom 300 px of the lens stays pure `#000`, which is transparent on the waveguide — so the dancefloor stays visible below the HUD.
-- **Glasses-native controls.** Crossfader is bumped with ◀ ▶, focused deck toggles with ▲ ▼, Enter cycles PLAY / CUE on the focused deck and drops or restores its mixer channel accordingly.
 
 The data is illustrative — Deck A starts at 124.0 BPM as MASTER, Deck B is sync'd to it. In a production build the same view could be driven straight from Pioneer's Pro DJ Link UDP packets or [`prolink-connect`](https://github.com/EvanPurkhiser/prolink-connect) and become a real booth display.
 
 ## Controls
 
-| Where | Input | Result |
-| --- | --- | --- |
-| Anywhere | ◀ | Nudge crossfader toward Deck A |
-| Anywhere | ▶ | Nudge crossfader toward Deck B |
-| Anywhere | ▲ or ▼ | Switch focus between Deck A and Deck B |
-| Anywhere | Enter | Toggle PLAYING / CUE on focused deck (drops or restores its channel fader) |
+**None.** This is a passive read-only HUD — the DJ drives the gear, the glasses just report what the CDJs and mixer are doing. No D-pad input, no swipes, no Enter binding.
 
 ## Screenshots
 
-| Default — both decks playing, crossfader centered | Deck A focused | Deck B focused |
+| Default — both decks playing, crossfader centered | Crossfader pushed toward Deck A | Crossfader pushed toward Deck B |
 | --- | --- | --- |
-| ![Home](screenshots/home.png) | ![Deck A focused](screenshots/focused-a.png) | ![Deck B focused](screenshots/focused-b.png) |
+| ![Home](screenshots/home.png) | ![Crossfade A](screenshots/crossfade-a.png) | ![Crossfade B](screenshots/crossfade-b.png) |
 
-| Crossfaded to A | Crossfaded to B | Deck B cued (channel dropped) |
-| --- | --- | --- |
-| ![Crossfade A](screenshots/crossfade-a.png) | ![Crossfade B](screenshots/crossfade-b.png) | ![Cue](screenshots/cue.png) |
+| Deck B cued (channel dropped) | Pitched (Deck A +2.4%, Deck B −1.8%) |
+| --- | --- |
+| ![Cue](screenshots/cue.png) | ![Pitched](screenshots/pitched.png) |
 
 ## Running locally
 
@@ -50,7 +44,7 @@ The screenshots above are produced from headless Chrome against the `?state=…`
 ```bash
 npx serve -l 4320 cdj-display &
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-for STATE in home focused-a focused-b crossfade-a crossfade-b cue pitched; do
+for STATE in home crossfade-a crossfade-b cue pitched; do
   "$CHROME" --headless --disable-gpu --hide-scrollbars \
     --window-size=600,600 --virtual-time-budget=3000 \
     --screenshot="cdj-display/screenshots/$STATE.png" \

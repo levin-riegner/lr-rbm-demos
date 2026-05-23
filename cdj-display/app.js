@@ -2,59 +2,57 @@
   'use strict';
 
   // ===========================================================
-  //  DEMO DATA — two CDJ-3000Xs on a Pro DJ Link subnet,
-  //  plus a 4-channel mixer where only CH1/CH2 are routed
-  //  to the active decks. Numbers are illustrative.
+  //  PASSIVE DISPLAY — no inputs change anything here.
+  //  In production this state would be hydrated from Pro DJ
+  //  Link UDP packets (CDJs) and DJM mixer telemetry. For the
+  //  demo it's seeded with illustrative values, with subtle
+  //  motion so the HUD feels live without lying about state.
   // ===========================================================
   var DECKS = {
     a: {
-      num:       '#1',
-      ip:        '.77.183',
-      bpm:       124.0,
-      baseBpm:   124.0,        // chart-stored BPM (before pitch)
-      pitch:     0.0,          // -8.0 .. +8.0 %
-      status:    'PLAYING',    // PLAYING | PAUSED | CUE
-      tag:       'MASTER',     // MASTER | SYNC | null
-      track:     'Hannya · Tiga',
-      playPct:   34,           // 0..100 — where in the track we are
+      num:     '#1',
+      ip:      '.77.183',
+      baseBpm: 124.0,
+      pitch:   0.0,            // -8.0 .. +8.0 %
+      status:  'PLAYING',      // PLAYING | PAUSED | CUE
+      tag:     'MASTER',       // MASTER | SYNC | null
+      track:   'Hannya · Tiga',
+      playPct: 34,
+      bpm:     124.0,
     },
     b: {
-      num:       '#2',
-      ip:        '.77.172',
-      bpm:       124.0,
-      baseBpm:   124.0,
-      pitch:     0.0,
-      status:    'PLAYING',
-      tag:       'SYNC',
-      track:     'Dust · Charlotte de Witte',
-      playPct:   62,
+      num:     '#2',
+      ip:      '.77.172',
+      baseBpm: 124.0,
+      pitch:   0.0,
+      status:  'PLAYING',
+      tag:     'SYNC',
+      track:   'Dust · Charlotte de Witte',
+      playPct: 62,
+      bpm:     124.0,
     }
   };
 
   var MIXER = {
-    // ch1 → deck A, ch2 → deck B, ch3/ch4 unused
-    channels: [78, 82, 0, 0], // fader positions 0..100
-    xfade:    0,              // -1.0 (full A) .. +1.0 (full B), 0 = center
+    // ch1 → deck A, ch2 → deck B, ch3/ch4 unrouted
+    channels: [78, 82, 0, 0],   // fader positions 0..100
+    xfade:    0,                // -1.0 (full A) .. +1.0 (full B), 0 = center
   };
 
-  var FOCUS = 'a';
+  // ===========================================================
+  //  ?state= ROUTING (deterministic capture for screenshots)
+  //  These freeze the simulation at a particular moment.
+  // ===========================================================
+  var frozen = false;
 
-  // ===========================================================
-  //  ?state= ROUTING (deterministic capture)
-  // ===========================================================
   function applyStateParam() {
     var q = new URLSearchParams(window.location.search).get('state');
     if (!q) return;
+    frozen = true;
 
     switch (q) {
       case 'home':
-        // defaults
-        break;
-      case 'focused-a':
-        FOCUS = 'a';
-        break;
-      case 'focused-b':
-        FOCUS = 'b';
+        frozen = false; // let the live simulation run
         break;
       case 'crossfade-a':
         MIXER.xfade = -0.85;
@@ -73,6 +71,8 @@
         DECKS.a.pitch = +2.4;
         DECKS.b.pitch = -1.8;
         break;
+      default:
+        frozen = false;
     }
   }
 
@@ -100,13 +100,11 @@
     setText(key + '-track',     d.track);
     setText(key + '-pitch-val', fmtPitch(d.pitch));
 
-    // pitch thumb position: center at 50%, range +/- 8% maps to +/- 50%
     var pct = 50 + (d.pitch / 8) * 50;
     if (pct < 2) pct = 2; if (pct > 98) pct = 98;
     var pthumb = $(key + '-pitch-thumb');
     if (pthumb) pthumb.style.left = pct + '%';
 
-    // status pill
     var statusEl = $(key + '-status');
     if (statusEl) {
       statusEl.classList.remove('playing', 'paused', 'cue');
@@ -114,7 +112,6 @@
       statusEl.querySelector('.status-text').textContent = d.status;
     }
 
-    // tag (MASTER / SYNC / hidden)
     var tagEl = $(key + '-tag');
     if (tagEl) {
       tagEl.classList.remove('sync', 'hidden-tag');
@@ -126,22 +123,15 @@
       }
     }
 
-    // track progress bar variable
     var deckEl = $('deck-' + key);
     if (deckEl) {
       deckEl.querySelector('.deck-bar').style.setProperty('--play-pct', d.playPct + '%');
     }
   }
 
-  function renderFocus() {
-    document.querySelectorAll('.deck').forEach(function (el) {
-      el.classList.toggle('focused', el.dataset.deck === FOCUS);
-    });
-  }
-
   function renderMixer() {
-    // channel faders. CH3/CH4 are always dim (no source);
-    // CH1/CH2 dim only when their fader is essentially down.
+    // CH3/CH4 are always dim (no source); CH1/CH2 dim only when
+    // their fader is essentially down.
     document.querySelectorAll('.ch').forEach(function (el, i) {
       var v = MIXER.channels[i];
       var fader = el.querySelector('.ch-fader');
@@ -155,7 +145,7 @@
       }
     });
 
-    // crossfader: -1..+1 → 0..100% left position
+    // crossfader: -1..+1 → 0..100% from left
     var xfPct = (MIXER.xfade + 1) / 2 * 100;
     var thumb = $('xfade-thumb');
     thumb.style.left = xfPct + '%';
@@ -184,7 +174,6 @@
   function renderAll() {
     renderDeck('a');
     renderDeck('b');
-    renderFocus();
     renderMixer();
   }
 
@@ -199,11 +188,11 @@
   }
 
   // ===========================================================
-  //  BEAT ANIMATION — drives the 4-dot indicator at BPM rate.
-  //  Paused/CUE decks do not advance.
+  //  BEAT ANIMATION — 4-dot indicator pulses at BPM rate.
+  //  CUE / PAUSED decks freeze.
   // ===========================================================
-  var beatStartMs = { a: performance.now(), b: performance.now() - 230 };
-  var lastBeatIdx = { a: -1, b: -1 };
+  var beatStartMs  = { a: performance.now(), b: performance.now() - 230 };
+  var lastBeatIdx  = { a: -1, b: -1 };
 
   function animateBeats(now) {
     ['a', 'b'].forEach(function (key) {
@@ -213,7 +202,6 @@
       var lis = dots.querySelectorAll('i');
 
       if (d.status !== 'PLAYING') {
-        // freeze: nothing lit
         lis.forEach(function (el) { el.classList.remove('on', 'downbeat'); });
         setText(key + '-beat-n', '–');
         return;
@@ -221,10 +209,8 @@
 
       var bps = d.bpm / 60;
       var beats = ((now - beatStartMs[key]) / 1000) * bps;
-      var idx = (Math.floor(beats) % 4 + 4) % 4;          // 0..3
-      var phase = beats - Math.floor(beats);              // 0..1 within current beat
-
-      // only on first ~38% of beat is the dot bright
+      var idx = (Math.floor(beats) % 4 + 4) % 4;
+      var phase = beats - Math.floor(beats);
       var lit = phase < 0.38;
 
       lis.forEach(function (el, i) {
@@ -240,7 +226,6 @@
         setText(key + '-beat-n', String(idx + 1));
       }
 
-      // advance track progress slowly to feel alive
       d.playPct += (bps / 60) * 0.06;
       if (d.playPct > 99) d.playPct = 6;
       var deckEl = $('deck-' + key);
@@ -251,81 +236,36 @@
   }
 
   // ===========================================================
-  //  INPUT
-  //   ◀ ▶  → nudge crossfader toward A / B
-  //   ▲ ▼  → switch focused deck (toggle A↔B)
-  //   Enter → toggle PLAY / CUE on focused deck
-  //
-  //  Channel faders track per-deck status: a deck in CUE drops
-  //  its channel to 0; PLAYING returns it to the prior level.
+  //  MIXER TELEMETRY — slow drift so the display feels live.
+  //  This stands in for the real DJM data feed; the user never
+  //  drives the crossfader or channel faders from the glasses.
   // ===========================================================
-  var savedFader = { 1: 78, 2: 82 };
+  var startMs = performance.now();
 
-  function syncFadersToStatus() {
-    var aIdx = 0, bIdx = 1;
-    if (DECKS.a.status === 'PLAYING') {
-      if (MIXER.channels[aIdx] < 3) MIXER.channels[aIdx] = savedFader[1];
-    } else {
-      if (MIXER.channels[aIdx] >= 3) savedFader[1] = MIXER.channels[aIdx];
-      MIXER.channels[aIdx] = 0;
-    }
-    if (DECKS.b.status === 'PLAYING') {
-      if (MIXER.channels[bIdx] < 3) MIXER.channels[bIdx] = savedFader[2];
-    } else {
-      if (MIXER.channels[bIdx] >= 3) savedFader[2] = MIXER.channels[bIdx];
-      MIXER.channels[bIdx] = 0;
-    }
+  function tickMixerTelemetry() {
+    if (frozen) return;
+    var t = (performance.now() - startMs) / 1000;
+
+    // slow crossfader drift between -0.18 and +0.18, period ≈ 34s
+    MIXER.xfade = Math.sin(t / 34 * 2 * Math.PI) * 0.18;
+
+    // channel faders breathe ±1.5 around their rest positions
+    MIXER.channels[0] = 78 + Math.sin(t / 11 * 2 * Math.PI) * 1.5;
+    MIXER.channels[1] = 82 + Math.sin(t / 13 * 2 * Math.PI) * 1.5;
+
+    renderMixer();
   }
-
-  function bumpXfade(delta) {
-    MIXER.xfade = Math.max(-1, Math.min(1, MIXER.xfade + delta));
-    if (Math.abs(MIXER.xfade) < 0.05) MIXER.xfade = 0;
-  }
-
-  function togglePlayCue(key) {
-    var d = DECKS[key];
-    if (d.status === 'PLAYING') {
-      d.status = 'CUE';
-      // when a deck is cued the MASTER tag stays — Pro DJ Link behavior
-    } else {
-      d.status = 'PLAYING';
-    }
-    syncFadersToStatus();
-  }
-
-  document.addEventListener('keydown', function (e) {
-    var handled = true;
-    switch (e.key) {
-      case 'ArrowLeft':
-        bumpXfade(-0.18);
-        break;
-      case 'ArrowRight':
-        bumpXfade(+0.18);
-        break;
-      case 'ArrowUp':
-      case 'ArrowDown':
-        FOCUS = (FOCUS === 'a') ? 'b' : 'a';
-        break;
-      case 'Enter':
-        togglePlayCue(FOCUS);
-        break;
-      default:
-        handled = false;
-    }
-    if (handled) {
-      e.preventDefault();
-      renderAll();
-    }
-  });
 
   // ===========================================================
   //  BOOT
+  //  No keyboard / touch listeners — this is a read-only HUD.
   // ===========================================================
   function boot() {
     applyStateParam();
     renderAll();
     tickClock();
     setInterval(tickClock, 15000);
+    setInterval(tickMixerTelemetry, 200);
     requestAnimationFrame(animateBeats);
   }
 
