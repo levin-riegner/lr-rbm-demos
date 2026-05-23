@@ -29,6 +29,7 @@ Each app is a small, self-contained web project designed for the 600x600 display
 
 | Demo | Source | Live | Case study | Preview |
 |---|---|---|---|---|
+| **CDJ Display** — top-half booth HUD for two CDJ-3000Xs on a Pro DJ Link network with BPM, beat, pitch, 4-channel mixer, and crossfader telemetry | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/cdj-display) | [open](https://rbm-demos.lnr.io/cdj-display/) | — | <img src="cdj-display/screenshots/preview.png" width="120"> |
 | **Chores** — daily chore checklist with one-tap supply reorders via Amazon deep links | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/chores) | [open](https://rbm-demos.lnr.io/chores/) | — | <img src="chores/screenshots/preview.png" width="120"> |
 | **Crypto Tracker** — live crypto prices, 24h change, and favorites pulled from CoinGecko | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/crypto-tracker) | [open](https://rbm-demos.lnr.io/crypto-tracker/) | — | <img src="https://github.com/user-attachments/assets/cef49fcf-c9b4-47e3-9946-19950bf79f64" width="120"> |
 | **Flashcards (Serbian)** — Serbian vocabulary trainer with separate Learn and Test modes | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/flashcards-serbian) | [open](https://rbm-demos.lnr.io/flashcards-serbian/) | — | <img src="flashcards-serbian/screenshots/preview.png" width="120"> |
