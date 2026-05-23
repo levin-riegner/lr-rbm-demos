@@ -25,7 +25,7 @@ Each app is a small, self-contained web project designed for the 600x600 display
 | **Tally Counter** — single-button tally counter with running total and "since" timestamp | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/tally-counter) | [open](https://rbm-demos.lnr.io/tally-counter/) | [read](https://www.levinriegner.com/work/tally-counter/) | <img src="tally-counter/screenshots/counted.png" width="120"> |
 | **Zork Terminal** — CRT-styled text adventure with D-pad verb picker and typewriter output | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/zork-terminal) | [open](https://rbm-demos.lnr.io/zork-terminal/) | [read](https://www.levinriegner.com/work/zork-i-tribute/) | <img src="zork-terminal/screenshots/02-gameplay.png" width="120"> |
 
-### Secondary demos
+### Secondary demos — Works in progress!
 
 | Demo | Source | Live | Case study | Preview |
 |---|---|---|---|---|
