@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>CDJ Display</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <span class="brand mono">PRO·DJ·LINK</span>
+    <span class="subnet mono" id="subnet">192.168.77.0/24</span>
+    <span class="clock mono" id="clock">—:—</span>
+  </header>
+
+  <div class="decks">
+
+    <!-- =================== DECK A =================== -->
+    <section class="deck" id="deck-a" data-deck="a">
+      <header class="deck-head">
+        <span class="deck-model mono">CDJ-3000X</span>
+        <span class="deck-num mono" id="a-num">#1</span>
+        <span class="deck-tag mono" id="a-tag">MASTER</span>
+        <span class="deck-ip mono" id="a-ip">.77.183</span>
+      </header>
+
+      <div class="deck-row">
+        <div class="status" id="a-status">
+          <i class="status-led"></i>
+          <span class="status-text">PLAYING</span>
+        </div>
+        <div class="deck-bar bar-a"></div>
+      </div>
+
+      <div class="bpm-row">
+        <div>
+          <div class="bpm mono" id="a-bpm">124.0</div>
+          <div class="bpm-sub mono">BPM</div>
+        </div>
+        <div class="beat-stack">
+          <div class="beat-dots" id="a-beats">
+            <i></i><i></i><i></i><i></i>
+          </div>
+          <div class="beat-label mono"><span id="a-beat-n">1</span>/4</div>
+        </div>
+      </div>
+
+      <div class="track-line" id="a-track">Hannya · Tiga</div>
+
+      <div class="pitch">
+        <span class="pitch-label mono">PITCH</span>
+        <div class="pitch-bar">
+          <span class="pitch-center"></span>
+          <span class="pitch-thumb" id="a-pitch-thumb"></span>
+        </div>
+        <span class="pitch-val mono" id="a-pitch-val">+0.0%</span>
+      </div>
+    </section>
+
+    <!-- =================== DECK B =================== -->
+    <section class="deck" id="deck-b" data-deck="b">
+      <header class="deck-head">
+        <span class="deck-model mono">CDJ-3000X</span>
+        <span class="deck-num mono" id="b-num">#2</span>
+        <span class="deck-tag mono sync" id="b-tag">SYNC</span>
+        <span class="deck-ip mono" id="b-ip">.77.172</span>
+      </header>
+
+      <div class="deck-row">
+        <div class="status" id="b-status">
+          <i class="status-led"></i>
+          <span class="status-text">PLAYING</span>
+        </div>
+        <div class="deck-bar bar-b"></div>
+      </div>
+
+      <div class="bpm-row">
+        <div>
+          <div class="bpm mono" id="b-bpm">124.0</div>
+          <div class="bpm-sub mono">BPM</div>
+        </div>
+        <div class="beat-stack">
+          <div class="beat-dots" id="b-beats">
+            <i></i><i></i><i></i><i></i>
+          </div>
+          <div class="beat-label mono"><span id="b-beat-n">1</span>/4</div>
+        </div>
+      </div>
+
+      <div class="track-line" id="b-track">Dust · Charlotte de Witte</div>
+
+      <div class="pitch">
+        <span class="pitch-label mono">PITCH</span>
+        <div class="pitch-bar">
+          <span class="pitch-center"></span>
+          <span class="pitch-thumb" id="b-pitch-thumb"></span>
+        </div>
+        <span class="pitch-val mono" id="b-pitch-val">+0.0%</span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- =================== MIXER =================== -->
+  <footer class="mixer">
+    <div class="channels" id="channels">
+      <div class="ch" data-ch="1">
+        <div class="ch-fader"><span class="ch-thumb" style="bottom:78%"></span></div>
+        <div class="ch-label mono">CH1</div>
+      </div>
+      <div class="ch" data-ch="2">
+        <div class="ch-fader"><span class="ch-thumb" style="bottom:82%"></span></div>
+        <div class="ch-label mono">CH2</div>
+      </div>
+      <div class="ch dim" data-ch="3">
+        <div class="ch-fader"><span class="ch-thumb" style="bottom:0%"></span></div>
+        <div class="ch-label mono">CH3</div>
+      </div>
+      <div class="ch dim" data-ch="4">
+        <div class="ch-fader"><span class="ch-thumb" style="bottom:0%"></span></div>
+        <div class="ch-label mono">CH4</div>
+      </div>
+    </div>
+
+    <div class="xfade-wrap">
+      <div class="xfade-head">
+        <span class="xfade-label mono">XFADER</span>
+        <span class="xfade-state mono" id="xfade-state">CENTER</span>
+      </div>
+      <div class="xfade">
+        <span class="xfade-tick" style="left:0%"></span>
+        <span class="xfade-tick" style="left:25%"></span>
+        <span class="xfade-tick" style="left:50%"></span>
+        <span class="xfade-tick" style="left:75%"></span>
+        <span class="xfade-tick" style="left:100%"></span>
+        <span class="xfade-thumb" id="xfade-thumb" style="left:50%"></span>
+      </div>
+      <div class="xfade-foot mono">
+        <span id="xfade-l">A</span>
+        <span id="xfade-r">B</span>
+      </div>
+    </div>
+  </footer>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
