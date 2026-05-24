@@ -43,7 +43,7 @@
   // L'Amour Toujours (132 BPM) on deck A and is slowly nudging
   // its pitch up to meet Boten Anna (138 BPM) on deck B.
   var PITCH_TARGET = (138 / 132 - 1) * 100; // ≈ +4.55 %
-  var PITCH_RAMP_SECONDS = 60;
+  var PITCH_RAMP_SECONDS = 15;
 
   // ===========================================================
   //  ?state= ROUTING (deterministic capture for screenshots)
