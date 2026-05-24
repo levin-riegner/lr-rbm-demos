@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>Twitch Chat HUD</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ===========================================================
+       HOME — channel picker
+       =========================================================== -->
+  <section id="home" class="screen">
+    <header class="topbar">
+      <span class="brand-mark">▶</span>
+      <span class="brand-text">TWITCH&nbsp;CHAT</span>
+      <span class="topbar-sub mono">HUD</span>
+    </header>
+
+    <div class="picker-head">
+      <div class="picker-title">PICK&nbsp;A&nbsp;CHANNEL</div>
+      <div class="picker-sub mono">▲ ▼ &nbsp;NAVIGATE &nbsp;·&nbsp; ENTER &nbsp;CONNECT</div>
+    </div>
+
+    <ul class="channel-list" id="channel-list"><!-- populated by JS --></ul>
+  </section>
+
+  <!-- ===========================================================
+       CHAT — main view
+       =========================================================== -->
+  <section id="chat" class="screen hidden">
+    <header class="chat-head">
+      <span class="chat-channel mono" id="chat-channel">#channel</span>
+      <span class="chat-status" id="chat-status">
+        <i class="status-dot" id="status-dot"></i>
+        <span class="status-text mono" id="status-text">CONNECTING</span>
+      </span>
+    </header>
+
+    <div class="chat-feed-wrap">
+      <ol class="chat-feed" id="chat-feed"><!-- messages appended here --></ol>
+      <div class="feed-empty mono" id="feed-empty">WAITING FOR FIRST MESSAGE…</div>
+      <div class="paused-pill mono hidden" id="paused-pill">⏸ PAUSED — Enter to resume</div>
+    </div>
+
+    <footer class="chat-foot">
+      <span class="foot-cell mono" id="foot-count">0 MSGS</span>
+      <span class="foot-sep">·</span>
+      <span class="foot-cell mono" id="foot-size">SIZE 2/3</span>
+      <span class="foot-sep">·</span>
+      <span class="foot-cell mono">◀ BACK</span>
+    </footer>
+  </section>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
