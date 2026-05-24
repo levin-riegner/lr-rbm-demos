@@ -12,24 +12,24 @@
     a: {
       num:     '#1',
       ip:      '.77.183',
-      baseBpm: 124.0,
+      baseBpm: 132.0,
       pitch:   0.0,            // -8.0 .. +8.0 %
       status:  'PLAYING',      // PLAYING | PAUSED | CUE
       tag:     'MASTER',       // MASTER | SYNC | null
-      track:   'Hannya · Tiga',
+      track:   "L'Amour Toujours · Gigi D'Agostino",
       playPct: 34,
-      bpm:     124.0,
+      bpm:     132.0,
     },
     b: {
       num:     '#2',
       ip:      '.77.172',
-      baseBpm: 124.0,
+      baseBpm: 138.0,
       pitch:   0.0,
       status:  'PLAYING',
-      tag:     'SYNC',
-      track:   'Dust · Charlotte de Witte',
+      tag:     null,
+      track:   'Boten Anna · Basshunter',
       playPct: 62,
-      bpm:     124.0,
+      bpm:     138.0,
     }
   };
 
