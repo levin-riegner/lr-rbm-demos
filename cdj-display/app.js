@@ -194,13 +194,53 @@
   }
 
   // ===========================================================
-  //  BEAT ANIMATION — 4-dot indicator pulses at BPM rate.
-  //  CUE / PAUSED decks freeze.
+  //  BEAT / PHASE STATE
+  //
+  //  beatPhase[key] is the integral of BPM/60 since startMs — i.e.
+  //  total beats elapsed. We integrate per-frame so the count
+  //  tracks the pitch ramp smoothly instead of jumping when BPM
+  //  changes.
+  //
+  //  Deck B starts ~0.5 beats ahead of Deck A so they're visibly
+  //  out of sync at boot. A few seconds after Deck A's pitch ramp
+  //  reaches 138 BPM, the simulation applies a one-shot phase
+  //  nudge (the DJ "pushing the platter") so beat 1 of Deck A
+  //  lands on the same tick as beat 1 of Deck B from then on.
   // ===========================================================
-  var beatStartMs  = { a: performance.now(), b: performance.now() - 230 };
+  var startMs      = performance.now();
+  var beatPhase    = { a: 0, b: 0.5 };
+  var lastFrameMs  = null;
   var lastBeatIdx  = { a: -1, b: -1 };
 
+  var NUDGE_WAIT_SECONDS     = 3;
+  var NUDGE_DURATION_SECONDS = 4;
+  var nudgeStartT = null;
+  var nudgeRate   = 0;
+
+  function maybeStartNudge(t) {
+    if (nudgeStartT != null) return;
+    if (t < PITCH_RAMP_SECONDS + NUDGE_WAIT_SECONDS) return;
+    // shortest signed delta in (-2, 2], in beats
+    var diff = (beatPhase.b - beatPhase.a) % 4;
+    if (diff <= -2) diff += 4;
+    if (diff  >  2) diff -= 4;
+    nudgeRate   = diff / NUDGE_DURATION_SECONDS;
+    nudgeStartT = t;
+  }
+
+  function nudgeContribution(dt, t) {
+    if (nudgeStartT == null) return 0;
+    if (t - nudgeStartT >= NUDGE_DURATION_SECONDS) return 0;
+    return nudgeRate * dt;
+  }
+
   function animateBeats(now) {
+    var t  = (now - startMs) / 1000;
+    var dt = lastFrameMs == null ? 0 : (now - lastFrameMs) / 1000;
+    lastFrameMs = now;
+
+    maybeStartNudge(t);
+
     ['a', 'b'].forEach(function (key) {
       var d = DECKS[key];
       var dots = $(key + '-beats');
@@ -214,10 +254,12 @@
       }
 
       var bps = d.bpm / 60;
-      var beats = ((now - beatStartMs[key]) / 1000) * bps;
-      var idx = (Math.floor(beats) % 4 + 4) % 4;
-      var phase = beats - Math.floor(beats);
-      var lit = phase < 0.38;
+      beatPhase[key] += dt * bps;
+      if (key === 'a') beatPhase.a += nudgeContribution(dt, t);
+
+      var idx       = (Math.floor(beatPhase[key]) % 4 + 4) % 4;
+      var phaseFrac = beatPhase[key] - Math.floor(beatPhase[key]);
+      var lit       = phaseFrac < 0.38;
 
       lis.forEach(function (el, i) {
         el.classList.remove('on', 'downbeat');
@@ -232,7 +274,7 @@
         setText(key + '-beat-n', String(idx + 1));
       }
 
-      d.playPct += (bps / 60) * 0.06;
+      d.playPct += dt * bps * 0.06;
       if (d.playPct > 99) d.playPct = 6;
       var deckEl = $('deck-' + key);
       if (deckEl) deckEl.querySelector('.deck-bar').style.setProperty('--play-pct', d.playPct.toFixed(1) + '%');
@@ -249,7 +291,6 @@
   //   - Deck A's pitch ramps up to match deck B's tempo
   //     (the DJ is beatmatching A in headphones before the swap).
   // ===========================================================
-  var startMs = performance.now();
 
   function tickTelemetry() {
     if (frozen) return;
