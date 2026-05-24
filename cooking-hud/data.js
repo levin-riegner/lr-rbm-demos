@@ -81,28 +81,31 @@ const RECIPES = [
     shop: [
       { id: 's1', qty: '1 lb',    item: 'Chicken thigh, boneless' },
       { id: 's2', qty: '2 cups',  item: 'Mixed vegetables' },
-      { id: 's3', qty: '3 tbsp',  item: 'Soy sauce' },
-      { id: 's4', qty: '1 tbsp',  item: 'Sesame oil' },
-      { id: 's5', qty: '1 tbsp',  item: 'Cornstarch' },
-      { id: 's6', qty: '2 cloves',item: 'Garlic' },
-      { id: 's7', qty: '1 in',    item: 'Ginger, fresh' },
-      { id: 's8', qty: '2 cups',  item: 'Jasmine rice, cooked' }
+      { id: 's3', qty: '2 large', item: 'Red bell peppers' },
+      { id: 's4', qty: '3 tbsp',  item: 'Soy sauce' },
+      { id: 's5', qty: '1 tbsp',  item: 'Sesame oil' },
+      { id: 's6', qty: '1 tbsp',  item: 'Cornstarch' },
+      { id: 's7', qty: '2 cloves',item: 'Garlic' },
+      { id: 's8', qty: '1 in',    item: 'Ginger, fresh' },
+      { id: 's9', qty: '2 cups',  item: 'Jasmine rice, cooked' }
     ],
     prep: [
       { id: 'p1', text: 'Slice chicken into 1/2" strips.' },
       { id: 'p2', text: 'Toss chicken with cornstarch + 1 tbsp soy.' },
-      { id: 'p3', text: 'Mince garlic. Grate ginger.' },
-      { id: 'p4', text: 'Mix sauce: 2 tbsp soy + sesame oil + splash of water.' },
-      { id: 'p5', text: 'Have rice warm and ready to serve.' }
+      { id: 'p3', text: 'Core red peppers, slice into 1/4" strips.' },
+      { id: 'p4', text: 'Mince garlic. Grate ginger.' },
+      { id: 'p5', text: 'Mix sauce: 2 tbsp soy + sesame oil + splash of water.' },
+      { id: 'p6', text: 'Have rice warm and ready to serve.' }
     ],
     cook: [
       { id: 'c1', text: 'Heat a wok or wide skillet over high until smoking.', timerSec: 180, tag: 'HEAT' },
       { id: 'c2', text: 'Add oil, then chicken in one layer. Don’t move.', timerSec: 90, tag: 'SEAR' },
       { id: 'c3', text: 'Stir + sear until cooked through.', timerSec: 240, tag: 'CHICKEN' },
       { id: 'c4', text: 'Push to side, add garlic + ginger, 20 seconds.', timerSec: 20, tag: 'GARLIC' },
-      { id: 'c5', text: 'Add vegetables. Toss to crisp-tender.', timerSec: 180, tag: 'VEGGIES' },
-      { id: 'c6', text: 'Pour sauce in, toss to coat, 30 seconds.', timerSec: 30, tag: 'SAUCE' },
-      { id: 'c7', text: 'Spoon over rice. Serve immediately.' }
+      { id: 'c5', text: 'Add red peppers, toss until edges char.', timerSec: 120, tag: 'PEPPERS' },
+      { id: 'c6', text: 'Add remaining vegetables. Toss to crisp-tender.', timerSec: 180, tag: 'VEGGIES' },
+      { id: 'c7', text: 'Pour sauce in, toss to coat, 30 seconds.', timerSec: 30, tag: 'SAUCE' },
+      { id: 'c8', text: 'Spoon over rice. Serve immediately.' }
     ]
   },
   {
