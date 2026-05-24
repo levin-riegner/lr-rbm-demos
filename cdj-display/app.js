@@ -17,7 +17,7 @@
       status:  'PLAYING',      // PLAYING | PAUSED | CUE
       tag:     'MASTER',       // MASTER | SYNC | null
       track:   "L'Amour Toujours · Gigi D'Agostino",
-      playPct: 34,
+      playPct: 2,                // just started
       bpm:     132.0,
     },
     b: {
@@ -28,7 +28,7 @@
       status:  'PLAYING',
       tag:     null,
       track:   'Boten Anna · Basshunter',
-      playPct: 62,
+      playPct: 94,               // almost over — triggers END alert
       bpm:     138.0,
     }
   };
@@ -118,10 +118,18 @@
       statusEl.querySelector('.status-text').textContent = d.status;
     }
 
+    // ENDING alert: any deck whose track is past 90% gets a red
+    // blinking END tag + red progress bar so the DJ sees they need
+    // to transition off it.
+    var isEnding = d.status === 'PLAYING' && d.playPct >= 90;
+
     var tagEl = $(key + '-tag');
     if (tagEl) {
-      tagEl.classList.remove('sync', 'hidden-tag');
-      if (!d.tag) {
+      tagEl.classList.remove('sync', 'hidden-tag', 'ending');
+      if (isEnding) {
+        tagEl.textContent = 'END';
+        tagEl.classList.add('ending');
+      } else if (!d.tag) {
         tagEl.classList.add('hidden-tag');
       } else {
         tagEl.textContent = d.tag;
@@ -131,7 +139,9 @@
 
     var deckEl = $('deck-' + key);
     if (deckEl) {
-      deckEl.querySelector('.deck-bar').style.setProperty('--play-pct', d.playPct + '%');
+      var bar = deckEl.querySelector('.deck-bar');
+      bar.style.setProperty('--play-pct', d.playPct + '%');
+      bar.classList.toggle('ending', isEnding);
     }
   }
 
@@ -275,7 +285,7 @@
       }
 
       d.playPct += dt * bps * 0.06;
-      if (d.playPct > 99) d.playPct = 6;
+      if (d.playPct > 99.5) d.playPct = 99.5;
       var deckEl = $('deck-' + key);
       if (deckEl) deckEl.querySelector('.deck-bar').style.setProperty('--play-pct', d.playPct.toFixed(1) + '%');
     });
@@ -322,6 +332,7 @@
     DECKS.a.pitch = PITCH_TARGET * ramp;
 
     renderDeck('a');
+    renderDeck('b');
     renderMixer();
   }
 
