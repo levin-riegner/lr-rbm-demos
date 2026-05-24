@@ -197,6 +197,23 @@ button {
   border-color: var(--purple);
 }
 
+/* DEMO row — visually flagged as a non-network option */
+.channel-item.is-demo {
+  color: var(--text);
+  border-color: var(--line-2);
+  border-style: dashed;
+}
+.channel-item.is-demo .ci-hash { color: var(--amber); }
+.channel-item.is-demo .ci-tag  { color: var(--amber); border-color: var(--amber); }
+.channel-item.is-demo.focused {
+  background: rgba(255,184,77,0.10);
+  border-color: var(--amber);
+  border-style: solid;
+  box-shadow: 0 0 18px rgba(255,184,77,0.40);
+}
+.channel-item.is-demo.focused .ci-hash,
+.channel-item.is-demo.focused .ci-tag { color: var(--amber); border-color: var(--amber); }
+
 /* ============================================================
    CHAT — main view
    ============================================================ */

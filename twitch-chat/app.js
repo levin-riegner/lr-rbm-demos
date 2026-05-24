@@ -75,8 +75,13 @@
   const urlDemo = params.get('demo') === '1' || !!urlState;
 
   // ── Channel list assembly ─────────────────────────────────
+  // The DEMO entry is always first — picking it runs a fake live feed
+  // (no real WebSocket) so the UI can be exercised without a Twitch
+  // connection. Real channels live below it.
+  const DEMO_ENTRY = { name: 'demo', label: 'DEMO', tag: 'FAKE FEED', demo: true };
+
   function buildChannelList() {
-    const out = [];
+    const out = [DEMO_ENTRY];
     const seen = new Set();
     const last = loadLast();
 
@@ -84,7 +89,7 @@
       out.push({ name: urlChannel, tag: 'FROM URL' });
       seen.add(urlChannel);
     }
-    if (last && !seen.has(last)) {
+    if (last && last !== DEMO_ENTRY.name && !seen.has(last)) {
       out.push({ name: last, tag: 'RECENT' });
       seen.add(last);
     }
@@ -100,10 +105,11 @@
     ul.innerHTML = '';
     state.list.forEach((c, i) => {
       const li = document.createElement('li');
-      li.className = 'channel-item' + (i === state.focus ? ' focused' : '');
+      const isDemo = !!c.demo;
+      li.className = 'channel-item' + (i === state.focus ? ' focused' : '') + (isDemo ? ' is-demo' : '');
       li.innerHTML =
-        '<span class="ci-hash">#</span>' +
-        '<span class="ci-name">' + escapeHtml(c.name) + '</span>' +
+        '<span class="ci-hash">' + (isDemo ? '▶' : '#') + '</span>' +
+        '<span class="ci-name">' + escapeHtml(isDemo ? c.label : c.name) + '</span>' +
         (c.tag ? '<span class="ci-tag">' + c.tag + '</span>' : '');
       ul.appendChild(li);
     });
@@ -190,7 +196,7 @@
 
   function connect(channel) {
     state.channel = channel;
-    saveLast(channel);
+    if (!state.demoMode) saveLast(channel);
     $('chat-channel').textContent = '#' + channel;
     setStatus('', 'CONNECTING');
     state.messages = [];
@@ -419,32 +425,57 @@
   const DEMO_MESSAGES = [
     'first!',
     'POG that was insane',
-    'how is your aim this clean today',
-    'rotate to A site',
-    'someone tell him about the buff in patch notes',
     'KEKW',
     'cracked',
     'GG WP',
-    'I missed the start, what happened?',
-    'turn up the music a bit',
-    'subbed for 6 months let’s gooo',
-    'this stream is goated frfr',
-    'lol the loadout',
-    'try the new map',
     'W stream',
     'L take honestly',
     'bro fell off',
     'one tap diff',
-    'streamer when??',
-    'we love alex',
-    'PauseChamp',
-    'no shot',
     'lemme cook',
     'real',
+    'PauseChamp',
+    'no shot',
+    'how is your aim this clean today',
+    'rotate to A site',
+    'someone tell him about the buff in patch notes',
+    'I missed the start, what happened?',
+    'turn up the music a bit',
+    'subbed for 6 months let’s gooo',
+    'this stream is goated frfr',
+    'try the new map',
+    'streamer when??',
+    'we love you alex',
+    'lol the loadout',
+    // Longer ones to exercise wrapping at all three sizes
+    'wait wait wait — go back, that play was actually unreal, can you show the replay one more time please',
+    'I have been watching since the very beginning and I am telling you this is the best stream of the year so far',
+    'okay but who is going to tell the new viewers that the chat is on a 30 second delay',
+  ];
+  const DEMO_ACTIONS = [
+    'tips a hat',
+    'shakes head in disbelief',
+    'leaves the room',
+    'starts the slow clap',
+  ];
+  const DEMO_MENTIONS = [
+    'hey @demo can you read this on stream',
+    '@demo big fan, thanks for the content',
+    '@demo what mouse are you using',
   ];
 
   function pickDemo() {
     const u = DEMO_NAMES[Math.floor(Math.random() * DEMO_NAMES.length)];
+    // 10% chance of a /me action, 8% of an @-mention, otherwise normal
+    const r = Math.random();
+    if (r < 0.10) {
+      const a = DEMO_ACTIONS[Math.floor(Math.random() * DEMO_ACTIONS.length)];
+      return { user: u[0], color: u[1], body: a, action: true };
+    }
+    if (r < 0.18) {
+      const m = DEMO_MENTIONS[Math.floor(Math.random() * DEMO_MENTIONS.length)];
+      return { user: u[0], color: u[1], body: m };
+    }
     const body = DEMO_MESSAGES[Math.floor(Math.random() * DEMO_MESSAGES.length)];
     return { user: u[0], color: u[1], body };
   }
@@ -458,9 +489,9 @@
     stopDemoStream();
     const tick = () => {
       appendMessage(pickDemo());
-      state.demoTimer = setTimeout(tick, 1400 + Math.random() * 2400);
+      state.demoTimer = setTimeout(tick, 700 + Math.random() * 1800);
     };
-    state.demoTimer = setTimeout(tick, 1800);
+    state.demoTimer = setTimeout(tick, 900);
   }
   function stopDemoStream() {
     if (state.demoTimer) { clearTimeout(state.demoTimer); state.demoTimer = null; }
@@ -544,6 +575,10 @@
         e.preventDefault();
         const c = state.list[state.focus];
         if (c) {
+          // Demo entry flips into fake-feed mode; any real channel
+          // forces it back off (unless the page was loaded with ?demo=1
+          // or ?state=… which lock demo mode on for the session).
+          if (!urlDemo) state.demoMode = (c.name === DEMO_ENTRY.name);
           showScreen('chat');
           applySize();
           connect(c.name);

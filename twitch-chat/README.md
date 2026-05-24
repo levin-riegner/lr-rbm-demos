@@ -8,6 +8,7 @@ A heads-up display that streams **your Twitch chat in really large type** onto t
 
 - **Anonymous Twitch IRC over WebSocket.** Connects to `wss://irc-ws.chat.twitch.tv:443` as a `justinfan…` user (Twitch's well-known read-only login), so there is nothing to authenticate. Read-only — the app never sends messages.
 - **Type-free channel picker.** A D-pad list of preset channels plus `?channel=<name>` URL override. Bookmark `…/twitch-chat/?channel=yourname` and the app auto-connects to your channel on open. Last-connected channel is remembered.
+- **DEMO entry** at the top of the picker runs a fake live feed (no network) so you can tune the UI, scroll behaviour, and text size without going on stream.
 - **Glanceable chat feed.** Coloured usernames (from the IRC `color` tag when the user set one, otherwise hashed into a fixed palette so each viewer is visually distinct) over **very large white message text** sized for the lens.
 - **Three text sizes.** ▶ on the D-pad cycles small / default / huge. The setting is saved per device.
 - **Auto-scroll with scroll-back.** New messages append at the bottom. Scroll ▲ to read history — a `⏸ PAUSED` pill appears so you know live chat isn't displayed; press Enter to snap back to live.
