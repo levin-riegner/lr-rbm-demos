@@ -136,6 +136,14 @@ html, body {
   color: var(--cyan);
   border-color: rgba(77, 216, 255, 0.55);
 }
+.deck-tag.ending {
+  background: rgba(255, 94, 126, 0.18);
+  color: var(--red);
+  border-color: rgba(255, 94, 126, 0.75);
+  text-shadow: 0 0 6px var(--red-glow);
+  animation: endBlink 0.7s steps(2) infinite;
+}
+@keyframes endBlink { 50% { opacity: 0.28; } }
 .deck-tag.hidden-tag { visibility: hidden; }
 .deck-ip { color: var(--text-3); font-size: 13px; font-weight: 500; }
 
@@ -185,6 +193,11 @@ html, body {
   background: linear-gradient(90deg, var(--cyan), var(--cyan-hi));
   box-shadow: 0 0 6px var(--cyan-glow);
   opacity: 0.85;
+}
+.deck-bar.ending::after {
+  background: linear-gradient(90deg, var(--amber), var(--red));
+  box-shadow: 0 0 10px var(--red-glow);
+  animation: endBlink 0.7s steps(2) infinite;
 }
 
 /* BPM row */
