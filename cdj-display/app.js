@@ -36,8 +36,14 @@
   var MIXER = {
     // ch1 → deck A, ch2 → deck B, ch3/ch4 unrouted
     channels: [78, 82, 0, 0],   // fader positions 0..100
-    xfade:    0,                // -1.0 (full A) .. +1.0 (full B), 0 = center
+    xfade:    1.0,              // locked all the way to deck B (Basshunter)
   };
+
+  // Deck A is being beat-matched up to deck B. The DJ has cued
+  // L'Amour Toujours (132 BPM) on deck A and is slowly nudging
+  // its pitch up to meet Boten Anna (138 BPM) on deck B.
+  var PITCH_TARGET = (138 / 132 - 1) * 100; // ≈ +4.55 %
+  var PITCH_RAMP_SECONDS = 60;
 
   // ===========================================================
   //  ?state= ROUTING (deterministic capture for screenshots)
@@ -236,23 +242,27 @@
   }
 
   // ===========================================================
-  //  MIXER TELEMETRY — slow drift so the display feels live.
-  //  This stands in for the real DJM data feed; the user never
-  //  drives the crossfader or channel faders from the glasses.
+  //  LIVE TELEMETRY — stands in for the real DJM + Pro DJ Link
+  //  feed. The user never drives anything from the glasses.
+  //   - Crossfader stays pinned all the way to deck B.
+  //   - CH1 / CH2 breathe slightly around their rest positions.
+  //   - Deck A's pitch ramps up to match deck B's tempo
+  //     (the DJ is beatmatching A in headphones before the swap).
   // ===========================================================
   var startMs = performance.now();
 
-  function tickMixerTelemetry() {
+  function tickTelemetry() {
     if (frozen) return;
     var t = (performance.now() - startMs) / 1000;
 
-    // slow crossfader drift between -0.18 and +0.18, period ≈ 34s
-    MIXER.xfade = Math.sin(t / 34 * 2 * Math.PI) * 0.18;
-
-    // channel faders breathe ±1.5 around their rest positions
+    MIXER.xfade = 1.0;
     MIXER.channels[0] = 78 + Math.sin(t / 11 * 2 * Math.PI) * 1.5;
     MIXER.channels[1] = 82 + Math.sin(t / 13 * 2 * Math.PI) * 1.5;
 
+    var ramp = Math.min(t / PITCH_RAMP_SECONDS, 1);
+    DECKS.a.pitch = PITCH_TARGET * ramp;
+
+    renderDeck('a');
     renderMixer();
   }
 
@@ -265,7 +275,7 @@
     renderAll();
     tickClock();
     setInterval(tickClock, 15000);
-    setInterval(tickMixerTelemetry, 200);
+    setInterval(tickTelemetry, 200);
     requestAnimationFrame(animateBeats);
   }
 
