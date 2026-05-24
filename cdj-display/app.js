@@ -286,17 +286,35 @@
   // ===========================================================
   //  LIVE TELEMETRY — stands in for the real DJM + Pro DJ Link
   //  feed. The user never drives anything from the glasses.
-  //   - Crossfader stays pinned all the way to deck B.
-  //   - CH1 / CH2 breathe slightly around their rest positions.
-  //   - Deck A's pitch ramps up to match deck B's tempo
-  //     (the DJ is beatmatching A in headphones before the swap).
+  //
+  //  Scripted timeline:
+  //   0  → 15 s : Deck A's pitch ramps 132 → 138 BPM
+  //   18 → 22 s : platter-nudge aligns Deck A's beat 1 with Deck B's
+  //   23 → 28 s : crossfader cosine-eases from full B (+1.0) to
+  //               full A (−1.0) — the DJ swapping the live track
+  //   28 s →    : Deck A is now playing out; locked at full A
+  //
+  //  CH1 / CH2 keep breathing slightly throughout to feel live.
   // ===========================================================
+  var BEATLOCK_T            = PITCH_RAMP_SECONDS + NUDGE_WAIT_SECONDS + NUDGE_DURATION_SECONDS; // 22
+  var XFADE_HOLD_SECONDS    = 1.5;
+  var XFADE_DURATION_SECONDS = 5;
+  var XFADE_START_T         = BEATLOCK_T + XFADE_HOLD_SECONDS;                                    // 23.5
 
   function tickTelemetry() {
     if (frozen) return;
     var t = (performance.now() - startMs) / 1000;
 
-    MIXER.xfade = 1.0;
+    if (t < XFADE_START_T) {
+      MIXER.xfade = 1.0;
+    } else if (t < XFADE_START_T + XFADE_DURATION_SECONDS) {
+      var p = (t - XFADE_START_T) / XFADE_DURATION_SECONDS;
+      var eased = 0.5 - 0.5 * Math.cos(p * Math.PI);   // ease in / out
+      MIXER.xfade = 1.0 - 2.0 * eased;
+    } else {
+      MIXER.xfade = -1.0;
+    }
+
     MIXER.channels[0] = 78 + Math.sin(t / 11 * 2 * Math.PI) * 1.5;
     MIXER.channels[1] = 82 + Math.sin(t / 13 * 2 * Math.PI) * 1.5;
 
