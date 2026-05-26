@@ -128,6 +128,24 @@ html[data-device="desktop"] body {
   line-height: 1;
 }
 
+.brand-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-tagline {
+  font-family: var(--sans);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--fg);
+  text-align: center;
+  max-width: 480px;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+}
+
 /* ---------- Focusable / buttons ---------- */
 
 .focusable {
