@@ -32,6 +32,40 @@ In a production build the same view could be driven straight from Pioneer's Pro 
 
 ---
 
+## Pro DJ Link compatibility
+
+A standard Ethernet cable between any of the devices below puts them on a shared Pro DJ Link network where they can sync BPM, share a single USB / SD library, lock Beat FX to the track grid, and broadcast On-Air / Traffic Light status to one another.
+
+### Media players (CDJs & XDJs)
+
+Multi-players that can link up to share a single USB/SD card library and sync BPM:
+
+- **Flagship series** — AlphaTheta CDJ-3000X, CDJ-3000, CDJ-TOUR1
+- **Legacy club standards** — CDJ-2000NXS2, CDJ-2000NXS, CDJ-2000
+- **Mid-tier & performance players** — CDJ-900NXS, CDJ-900, XDJ-1000MK2, XDJ-1000, XDJ-700
+
+### DJ mixers
+
+Mixers that send On-Air / Traffic Light data to the players and lock their Beat FX to the track grid:
+
+- **Current flagships** — DJM-A9, DJM-V10
+- **Legacy club standards** — DJM-900NXS2, DJM-900NXS, DJM-2000NXS, DJM-2000
+
+### Standalone all-in-one systems
+
+Only high-end standalones have the hardware ports to act as players or integrate with a larger linked ecosystem:
+
+- **Fully compatible** — XDJ-AZ, OPUS-QUAD, XDJ-XZ, and the original XDJ-RX
+- ❌ **Not compatible** — XDJ-RX3, XDJ-RX2, XDJ-RR (Ethernet port is strictly for computer export, or the unit lacks the infrastructure to stream multi-client link protocols)
+- ❌ **Laptop controllers** — DDJ and FLX series (DDJ-1000, DDJ-FLX10, etc.) need a computer to handle data processing, so they don't speak Pro DJ Link
+
+### Software & apps
+
+- **rekordbox** (Mac / Windows) — connect via *Link Export Mode* to stream your computer's music library directly onto the hardware network
+- **rekordbox for iOS / Android** — bridges a mobile device's music library over Wi-Fi onto the hardware network
+
+---
+
 ## Controls
 
 **None.** This is a passive read-only HUD — the DJ drives the gear, the glasses just report what the CDJs and mixer are doing. No D-pad input, no swipes, no Enter binding.
