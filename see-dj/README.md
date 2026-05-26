@@ -1,24 +1,26 @@
-# CDJ Display
+# See DJ
 
-A glanceable booth telemetry HUD for DJs running two **CDJ-3000Xs** on a Pro DJ Link network. The display fills only the **top half** of the lens — 600 × 300 px — so it floats above the mixer without ever covering the dancefloor or the gear.
+See DJ runs on **Pro DJ Link**, Pioneer DJ's networking protocol that connects CDJs, XDJs, and DJM mixers over a standard Ethernet cable so every device on the booth can share data in real time. Once the glasses are on the network, the display shows song title, artist, live BPM, playing status, a downbeat-aware four-step beat indicator, and pitch-fader position for each media player. **MASTER** and **SYNC** tags show which deck is driving tempo and which is following. Four channel faders render as vertical strips so you can see at a glance which channels are live on the mixer. The crossfader displays its exact position and flips amber the moment it leaves center, flagging when the room is being fed by one deck only.
+
+**No controls, no input, no interaction required. You drive the gear. See DJ just shows you what it is doing.**
 
 > 📖 **Case study:** [levinriegner.com/work/see-dj](https://www.levinriegner.com/work/see-dj/)
-> 🌐 **Live demo:** [rbm-demos.lnr.io/cdj-display](https://rbm-demos.lnr.io/cdj-display/)
+> 🌐 **Live demo:** [rbm-demos.lnr.io/see-dj](https://rbm-demos.lnr.io/see-dj/)
 
 ---
 
 ## What it does
 
-- **Two-deck overview at a glance.** For each CDJ-3000X the HUD shows unit number, IP on the Pro DJ Link subnet, PLAYING / CUE / PAUSED status, live BPM, a downbeat-aware 4-step beat indicator (1/4 · 2/4 · 3/4 · 4/4), the current track, and pitch-fader position with sign and percentage.
-- **MASTER / SYNC tags.** Knows which deck is currently driving the tempo and which is following — and which has nothing routed at all.
+- **Per-deck telemetry.** For every CDJ-3000X on the Pro DJ Link subnet the HUD surfaces unit number, IP, PLAYING / CUE / PAUSED status, live BPM, a downbeat-aware 4-step beat indicator (1/4 · 2/4 · 3/4 · 4/4), the current track (title · artist), and pitch-fader position with sign and percentage.
+- **MASTER / SYNC tags.** Reads the link-master broadcast to show which deck is currently driving the tempo and which is following — and which has nothing routed at all.
 - **END alert.** Any deck whose track is past 90 % gets a **blinking red `END`** badge and a red play-progress bar — a passive nudge to start the next mix before the floor goes silent.
-- **Live mixer state.** Four channel faders rendered as vertical strips — CH1 is wired to Deck A, CH2 to Deck B, CH3 / CH4 stay dim when nothing is routed there. You can see at a glance which channels are *up* and which are *down*.
-- **Crossfader telemetry.** A wide ribbon shows the crossfader's exact position with five tick marks; the indicator turns amber and labels `◀ A 85%` or `B 85% ▶` the moment it leaves center, so the DJ always knows which deck the room is hearing.
-- **Half-lens layout.** The bottom 300 px of the lens stays pure `#000`, which reads as transparent on the additive waveguide — so the dancefloor stays visible below the HUD.
+- **Live mixer state.** Four DJM channel faders rendered as vertical strips — CH1 is wired to Deck A, CH2 to Deck B, CH3 / CH4 stay dim when nothing is routed there. You can see at a glance which channels are *up* and which are *down*.
+- **Crossfader telemetry.** A wide ribbon shows the crossfader's exact position with five tick marks; the indicator flips amber and labels `◀ A 85%` or `B 85% ▶` the moment it leaves center, flagging when the room is being fed by one deck only.
+- **Half-lens layout.** The HUD fills only the top 300 px of the lens; the bottom 300 px stays pure `#000`, which reads as transparent on the additive waveguide — so the dancefloor stays visible below the readout.
 
 ### Scripted demo scene
 
-The default boot scene is a full mix-out, scripted from the kind of Pro DJ Link telemetry the HUD would receive in production:
+The deployed demo boots straight into a full mix-out, scripted from the kind of Pro DJ Link telemetry See DJ would receive in production:
 
 1. **0 s** — Deck B is live to the floor with *Boten Anna · Basshunter* (138 BPM, near the end of the track — `END` is already blinking). Crossfader is pinned hard to B; CH2 is up. Deck A has just been cued with *L'Amour Toujours · Gigi D'Agostino* (132 BPM, MASTER).
 2. **0 → 15 s** — Deck A's pitch ramps from 132 → 138 BPM (≈ +4.55 %), beat-matching to B.
@@ -53,7 +55,7 @@ In a production build the same view could be driven straight from Pioneer's Pro 
 The app is a single static HTML/CSS/JS bundle — no build step.
 
 ```bash
-npx serve -l 4220 cdj-display
+npx serve -l 4220 see-dj
 # then open http://localhost:4220
 ```
 
@@ -64,12 +66,12 @@ npx serve -l 4220 cdj-display
 The screenshots above are produced from headless Chrome against the `?state=…` URL parameter the app reads on load:
 
 ```bash
-npx serve -l 4220 cdj-display &
+npx serve -l 4220 see-dj &
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 for STATE in home crossfade-a crossfade-b cue pitched; do
   "$CHROME" --headless=new --disable-gpu --hide-scrollbars \
     --window-size=600,600 --virtual-time-budget=3000 \
-    --screenshot="cdj-display/screenshots/$STATE.png" \
+    --screenshot="see-dj/screenshots/$STATE.png" \
     "http://localhost:4220/?state=$STATE"
 done
 ```
@@ -79,7 +81,7 @@ done
 ## Files
 
 ```
-cdj-display/
+see-dj/
 ├── index.html      # top-half HUD: 2 decks + 4-ch mixer + crossfader
 ├── styles.css      # 600×300 black booth telemetry; cyan + jade + amber + red
 ├── app.js          # scripted timeline, beat clock, pitch ramp, END alert, ?state= routing
