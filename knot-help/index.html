@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>Knot Helpful</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ────────── MENU (famous knots) ────────── -->
+    <section id="intentScreen" class="screen">
+      <header class="head">
+        <span class="ribbon"></span>
+        <span class="brand">KNOT&nbsp;HELPFUL</span>
+        <span class="serial">6&nbsp;KNOTS</span>
+      </header>
+
+      <div class="eyebrow">FAMOUS KNOTS</div>
+
+      <div class="intent-list" id="intentList"></div>
+
+      <div class="hints">
+        <span><span class="key">↑↓</span>&nbsp;PICK</span>
+        <span><span class="key">⏎</span>&nbsp;LEARN</span>
+      </div>
+    </section>
+
+    <!-- ────────── LEARN ────────── -->
+    <section id="learnScreen" class="screen hidden">
+      <header class="head">
+        <span class="ribbon"></span>
+        <span class="brand" id="learnTitle">TWO HALF HITCHES</span>
+        <span class="serial" id="stepCount">1/4</span>
+      </header>
+
+      <div class="meta-row">
+        <span class="meta-chip" id="forChip">KING OF KNOTS</span>
+        <span class="meta-pips" id="diffPips"></span>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram" id="diagram"></div>
+      </div>
+
+      <div class="step-text" id="stepText">Wrap the working end around the post.</div>
+
+      <div class="tip" id="tipBox">
+        <span class="tip-label">TIP</span>
+        <span class="tip-text" id="tipText">Leave 8–10 inches of tail to work with.</span>
+      </div>
+
+      <div class="progress" id="progressDots"></div>
+
+      <div class="hints">
+        <span><span class="key">←</span>&nbsp;BACK</span>
+        <span><span class="key">→</span>&nbsp;NEXT</span>
+      </div>
+    </section>
+
+    <!-- ────────── DONE ────────── -->
+    <section id="doneScreen" class="screen hidden">
+      <header class="head">
+        <span class="ribbon ribbon-done"></span>
+        <span class="brand">KNOT A PROBLEM!</span>
+        <span class="serial">✓ TIED</span>
+      </header>
+
+      <div class="done-wrap">
+        <div class="done-stamp">
+          <svg viewBox="0 0 200 200" width="200" height="200" aria-hidden="true">
+            <circle cx="100" cy="100" r="86" fill="none" stroke="#ff7250" stroke-width="7"/>
+            <circle cx="100" cy="100" r="74" fill="none" stroke="#ff7250" stroke-width="3" stroke-dasharray="4 6"/>
+            <text x="100" y="86" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="32" font-weight="900" fill="#ff7250" letter-spacing="4">TIED</text>
+            <text x="100" y="128" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="32" font-weight="900" fill="#ff7250" letter-spacing="4">WELL</text>
+            <text x="100" y="156" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#ff7250" letter-spacing="3">·  ✓  ·</text>
+          </svg>
+        </div>
+        <div class="done-knot" id="doneKnotName">TWO HALF HITCHES</div>
+        <div class="done-use" id="doneKnotUse">Holds fast under load.</div>
+      </div>
+
+      <div class="hints">
+        <span><span class="key">←</span>&nbsp;AGAIN</span>
+        <span><span class="key">⏎</span>&nbsp;MENU</span>
+      </div>
+    </section>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
