@@ -84,22 +84,11 @@ html, body {
   gap: 10px;
 }
 
-.m-brand-tagline {
+.m-brand-detail {
   font-family: var(--sans);
   font-size: clamp(16px, 4vw, 22px);
   font-weight: 500;
   color: var(--fg);
-  text-align: center;
-  max-width: 90vw;
-  line-height: 1.3;
-  letter-spacing: 0.02em;
-}
-
-.m-brand-detail {
-  font-family: var(--sans);
-  font-size: clamp(14px, 3.6vw, 20px);
-  font-weight: 500;
-  color: var(--dim);
   text-align: center;
   max-width: 92vw;
   line-height: 1.35;
