@@ -11,7 +11,7 @@ See DJ runs on **Pro DJ Link**, Pioneer DJ's networking protocol that connects C
 
 ## What it does
 
-- **Per-deck telemetry.** For every CDJ-3000X on the Pro DJ Link subnet the HUD surfaces unit number, IP, PLAYING / CUE / PAUSED status, live BPM, a downbeat-aware 4-step beat indicator (1/4 · 2/4 · 3/4 · 4/4), the current track (title · artist), and pitch-fader position with sign and percentage.
+- **Per-deck telemetry.** For every Pioneer device on the Pro DJ Link subnet the HUD surfaces unit number, IP, PLAYING / CUE / PAUSED status, live BPM, a downbeat-aware 4-step beat indicator (1/4 · 2/4 · 3/4 · 4/4), the current track (title · artist), and pitch-fader position with sign and percentage.
 - **MASTER / SYNC tags.** Reads the link-master broadcast to show which deck is currently driving the tempo and which is following — and which has nothing routed at all.
 - **END alert.** Any deck whose track is past 90 % gets a **blinking red `END`** badge and a red play-progress bar — a passive nudge to start the next mix before the floor goes silent.
 - **Live mixer state.** Four DJM channel faders rendered as vertical strips — CH1 is wired to Deck A, CH2 to Deck B, CH3 / CH4 stay dim when nothing is routed there. You can see at a glance which channels are *up* and which are *down*.
