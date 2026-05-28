@@ -642,7 +642,14 @@ function handleLeave(ws) {
   var assoc = sideForSocket(ws);
   if (!assoc) return;
   var room = assoc.room;
-  notifyAndDestroy(room, 'peer-left');
+  // Notify only the peer — the leaver took the action and is already heading
+  // home; sending them `opponent-disconnected` would race their local
+  // navigation and bounce them onto the Disconnected screen.
+  var peer = assoc.key === 'left' ? room.right : room.left;
+  if (peer && peer.ws) {
+    send(peer.ws, { type: 'opponent-disconnected', reason: 'peer-left' });
+  }
+  destroyRoom(room.code, 'peer-left');
 }
 
 function handleRejoin(ws, data) {

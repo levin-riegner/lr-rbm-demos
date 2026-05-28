@@ -455,6 +455,9 @@
         }
         break;
       case 'opponent-disconnected':
+        // We already navigated home (e.g. just pressed LEAVE ROOM): drop the
+        // stale notice instead of bouncing onto the Disconnected screen.
+        if (!mySide) break;
         rejoinToken = null;
         roomCode = null;
         stopCodeTtlCountdown();
