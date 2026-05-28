@@ -336,6 +336,11 @@ function destroyRoom(code, reason) {
     clearTimeout(room.graceTimer);
     room.graceTimer = null;
   }
+  // Release the socket→code bindings so each side can immediately create or
+  // join a fresh room without bouncing off `already-in-room`. Sockets that
+  // later close will harmlessly miss in onSocketClosed.
+  if (room.left && room.left.ws) codeByLeftSocket.delete(room.left.ws);
+  if (room.right && room.right.ws) codeByRightSocket.delete(room.right.ws);
   rooms.delete(code);
   log('info', 'room.destroyed', { code: code, reason: reason });
 }
