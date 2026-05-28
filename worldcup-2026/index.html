@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>World Cup 2026</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ===========================================================
+       HOME
+       =========================================================== -->
+  <section id="home" class="screen">
+    <header class="topbar">
+      <span class="brand-mark">🏆</span>
+      <span class="brand-text">WORLD&nbsp;CUP&nbsp;26</span>
+      <span class="topbar-mode" id="mode-pill">COUNTDOWN</span>
+    </header>
+
+    <div class="hero" id="home-hero">
+      <div class="hero-eyebrow" id="hero-eyebrow">KICKS&nbsp;OFF&nbsp;IN</div>
+      <div class="hero-count mono">
+        <span id="cd-days">15</span><span class="cd-unit">D</span>
+        <span class="cd-sep">·</span>
+        <span id="cd-hours">03</span><span class="cd-colon">:</span><span id="cd-mins">27</span>
+      </div>
+      <div class="hero-sub mono" id="hero-sub">JUN 11 · 19:00 LOCAL · MEXICO CITY</div>
+    </div>
+
+    <div class="feat-card" id="feat-card">
+      <div class="feat-label" id="feat-label">OPENING&nbsp;MATCH</div>
+      <div class="feat-row">
+        <div class="feat-team">
+          <div class="feat-flag" id="feat-flag-1">🇲🇽</div>
+          <div class="feat-code mono" id="feat-code-1">MEX</div>
+        </div>
+        <div class="feat-vs mono" id="feat-vs">vs</div>
+        <div class="feat-team">
+          <div class="feat-flag" id="feat-flag-2">🇿🇦</div>
+          <div class="feat-code mono" id="feat-code-2">RSA</div>
+        </div>
+      </div>
+      <div class="feat-meta mono" id="feat-meta">GROUP&nbsp;A · MATCHDAY 1</div>
+    </div>
+
+    <div class="menu-grid" id="menu-grid">
+      <button class="menu-tile focusable" data-menu="groups" data-idx="0">
+        <span class="menu-icon">⊞</span>
+        <span class="menu-label">GROUPS</span>
+      </button>
+      <button class="menu-tile focusable" data-menu="teams" data-idx="1">
+        <span class="menu-icon">⚽</span>
+        <span class="menu-label">TEAMS</span>
+      </button>
+      <button class="menu-tile focusable" data-menu="bracket" data-idx="2">
+        <span class="menu-icon">⌂</span>
+        <span class="menu-label">BRACKET</span>
+      </button>
+      <button class="menu-tile focusable" data-menu="fixtures" data-idx="3">
+        <span class="menu-icon">▤</span>
+        <span class="menu-label">FIXTURES</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===========================================================
+       GROUPS — carousel A → L
+       =========================================================== -->
+  <section id="groups" class="screen hidden">
+    <header class="sub-head">
+      <span class="sub-back mono">◂&nbsp;HOME</span>
+      <span class="sub-title">GROUPS</span>
+      <span class="sub-count mono" id="group-count">A / L</span>
+    </header>
+
+    <div class="group-stage">
+      <div class="group-letter" id="group-letter">A</div>
+      <div class="group-rows" id="group-rows">
+        <!-- rows injected by JS -->
+      </div>
+      <div class="group-foot mono">
+        <span id="group-foot">6 MATCHES · MEXICO &amp; USA</span>
+      </div>
+    </div>
+
+    <div class="dots-row" id="group-dots"><!-- 12 dots injected --></div>
+  </section>
+
+  <!-- ===========================================================
+       GROUP DETAIL — matches for a group
+       =========================================================== -->
+  <section id="group" class="screen hidden">
+    <header class="sub-head">
+      <span class="sub-back mono">◂&nbsp;GROUPS</span>
+      <span class="sub-title"><span id="gd-letter">A</span></span>
+      <span class="sub-count mono" id="gd-count">FIXTURES</span>
+    </header>
+
+    <div class="gd-tabs">
+      <button class="gd-tab active" data-tab="fixtures">FIXTURES</button>
+      <button class="gd-tab" data-tab="standings">STANDINGS</button>
+    </div>
+
+    <div class="gd-list" id="gd-list"><!-- rows injected --></div>
+  </section>
+
+  <!-- ===========================================================
+       TEAMS PICKER
+       =========================================================== -->
+  <section id="teams" class="screen hidden">
+    <header class="sub-head">
+      <span class="sub-back mono">◂&nbsp;HOME</span>
+      <span class="sub-title">PICK A TEAM</span>
+      <span class="sub-count mono" id="team-count">1 / 48</span>
+    </header>
+
+    <div class="team-card-stage">
+      <button class="team-arrow team-arrow-l" data-team-step="-1">◂</button>
+      <div class="team-card" id="team-card">
+        <div class="team-flag-lg" id="team-flag">🇦🇷</div>
+        <div class="team-code-lg mono" id="team-code">ARG</div>
+        <div class="team-name" id="team-name">ARGENTINA</div>
+        <div class="team-group-pill mono" id="team-group">GROUP J</div>
+        <div class="team-fav-state mono" id="team-fav-state">PRESS ENTER · FOLLOW</div>
+      </div>
+      <button class="team-arrow team-arrow-r" data-team-step="1">▸</button>
+    </div>
+
+    <div class="team-hint mono">
+      <span class="key">◂&nbsp;▸</span> CYCLE&nbsp;&nbsp;<span class="key">▲</span> JUMP GROUP&nbsp;&nbsp;<span class="key">▼</span> VIEW FIXTURES
+    </div>
+  </section>
+
+  <!-- ===========================================================
+       TEAM DETAIL — selected team's fixtures
+       =========================================================== -->
+  <section id="team-detail" class="screen hidden">
+    <header class="sub-head">
+      <span class="sub-back mono">◂&nbsp;TEAMS</span>
+      <span class="sub-title" id="td-title">ARGENTINA</span>
+      <span class="sub-count mono" id="td-count">3 MATCHES</span>
+    </header>
+    <div class="td-banner" id="td-banner">
+      <span class="td-flag" id="td-flag">🇦🇷</span>
+      <span class="td-code mono" id="td-code">ARG</span>
+      <span class="td-group mono" id="td-group">GROUP J</span>
+      <span class="td-fav" id="td-fav">★ FOLLOWING</span>
+    </div>
+    <div class="gd-list" id="td-list"><!-- rows injected --></div>
+  </section>
+
+  <!-- ===========================================================
+       BRACKET — knockout walker
+       =========================================================== -->
+  <section id="bracket" class="screen hidden">
+    <header class="sub-head">
+      <span class="sub-back mono">◂&nbsp;HOME</span>
+      <span class="sub-title">BRACKET</span>
+      <span class="sub-count mono" id="bracket-round-name">R32</span>
+    </header>
+
+    <div class="round-tabs" id="round-tabs">
+      <span class="round-tab active" data-round="0">R32</span>
+      <span class="round-tab" data-round="1">R16</span>
+      <span class="round-tab" data-round="2">QF</span>
+      <span class="round-tab" data-round="3">SF</span>
+      <span class="round-tab" data-round="4">3RD</span>
+      <span class="round-tab" data-round="5">FINAL</span>
+    </div>
+
+    <div class="bracket-list" id="bracket-list"><!-- rows injected --></div>
+  </section>
+
+  <!-- ===========================================================
+       FIXTURES — day-by-day
+       =========================================================== -->
+  <section id="fixtures" class="screen hidden">
+    <header class="sub-head">
+      <span class="sub-back mono">◂&nbsp;HOME</span>
+      <span class="sub-title">FIXTURES</span>
+      <span class="sub-count mono" id="fix-count">1 / 39</span>
+    </header>
+
+    <div class="fix-day mono" id="fix-day">THU · JUN 11</div>
+    <div class="fix-day-sub mono" id="fix-day-sub">DAY 1 · 1 MATCH</div>
+
+    <div class="gd-list" id="fix-list"><!-- rows injected --></div>
+
+    <div class="fix-hint mono">
+      <span class="key">◂&nbsp;▸</span> DAY&nbsp;&nbsp;<span class="key">▲&nbsp;▼</span> JUMP&nbsp;WEEK
+    </div>
+  </section>
+
+  <!-- ===========================================================
+       LIVE MATCH (mock takeover when in live mode)
+       =========================================================== -->
+  <section id="match-live" class="screen hidden">
+    <header class="sub-head">
+      <span class="sub-back mono">◂&nbsp;BACK</span>
+      <span class="sub-title">
+        <span class="live-dot"></span><span class="live-text">LIVE</span>
+      </span>
+      <span class="sub-count mono" id="live-minute">67'</span>
+    </header>
+
+    <div class="live-scoreboard">
+      <div class="live-side">
+        <div class="live-flag" id="live-flag-1">🇦🇷</div>
+        <div class="live-code mono" id="live-code-1">ARG</div>
+      </div>
+      <div class="live-score mono" id="live-score">2 – 1</div>
+      <div class="live-side">
+        <div class="live-flag" id="live-flag-2">🇧🇷</div>
+        <div class="live-code mono" id="live-code-2">BRA</div>
+      </div>
+    </div>
+
+    <div class="live-bar">
+      <div class="live-bar-fill" id="live-bar-fill" style="width: 67%;"></div>
+    </div>
+    <div class="live-bar-labels mono">
+      <span>0'</span><span id="live-minute-2">67'</span><span>90'</span>
+    </div>
+
+    <div class="live-events" id="live-events">
+      <div class="live-event"><span class="le-time mono">62'</span><span class="le-icon">⚽</span><span class="le-text">MESSI · ARG</span></div>
+      <div class="live-event"><span class="le-time mono">48'</span><span class="le-icon">⚽</span><span class="le-text">VINICIUS · BRA</span></div>
+      <div class="live-event"><span class="le-time mono">19'</span><span class="le-icon">⚽</span><span class="le-text">ALVAREZ · ARG</span></div>
+    </div>
+
+    <div class="live-foot mono" id="live-foot">QUARTER-FINAL · LOS ANGELES</div>
+  </section>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
