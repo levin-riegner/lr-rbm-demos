@@ -15,3 +15,7 @@ Add a favicon to a demo folder (`<app-name>/` with `index.html`).
 ```
 
 That's it. Don't touch the top-level `README.md` for favicon-only changes.
+
+## Device support
+
+Per the [Meta Ray-Ban Display docs](https://wearables.developer.meta.com/docs): use Unicode symbols or high-resolution PNG favicons (≥ 52×52 px) via `<link>` tags or the Web App Manifest. **SVGs are not supported** — always use PNG, never `favicon.svg`.
