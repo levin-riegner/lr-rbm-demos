@@ -48,6 +48,7 @@
     paused: false,           // user scrolled away from bottom
     demoMode: false,         // true if ?demo=1 or ?state=...
     demoTimer: null,
+    theme: null,             // active demo theme (defaults to THEMES.demo)
   };
 
   // ── localStorage helpers ──────────────────────────────────
@@ -79,9 +80,13 @@
   // (no real WebSocket) so the UI can be exercised without a Twitch
   // connection. Real channels live below it.
   const DEMO_ENTRY = { name: 'demo', label: 'DEMO', tag: 'FAKE FEED', demo: true };
+  // Aria — busker streaming herself making music out on the street. A
+  // curated, always-works simulated feed (no real socket) themed around
+  // street performance: song requests, tips, the crowd, the location.
+  const ARIA_ENTRY = { name: 'ariathome', label: 'ARIATHOME', tag: 'STREET · LIVE', demo: true };
 
   function buildChannelList() {
-    const out = [DEMO_ENTRY];
+    const out = [DEMO_ENTRY, ARIA_ENTRY];
     const seen = new Set();
     const last = loadLast();
 
@@ -203,7 +208,10 @@
     renderFeed();
 
     if (state.demoMode) {
-      // Pretend-connected demo: don't open a real socket.
+      // Pretend-connected demo: don't open a real socket. Pick the
+      // themed content pool that matches this channel (falls back to
+      // the generic DEMO feed for the plain demo entry / ?demo=1).
+      state.theme = THEMES[channel] || THEMES.demo;
       setStatus('live', 'LIVE · DEMO');
       $('feed-empty').classList.add('hidden');
       seedDemoMessages();
@@ -464,19 +472,92 @@
     '@demo what mouse are you using',
   ];
 
+  // ── ariathome theme — busking / street music ──────────────
+  const ARIA_NAMES = [
+    ['sidewalk_sam',     ''],
+    ['MelodyMaria',      '#FF6FD8'],
+    ['busker_bea',       '#5CF28A'],
+    ['corner_cassette',  '#FFB84D'],
+    ['lo_fi_logan',      '#4DD8FF'],
+    ['nightbus_nadia',   '#A371FF'],
+    ['rainyday_reed',    ''],
+    ['open_case_otis',   '#7A8CFF'],
+    ['hummingbird_hana', '#FF7F50'],
+    ['quiet_passerby',   ''],
+  ];
+  const ARIA_MESSAGES = [
+    'this sounds incredible on a street corner',
+    'whats the name of this song?? need it',
+    'the acoustics under that bridge are unreal',
+    'tossed a few bucks in the case, keep going!',
+    'play the one from last week pleaseee',
+    'how do you keep your hands warm out there',
+    'the crowd is growing 👀',
+    'is that a loop pedal on the ground?',
+    'street performance hits different',
+    'someone get this woman a record deal',
+    'caught your set on my way to work, made my morning',
+    'what guitar is that?',
+    'the harmony on that bridge gave me chills',
+    'venmo or just the case?',
+    'cop walking up... you good?',
+    'love that you do this outside, so much more real',
+    'the reverb off these buildings is perfect',
+    'requests open? would love some fingerstyle',
+    'been following since the subway days lets go',
+    'that key change OUTSIDE with no autotune??',
+    'how long have you been out here today',
+    'the little kid dancing is the best part',
+    'turn the mic up a touch, wind is loud',
+    'this is better than anything on the radio',
+    // longer ones to exercise wrapping at all three sizes
+    'I literally stopped my whole commute to stand here and listen, you have no idea how much this set just turned my day around',
+    'for everyone just tuning in — she busks live on this corner most evenings and it is always worth the detour, trust me',
+    'the way you build a whole song from just a loop pedal and a guitar out on the open street is honestly a masterclass',
+  ];
+  const ARIA_ACTIONS = [
+    'drops a fiver in the case',
+    'starts swaying with the crowd',
+    'requests an encore',
+    'shares the stream with three friends',
+  ];
+  const ARIA_MENTIONS = [
+    'hey @ariathome can you play something soft next',
+    '@ariathome where are you set up tomorrow?',
+    '@ariathome your voice carries so well out there',
+  ];
+
+  // Each demo-backed channel maps to a themed content pool. The active
+  // theme is chosen in connect(); pickDemo() reads from it.
+  const THEMES = {
+    demo: {
+      names: DEMO_NAMES, messages: DEMO_MESSAGES,
+      actions: DEMO_ACTIONS, mentions: DEMO_MENTIONS,
+    },
+    ariathome: {
+      names: ARIA_NAMES, messages: ARIA_MESSAGES,
+      actions: ARIA_ACTIONS, mentions: ARIA_MENTIONS,
+    },
+  };
+
+  function activeTheme() {
+    return state.theme || THEMES.demo;
+  }
+
   function pickDemo() {
-    const u = DEMO_NAMES[Math.floor(Math.random() * DEMO_NAMES.length)];
+    const t = activeTheme();
+    const u = t.names[Math.floor(Math.random() * t.names.length)];
     // 10% chance of a /me action, 8% of an @-mention, otherwise normal
     const r = Math.random();
     if (r < 0.10) {
-      const a = DEMO_ACTIONS[Math.floor(Math.random() * DEMO_ACTIONS.length)];
+      const a = t.actions[Math.floor(Math.random() * t.actions.length)];
       return { user: u[0], color: u[1], body: a, action: true };
     }
     if (r < 0.18) {
-      const m = DEMO_MENTIONS[Math.floor(Math.random() * DEMO_MENTIONS.length)];
+      const m = t.mentions[Math.floor(Math.random() * t.mentions.length)];
       return { user: u[0], color: u[1], body: m };
     }
-    const body = DEMO_MESSAGES[Math.floor(Math.random() * DEMO_MESSAGES.length)];
+    const body = t.messages[Math.floor(Math.random() * t.messages.length)];
     return { user: u[0], color: u[1], body };
   }
 
@@ -575,10 +656,11 @@
         e.preventDefault();
         const c = state.list[state.focus];
         if (c) {
-          // Demo entry flips into fake-feed mode; any real channel
-          // forces it back off (unless the page was loaded with ?demo=1
-          // or ?state=… which lock demo mode on for the session).
-          if (!urlDemo) state.demoMode = (c.name === DEMO_ENTRY.name);
+          // Demo-backed entries (DEMO, ariathome) flip into fake-feed
+          // mode; any real channel forces it back off (unless the page
+          // was loaded with ?demo=1 or ?state=… which lock demo mode on
+          // for the session).
+          if (!urlDemo) state.demoMode = !!c.demo;
           showScreen('chat');
           applySize();
           connect(c.name);
