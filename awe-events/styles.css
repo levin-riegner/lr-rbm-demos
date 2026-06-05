@@ -330,6 +330,7 @@ html, body {
 .event-feed::-webkit-scrollbar { display: none; }
 
 .event-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--s5);
@@ -349,9 +350,9 @@ html, body {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  min-width: 92px;
+  min-width: 78px;
   flex-shrink: 0;
-  padding-right: var(--s5);
+  padding-right: var(--s4);
   border-right: 1px solid var(--line);
 }
 .event-item .ev-time .t-main {
@@ -412,16 +413,14 @@ html, body {
   flex: 1 1 auto;
 }
 .event-item .ev-name {
-  font-size: 18px;
+  display: block;
+  font-size: 19px;
   font-weight: 700;
   line-height: 1.26;
   letter-spacing: -0.01em;
   color: var(--text-2);
   overflow-wrap: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  hyphens: none;
 }
 .event-item .ev-tag {
   align-self: flex-start;
@@ -438,12 +437,15 @@ html, body {
 .event-item .ev-tag.tag-ticket { color: var(--gold);  border-color: var(--gold); }
 
 .event-item .ev-star {
-  flex-shrink: 0;
-  font-size: 19px;
+  position: absolute;
+  top: var(--s4);
+  right: var(--s4);
+  font-size: 17px;
   color: var(--gold);
-  opacity: 0;
+  text-shadow: 0 0 10px var(--gold-glow);
 }
-.event-item.is-featured .ev-star { opacity: 1; text-shadow: 0 0 10px var(--gold-glow); }
+/* keep the title clear of the corner star on featured cards */
+.event-item.is-featured .ev-body { padding-right: var(--s5); }
 
 .event-item.focused {
   background: var(--surface-hi);

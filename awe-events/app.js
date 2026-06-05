@@ -250,10 +250,25 @@
         '<span class="ev-time ' + tc.cls + '">' + tc.html + '</span>' +
         '<span class="ev-body"><span class="ev-name">' + esc(ev.name) + '</span>' +
         '<span class="ev-tag ' + tag.cls + '">' + tag.label + '</span></span>' +
-        '<span class="ev-star">★</span>';
+        (ev.featured ? '<span class="ev-star">★</span>' : '');
       ul.appendChild(li);
     });
+    ul.querySelectorAll('.ev-name').forEach(fitName);
     updateListFocus(false);
+  }
+
+  // Shrink a title's font until it fully fits 3 lines — no ellipsis.
+  function fitName(el) {
+    const ratio = 1.26;     // matches CSS line-height
+    const maxLines = 3, min = 12;
+    let size = 19;
+    el.style.fontSize = size + 'px';
+    while (size > min) {
+      const maxH = Math.ceil(size * ratio * maxLines) + 1;
+      if (el.scrollHeight <= maxH) break;
+      size -= 1;
+      el.style.fontSize = size + 'px';
+    }
   }
 
   function updateListFocus(animate) {
