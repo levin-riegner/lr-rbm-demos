@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=500, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>AWE Side-Events · HUD</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ===========================================================
+       HOME — day picker
+       =========================================================== -->
+  <section id="home" class="screen">
+    <header class="topbar">
+      <span class="brand-mark">L+R</span>
+      <span class="brand-text">GUIDE</span>
+    </header>
+
+    <div class="hero">
+      <div class="hero-title">The #1 Resource for<br>AWE Side&#8209;Events</div>
+      <div class="hero-sub">AWE USA 2026 · Long Beach, CA</div>
+    </div>
+
+    <ul class="day-list" id="day-list"><!-- populated by JS --></ul>
+
+    <footer class="home-foot">▲ ▼ &nbsp;BROWSE&nbsp;&nbsp;·&nbsp;&nbsp;● &nbsp;OPEN</footer>
+  </section>
+
+  <!-- ===========================================================
+       LIST — events for the selected day / filter
+       =========================================================== -->
+  <section id="list" class="screen hidden">
+    <header class="list-head">
+      <span class="back-hint">◀ BACK</span>
+      <span class="list-title" id="list-title">JUN 15</span>
+      <span class="list-count" id="list-count">9</span>
+    </header>
+
+    <div class="event-feed-wrap">
+      <ul class="event-feed" id="event-feed"><!-- populated by JS --></ul>
+    </div>
+
+    <footer class="list-foot">▲ ▼ &nbsp;SELECT&nbsp;&nbsp;·&nbsp;&nbsp;● &nbsp;DETAILS&nbsp;&nbsp;·&nbsp;&nbsp;◀ &nbsp;BACK</footer>
+  </section>
+
+  <!-- ===========================================================
+       DETAIL — single event
+       =========================================================== -->
+  <section id="detail" class="screen hidden">
+    <header class="detail-head">
+      <span class="back-hint">◀ BACK</span>
+      <span class="detail-day" id="detail-day">JUN 15</span>
+      <span class="detail-star" id="detail-star">★</span>
+    </header>
+
+    <div class="detail-body">
+      <div class="detail-time" id="detail-time">9:30 AM</div>
+      <div class="detail-name" id="detail-name">Event name</div>
+
+      <div class="detail-meta">
+        <div class="meta-row">
+          <span class="meta-ico">🗓</span>
+          <span class="meta-val" id="detail-date">Mon, Jun 15</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-ico">⏱</span>
+          <span class="meta-val" id="detail-full-time">9:30 AM – 11:30 AM PDT</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-ico">📍</span>
+          <span class="meta-val">Long Beach, CA</span>
+        </div>
+      </div>
+
+      <div class="detail-tag" id="detail-tag">FREE · RSVP</div>
+    </div>
+
+    <footer class="detail-foot">◀ &nbsp;BACK TO LIST</footer>
+  </section>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
