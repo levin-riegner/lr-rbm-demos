@@ -206,22 +206,26 @@ html, body {
 }
 
 .day-item .di-num {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   font-size: 34px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--text);
-  min-width: 46px;
+  min-width: 48px;
   text-align: center;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
 }
 .day-item .di-mon {
-  display: block;
-  margin-top: 3px;
+  margin-top: 5px;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.18em;
+  text-indent: 0.18em; /* offset trailing tracking so JUN optically centers */
   color: var(--text-4);
 }
 .day-item .di-main { display: flex; flex-direction: column; gap: 4px; }
