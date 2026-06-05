@@ -74,7 +74,27 @@ html, body {
   inset: 0;
   display: flex;
   flex-direction: column;
-  padding: var(--pad-t) var(--pad-x) var(--pad-b);
+  padding: calc(var(--pad-t) + 30px) var(--pad-x) var(--pad-b);
+}
+
+/* persistent ambient clock — pinned top, above every screen */
+.statusbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 34px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.clock {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .back-hint {
@@ -174,6 +194,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: var(--s5);
+  flex-shrink: 0;
   min-height: 100px;
   padding: var(--s5) var(--card-pad);
   background: var(--surface);
@@ -309,6 +330,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: var(--s5);
+  flex-shrink: 0;
   min-height: 128px;
   padding: var(--card-pad);
   background: var(--surface);
@@ -345,6 +367,39 @@ html, body {
   letter-spacing: 0.12em;
   color: var(--text-4);
 }
+.event-item .ev-time .t-lead {
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--teal-hi);
+}
+
+/* "STARTS IN ..." — imminent, brand teal */
+.event-item .ev-time.is-soon .t-main { font-size: 28px; color: var(--teal); }
+
+/* "LIVE NOW" — happening, gold with a pulsing dot */
+.event-item .ev-time.is-live .t-main {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--gold);
+}
+.event-item .ev-time.is-live .t-main::before {
+  content: '';
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 10px var(--gold-glow);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.event-item .ev-time.is-live .t-ampm { color: var(--gold); opacity: 0.85; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.6); }
+}
 
 .event-item .ev-body {
   display: flex;
@@ -356,14 +411,12 @@ html, body {
 .event-item .ev-name {
   font-size: 25px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.22;
   letter-spacing: -0.01em;
   color: var(--text-2);
-  overflow-wrap: anywhere;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+  hyphens: none;
 }
 .event-item .ev-tag {
   align-self: flex-start;

@@ -73,6 +73,84 @@
   function eventsForDay(d) { return EVENTS.filter((e) => e.day === d); }
   function featuredEvents() { return EVENTS.filter((e) => e.featured); }
 
+  // ── Time: live clock + "starts in" / "live now" logic ─────
+  // `now` is the real device clock. For demos/screenshots before the
+  // conference, append ?now=2026-06-15T09:10 to simulate a moment.
+  function nowDate() {
+    const q = new URLSearchParams(location.search).get('now');
+    if (q) { const d = new Date(q); if (!isNaN(d.getTime())) return d; }
+    return new Date();
+  }
+
+  function clockOf(timeStr, day) {
+    const m = String(timeStr).match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!m) return null;
+    let h = (+m[1]) % 12;
+    if (/PM/i.test(m[3])) h += 12;
+    return new Date(2026, 5, day, h, +m[2], 0, 0); // June = month index 5
+  }
+  function startOf(ev) { return ev.start === 'ALL' ? null : clockOf(ev.start, ev.day); }
+  function endOf(ev) {
+    const all = [...String(ev.time).matchAll(/(\d{1,2}):(\d{2})\s*(AM|PM)/gi)];
+    if (!all.length) return null;
+    const last = all[all.length - 1];
+    let h = (+last[1]) % 12;
+    if (/PM/i.test(last[3])) h += 12;
+    let end = new Date(2026, 5, ev.day, h, +last[2], 0, 0);
+    const start = startOf(ev);
+    if (start && end < start) end = new Date(end.getTime() + 864e5); // crosses midnight
+    return end;
+  }
+
+  // → { kind: 'live' | 'soon' | 'none', diffMin }
+  function relInfo(ev) {
+    const start = startOf(ev);
+    if (!start) return { kind: 'none' };
+    const now = nowDate();
+    const end = endOf(ev);
+    if (now >= start && end && now < end) return { kind: 'live' };
+    const diffMin = Math.round((start - now) / 60000);
+    if (diffMin > 0 && diffMin <= 180) return { kind: 'soon', diffMin };
+    return { kind: 'none' };
+  }
+  function shortIn(min) { return min < 60 ? min + 'm' : Math.floor(min / 60) + 'h ' + (min % 60) + 'm'; }
+  function longIn(min) {
+    if (min < 60) return 'Starts in ' + min + ' min';
+    const h = Math.floor(min / 60), m = min % 60;
+    return 'Starts in ' + h + ' hr' + (h > 1 ? 's' : '') + (m ? ' ' + m + ' min' : '');
+  }
+
+  function fmtClock(d) {
+    let h = d.getHours(); const m = d.getMinutes(); const ap = h >= 12 ? 'PM' : 'AM';
+    h = h % 12; if (h === 0) h = 12;
+    return h + ':' + (m < 10 ? '0' + m : m) + ' ' + ap;
+  }
+
+  // Inner HTML + class for an event's time column.
+  function timeCol(ev) {
+    const rel = relInfo(ev);
+    if (rel.kind === 'live') {
+      return { cls: 'is-live', html: '<span class="t-main">LIVE</span><span class="t-ampm">NOW</span>' };
+    }
+    if (rel.kind === 'soon') {
+      return { cls: 'is-soon', html: '<span class="t-lead">STARTS IN</span><span class="t-main">' + shortIn(rel.diffMin) + '</span>' };
+    }
+    if (ev.start === 'ALL') {
+      return { cls: 'is-allday', html: '<span class="t-main">ALL</span><span class="t-ampm">DAY</span>' };
+    }
+    const main = ev.start.replace(/\s?(AM|PM)$/i, '');
+    const ampm = (ev.start.match(/AM|PM/i) || [''])[0];
+    return { cls: '', html: '<span class="t-main">' + main + '</span><span class="t-ampm">' + ampm + '</span>' };
+  }
+
+  // Hero time string for the detail screen.
+  function heroTime(ev) {
+    const rel = relInfo(ev);
+    if (rel.kind === 'live') return 'Live Now';
+    if (rel.kind === 'soon') return longIn(rel.diffMin);
+    return ev.start === 'ALL' ? 'All Day' : ev.start;
+  }
+
   // ── Audio — subtle Web Audio UI cues ──────────────────────
   let _actx = null;
   function audioCtx() {
@@ -165,13 +243,11 @@
     ul.innerHTML = '';
     state.current.forEach((ev) => {
       const li = document.createElement('li');
-      li.className = 'event-item' + (ev.featured ? ' is-featured' : '');
+      const tc = timeCol(ev);
+      li.className = 'event-item' + (ev.featured ? ' is-featured' : '') + (tc.cls ? ' ' + tc.cls : '');
       const tag = TAG[ev.type];
-      const timeMain = ev.start === 'ALL' ? 'ALL' : ev.start.replace(/\s?(AM|PM)$/, '');
-      const ampm = ev.start === 'ALL' ? 'DAY' : (ev.start.match(/AM|PM/) || [''])[0];
       li.innerHTML =
-        '<span class="ev-time"><span class="t-main">' + timeMain + '</span>' +
-        '<span class="t-ampm">' + ampm + '</span></span>' +
+        '<span class="ev-time ' + tc.cls + '">' + tc.html + '</span>' +
         '<span class="ev-body"><span class="ev-name">' + esc(ev.name) + '</span>' +
         '<span class="ev-tag ' + tag.cls + '">' + tag.label + '</span></span>' +
         '<span class="ev-star">★</span>';
@@ -189,11 +265,33 @@
     if (el) el.scrollIntoView({ block: 'nearest', behavior: animate ? 'smooth' : 'auto' });
   }
 
+  // Update the live clock + any time-sensitive labels in place,
+  // without rebuilding lists (preserves focus + scroll position).
+  function refreshTimes() {
+    const c = $('clock');
+    if (c) c.textContent = fmtClock(nowDate());
+
+    if (state.screen === 'list') {
+      const ul = $('event-feed');
+      state.current.forEach((ev, i) => {
+        const li = ul.children[i];
+        if (!li) return;
+        const tc = timeCol(ev);
+        const tEl = li.querySelector('.ev-time');
+        if (tEl) { tEl.className = 'ev-time ' + tc.cls; tEl.innerHTML = tc.html; }
+        li.classList.remove('is-live', 'is-soon', 'is-allday');
+        if (tc.cls) li.classList.add(tc.cls);
+      });
+    } else if (state.screen === 'detail' && state.detailEvent) {
+      $('detail-time').textContent = heroTime(state.detailEvent);
+    }
+  }
+
   // ── Render: DETAIL ────────────────────────────────────────
   function openDetail(ev) {
     state.detailEvent = ev;
     $('detail-day').textContent = 'JUN ' + ev.day;
-    $('detail-time').textContent = ev.start === 'ALL' ? 'All Day' : ev.start;
+    $('detail-time').textContent = heroTime(ev);
     $('detail-name').textContent = ev.name;
     $('detail-date').textContent = (WEEKDAY[ev.day] || '') + ', Jun ' + ev.day + ', 2026';
     $('detail-full-time').textContent = ev.time;
@@ -273,6 +371,8 @@
     buildRows();
     renderHome();
     showScreen('home');
+    refreshTimes();
+    setInterval(refreshTimes, 10000);
     window.addEventListener('keydown', onKey);
   }
 
