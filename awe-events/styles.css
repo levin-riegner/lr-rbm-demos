@@ -6,7 +6,7 @@
    ============================================================ */
 
 :root {
-  --bg:          #1C1E21;
+  --bg:          #000000;
   --surface:     #25282C;
   --surface-hi:  #2E3236;
   --line:        #34383D;
@@ -77,6 +77,7 @@ html, body {
 .topbar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--line);
@@ -114,6 +115,7 @@ html, body {
 
 .hero {
   margin: 16px 0 12px;
+  text-align: center;
 }
 
 .hero-title {
@@ -275,12 +277,12 @@ html, body {
 .event-item {
   display: flex;
   align-items: center;
-  gap: 13px;
-  min-height: 76px;
-  padding: 12px 15px;
+  gap: 14px;
+  min-height: 116px;
+  padding: 16px 16px;
   background: var(--surface);
   border: 1.5px solid transparent;
-  border-radius: 14px;
+  border-radius: 16px;
   transition: transform 200ms cubic-bezier(0.6,0,0.4,1),
               background 200ms ease, border-color 200ms ease,
               box-shadow 200ms ease;
@@ -290,17 +292,17 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 64px;
+  min-width: 86px;
   flex-shrink: 0;
 }
 .event-item .ev-time .t-main {
-  font-size: 18px;
+  font-size: 28px;
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1.0;
   color: var(--teal);
 }
 .event-item .ev-time .t-ampm {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--text-4);
@@ -309,29 +311,29 @@ html, body {
 .event-item .ev-body {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
   min-width: 0;
   flex: 1 1 auto;
 }
 .event-item .ev-name {
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 700;
-  line-height: 1.18;
+  line-height: 1.16;
   color: var(--text-2);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .event-item .ev-tag {
   align-self: flex-start;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: var(--text-3);
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 2px 9px;
+  padding: 3px 11px;
 }
 .event-item .ev-tag.tag-free   { color: var(--teal);  border-color: var(--teal-dim); }
 .event-item .ev-tag.tag-public { color: var(--text-2); border-color: var(--text-4); }
