@@ -399,14 +399,16 @@ html, body {
   flex: 1 1 auto;
 }
 .event-item .ev-name {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  line-height: 1.28;
+  line-height: 1.26;
   letter-spacing: -0.01em;
   color: var(--text-2);
   overflow-wrap: break-word;
-  text-wrap: pretty;
-  hyphens: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .event-item .ev-tag {
   align-self: flex-start;
