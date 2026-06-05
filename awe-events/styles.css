@@ -64,7 +64,7 @@ html, body {
 }
 
 .back-hint {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--text-3);
@@ -144,9 +144,12 @@ html, body {
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: none;
+  scroll-behavior: smooth;
+  scroll-padding-block: 32px;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   padding: 4px 2px;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
           mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
@@ -156,49 +159,51 @@ html, body {
 .day-item {
   display: flex;
   align-items: center;
-  gap: 14px;
-  min-height: 64px;
-  padding: 12px 16px;
+  gap: 16px;
+  min-height: 96px;
+  padding: 16px 18px;
   background: var(--surface);
   border: 1.5px solid transparent;
-  border-radius: 14px;
+  border-radius: 16px;
   transition: transform 200ms cubic-bezier(0.6,0,0.4,1),
               background 200ms ease, border-color 200ms ease,
               box-shadow 200ms ease;
 }
 
 .day-item .di-num {
-  font-size: 26px;
+  font-size: 34px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--text);
-  min-width: 36px;
+  min-width: 46px;
   text-align: center;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
 }
 .day-item .di-mon {
   display: block;
-  font-size: 10px;
+  margin-top: 3px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.18em;
   color: var(--text-4);
 }
-.day-item .di-main { display: flex; flex-direction: column; gap: 3px; }
+.day-item .di-main { display: flex; flex-direction: column; gap: 4px; }
 .day-item .di-label {
-  font-size: 17px;
+  font-size: 24px;
   font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--text-2);
 }
 .day-item .di-meta {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-3);
 }
 .day-item .di-arrow {
   margin-left: auto;
-  font-size: 18px;
+  font-size: 24px;
   color: var(--text-4);
 }
 
@@ -220,7 +225,7 @@ html, body {
   flex-shrink: 0;
   text-align: center;
   padding-top: 10px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.14em;
   color: var(--text-4);
@@ -239,23 +244,26 @@ html, body {
 }
 
 .list-title, .detail-day {
-  font-size: 21px;
+  font-size: 26px;
   font-weight: 800;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   color: var(--teal-hi);
   text-shadow: 0 0 12px var(--teal-glow);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .list-count {
   margin-left: auto;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: var(--text-3);
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 3px 11px;
+  padding: 4px 13px;
+  font-variant-numeric: tabular-nums;
 }
 
 .event-feed-wrap {
@@ -271,9 +279,12 @@ html, body {
   inset: 0;
   overflow-y: auto;
   scrollbar-width: none;
+  scroll-behavior: smooth;
+  scroll-padding-block: 24px;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   padding: 2px;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
           mask-image: linear-gradient(to bottom, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
@@ -284,8 +295,8 @@ html, body {
   display: flex;
   align-items: center;
   gap: 16px;
-  min-height: 112px;
-  padding: 16px 18px;
+  min-height: 124px;
+  padding: 18px 18px;
   background: var(--surface);
   border: 1.5px solid transparent;
   border-radius: 16px;
@@ -299,13 +310,13 @@ html, body {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  min-width: 78px;
+  min-width: 90px;
   flex-shrink: 0;
   padding-right: 16px;
   border-right: 1px solid var(--line);
 }
 .event-item .ev-time .t-main {
-  font-size: 27px;
+  font-size: 32px;
   font-weight: 800;
   line-height: 1.0;
   letter-spacing: -0.02em;
@@ -314,8 +325,8 @@ html, body {
   font-feature-settings: "tnum" 1;
 }
 .event-item .ev-time .t-ampm {
-  margin-top: 3px;
-  font-size: 13px;
+  margin-top: 4px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--text-4);
@@ -329,7 +340,7 @@ html, body {
   flex: 1 1 auto;
 }
 .event-item .ev-name {
-  font-size: 22px;
+  font-size: 25px;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.01em;
@@ -342,13 +353,13 @@ html, body {
 }
 .event-item .ev-tag {
   align-self: flex-start;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.1em;
   color: var(--text-3);
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 4px 12px;
+  padding: 5px 13px;
 }
 .event-item .ev-tag.tag-free   { color: var(--teal);  border-color: var(--teal-dim); }
 .event-item .ev-tag.tag-public { color: var(--text-2); border-color: var(--text-4); }
@@ -356,7 +367,7 @@ html, body {
 
 .event-item .ev-star {
   flex-shrink: 0;
-  font-size: 15px;
+  font-size: 19px;
   color: var(--gold);
   opacity: 0;
 }
@@ -377,7 +388,7 @@ html, body {
 
 .detail-star {
   margin-left: auto;
-  font-size: 18px;
+  font-size: 22px;
   color: var(--gold);
   text-shadow: 0 0 10px var(--gold-glow);
 }
@@ -395,7 +406,7 @@ html, body {
 .detail-body::-webkit-scrollbar { display: none; }
 
 .detail-time {
-  font-size: 40px;
+  font-size: 50px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -406,8 +417,8 @@ html, body {
 }
 
 .detail-name {
-  margin-top: 12px;
-  font-size: 23px;
+  margin-top: 14px;
+  font-size: 28px;
   font-weight: 800;
   line-height: 1.22;
   letter-spacing: -0.01em;
@@ -427,27 +438,27 @@ html, body {
   gap: 12px;
 }
 .meta-ico {
-  font-size: 16px;
-  width: 22px;
+  font-size: 20px;
+  width: 26px;
   text-align: center;
   opacity: 0.9;
 }
 .meta-val {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--text-2);
 }
 
 .detail-tag {
   align-self: flex-start;
-  margin-top: 22px;
-  font-size: 14px;
+  margin-top: 24px;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: var(--teal);
   border: 1.5px solid var(--teal-dim);
   border-radius: 999px;
-  padding: 7px 18px;
+  padding: 8px 20px;
 }
 .detail-tag.tag-public { color: var(--text); border-color: var(--text-4); }
 .detail-tag.tag-ticket { color: var(--gold); border-color: var(--gold); }

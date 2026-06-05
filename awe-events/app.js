@@ -73,16 +73,46 @@
   function eventsForDay(d) { return EVENTS.filter((e) => e.day === d); }
   function featuredEvents() { return EVENTS.filter((e) => e.featured); }
 
+  // ── Audio — subtle Web Audio UI cues ──────────────────────
+  let _actx = null;
+  function audioCtx() {
+    if (!_actx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) _actx = new AC();
+    }
+    if (_actx && _actx.state === 'suspended') _actx.resume();
+    return _actx;
+  }
+  function tone(freq, dur, type, peak) {
+    const c = audioCtx();
+    if (!c) return;
+    const t = c.currentTime;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type || 'sine';
+    o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak || 0.05, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g);
+    g.connect(c.destination);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+  }
+  // C5 click on move; rising D5→A5 on open; falling A4→E4 on back.
+  function sndTick() { tone(523.25, 0.055, 'triangle', 0.03); }
+  function sndOpen() { tone(587.33, 0.07, 'sine', 0.05); setTimeout(function () { tone(880.0, 0.1, 'sine', 0.05); }, 45); }
+  function sndBack() { tone(440.0, 0.08, 'sine', 0.045); setTimeout(function () { tone(329.63, 0.1, 'sine', 0.04); }, 45); }
+
   // ── Render: HOME ──────────────────────────────────────────
   function renderHome() {
     const ul = $('day-list');
     ul.innerHTML = '';
-    state.rows.forEach((row, i) => {
+    state.rows.forEach((row) => {
       const li = document.createElement('li');
-      const focused = i === state.homeFocus ? ' focused' : '';
       if (row.kind === 'featured') {
         const n = featuredEvents().length;
-        li.className = 'day-item is-featured' + focused;
+        li.className = 'day-item is-featured';
         li.innerHTML =
           '<span class="di-num di-star">★</span>' +
           '<span class="di-main"><span class="di-label">Featured</span>' +
@@ -90,7 +120,7 @@
           '<span class="di-arrow">›</span>';
       } else {
         const n = eventsForDay(row.day).length;
-        li.className = 'day-item' + focused;
+        li.className = 'day-item';
         li.innerHTML =
           '<span class="di-num">' + row.day + '<span class="di-mon">JUN</span></span>' +
           '<span class="di-main"><span class="di-label">' + WEEKDAY[row.day] + '</span>' +
@@ -99,8 +129,16 @@
       }
       ul.appendChild(li);
     });
+    updateHomeFocus(false);
+  }
+
+  function updateHomeFocus(animate) {
+    const ul = $('day-list');
+    for (let i = 0; i < ul.children.length; i++) {
+      ul.children[i].classList.toggle('focused', i === state.homeFocus);
+    }
     const el = ul.children[state.homeFocus];
-    if (el) el.scrollIntoView({ block: 'nearest' });
+    if (el) el.scrollIntoView({ block: 'nearest', behavior: animate ? 'smooth' : 'auto' });
   }
 
   // ── Render: LIST ──────────────────────────────────────────
@@ -115,6 +153,7 @@
       state.currentDayLabel = WEEKDAY[row.day] + ', Jun ' + row.day;
     }
     state.listFocus = 0;
+    sndOpen();
     showScreen('list');
     renderList();
   }
@@ -124,10 +163,9 @@
     $('list-count').textContent = state.current.length;
     const ul = $('event-feed');
     ul.innerHTML = '';
-    state.current.forEach((ev, i) => {
+    state.current.forEach((ev) => {
       const li = document.createElement('li');
-      li.className = 'event-item' + (ev.featured ? ' is-featured' : '') +
-                     (i === state.listFocus ? ' focused' : '');
+      li.className = 'event-item' + (ev.featured ? ' is-featured' : '');
       const tag = TAG[ev.type];
       const timeMain = ev.start === 'ALL' ? 'ALL' : ev.start.replace(/\s?(AM|PM)$/, '');
       const ampm = ev.start === 'ALL' ? 'DAY' : (ev.start.match(/AM|PM/) || [''])[0];
@@ -139,8 +177,16 @@
         '<span class="ev-star">★</span>';
       ul.appendChild(li);
     });
+    updateListFocus(false);
+  }
+
+  function updateListFocus(animate) {
+    const ul = $('event-feed');
+    for (let i = 0; i < ul.children.length; i++) {
+      ul.children[i].classList.toggle('focused', i === state.listFocus);
+    }
     const el = ul.children[state.listFocus];
-    if (el) el.scrollIntoView({ block: 'nearest' });
+    if (el) el.scrollIntoView({ block: 'nearest', behavior: animate ? 'smooth' : 'auto' });
   }
 
   // ── Render: DETAIL ────────────────────────────────────────
@@ -156,6 +202,7 @@
     tagEl.textContent = tag.label;
     tagEl.className = 'detail-tag ' + tag.cls;
     $('detail-star').className = 'detail-star' + (ev.featured ? '' : ' hidden-star');
+    sndOpen();
     showScreen('detail');
   }
 
@@ -184,7 +231,7 @@
       if (k === 'ArrowUp')        { e.preventDefault(); moveList(-1); }
       else if (k === 'ArrowDown') { e.preventDefault(); moveList(+1); }
       else if (k === 'ArrowLeft' || k === 'Escape' || k === 'Backspace') {
-        e.preventDefault(); showScreen('home'); renderHome();
+        e.preventDefault(); sndBack(); showScreen('home'); renderHome();
       }
       else if (k === 'Enter' || k === ' ' || k === 'ArrowRight') {
         e.preventDefault(); openDetail(state.current[state.listFocus]);
@@ -195,7 +242,7 @@
     if (state.screen === 'detail') {
       if (k === 'ArrowLeft' || k === 'Escape' || k === 'Backspace' ||
           k === 'Enter' || k === ' ') {
-        e.preventDefault(); showScreen('list'); renderList();
+        e.preventDefault(); sndBack(); showScreen('list'); renderList();
       }
     }
   }
@@ -203,13 +250,15 @@
   function moveHome(d) {
     const n = state.rows.length;
     state.homeFocus = (state.homeFocus + d + n) % n;
-    renderHome();
+    updateHomeFocus(true);
+    sndTick();
   }
   function moveList(d) {
     const n = state.current.length;
     if (!n) return;
     state.listFocus = (state.listFocus + d + n) % n;
-    renderList();
+    updateListFocus(true);
+    sndTick();
   }
 
   // ── Utils ─────────────────────────────────────────────────
