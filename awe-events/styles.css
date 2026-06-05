@@ -114,23 +114,26 @@ html, body {
 }
 
 .hero {
-  margin: 16px 0 12px;
+  margin: 18px 0 14px;
   text-align: center;
 }
 
 .hero-title {
-  font-size: 25px;
+  font-size: 26px;
   font-weight: 800;
-  line-height: 1.12;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
   color: var(--teal-hi);
   text-shadow: 0 0 18px var(--teal-glow);
+  text-wrap: balance;
 }
 
 .hero-sub {
-  margin-top: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  margin-top: 11px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--text-3);
 }
 
@@ -168,9 +171,12 @@ html, body {
   font-size: 26px;
   font-weight: 800;
   line-height: 1;
+  letter-spacing: -0.02em;
   color: var(--text);
-  min-width: 34px;
+  min-width: 36px;
   text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 .day-item .di-mon {
   display: block;
@@ -277,9 +283,9 @@ html, body {
 .event-item {
   display: flex;
   align-items: center;
-  gap: 14px;
-  min-height: 116px;
-  padding: 16px 16px;
+  gap: 16px;
+  min-height: 112px;
+  padding: 16px 18px;
   background: var(--surface);
   border: 1.5px solid transparent;
   border-radius: 16px;
@@ -292,34 +298,43 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 86px;
+  justify-content: center;
+  min-width: 78px;
   flex-shrink: 0;
+  padding-right: 16px;
+  border-right: 1px solid var(--line);
 }
 .event-item .ev-time .t-main {
-  font-size: 28px;
+  font-size: 27px;
   font-weight: 800;
   line-height: 1.0;
+  letter-spacing: -0.02em;
   color: var(--teal);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 .event-item .ev-time .t-ampm {
-  font-size: 14px;
+  margin-top: 3px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
   color: var(--text-4);
 }
 
 .event-item .ev-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
   flex: 1 1 auto;
 }
 .event-item .ev-name {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
-  line-height: 1.16;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
   color: var(--text-2);
+  overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -327,13 +342,13 @@ html, body {
 }
 .event-item .ev-tag {
   align-self: flex-start;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: var(--text-3);
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 3px 11px;
+  padding: 4px 12px;
 }
 .event-item .ev-tag.tag-free   { color: var(--teal);  border-color: var(--teal-dim); }
 .event-item .ev-tag.tag-public { color: var(--text-2); border-color: var(--text-4); }
@@ -383,16 +398,21 @@ html, body {
   font-size: 40px;
   font-weight: 800;
   line-height: 1;
+  letter-spacing: -0.02em;
   color: var(--teal);
   text-shadow: 0 0 20px var(--teal-glow);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .detail-name {
   margin-top: 12px;
-  font-size: 22px;
+  font-size: 23px;
   font-weight: 800;
-  line-height: 1.18;
+  line-height: 1.22;
+  letter-spacing: -0.01em;
   color: var(--text);
+  text-wrap: balance;
 }
 
 .detail-meta {
