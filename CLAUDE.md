@@ -52,6 +52,7 @@ A folder at the root is **a demo** if it contains `index.html`. Anything else (`
 - **`?state=…` URL routing** is the standard for screenshot reproducibility. If an app has more than one screen worth photographing, wire `?state=<name>` so headless Chrome can capture each state deterministically. See `flight-status/`, `lr-glimmer/`, `zork-terminal/` for the pattern.
 - **Favicon:** SVG when possible, themed to the app's accent color.
 - **Byline:** `<sub>Made by <name> at [L+R](https://www.levinriegner.com).</sub>` at the bottom of the per-app README.
+- **Analytics:** every demo's `index.html` includes a Umami tracking tag in `<head>`. The same shared `data-website-id` is used across all demos (Umami attributes hits per URL path under `rbm-demos.lnr.io`). When adding a new demo, copy the `<script defer src="https://cloud.umami.is/script.js" data-website-id="...">` line verbatim from any existing `index.html`. The `simulator/` is intentionally excluded.
 
 ## Per-app README template
 
