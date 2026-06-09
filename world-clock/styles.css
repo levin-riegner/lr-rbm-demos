@@ -1,197 +1,175 @@
-/* ============================================================
-   WORLD CLOCK — Meta Display HUD
-   600 × 600 viewport. Pure-black bg (transparent on the lens),
-   cyan accent. D-pad driven: pick cities, favorite them.
-   ============================================================ */
-
 :root {
-  --bg-0:    #000000;
-  --bg-1:    #0b1118;
-  --bg-2:    #131c28;
-  --line:    #233042;
-
-  --text:    #eef4fb;
-  --text-2:  #9fb0c4;
-  --text-3:  #5c6b80;
-
-  --cyan:      #4dd8ff;
-  --cyan-hi:   #8be8ff;
-  --cyan-glow: rgba(77, 216, 255, 0.55);
-  --amber:     #ffb84d;
+  --accent: #38e0c8;
+  --dim: #6f7d7a;
+  --fg: #eafffb;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
   width: 600px;
   height: 600px;
-  overflow: hidden;
   background: #000;
-  color: var(--text);
-  font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  letter-spacing: -0.01em;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+
+#app {
+  width: 600px;
+  height: 600px;
+  background: #000;
+  color: var(--fg);
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  position: relative;
 }
 
 .mono { font-family: "JetBrains Mono", monospace; }
-
-#app { width: 600px; height: 600px; position: relative; }
+.hidden { display: none !important; }
 
 .screen {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
-  padding: 26px 30px;
+  padding: 34px 40px 28px;
 }
-.hidden { display: none !important; }
 
-/* ---------- top bar / heads ---------- */
-.topbar, .step-head {
+/* ---------------- HOME ---------------- */
+.topbar {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--line);
-  flex: 0 0 auto;
+  margin-bottom: 22px;
 }
-.brand-mark { font-size: 28px; }
+.brand-mark { font-size: 26px; }
 .brand-text {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: 0.04em;
-}
-.step-title {
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
-.step-hint {
-  margin-left: auto;
-  font-size: 13px;
-  color: var(--text-3);
-  letter-spacing: 0.06em;
+  letter-spacing: 4px;
+  color: var(--accent);
 }
 
-/* ---------- favorites list ---------- */
 .fav-list {
-  flex: 1 1 auto;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 14px;
-  padding: 8px 0;
+  gap: 12px;
+  overflow: hidden;
 }
 
 .fav {
   display: flex;
   align-items: baseline;
-  gap: 16px;
-  padding: 16px 22px;
-  border: 1px solid var(--line);
+  justify-content: space-between;
+  padding: 14px 20px;
+  border: 2px solid #1a2a28;
   border-radius: 16px;
-  background: var(--bg-1);
+  background: #060b0a;
 }
-.fav.selected {
-  border-color: var(--cyan);
-  background: var(--bg-2);
-  box-shadow: 0 0 0 1px var(--cyan), 0 0 26px -8px var(--cyan-glow);
+.fav.sel {
+  border-color: var(--accent);
+  background: #07201c;
 }
-.fav-meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fav-left { display: flex; flex-direction: column; gap: 2px; }
 .fav-city {
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  letter-spacing: 0.5px;
 }
-.fav-day {
+.fav-meta {
   font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--text-3);
-  text-transform: uppercase;
+  color: var(--dim);
+  letter-spacing: 1px;
 }
 .fav-time {
-  margin-left: auto;
-  font-size: 46px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 34px;
   font-weight: 700;
+  color: var(--accent);
   line-height: 1;
-  color: var(--cyan-hi);
-  text-shadow: 0 0 18px var(--cyan-glow);
 }
-.fav-time .sec { font-size: 22px; color: var(--text-2); text-shadow: none; }
-.fav-off {
-  font-size: 14px;
-  color: var(--text-3);
-  align-self: flex-end;
-  min-width: 46px;
-  text-align: right;
-}
+.fav-time .sec { font-size: 20px; color: var(--dim); }
+.fav-ampm { font-size: 15px; color: var(--dim); margin-left: 6px; }
 
-/* the "add city" affordance lives inside the list as the last row */
-.fav-add {
+/* "Add city" action row */
+.fav.add {
   justify-content: center;
+  gap: 12px;
   border-style: dashed;
-  color: var(--text-2);
+  border-color: #244540;
+  background: transparent;
+  color: var(--dim);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
 }
-.fav-add .fav-city { font-size: 22px; color: var(--text-2); }
-.fav-add.selected .fav-city { color: var(--cyan-hi); }
+.fav.add.sel { color: var(--accent); border-color: var(--accent); }
 
-.fav-empty {
+.empty-note {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  color: var(--text-3);
+  color: var(--dim);
   font-size: 18px;
-  padding: 20px 0;
+  line-height: 1.6;
 }
 
 .home-hint {
-  flex: 0 0 auto;
   text-align: center;
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  color: var(--text-3);
-  padding-top: 14px;
+  margin-top: 18px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--dim);
 }
 
-/* ---------- city picker ---------- */
+/* ---------------- PICKER ---------------- */
+.step-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.step-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--accent);
+}
+.step-hint { font-size: 12px; letter-spacing: 1px; color: var(--dim); }
+
 .city-list {
-  flex: 1 1 auto;
-  overflow: hidden;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-top: 14px;
+  gap: 8px;
+  overflow: hidden;
 }
+
 .city {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 13px 18px;
+  justify-content: space-between;
+  padding: 12px 18px;
   border-radius: 12px;
-  border: 1px solid transparent;
-  flex: 0 0 auto;
+  border: 2px solid transparent;
 }
-.city.selected {
-  border-color: var(--cyan);
-  background: var(--bg-2);
-  box-shadow: 0 0 22px -10px var(--cyan-glow);
+.city.sel {
+  border-color: var(--accent);
+  background: #07201c;
 }
-.city-name { font-size: 22px; font-weight: 600; }
-.city-zone { font-size: 14px; color: var(--text-3); }
-.city-time {
-  margin-left: auto;
-  font-size: 22px;
-  color: var(--text-2);
+.city-name { font-size: 21px; font-weight: 600; }
+.city-right { display: flex; align-items: center; gap: 14px; }
+.city-clock {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 17px;
+  color: var(--dim);
 }
-.city-star {
-  width: 26px;
+.city.sel .city-clock { color: var(--fg); }
+.star {
+  font-size: 20px;
+  width: 24px;
   text-align: center;
-  font-size: 22px;
-  color: var(--text-3);
+  color: #2a3a38;
 }
-.city.fav-on .city-star { color: var(--amber); }
-.city.fav-on .city-name { color: var(--cyan-hi); }
+.city.fav .star { color: var(--accent); }

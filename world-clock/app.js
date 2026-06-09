@@ -1,255 +1,209 @@
 /* ============================================================
    WORLD CLOCK — app logic
-   - Home shows favorite cities with live local times.
-   - Picker lets you toggle any city in/out of favorites.
-   - New York is favorited by default; favorites persist locally.
-   D-pad only: ▲▼ move, Enter activate, ◀ back from picker.
+   - Home shows favorite cities with live, DST-correct times.
+   - Picker lets you toggle cities in/out of favorites.
+   - D-pad only: ▲▼ move, Enter select/toggle, ◀ back.
    ============================================================ */
 
-// Master city list. Offset stored only for display ordering hints;
-// actual time comes from Intl with the IANA time zone (DST-correct).
+// Built-in catalog. IANA tz names keep times DST-correct automatically.
 const CITIES = [
-  { id: "los_angeles",  name: "Los Angeles",   tz: "America/Los_Angeles" },
-  { id: "denver",       name: "Denver",        tz: "America/Denver" },
-  { id: "chicago",      name: "Chicago",       tz: "America/Chicago" },
-  { id: "new_york",     name: "New York",      tz: "America/New_York" },
-  { id: "sao_paulo",    name: "São Paulo",     tz: "America/Sao_Paulo" },
-  { id: "london",       name: "London",        tz: "Europe/London" },
-  { id: "paris",        name: "Paris",         tz: "Europe/Paris" },
-  { id: "berlin",       name: "Berlin",        tz: "Europe/Berlin" },
-  { id: "cairo",        name: "Cairo",         tz: "Africa/Cairo" },
-  { id: "moscow",       name: "Moscow",        tz: "Europe/Moscow" },
-  { id: "dubai",        name: "Dubai",         tz: "Asia/Dubai" },
-  { id: "mumbai",       name: "Mumbai",        tz: "Asia/Kolkata" },
-  { id: "bangkok",      name: "Bangkok",       tz: "Asia/Bangkok" },
-  { id: "singapore",    name: "Singapore",     tz: "Asia/Singapore" },
-  { id: "hong_kong",    name: "Hong Kong",     tz: "Asia/Hong_Kong" },
-  { id: "shanghai",     name: "Shanghai",      tz: "Asia/Shanghai" },
-  { id: "tokyo",        name: "Tokyo",         tz: "Asia/Tokyo" },
-  { id: "seoul",        name: "Seoul",         tz: "Asia/Seoul" },
-  { id: "sydney",       name: "Sydney",        tz: "Australia/Sydney" },
-  { id: "auckland",     name: "Auckland",      tz: "Pacific/Auckland" },
+  { name: "Auckland",      tz: "Pacific/Auckland" },
+  { name: "Bangkok",       tz: "Asia/Bangkok" },
+  { name: "Berlin",        tz: "Europe/Berlin" },
+  { name: "Buenos Aires",  tz: "America/Argentina/Buenos_Aires" },
+  { name: "Cairo",         tz: "Africa/Cairo" },
+  { name: "Chicago",       tz: "America/Chicago" },
+  { name: "Dubai",         tz: "Asia/Dubai" },
+  { name: "Hong Kong",     tz: "Asia/Hong_Kong" },
+  { name: "Honolulu",      tz: "Pacific/Honolulu" },
+  { name: "Istanbul",      tz: "Europe/Istanbul" },
+  { name: "London",        tz: "Europe/London" },
+  { name: "Los Angeles",   tz: "America/Los_Angeles" },
+  { name: "Mexico City",   tz: "America/Mexico_City" },
+  { name: "Mumbai",        tz: "Asia/Kolkata" },
+  { name: "New York",      tz: "America/New_York" },
+  { name: "Paris",         tz: "Europe/Paris" },
+  { name: "São Paulo",     tz: "America/Sao_Paulo" },
+  { name: "Singapore",     tz: "Asia/Singapore" },
+  { name: "Sydney",        tz: "Australia/Sydney" },
+  { name: "Tokyo",         tz: "Asia/Tokyo" },
 ];
 
 const STORE_KEY = "world-clock.favorites";
-const DEFAULT_FAVS = ["new_york"];
+const LOCAL_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-function cityById(id) { return CITIES.find((c) => c.id === id); }
-
+// ---------------- state ----------------
 function loadFavorites() {
   try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (raw) {
-      const ids = JSON.parse(raw).filter(cityById);
-      return ids;
+    const raw = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (Array.isArray(raw) && raw.length) {
+      return raw.filter((tz) => CITIES.some((c) => c.tz === tz));
     }
-  } catch (e) { /* ignore */ }
-  return [...DEFAULT_FAVS];
-}
-
-function saveFavorites() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(favorites)); }
-  catch (e) { /* ignore */ }
+  } catch (e) { /* fall through to default */ }
+  return ["America/New_York"]; // New York by default
 }
 
 let favorites = loadFavorites();
+let screen = "home";       // "home" | "picker"
+let homeIdx = 0;           // index into home rows (favorites + Add City)
+let pickerIdx = CITIES.findIndex((c) => c.tz === "America/New_York");
 
-// ---------- time helpers (Intl is DST-aware) ----------
-function partsFor(tz, date) {
+function saveFavorites() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(favorites));
+}
+
+// ---------------- time helpers ----------------
+// Returns {h, m, s, ampm} for a tz, plus offset hours vs. local.
+function partsFor(tz, now) {
   const fmt = new Intl.DateTimeFormat("en-US", {
-    timeZone: tz, hour12: false,
-    weekday: "short", month: "short", day: "numeric",
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    timeZone: tz, hour: "2-digit", minute: "2-digit",
+    second: "2-digit", hour12: true,
   });
-  const p = {};
-  for (const { type, value } of fmt.formatToParts(date)) p[type] = value;
-  return p; // {weekday, month, day, hour, minute, second}
+  const map = {};
+  for (const p of fmt.formatToParts(now)) map[p.type] = p.value;
+  return { h: map.hour, m: map.minute, s: map.second, ampm: (map.dayPeriod || "").toUpperCase() };
 }
 
-// Offset in hours vs the wearer's local zone, e.g. "+5" / "-3" / "0".
-function offsetLabel(tz, date) {
-  const local = date.getTime();
-  const there = new Date(date.toLocaleString("en-US", { timeZone: tz })).getTime();
-  const here = new Date(date.toLocaleString("en-US")).getTime();
-  const diff = Math.round((there - here) / 3.6e6);
-  if (diff === 0) return "HERE";
-  return (diff > 0 ? "+" : "") + diff + "h";
+// Offset of tz relative to local time, in whole/half hours.
+function offsetLabel(tz, now) {
+  const tzMs = zonedMs(tz, now);
+  const localMs = zonedMs(LOCAL_TZ, now);
+  const diff = Math.round((tzMs - localMs) / 60000); // minutes
+  if (diff === 0) return "SAME AS YOU";
+  const sign = diff > 0 ? "+" : "−";
+  const abs = Math.abs(diff);
+  const hh = Math.floor(abs / 60);
+  const mm = abs % 60;
+  return `${sign}${hh}${mm ? ":" + String(mm).padStart(2, "0") : ""}H`;
 }
 
-function dayLabel(p) {
-  return `${p.weekday} · ${p.month} ${p.day}`;
+// Wall-clock time of a tz expressed as a UTC-epoch, for offset math.
+function zonedMs(tz, now) {
+  const f = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  });
+  const m = {};
+  for (const p of f.formatToParts(now)) m[p.type] = p.value;
+  let hour = m.hour === "24" ? "00" : m.hour;
+  return Date.UTC(+m.year, +m.month - 1, +m.day, +hour, +m.minute, +m.second);
 }
 
-// ============================================================
-//  SCREENS / STATE
-// ============================================================
-const home = document.getElementById("home");
-const picker = document.getElementById("picker");
+// ---------------- rendering ----------------
+const homeEl = document.getElementById("home");
+const pickerEl = document.getElementById("picker");
 const favListEl = document.getElementById("fav-list");
 const cityListEl = document.getElementById("city-list");
 
-let screen = "home";        // "home" | "picker"
-let homeIdx = 0;            // index into home rows (favorites + add button)
-let pickerIdx = 0;         // index into CITIES
-
-// ---------- HOME render ----------
-function buildHome() {
-  favListEl.innerHTML = "";
-
-  favorites.forEach((id) => {
-    const c = cityById(id);
-    const row = document.createElement("div");
-    row.className = "fav";
-    row.dataset.id = id;
-    row.innerHTML = `
-      <div class="fav-meta">
-        <span class="fav-city">${c.name}</span>
-        <span class="fav-day"></span>
-      </div>
-      <span class="fav-time"></span>
-      <span class="fav-off"></span>`;
-    favListEl.appendChild(row);
-  });
-
-  const add = document.createElement("div");
-  add.className = "fav fav-add";
-  add.dataset.add = "1";
-  add.innerHTML = `<span class="fav-city">＋ ADD CITY</span>`;
-  favListEl.appendChild(add);
-
-  homeIdx = Math.min(homeIdx, favorites.length); // clamp (add row = favorites.length)
-  paintHomeSelection();
-  tickHome();
+function favCities() {
+  return favorites
+    .map((tz) => CITIES.find((c) => c.tz === tz))
+    .filter(Boolean);
 }
 
-function homeRows() { return [...favListEl.children]; }
-
-function paintHomeSelection() {
-  homeRows().forEach((el, i) => el.classList.toggle("selected", i === homeIdx));
+function homeRowCount() {
+  return favCities().length + 1; // +1 for the Add City row
 }
 
-function tickHome() {
-  if (screen !== "home") return;
+function renderHome() {
   const now = new Date();
-  favorites.forEach((id, i) => {
-    const c = cityById(id);
+  const favs = favCities();
+  homeIdx = Math.min(homeIdx, homeRowCount() - 1);
+
+  let html = "";
+  if (favs.length === 0) {
+    html += `<div class="empty-note">No cities yet.<br>Select <b>+ Add city</b> below.</div>`;
+  }
+  favs.forEach((c, i) => {
     const p = partsFor(c.tz, now);
-    const row = favListEl.children[i];
-    if (!row) return;
-    row.querySelector(".fav-time").innerHTML =
-      `${p.hour}:${p.minute}<span class="sec">:${p.second}</span>`;
-    row.querySelector(".fav-day").textContent = dayLabel(p);
-    row.querySelector(".fav-off").textContent = offsetLabel(c.tz, now);
+    html += `
+      <div class="fav ${homeIdx === i ? "sel" : ""}">
+        <div class="fav-left">
+          <span class="fav-city">${c.name}</span>
+          <span class="fav-meta">${offsetLabel(c.tz, now)}</span>
+        </div>
+        <div class="fav-time">${p.h}:${p.m}<span class="sec">:${p.s}</span><span class="fav-ampm">${p.ampm}</span></div>
+      </div>`;
   });
+  const addSel = homeIdx === favs.length ? "sel" : "";
+  html += `<div class="fav add ${addSel}"><span>＋</span><span>ADD CITY</span></div>`;
+
+  favListEl.innerHTML = html;
 }
 
-// ---------- PICKER render ----------
-function buildPicker() {
-  cityListEl.innerHTML = "";
+function renderPicker() {
+  const now = new Date();
+  let html = "";
   CITIES.forEach((c, i) => {
-    const row = document.createElement("div");
-    row.className = "city";
-    row.dataset.id = c.id;
-    row.innerHTML = `
-      <span class="city-star">★</span>
-      <div>
-        <div class="city-name">${c.name}</div>
-        <div class="city-zone">${c.tz.replace(/_/g, " ")}</div>
-      </div>
-      <span class="city-time mono"></span>`;
-    cityListEl.appendChild(row);
+    const p = partsFor(c.tz, now);
+    const isFav = favorites.includes(c.tz);
+    html += `
+      <div class="city ${pickerIdx === i ? "sel" : ""} ${isFav ? "fav" : ""}">
+        <span class="city-name">${c.name}</span>
+        <div class="city-right">
+          <span class="city-clock">${p.h}:${p.m} ${p.ampm}</span>
+          <span class="star">${isFav ? "★" : "☆"}</span>
+        </div>
+      </div>`;
   });
-  paintPicker();
-  tickPicker();
-}
+  cityListEl.innerHTML = html;
 
-function paintPicker() {
-  [...cityListEl.children].forEach((el, i) => {
-    el.classList.toggle("selected", i === pickerIdx);
-    el.classList.toggle("fav-on", favorites.includes(CITIES[i].id));
-  });
   // keep the selected row in view
-  cityListEl.children[pickerIdx]?.scrollIntoView({ block: "nearest" });
+  const sel = cityListEl.querySelector(".city.sel");
+  if (sel) sel.scrollIntoView({ block: "nearest" });
 }
 
-function tickPicker() {
-  if (screen !== "picker") return;
-  const now = new Date();
-  CITIES.forEach((c, i) => {
-    const p = partsFor(c.tz, now);
-    cityListEl.children[i].querySelector(".city-time").textContent =
-      `${p.hour}:${p.minute}`;
-  });
+function render() {
+  if (screen === "home") {
+    homeEl.classList.remove("hidden");
+    pickerEl.classList.add("hidden");
+    renderHome();
+  } else {
+    homeEl.classList.add("hidden");
+    pickerEl.classList.remove("hidden");
+    renderPicker();
+  }
 }
 
-// ============================================================
-//  NAVIGATION
-// ============================================================
-function showHome() {
-  screen = "home";
-  picker.classList.add("hidden");
-  home.classList.remove("hidden");
-  buildHome();
-}
-
-function showPicker() {
-  screen = "picker";
-  home.classList.add("hidden");
-  picker.classList.remove("hidden");
-  buildPicker();
-}
-
-function moveHome(delta) {
-  const max = favorites.length; // last index = add row
-  homeIdx = Math.max(0, Math.min(max, homeIdx + delta));
-  paintHomeSelection();
-}
-
-function activateHome() {
-  if (homeIdx === favorites.length) { showPicker(); return; }
-  // Enter on a favorite removes it (only one left? keep at least the row gone).
-  const id = favorites[homeIdx];
-  favorites.splice(homeIdx, 1);
-  saveFavorites();
-  buildHome();
-}
-
-function movePicker(delta) {
-  pickerIdx = Math.max(0, Math.min(CITIES.length - 1, pickerIdx + delta));
-  paintPicker();
-}
-
-function toggleFavorite() {
-  const id = CITIES[pickerIdx].id;
-  const at = favorites.indexOf(id);
-  if (at >= 0) favorites.splice(at, 1);
-  else favorites.push(id);
-  saveFavorites();
-  paintPicker();
-}
-
-// ============================================================
-//  INPUT — D-pad + Enter
-// ============================================================
-document.addEventListener("keydown", (e) => {
+// ---------------- input ----------------
+function onKey(e) {
   const k = e.key;
   if (screen === "home") {
-    if (k === "ArrowUp")    { moveHome(-1); e.preventDefault(); }
-    else if (k === "ArrowDown") { moveHome(1); e.preventDefault(); }
-    else if (k === "Enter") { activateHome(); e.preventDefault(); }
+    if (k === "ArrowDown") { homeIdx = (homeIdx + 1) % homeRowCount(); render(); }
+    else if (k === "ArrowUp") { homeIdx = (homeIdx - 1 + homeRowCount()) % homeRowCount(); render(); }
+    else if (k === "Enter") {
+      const favs = favCities();
+      if (homeIdx === favs.length) {
+        // Add City row → open picker
+        screen = "picker";
+        render();
+      } else {
+        // remove this favorite
+        favorites = favorites.filter((tz) => tz !== favs[homeIdx].tz);
+        saveFavorites();
+        render();
+      }
+    } else { return; }
   } else {
-    if (k === "ArrowUp")    { movePicker(-1); e.preventDefault(); }
-    else if (k === "ArrowDown") { movePicker(1); e.preventDefault(); }
-    else if (k === "Enter") { toggleFavorite(); e.preventDefault(); }
-    else if (k === "ArrowLeft") { showHome(); e.preventDefault(); }
+    // picker
+    if (k === "ArrowDown") { pickerIdx = (pickerIdx + 1) % CITIES.length; render(); }
+    else if (k === "ArrowUp") { pickerIdx = (pickerIdx - 1 + CITIES.length) % CITIES.length; render(); }
+    else if (k === "Enter") {
+      const tz = CITIES[pickerIdx].tz;
+      if (favorites.includes(tz)) favorites = favorites.filter((t) => t !== tz);
+      else favorites.push(tz);
+      saveFavorites();
+      render();
+    } else if (k === "ArrowLeft") {
+      screen = "home";
+      render();
+    } else { return; }
   }
-});
+  e.preventDefault();
+}
 
-// ============================================================
-//  BOOT
-// ============================================================
-showHome();
-setInterval(() => {
-  if (screen === "home") tickHome();
-  else tickPicker();
-}, 1000);
+document.addEventListener("keydown", onKey);
+
+// tick every second
+render();
+setInterval(render, 1000);
