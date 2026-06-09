@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <title>World Clock</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+<script defer src="https://cloud.umami.is/script.js" data-website-id="be32beae-a2a9-423f-b55d-e646ec260f93"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===========================================================
+       HOME — favorite cities
+       =========================================================== -->
+  <section id="home" class="screen">
+    <header class="topbar">
+      <span class="brand-mark">🌐</span>
+      <span class="brand-text">WORLD&nbsp;CLOCK</span>
+    </header>
+
+    <div class="fav-list" id="fav-list"><!-- favorites injected --></div>
+
+    <div class="home-hint mono" id="home-hint">▲▼ SELECT · ENTER OPEN</div>
+  </section>
+
+  <!-- ===========================================================
+       PICKER — add a city
+       =========================================================== -->
+  <section id="picker" class="screen hidden">
+    <header class="step-head">
+      <span class="step-title">ADD&nbsp;CITY</span>
+      <span class="step-hint mono">ENTER TOGGLES · ◀ BACK</span>
+    </header>
+
+    <div class="city-list" id="city-list"><!-- cities injected --></div>
+  </section>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

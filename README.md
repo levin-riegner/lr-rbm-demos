@@ -47,6 +47,7 @@ Each app is a small, self-contained web project designed for the 600x600 display
 | **Trivia Live** — 10-question live trivia from the Open Trivia DB with category and difficulty pickers | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/trivia-live) | [open](https://rbm-demos.lnr.io/trivia-live/) | — | <img src="trivia-live/screenshots/preview.png" width="120"> |
 | **Twitch Chat HUD** — large-type Twitch chat feed streamed anonymously over IRC WebSocket for hands-free streamers | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/twitch-chat) | [open](https://rbm-demos.lnr.io/twitch-chat/) | — | <img src="twitch-chat/screenshots/chatting.png" width="120"> |
 | **Weather Dashboard** — 5-day forecast for preset cities via Open-Meteo with a 10-minute cache | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/weather-dashboard) | [open](https://rbm-demos.lnr.io/weather-dashboard/) | — | <img src="https://github.com/user-attachments/assets/7a2298b7-244b-43bb-ae75-5a6ee7c626ca" width="120"> |
+| **World Clock** — live local times for favorite cities with a D-pad city picker | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/world-clock) | [open](https://rbm-demos.lnr.io/world-clock/) | — | <img src="world-clock/screenshots/preview.png" width="120"> |
 
 ### Proof of concept demos
 
