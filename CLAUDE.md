@@ -49,6 +49,7 @@ A folder at the root is **a demo** if it contains `index.html`. Anything else (`
 - **Fonts:** load from Google Fonts. The house pair is `Space Grotesk` + `JetBrains Mono` — don't change it without a reason.
 - **Background:** prefer pure `#000`. Avoid ambient gradients on the lens.
 - **Run locally:** `npx serve -l <port> <app-name>` then open in Chrome at 600×600. The simulator can iframe the local URL.
+- **Building a new app = build + hand off a URL.** When asked to create/build a demo, just write the files, start `npx serve -l <port> <app-name>`, and reply with the `localhost` URL. Do **not** run/verify the app, drive headless Chrome, or generate screenshots — that's the developer's job. Only test or capture screenshots when explicitly asked.
 - **`?state=…` URL routing** is the standard for screenshot reproducibility. If an app has more than one screen worth photographing, wire `?state=<name>` so headless Chrome can capture each state deterministically. See `flight-status/`, `lr-glimmer/`, `zork-terminal/` for the pattern.
 - **Favicon:** SVG when possible, themed to the app's accent color.
 - **Byline:** `<sub>Made by <name> at [L+R](https://www.levinriegner.com).</sub>` at the bottom of the per-app README.
