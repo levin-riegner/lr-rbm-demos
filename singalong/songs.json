@@ -1,0 +1,16 @@
+[
+  {
+    "id": "row-your-boat",
+    "title": "Row, Row, Row Your Boat",
+    "artist": "Traditional",
+    "audio": "songs/row-your-boat.wav",
+    "lrc": "songs/row-your-boat.lrc"
+  },
+  {
+    "id": "here-comes-the-sun",
+    "title": "Here Comes the Sun",
+    "artist": "The Beatles",
+    "audio": "songs/here-comes-the-sun.mp3",
+    "lrc": "songs/here-comes-the-sun.lrc"
+  }
+]

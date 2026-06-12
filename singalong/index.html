@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, initial-scale=1" />
+  <title>Sing Along</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="be32beae-a2a9-423f-b55d-e646ec260f93"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="app">
+    <!-- Home: song picker -->
+    <section id="home" class="screen">
+      <header class="top-bar">
+        <span class="brand">SING ALONG</span>
+        <span class="mono dim" id="song-count"></span>
+      </header>
+      <ul id="song-list"></ul>
+      <footer class="hint mono">▲ ▼ pick song · Enter sing</footer>
+    </section>
+
+    <!-- Sing: synced lyrics -->
+    <section id="sing" class="screen hidden">
+      <header class="top-bar">
+        <span id="sing-title" class="brand"></span>
+        <span id="sing-artist" class="mono dim"></span>
+      </header>
+      <div id="lyrics"></div>
+      <div id="progress"><div id="progress-fill"></div></div>
+      <div class="time-row mono">
+        <span id="t-cur">0:00</span>
+        <span id="offset-badge" class="dim"></span>
+        <span id="t-dur">0:00</span>
+      </div>
+      <footer class="hint mono" id="sing-hint">Enter play</footer>
+    </section>
+  </main>
+  <audio id="audio" preload="auto"></audio>
+  <script src="app.js"></script>
+</body>
+</html>

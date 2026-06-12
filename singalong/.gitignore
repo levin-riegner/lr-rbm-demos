@@ -1,0 +1,4 @@
+# Purchased / personal media stays local. Only the public-domain demo track is tracked.
+songs/*
+!songs/row-your-boat.wav
+!songs/row-your-boat.lrc
