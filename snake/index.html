@@ -17,9 +17,9 @@
         <span class="header-meta" id="score-display">Score: 0</span>
       </header>
       <div class="content game-content">
-        <canvas id="game-canvas" width="560" height="460"></canvas>
+        <canvas id="game-canvas"></canvas>
       </div>
-      <nav class="nav-bar">
+      <nav id="home-nav" class="nav-bar">
         <button class="nav-item focusable primary" data-action="start-game">New Game</button>
         <button class="nav-item focusable" data-action="view-scores">High Scores</button>
       </nav>
@@ -33,7 +33,7 @@
         <div class="game-over-label">points</div>
         <div class="game-over-best" id="best-score-label"></div>
         <button class="nav-item focusable primary overlay-btn" data-action="start-game">Play Again</button>
-        <button class="nav-item focusable overlay-btn" data-action="dismiss-overlay">Back</button>
+        <button class="nav-item focusable overlay-btn" data-action="view-scores">See High Scores</button>
       </div>
     </div>
 

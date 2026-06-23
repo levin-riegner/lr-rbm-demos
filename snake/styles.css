@@ -88,17 +88,25 @@ body {
 }
 
 /* --- Game Canvas --- */
-.game-content {
+.content.game-content {
+  flex: 1;
+  min-height: 0;
+  padding: 4px 8px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 20px;
+}
+
+#home .header {
+  padding: 10px 16px;
 }
 
 #game-canvas {
   background: var(--bg-secondary);
   border-radius: var(--radius-md);
   border: 2px solid var(--bg-tertiary);
+  flex-shrink: 0;
 }
 
 /* --- Focus States --- */
@@ -159,6 +167,7 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 50;
+  pointer-events: auto;
 }
 .overlay.hidden { display: none; }
 
@@ -228,7 +237,7 @@ body {
   text-align: center;
   flex-shrink: 0;
 }
-.list-item-rank.gold { color: var(--accent-warm); }
+.list-item-rank.gold { color: #fce300; }
 .list-item-rank.silver { color: #c0c0c0; }
 .list-item-rank.bronze { color: #cd7f32; }
 .list-item-content { flex: 1; min-width: 0; }

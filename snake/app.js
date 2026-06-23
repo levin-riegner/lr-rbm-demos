@@ -5,12 +5,12 @@
   'use strict';
 
   // --- Constants ---
-  const CELL = 20;
-  const CANVAS_W = 560;
-  const CANVAS_H = 460;
-  const COLS = CANVAS_W / CELL;
-  const ROWS = CANVAS_H / CELL;
-  const TICK_MS = 120;
+  const COLS = 22;  // 20% smaller than original 28×23 grid
+  const ROWS = 18;
+  let CELL = 20;
+  let CANVAS_W = COLS * CELL;
+  let CANVAS_H = ROWS * CELL;
+  const TICK_MS = 144; // 20% slower than original 120 ms tick
   const STORAGE_KEY = 'snake_high_scores';
   const MAX_SCORES = 10;
 
@@ -40,8 +40,29 @@
   const bestScoreLabel = document.getElementById('best-score-label');
   const gameOverOverlay = document.getElementById('game-over');
   const homeScreen = document.getElementById('home');
+  const homeNav = document.getElementById('home-nav');
+  const gameContent = homeScreen.querySelector('.game-content');
   const scoresScreen = document.getElementById('scores');
   const scoresList = document.getElementById('scores-list');
+
+  function setHomeNavVisible(visible) {
+    homeNav.classList.toggle('hidden', !visible);
+  }
+
+  function layoutCanvas() {
+    const style = getComputedStyle(gameContent);
+    const availW = gameContent.clientWidth
+      - parseFloat(style.paddingLeft)
+      - parseFloat(style.paddingRight);
+    const availH = gameContent.clientHeight
+      - parseFloat(style.paddingTop)
+      - parseFloat(style.paddingBottom);
+    CELL = Math.max(12, Math.min(Math.floor(availW / COLS), Math.floor(availH / ROWS)));
+    CANVAS_W = COLS * CELL;
+    CANVAS_H = ROWS * CELL;
+    canvas.width = CANVAS_W;
+    canvas.height = CANVAS_H;
+  }
 
   // --- High Scores ---
   function loadScores() {
@@ -139,7 +160,7 @@
       ctx.fill();
     }
     ctx.fillStyle = '#ffffff';
-    ctx.font = '600 18px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = '600 ' + Math.round(CELL * 0.75) + 'px -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('Press New Game to start', CANVAS_W / 2, ROWS * CELL - 30);
   }
@@ -184,11 +205,11 @@
     dir = { ...nextDir };
     const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
 
-    // Wall collision
-    if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
-      gameOver();
-      return;
-    }
+    // Wrap around edges (classic snake)
+    if (head.x < 0) head.x = COLS - 1;
+    else if (head.x >= COLS) head.x = 0;
+    if (head.y < 0) head.y = ROWS - 1;
+    else if (head.y >= ROWS) head.y = 0;
 
     // Self collision
     for (let i = 0; i < snake.length; i++) {
@@ -215,6 +236,10 @@
   function startGame() {
     if (gameLoop) clearInterval(gameLoop);
     gameOverOverlay.classList.add('hidden');
+    homeScreen.inert = false;
+    setHomeNavVisible(false);
+    layoutCanvas();
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
     resetGame();
     running = true;
     gameStarted = true;
@@ -240,8 +265,8 @@
       bestScoreLabel.textContent = 'Best: ' + Math.max(best, score);
     }
 
+    homeScreen.inert = true;
     gameOverOverlay.classList.remove('hidden');
-    // Focus play again button
     const playAgainBtn = gameOverOverlay.querySelector('[data-action="start-game"]');
     if (playAgainBtn) playAgainBtn.focus();
   }
@@ -300,6 +325,23 @@
     }
   });
 
+  function goHomeFromScores() {
+    showScreen('home');
+    if (gameStarted && !running) {
+      setHomeNavVisible(false);
+      layoutCanvas();
+      render();
+      running = true;
+      gameLoop = setInterval(tick, TICK_MS);
+    } else if (!gameStarted) {
+      setHomeNavVisible(true);
+      layoutCanvas();
+      drawIdle();
+      const newGameBtn = homeNav.querySelector('.nav-item.primary');
+      if (newGameBtn) newGameBtn.focus();
+    }
+  }
+
   // --- Actions ---
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('[data-action]');
@@ -316,22 +358,13 @@
           gameLoop = null;
           running = false;
         }
+        gameOverOverlay.classList.add('hidden');
+        homeScreen.inert = false;
         renderScoresList();
         showScreen('scores');
         break;
       case 'back':
-        showScreen('home');
-        if (gameStarted && !running) {
-          // Resume if game was paused
-          running = true;
-          gameLoop = setInterval(tick, TICK_MS);
-        } else if (!gameStarted) {
-          drawIdle();
-        }
-        break;
-      case 'dismiss-overlay':
-        gameOverOverlay.classList.add('hidden');
-        drawIdle();
+        goHomeFromScores();
         break;
       case 'clear-scores':
         saveScores([]);
@@ -344,6 +377,9 @@
   const focusableSelector = '.focusable:not(.hidden *)';
 
   function getVisibleFocusables() {
+    if (!gameOverOverlay.classList.contains('hidden')) {
+      return Array.from(gameOverOverlay.querySelectorAll('.focusable'));
+    }
     return Array.from(document.querySelectorAll(focusableSelector)).filter(function (el) {
       return el.offsetParent !== null;
     });
@@ -351,6 +387,12 @@
 
   document.addEventListener('keydown', function (e) {
     if (running) return; // Game handles arrows when running
+
+    if (!scoresScreen.classList.contains('hidden') && e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goHomeFromScores();
+      return;
+    }
 
     const focusables = getVisibleFocusables();
     if (focusables.length === 0) return;
@@ -372,7 +414,8 @@
   });
 
   // --- Init ---
+  layoutCanvas();
   drawIdle();
-  const firstBtn = document.querySelector('.nav-item.primary');
+  const firstBtn = homeNav.querySelector('.nav-item.primary');
   if (firstBtn) firstBtn.focus();
 })();
