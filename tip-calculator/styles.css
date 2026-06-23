@@ -1,0 +1,164 @@
+/* ============================================================
+   TIP CALCULATOR — Meta Display HUD
+   600 × 600, D-pad driven. Pure-black bg = transparent on lens.
+   ▲▼ bill · ◀▶ tip % · Enter cycles party size.
+   ============================================================ */
+
+:root {
+  --bg:        #000000;
+  --text:      #f4f7ff;
+  --text-2:    #aeb7d6;
+  --text-3:    #5e688c;
+
+  --green:     #5cf28a;
+  --green-glow:rgba(92, 242, 138, 0.45);
+  --amber:     #ffb84d;
+  --amber-glow:rgba(255, 184, 77, 0.5);
+
+  --line:      #232a44;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 600px;
+  height: 600px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+#app {
+  width: 600px;
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 36px 20px;
+}
+
+/* ---- top bar ---- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.brand-mark {
+  font-size: 26px;
+  color: var(--green);
+  text-shadow: 0 0 12px var(--green-glow);
+}
+.brand-text { font-size: 22px; color: var(--text-2); }
+.people {
+  margin-left: auto;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: 1px;
+}
+.people.active { color: var(--amber); text-shadow: 0 0 12px var(--amber-glow); }
+
+/* ---- bill / tip rows ---- */
+.row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 2px solid var(--line);
+}
+.row-label {
+  width: 86px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--text-3);
+}
+.row-value {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.cur { font-size: 40px; font-weight: 700; color: var(--text-2); }
+.big {
+  font-size: 96px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.tip-amt {
+  margin-left: 16px;
+  align-self: center;
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--green);
+  text-shadow: 0 0 10px var(--green-glow);
+}
+.row-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.key {
+  display: inline-block;
+  min-width: 30px;
+  padding: 4px 8px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-2);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+}
+
+/* ---- total ---- */
+#total {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 14px;
+  padding: 18px 0 10px;
+}
+.total-label {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--text-3);
+  margin-right: auto;
+}
+.total-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--green);
+  text-shadow: 0 0 18px var(--green-glow);
+}
+.total-value .cur { font-size: 44px; color: var(--green); }
+.total-value .mono {
+  font-size: 104px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+/* ---- foot bar ---- */
+.footbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-3);
+  letter-spacing: 0.5px;
+}
+.footbar .key { padding: 2px 8px; margin-right: 6px; }
+#per-person { color: var(--amber); text-shadow: 0 0 10px var(--amber-glow); }
+.hidden { visibility: hidden; }
+
+/* brief flash when a value changes via D-pad */
+@keyframes bump { 0% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.bump { animation: bump 0.12s ease-out; }
