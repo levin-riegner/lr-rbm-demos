@@ -24,11 +24,11 @@ const RECIPES = [
       { id: 's7', qty: '1 tbsp',   item: 'Kosher salt (for water)' }
     ],
     prep: [
-      { id: 'p1', text: 'Cube the guanciale into 1/4" pieces.' },
+      { id: 'p1', text: 'Cube 4 oz guanciale into 1/4" pieces.' },
       { id: 'p2', text: 'Crack 2 whole eggs + 1 yolk into a bowl.' },
-      { id: 'p3', text: 'Grate pecorino fine, whisk into the eggs.' },
-      { id: 'p4', text: 'Crack pepper coarsely, set aside.' },
-      { id: 'p5', text: 'Fill a wide pot with water, add salt.' }
+      { id: 'p3', text: 'Grate 1 cup pecorino fine, whisk into the eggs.' },
+      { id: 'p4', text: 'Crack 1 tsp pepper coarsely, set aside.' },
+      { id: 'p5', text: 'Fill a wide pot with water, add 1 tbsp salt.' }
     ],
     cook: [
       { id: 'c1', text: 'Bring the salted water to a rolling boil.', timerSec: 360, tag: 'BOIL' },
@@ -58,10 +58,10 @@ const RECIPES = [
     ],
     prep: [
       { id: 'p1', text: 'Preheat the oven to 425°F.' },
-      { id: 'p2', text: 'Pat salmon fillets dry with a paper towel.' },
-      { id: 'p3', text: 'Trim woody ends from asparagus.' },
-      { id: 'p4', text: 'Mince garlic. Slice lemon into thin rounds.' },
-      { id: 'p5', text: 'Whisk oil + garlic + salt + pepper in a small bowl.' }
+      { id: 'p2', text: 'Pat 2 (6 oz) salmon fillets dry with a paper towel.' },
+      { id: 'p3', text: 'Trim woody ends from 1 lb asparagus.' },
+      { id: 'p4', text: 'Mince 3 cloves garlic. Slice 1 lemon into thin rounds.' },
+      { id: 'p5', text: 'Whisk 3 tbsp oil + garlic + 1 tsp salt + 1/2 tsp pepper in a small bowl.' }
     ],
     cook: [
       { id: 'c1', text: 'Toss asparagus with half the oil mix on a sheet pan.', timerSec: 60, tag: 'TOSS' },
@@ -90,12 +90,12 @@ const RECIPES = [
       { id: 's9', qty: '2 cups',  item: 'Jasmine rice, cooked' }
     ],
     prep: [
-      { id: 'p1', text: 'Slice chicken into 1/2" strips.' },
-      { id: 'p2', text: 'Toss chicken with cornstarch + 1 tbsp soy.' },
-      { id: 'p3', text: 'Core red peppers, slice into 1/4" strips.' },
-      { id: 'p4', text: 'Mince garlic. Grate ginger.' },
-      { id: 'p5', text: 'Mix sauce: 2 tbsp soy + sesame oil + splash of water.' },
-      { id: 'p6', text: 'Have rice warm and ready to serve.' }
+      { id: 'p1', text: 'Slice 1 lb chicken into 1/2" strips.' },
+      { id: 'p2', text: 'Toss chicken with 1 tbsp cornstarch + 1 tbsp soy.' },
+      { id: 'p3', text: 'Core 2 red peppers, slice into 1/4" strips.' },
+      { id: 'p4', text: 'Mince 2 cloves garlic. Grate 1 in ginger.' },
+      { id: 'p5', text: 'Mix sauce: 2 tbsp soy + 1 tbsp sesame oil + splash of water.' },
+      { id: 'p6', text: 'Have 2 cups rice warm and ready to serve.' }
     ],
     cook: [
       { id: 'c1', text: 'Heat a wok or wide skillet over high until smoking.', timerSec: 180, tag: 'HEAT' },
@@ -124,8 +124,8 @@ const RECIPES = [
     ],
     prep: [
       { id: 'p1', text: 'Find a clean jar or container with a lid.' },
-      { id: 'p2', text: 'Measure oats into the jar.' },
-      { id: 'p3', text: 'Add chia seeds.' }
+      { id: 'p2', text: 'Measure 1/2 cup oats into the jar.' },
+      { id: 'p3', text: 'Add 1 tbsp chia seeds.' }
     ],
     cook: [
       { id: 'c1', text: 'Pour milk + yogurt into the jar.' },
@@ -152,10 +152,10 @@ const RECIPES = [
       { id: 's8', qty: '1 tbsp',   item: 'Fresh basil' }
     ],
     prep: [
-      { id: 'p1', text: 'Halve tomatoes, remove cores.' },
-      { id: 'p2', text: 'Dice the onion.' },
-      { id: 'p3', text: 'Mince the garlic.' },
-      { id: 'p4', text: 'Chop the basil leaves.' }
+      { id: 'p1', text: 'Halve 2 lbs tomatoes, remove cores.' },
+      { id: 'p2', text: 'Dice 1 yellow onion.' },
+      { id: 'p3', text: 'Mince 3 cloves garlic.' },
+      { id: 'p4', text: 'Chop 1 tbsp basil leaves.' }
     ],
     cook: [
       { id: 'c1', text: 'Heat olive oil in a pot over medium.', timerSec: 120, tag: 'HEAT' },
@@ -185,10 +185,10 @@ const RECIPES = [
       { id: 's9', qty: '1/2 tsp',   item: 'Flaky salt' }
     ],
     prep: [
-      { id: 'p1', text: 'Cut tomatoes into thick wedges.' },
-      { id: 'p2', text: 'Slice cucumber into thick half-moons.' },
-      { id: 'p3', text: 'Slice red onion paper-thin.' },
-      { id: 'p4', text: 'Cut feta into rough cubes.' }
+      { id: 'p1', text: 'Cut 3 tomatoes into thick wedges.' },
+      { id: 'p2', text: 'Slice 1 cucumber into thick half-moons.' },
+      { id: 'p3', text: 'Slice 1/2 red onion paper-thin.' },
+      { id: 'p4', text: 'Cut 8 oz feta into rough cubes.' }
     ],
     cook: [
       { id: 'c1', text: 'Layer tomatoes, cucumber, onion in a wide bowl.' },
@@ -216,9 +216,9 @@ const RECIPES = [
       { id: 's9', qty: '1 cup',    item: 'Salsa' }
     ],
     prep: [
-      { id: 'p1', text: 'Wedge the lime.' },
-      { id: 'p2', text: 'Roughly chop the cilantro.' },
-      { id: 'p3', text: 'Slice the avocado.' }
+      { id: 'p1', text: 'Wedge 1 lime.' },
+      { id: 'p2', text: 'Roughly chop 1/4 cup cilantro.' },
+      { id: 'p3', text: 'Slice 1 avocado.' }
     ],
     cook: [
       { id: 'c1', text: 'Heat a skillet over medium-high.', timerSec: 120, tag: 'HEAT' },
@@ -247,9 +247,9 @@ const RECIPES = [
       { id: 's9', qty: 'To serve',item: 'Maple syrup' }
     ],
     prep: [
-      { id: 'p1', text: 'Whisk flour, sugar, baking powder, salt.' },
-      { id: 'p2', text: 'Mash one banana. Slice the other.' },
-      { id: 'p3', text: 'Whisk milk, egg, and melted butter.' }
+      { id: 'p1', text: 'Whisk 1 cup flour, 1 tbsp sugar, 1 tsp baking powder, 1/2 tsp salt.' },
+      { id: 'p2', text: 'Mash 1 banana. Slice the other.' },
+      { id: 'p3', text: 'Whisk 1 cup milk, 1 egg, and 2 tbsp melted butter.' }
     ],
     cook: [
       { id: 'c1', text: 'Combine wet + dry. Fold in mashed banana.' },
@@ -278,8 +278,8 @@ const RECIPES = [
     ],
     prep: [
       { id: 'p1', text: 'Preheat oven to 375°F.' },
-      { id: 'p2', text: 'Whisk flour, baking soda, salt in a bowl.' },
-      { id: 'p3', text: 'Bring butter to room temperature.' },
+      { id: 'p2', text: 'Whisk 2 1/4 cups flour, 1 tsp baking soda, 1 tsp salt in a bowl.' },
+      { id: 'p3', text: 'Bring 1 cup butter to room temperature.' },
       { id: 'p4', text: 'Line baking sheets with parchment.' }
     ],
     cook: [
@@ -311,9 +311,9 @@ const RECIPES = [
       { id: 's9', qty: '1/4 tsp', item: 'Chili flakes (optional)' }
     ],
     prep: [
-      { id: 'p1', text: 'Trim and slice radishes paper-thin.' },
-      { id: 'p2', text: 'Slice cucumber thin into half-moons.' },
-      { id: 'p3', text: 'Thinly slice the scallion on a bias.' }
+      { id: 'p1', text: 'Trim and slice 1 bunch radishes paper-thin.' },
+      { id: 'p2', text: 'Slice 1 cucumber thin into half-moons.' },
+      { id: 'p3', text: 'Thinly slice 1 scallion on a bias.' }
     ],
     cook: [
       { id: 'c1', text: 'Whisk vinegar, soy, sesame oil, sugar in a bowl.' },
