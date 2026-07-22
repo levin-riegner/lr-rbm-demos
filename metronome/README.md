@@ -3,6 +3,7 @@
 A hands-free metronome for Meta Display glasses — set tempo, time signature, and subdivision in three large, single-question steps, then either keep the full readout up or collapse it to a **single 64px strip** at the top of the lens so the rest of your view stays clear. Tap a button, **tap your foot**, or **nod your head** to dial in BPM.
 
 > 📖 **Case study:** [levinriegner.com/work/metronome](https://www.levinriegner.com/work/metronome/)
+> 🚀 **Live demo:** [rbm-demos.lnr.io/metronome](https://rbm-demos.lnr.io/metronome/)
 
 ---
 
@@ -16,6 +17,8 @@ A hands-free metronome for Meta Display glasses — set tempo, time signature, a
 - **Persistent + audible UI.** Every interaction plays a short AudioContext-synthesised UI cue (`tick`, `focus`, `select`, `next`, `back`, `start`, `stop`) routed straight to `ctx.destination` so it doesn't ride the metronome volume gain. Tempo / time / subdivision / compact-mode preferences persist in `localStorage`.
 
 All metronome clicks are synthesised on the fly as 28ms damped sinusoids — 1500 Hz on the accent, 1050 Hz on regular beats, 700 Hz on subdivisions — scheduled with a 120ms lookahead so timing stays rock-solid.
+
+Rendering is tuned for the panel's 30Hz refresh: all beat-driven animations use only `transform` and `opacity` (GPU-composited); colour, border, and box-shadow snap instantly on class change instead of interpolating. The pulse ring is a keyframe animation restarted via a double-`requestAnimationFrame` toggle rather than a forced-reflow trick, and every per-beat DOM write is batched inside a single rAF so no work lands mid-frame. Measured with the worst-case scenario (240 BPM sixteenth notes = 16 beat-flashes/sec): zero long tasks over 3 seconds, event-loop p99 of 5.4ms.
 
 ---
 

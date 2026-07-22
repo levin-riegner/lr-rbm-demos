@@ -51,7 +51,9 @@ html, body {
   cursor: pointer;
   outline: none;
   border: 3px solid transparent;
-  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  /* Only transition composited props (transform/opacity). Border, bg and
+     box-shadow snap on class change → no per-frame paint work. */
+  transition: transform 0.12s ease;
 }
 .focusable:focus {
   border-color: var(--accent);
@@ -341,15 +343,27 @@ html, body {
 .step-btn-nod.listening {
   background: #5eead4;
   color: #00241e;
+  position: relative;
+  isolation: isolate;
+}
+.step-btn-nod.listening::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 16px;
+  background: #5eead4;
+  z-index: -1;
+  will-change: opacity, transform;
   animation: nod-pulse 0.9s ease-in-out infinite;
 }
 .step-btn-nod.nodded {
   background: #b6f5e6;
   color: #00241e;
 }
+/* opacity + transform only — both composited, no per-frame paint. */
 @keyframes nod-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(94, 234, 212, 0.6); }
-  50%      { box-shadow: 0 0 0 14px rgba(94, 234, 212, 0); }
+  0%, 100% { opacity: 0.6; transform: scale(1);    }
+  50%      { opacity: 0;   transform: scale(1.15); }
 }
 
 /* ============================================================
@@ -519,7 +533,10 @@ html, body {
   border-radius: 50%;
   background: var(--bg-2);
   border: 3px solid var(--bg-3);
-  transition: background 0.04s, border-color 0.04s, box-shadow 0.04s, transform 0.06s;
+  will-change: transform;
+  /* Only transform is transitioned (GPU-composited). Colour + box-shadow
+     snap on class change so we don't burn paint work every frame. */
+  transition: transform 0.06s;
 }
 .beat-dot.active {
   background: var(--accent);
@@ -551,7 +568,7 @@ html, body {
   font-family: 'Courier New', 'SF Mono', monospace;
   color: var(--text);
   text-shadow: 0 0 24px rgba(0, 212, 255, 0.25);
-  transition: color 0.06s, text-shadow 0.06s;
+  /* Colour/text-shadow snap on beat — no interpolated per-frame paint. */
 }
 .play-bpm-num.flash-beat {
   color: var(--accent);
@@ -574,21 +591,23 @@ html, body {
   width: 360px;
   height: 360px;
   border-radius: 50%;
-  border: 2px solid rgba(0, 212, 255, 0.0);
+  border: 2px solid rgba(0, 212, 255, 0.6);
   pointer-events: none;
   z-index: 1;
-  transition: border-color 0.05s, transform 0.18s ease-out, opacity 0.4s ease-out;
   opacity: 0;
+  will-change: opacity, transform;
 }
-.pulse-ring.pulse {
-  opacity: 1;
-  border-color: rgba(0, 212, 255, 0.6);
-  transform: scale(1.06);
+/* Two keyframe animations — one per beat variant. Restarting an
+   animation is a class-toggle inside rAF (no forced reflow). */
+.pulse-ring.pulse         { animation: pulse-beat   0.4s ease-out forwards; }
+.pulse-ring.pulse-accent  { animation: pulse-accent 0.4s ease-out forwards; border-color: rgba(255, 159, 67, 0.7); }
+@keyframes pulse-beat {
+  0%   { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(1.06); }
 }
-.pulse-ring.pulse-accent {
-  opacity: 1;
-  border-color: rgba(255, 159, 67, 0.7);
-  transform: scale(1.1);
+@keyframes pulse-accent {
+  0%   { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(1.10); }
 }
 
 .play-foot {
@@ -642,7 +661,8 @@ html, body {
   border-radius: 50%;
   background: #1a1f2e;
   border: 2px solid #1a1f2e;
-  transition: background 0.04s, border-color 0.04s, box-shadow 0.04s, transform 0.06s;
+  will-change: transform;
+  transition: transform 0.06s;
 }
 .mini-dots .beat-dot.active {
   background: var(--accent);
@@ -673,7 +693,7 @@ html, body {
   font-size: 32px;
   font-weight: 800;
   letter-spacing: -1px;
-  transition: color 0.06s, text-shadow 0.06s;
+  /* Colour/text-shadow snap on beat — no interpolated per-frame paint. */
 }
 .mini-bpm.flash-beat   { color: var(--accent); text-shadow: 0 0 12px var(--accent-glow); }
 .mini-bpm.flash-accent { color: var(--warm);   text-shadow: 0 0 14px var(--warm-glow); }

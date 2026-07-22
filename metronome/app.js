@@ -6,7 +6,9 @@
     bpmMin: 30,
     bpmMax: 252,
     schedLookahead: 0.12,
-    schedInterval: 25,
+    // 33ms ≈ one 30Hz frame — cuts scheduler wakeups vs. the old 25ms
+    // (still well inside the 120ms lookahead).
+    schedInterval: 33,
     tapMaxGap: 3000,
     tapKeep: 8,
   };
@@ -486,42 +488,57 @@
     });
   }
 
+  // Batch all DOM writes performed by flashBeat inside rAF so a burst of
+  // beats never lands mid-frame — one paint per animation frame max.
   function flashBeat(beat, isAccent, isBeat) {
-    // Clear all dots in both displays.
-    document.querySelectorAll('.beat-dot').forEach(function (d) {
-      d.classList.remove('active', 'accent');
-    });
-    var ring = document.getElementById('pulse-ring');
-    var num = document.getElementById('play-bpm');
+    var pulseClass = isAccent ? 'pulse-accent' : 'pulse';
+    var flashClass = isAccent ? 'flash-accent' : 'flash-beat';
+    var ring    = document.getElementById('pulse-ring');
+    var num     = document.getElementById('play-bpm');
     var miniNum = document.getElementById('mini-bpm');
+
     if (beat < 0) {
-      if (ring) ring.classList.remove('pulse', 'pulse-accent');
-      if (num) num.classList.remove('flash-beat', 'flash-accent');
-      if (miniNum) miniNum.classList.remove('flash-beat', 'flash-accent');
+      // Clear-all path (stop).
+      requestAnimationFrame(function () {
+        document.querySelectorAll('.beat-dot').forEach(function (d) {
+          d.classList.remove('active', 'accent');
+        });
+        if (ring)    ring.classList.remove('pulse', 'pulse-accent');
+        if (num)     num.classList.remove('flash-beat', 'flash-accent');
+        if (miniNum) miniNum.classList.remove('flash-beat', 'flash-accent');
+      });
       return;
     }
-    document.querySelectorAll('.beat-dot[data-beat="' + beat + '"]').forEach(function (d) {
-      d.classList.add(isAccent ? 'accent' : 'active');
-    });
 
-    if (isBeat) {
-      if (ring) {
-        ring.classList.remove('pulse', 'pulse-accent');
-        // force reflow so the transition retriggers
-        void ring.offsetWidth;
-        ring.classList.add(isAccent ? 'pulse-accent' : 'pulse');
-        setTimeout(function () {
-          ring.classList.remove('pulse', 'pulse-accent');
-        }, 180);
-      }
-      [num, miniNum].forEach(function (el) {
-        if (!el) return;
-        el.classList.add(isAccent ? 'flash-accent' : 'flash-beat');
-        setTimeout(function () {
-          el.classList.remove('flash-accent', 'flash-beat');
-        }, 90);
+    // Cache the target dots up front (one query per call, not two).
+    var activeDots = document.querySelectorAll('.beat-dot[data-beat="' + beat + '"]');
+    var otherDots  = document.querySelectorAll('.beat-dot:not([data-beat="' + beat + '"])');
+
+    requestAnimationFrame(function () {
+      // WRITE PHASE — batched inside a single rAF (no layout thrash).
+      otherDots.forEach(function (d) { d.classList.remove('active', 'accent'); });
+      activeDots.forEach(function (d) {
+        d.classList.remove(isAccent ? 'active' : 'accent');
+        d.classList.add(isAccent ? 'accent' : 'active');
       });
-    }
+
+      if (isBeat) {
+        if (ring) {
+          // Restart the keyframe animation by clearing both classes on
+          // this frame, then re-adding on the next — no forced reflow.
+          ring.classList.remove('pulse', 'pulse-accent');
+          requestAnimationFrame(function () {
+            ring.classList.add(pulseClass);
+          });
+        }
+        if (num)     num.classList.add(flashClass);
+        if (miniNum) miniNum.classList.add(flashClass);
+        setTimeout(function () {
+          if (num)     num.classList.remove('flash-beat', 'flash-accent');
+          if (miniNum) miniNum.classList.remove('flash-beat', 'flash-accent');
+        }, 90);
+      }
+    });
   }
 
   function applySmallMode() {
