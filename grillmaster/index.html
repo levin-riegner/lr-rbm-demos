@@ -14,7 +14,7 @@
 <body>
   <div id="app" data-assist="coach">
 
-    <!-- ═════════ STEP 1 — WHAT ARE WE DOING? ═════════ -->
+    <!-- ═════════ Q1 — WHAT ARE WE DOING? ═════════ -->
     <section id="mode" class="screen">
       <header class="brand">
         <div class="flame">▲</div>
@@ -26,7 +26,7 @@
       <div class="ember-rule" aria-hidden="true"></div>
 
       <div class="ask">TODAY WE ARE…</div>
-      <div class="pick-list" id="mode-list"></div>
+      <div class="pick-list side" id="mode-list"></div>
 
       <div class="foot-row">
         <button class="btn ghost focusable" data-action="show-guide">TEMP GUIDE</button>
@@ -34,7 +34,7 @@
       </div>
     </section>
 
-    <!-- ═════════ STEP 2 — WHAT'S THE FIRE? ═════════ -->
+    <!-- ═════════ Q2 — WHAT'S THE FIRE? ═════════ -->
     <section id="fuel" class="screen hidden">
       <header class="wiz-head">
         <div class="step-rail" data-step="2"></div>
@@ -47,7 +47,7 @@
       <div class="pick-list" id="fuel-list"></div>
     </section>
 
-    <!-- ═════════ STEP 3 — HOW MUCH HELP? ═════════ -->
+    <!-- ═════════ Q3 — HOW MUCH HELP? ═════════ -->
     <section id="assist" class="screen hidden">
       <header class="wiz-head">
         <div class="step-rail" data-step="3"></div>
@@ -60,7 +60,7 @@
       <div class="pick-list" id="assist-list"></div>
     </section>
 
-    <!-- ═════════ STEP 4 — WHAT ARE WE COOKING? ═════════ -->
+    <!-- ═════════ Q4 — WHAT ARE WE COOKING? ═════════ -->
     <section id="cooks" class="screen hidden">
       <header class="wiz-head tight">
         <div class="step-rail" data-step="4"></div>
@@ -77,28 +77,39 @@
       </div>
     </section>
 
-    <!-- ═════════ SETUP — doneness + add to the cook ═════════ -->
-    <section id="setup" class="screen hidden">
-      <header class="page-head">
-        <button class="crumb focusable" data-action="go-cooks">&#8592;</button>
-        <div class="ph-title" id="setup-title">—</div>
+    <!-- ═════════ Q5 — HOW DO YOU LIKE IT? (only cuts with a ladder) ═════════ -->
+    <section id="doneness" class="screen hidden">
+      <header class="wiz-head">
+        <div class="step-rail" data-step="5"></div>
+        <div class="wiz-row">
+          <button class="crumb focusable" data-action="go-cooks">&#8592;</button>
+          <div class="wiz-title">HOW DO YOU LIKE IT?</div>
+        </div>
+        <div class="wiz-sub" id="doneness-sub">—</div>
+      </header>
+      <div class="pick-list ladder" id="doneness-list"></div>
+    </section>
+
+    <!-- ═════════ THE PLAN — the numbers, then the fire ═════════ -->
+    <section id="plan" class="screen hidden">
+      <header class="wiz-head tight">
+        <div class="step-rail" data-step="6"></div>
+        <div class="wiz-row">
+          <button class="crumb focusable" data-action="go-back-plan">&#8592;</button>
+          <div class="wiz-title" id="plan-title">—</div>
+        </div>
       </header>
 
-      <div class="setup-hero">
-        <div class="hero-glyph" id="setup-glyph">🥩</div>
-        <div class="hero-cut" id="setup-cut">—</div>
+      <div class="plan-hero">
+        <div class="hero-glyph" id="plan-glyph">🥩</div>
+        <div class="hero-cut" id="plan-cut">—</div>
         <div class="chip-row">
-          <span class="chip" id="setup-grate">—</span>
-          <span class="chip alt" id="setup-fuel">—</span>
+          <span class="chip" id="plan-heat">—</span>
+          <span class="chip alt" id="plan-fuel">—</span>
         </div>
       </div>
 
-      <div class="setup-block" id="doneness-block">
-        <div class="ask small">HOW DO YOU LIKE IT?</div>
-        <div class="doneness-row" id="doneness-row"></div>
-      </div>
-
-      <div class="setup-target" id="setup-target">
+      <div class="plan-target">
         <div class="tgt-col">
           <div class="tgt-k">PULL AT</div>
           <div class="tgt-v" id="tgt-pull">—</div>
@@ -113,17 +124,17 @@
         </div>
       </div>
 
-      <div class="setup-actions">
+      <div class="act-row">
         <button class="btn add focusable" data-action="add-item" id="add-btn">+ ADD</button>
-        <button class="btn primary focusable" data-action="light-fire" id="light-btn">LIGHT IT &#8594;</button>
+        <button class="btn primary focusable" data-action="light-fire" id="light-btn">FIRE IT UP &#8594;</button>
       </div>
-      <div class="tray-note" id="tray-note"></div>
+      <div class="note" id="plan-note"></div>
     </section>
 
-    <!-- ═════════ FIRE PRIMER — only for FIRST TIME ═════════ -->
+    <!-- ═════════ THE FIRE — every cook passes through here ═════════ -->
     <section id="fire" class="screen hidden">
       <header class="page-head">
-        <button class="crumb focusable" data-action="go-setup">&#8592;</button>
+        <button class="crumb focusable" data-action="go-plan">&#8592;</button>
         <div class="ph-title">LIGHT IT UP</div>
         <div class="ph-tail" id="fire-fuel">—</div>
       </header>
@@ -141,9 +152,16 @@
         </div>
       </div>
 
-      <div class="setup-actions">
-        <button class="btn primary big focusable" data-action="fire-ready" id="fire-go">FIRE’S READY &#8594;</button>
+      <div class="preheat hidden" id="preheat">
+        <span class="preheat-time" id="preheat-time">0:00</span>
+        <span class="preheat-lbl" id="preheat-lbl">—</span>
       </div>
+
+      <div class="act-row">
+        <button class="btn add focusable" data-action="preheat" id="preheat-btn">PREHEAT</button>
+        <button class="btn primary focusable" data-action="food-on" id="food-on-btn">FOOD’S ON &#8594;</button>
+      </div>
+      <div class="note" id="fire-note"></div>
     </section>
 
     <!-- ═════════ COACH — the live grill HUD ═════════ -->
@@ -263,26 +281,26 @@
         <div class="ph-title">HOW IT WORKS</div>
       </header>
       <div class="help-body">
-        <div class="help-lead">Hands on the tongs, not a phone. Glance up, do the one thing it says, tap once.</div>
+        <div class="help-lead">One question per screen, then hands on the tongs. Glance up, do the one thing it says, tap once.</div>
         <div class="help-row">
           <span class="hk">▲ ▼</span>
-          <div class="help-copy"><b>MOVE</b><span>Walk a list, or switch which item is in the big card. ◀ ▶ steers the three mode tiles.</span></div>
+          <div class="help-copy"><b>MOVE</b><span>Walk a list, or switch item mid-cook. ◀ ▶ steers the mode tiles.</span></div>
         </div>
         <div class="help-row">
           <span class="hk">ENTER</span>
-          <div class="help-copy"><b>DID IT</b><span>Confirm the cue and advance to the next beat</span></div>
+          <div class="help-copy"><b>CHOOSE</b><span>Answer the question, or confirm the cue</span></div>
         </div>
         <div class="help-row">
           <span class="hk">◀</span>
-          <div class="help-copy"><b>BACK</b><span>Step back a question, or leave the cook</span></div>
+          <div class="help-copy"><b>BACK</b><span>One question back, or leave the cook</span></div>
         </div>
         <div class="help-row">
           <span class="hk">▶</span>
           <div class="help-copy"><b>TIP</b><span>Cycle the pro tip for what’s on the fire</span></div>
         </div>
-        <div class="done-actions">
-          <button class="btn primary big focusable" data-action="go-back">GOT IT</button>
-        </div>
+      </div>
+      <div class="foot-row">
+        <button class="btn primary big focusable" data-action="go-back">GOT IT</button>
       </div>
     </section>
 

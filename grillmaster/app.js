@@ -6,18 +6,25 @@
    do right now, count me down to the next one, and never make me
    touch a screen with greasy tongs in my hand."
 
-   Before any food appears, the app asks three questions, in the
-   order a person actually makes them:
+   ONE QUESTION PER SCREEN. Nothing asks two things at once:
 
-     1. MODE   grill / smoke / bbq        → which engine coaches you
-     2. FIRE   charcoal / gas / wood / …  → what you turn to change
-                                            the heat, how to light it,
-                                            what the alarms should say
-     3. HELP   first time / coach / pro   → how much the HUD explains
+     1. MODE     grill / smoke / bbq        → which engine coaches you
+     2. FIRE     charcoal / gas / wood / …  → what you turn to change
+                                              the heat, how to light it,
+                                              what the alarms should say
+     3. HELP     first time / coach / pro   → how much the HUD explains
+     4. FOOD     which cut
+     5. TASTE    doneness, for cuts with a ladder (skipped otherwise)
+     6. PLAN     the numbers, and stack another item if you want
+     7. FIRE     light it, preheat on a real clock, THEN food goes on
 
-   Only then does it show the cuts. Every answer is carried into the
-   live cook, so "PIT LOW" becomes "PIT LOW · FEED IT COALS" on a
-   kettle and "PIT LOW · TURN THE BURNER UP" on gas.
+   Step 7 is not optional at any assist level: the cook timer measures
+   food on the grate, so it cannot start while the grate is cold. What
+   assist level changes is how much of the lighting is spelled out.
+
+   Every answer is carried into the live cook, so "PIT LOW" becomes
+   "PIT LOW · FEED IT COALS" on a kettle and "PIT LOW · TURN THE
+   BURNER UP" on gas.
 
    A COOK SESSION holds one or more ITEMS. Each item walks its own
    timeline of STEPS (see data.js). The coach always shows the item
@@ -33,9 +40,11 @@ const state = {
   mode: null,       // 'grill' | 'smoke' | 'bbq'
   fuel: null,       // FUELS[mode] entry
   assist: null,     // ASSIST_LEVELS entry
-  // setup scratch
+  // question scratch
   selCook: null,
   selDon: null,
+  // the fire stage's preheat clock, kept across screens
+  preheat: { endTs: 0, dur: 0, rang: false },
   // live cook
   items: [],        // [{ uid, cookId, glyph, name, doneness, steps, stepIndex, endTs, done, hasTemp, targetF, scaleMin, scaleMax, tipIndex }]
   active: false,
@@ -124,16 +133,26 @@ function toast(msg) {
 function showScreen(name) {
   state.screen = name;
   $$('.screen').forEach(s => s.classList.toggle('hidden', s.id !== name));
+  paintStepRails();
   state.focusIdx = 0;
   refreshFocus();
 }
 
-/* the MODE › FIRE › HELP › FOOD breadcrumb at the top of each step */
-const STEP_LABELS = ['MODE', 'FIRE', 'HELP', 'FOOD'];
+/* MODE › FIRE › HELP › FOOD › TASTE › PLAN across the top of each
+   question. TASTE drops out for cuts with no doneness ladder, so the
+   rail never shows a step you were never asked. data-step="6" means
+   "the last one", whatever the count came out to be. */
+function stepLabels() {
+  const base = ['MODE', 'FIRE', 'HELP', 'FOOD'];
+  const ladder = !state.selCook || !!state.selCook.doneness;
+  return ladder ? [...base, 'TASTE', 'PLAN'] : [...base, 'PLAN'];
+}
 function paintStepRails() {
+  const labels = stepLabels();
   $$('.step-rail').forEach(el => {
-    const cur = Number(el.dataset.step);
-    el.innerHTML = STEP_LABELS
+    let cur = Number(el.dataset.step);
+    if (cur >= 6) cur = labels.length;
+    el.innerHTML = labels
       .map((l, i) => {
         const n = i + 1;
         const cls = n === cur ? 'sr on' : n < cur ? 'sr done' : 'sr';
@@ -151,7 +170,7 @@ function pickRow({ action, key, glyph, name, tag, sub, selected }) {
   b.dataset.key = key;
   b.innerHTML =
     `<span class="pick-head">` +
-      `<span class="pick-g">${glyph}</span>` +
+      (glyph ? `<span class="pick-g">${glyph}</span>` : '') +
       `<span class="pick-k">${name}</span>` +
     `</span>` +
     (tag ? `<span class="pick-t">${tag}</span>` : '') +
@@ -277,64 +296,108 @@ function goCooks() {
   focusEl($('#cook-list .cook-row'));
 }
 
-/* ═════════════════ SETUP ═════════════════ */
-function openSetup(cookId) {
+/* ═════════════════ Q5 — HOW DO YOU LIKE IT? ═════════════════
+   Its own screen, like every other question. Cuts without a ladder
+   (chicken, salmon, anything on the pit) skip straight to the plan. */
+function openCook(cookId) {
   const c = cookById(cookId);
   if (!c) return;
   ensureContext(c.mode);
   state.selCook = c;
   state.selDon = c.doneness ? (c.doneness.find(d => d.rec) || c.doneness[0]) : null;
+  if (c.doneness) goDoneness();
+  else goPlan();
+}
 
-  $('#setup-title').textContent = c.name.toUpperCase();
-  $('#setup-glyph').textContent = c.glyph;
-  $('#setup-cut').textContent = c.cut;
-  $('#setup-grate').textContent = isPit(c) ? 'PIT ' + c.pitF + '°F' : 'GRATE ' + c.grate;
-  $('#setup-fuel').textContent = state.fuel.name;
-  $('#light-btn').textContent = isPit(c) ? 'LIGHT THE PIT →' : 'LIGHT IT →';
+function renderDoneness() {
+  const c = state.selCook;
+  $('#doneness-sub').textContent = c.name.toUpperCase();
+  const list = $('#doneness-list');
+  list.innerHTML = '';
+  c.doneness.forEach(d => {
+    list.appendChild(pickRow({
+      action: 'pick-doneness', key: d.key, glyph: null,
+      name: (d.label || '').toUpperCase(),
+      tag: `PULL ${d.pullF}°F · EATS AT ${d.servF}°F` + (d.rec ? ' · OUR PICK' : ''),
+      sub: null,
+      selected: state.selDon && state.selDon.key === d.key,
+    }));
+  });
+}
+function goDoneness() {
+  if (!state.selCook || !state.selCook.doneness) return goPlan();
+  renderDoneness();
+  showScreen('doneness');
+  focusEl($('#doneness-list .pick.sel') || $('#doneness-list .pick'));
+}
+function pickDoneness(key) {
+  const c = state.selCook;
+  state.selDon = c.doneness.find(d => d.key === key) || state.selDon;
+  goPlan();
+}
 
-  // doneness picker only for cooks that have a ladder
-  const donBlock = $('#doneness-block');
-  const donRow = $('#doneness-row');
-  if (c.doneness) {
-    donBlock.classList.remove('hidden');
-    donRow.innerHTML = '';
-    c.doneness.forEach(d => {
-      const b = document.createElement('button');
-      b.className = 'don-btn focusable' + (d === state.selDon ? ' sel' : '');
-      b.dataset.action = 'pick-doneness';
-      b.dataset.key = d.key;
-      b.innerHTML = (d.short || d.label) + (d.rec ? '<span class="rec-dot">●</span>' : '');
-      donRow.appendChild(b);
-    });
-  } else {
-    donBlock.classList.add('hidden');
-  }
+/* ═════════════════ THE PLAN — the numbers, then the fire ═════════════════ */
+function renderPlan() {
+  const c = state.selCook, d = state.selDon;
+
+  $('#plan-title').textContent = c.name.toUpperCase();
+  $('#plan-glyph').textContent = c.glyph;
+  $('#plan-cut').textContent = d ? `${d.label} · ${c.cut}` : c.cut;
+  $('#plan-heat').textContent = isPit(c) ? 'PIT ' + c.pitF + '°F' : 'GRATE ' + c.grate;
+  $('#plan-fuel').textContent = state.fuel.name;
+  $('#light-btn').innerHTML = (isPit(c) ? 'FIRE UP THE PIT' : 'FIRE IT UP') + ' &#8594;';
 
   // pit cooks (smoke/bbq) are one cut, coached solo, no stacking
   $('#add-btn').classList.toggle('hidden', isPit(c));
 
-  renderSetupTarget();
-  updateTrayNote();
-  showScreen('setup');
+  renderPlanTarget();
+  updatePlanNote();
+}
+function goPlan() {
+  if (!state.selCook) return goCooks();
+  renderPlan();
+  showScreen('plan');
   focusEl($('#light-btn'));
 }
 
-function pickDoneness(key) {
-  const c = state.selCook;
-  state.selDon = c.doneness.find(d => d.key === key) || state.selDon;
-  $$('.don-btn').forEach(b => b.classList.toggle('sel', b.dataset.key === key));
-  renderSetupTarget();
+const fmtRest = (sec) => {
+  const m = Math.round(sec / 60);
+  if (m < 60) return m + 'm';
+  return (m % 60) ? Math.floor(m / 60) + 'h ' + (m % 60) + 'm' : (m / 60) + 'h';
+};
+
+/* The middle column earns its place or it goes away. Brisket and pulled
+   pork have no USDA floor to quote, so they show the rest instead — the
+   number beginners skip — and a hot dog, which has neither, drops to two
+   columns rather than printing a dash. */
+function renderMidTarget(c) {
+  const col = $('#tgt-safe').closest('.tgt-col');
+  const k = col.querySelector('.tgt-k');
+  const grid = col.parentElement;
+  if (c.safeF) {
+    k.textContent = 'SAFE MIN';
+    $('#tgt-safe').textContent = c.safeF + '°';
+    col.classList.add('safe');
+  } else if (c.restSec > 0) {
+    k.textContent = 'THEN REST';
+    $('#tgt-safe').textContent = fmtRest(c.restSec);
+    col.classList.remove('safe');
+  } else {
+    col.classList.add('hidden');
+    grid.style.gridTemplateColumns = '1fr 1fr';
+    return;
+  }
+  col.classList.remove('hidden');
+  grid.style.gridTemplateColumns = '1fr 1fr 1fr';
 }
 
-function renderSetupTarget() {
+function renderPlanTarget() {
   const c = state.selCook, d = state.selDon;
-  const safeCol = $('#tgt-safe').closest('.tgt-col');
+  renderMidTarget(c);
 
   if (isPit(c)) {
-    // pit cooks: pull temp (or "feel"), safe floor, rough total hours
+    // pit cooks: pull temp (or "feel") and a rough total in hours
     $('#tgt-pull').textContent = c.noProbe ? 'FEEL' : (c.targetF ? c.targetF + '°' : '~203°');
-    $('#tgt-safe').textContent = c.safeF ? c.safeF + '°' : '—';
-    safeCol.classList.toggle('safe', !!c.safeF);
     $('#tgt-time').textContent = pitRoughHours(c);
     return;
   }
@@ -343,11 +406,19 @@ function renderSetupTarget() {
   const temps = plan.map(s => s.atEndF).filter(v => v != null);
   const total = plan.filter(s => !s.rest).reduce((a, s) => a + s.sec, 0);
 
-  const pull = d ? d.pullF + '°' : (temps.length ? Math.max(...temps) + '°' : '—');
-  $('#tgt-pull').textContent = pull;
-  $('#tgt-safe').textContent = c.safeF ? c.safeF + '°' : '—';
-  safeCol.classList.toggle('safe', !!c.safeF);
+  $('#tgt-pull').textContent = d ? d.pullF + '°' : (temps.length ? Math.max(...temps) + '°' : 'BY EYE');
   $('#tgt-time').textContent = Math.max(1, Math.round(total / 60)) + 'm';
+}
+
+function updatePlanNote() {
+  const note = $('#plan-note');
+  if (state.items.length) {
+    note.textContent = 'ALSO ON: ' + state.items.map(i => i.name).join(' · ');
+  } else if (!isPit(state.selCook)) {
+    note.textContent = 'ADD more and they all come off together.';
+  } else {
+    note.textContent = '';
+  }
 }
 
 /* very rough "how long am I in for" for a pit cook */
@@ -361,13 +432,6 @@ function pitRoughHours(c) {
   const climb = (c.targetF || 203) - c.startF;
   const perHr = c.pitF >= 300 ? 90 : c.pitF >= 250 ? 32 : 24; // °F/hr ballpark
   return '~' + Math.max(1, Math.round(climb / perHr)) + 'h';
-}
-
-function updateTrayNote() {
-  const n = state.items.length;
-  const note = $('#tray-note');
-  if (n === 0) { note.textContent = ''; return; }
-  note.textContent = 'ON THE GRILL: ' + state.items.map(i => i.name).join(' · ');
 }
 
 /* build a live item instance from the current setup selection */
@@ -391,40 +455,102 @@ function makeItem(c, d) {
 function addItem() {
   const it = makeItem(state.selCook, state.selDon);
   state.items.push(it);
-  updateTrayNote();
   toast(`${it.name} added — ${state.items.length} on the grill`);
   audio.tick();
   // bounce back to the list to stack another
   goCooks();
 }
 
-/* ═════════════════ THE FIRE PRIMER (FIRST TIME only) ═════════════════ */
+/* ═════════════════ THE FIRE STAGE ═════════════════
+   Every cook passes through here, at every assist level. Skipping it
+   would mean the flip timer starts the moment you pick a steak — but
+   the timer measures food on the grate, and the grate is cold. So
+   this is a real waypoint with a real clock on it: light it, tap
+   PREHEAT, and the fuel's own warm-up time counts down. FOOD'S ON is
+   the thing that actually starts the cook.
+
+   The preheat keeps running if you wander back to the cook list, and
+   it chimes wherever you are — see preheatWatch(). */
+function preheatRem() {
+  return state.preheat.endTs ? (state.preheat.endTs - now()) / 1000 : null;
+}
+
+function startPreheat() {
+  const mins = state.fuel.preheatMin || 15;
+  state.preheat = { endTs: now() + mins * 60000, dur: mins * 60, rang: false };
+  audio.tick();
+  toast(`Preheating ${mins} min — ${state.fuel.lever.toLowerCase()}`);
+  renderFire();
+}
+function clearPreheat() {
+  state.preheat = { endTs: 0, dur: 0, rang: false };
+}
+function togglePreheat() {
+  if (preheatRem() == null) startPreheat();
+  else { clearPreheat(); audio.tick(); renderFire(); }
+}
+
+/* chime once when the fire comes up to temp, on whatever screen */
+function preheatWatch() {
+  const rem = preheatRem();
+  if (rem == null || rem > 0 || state.preheat.rang) return;
+  state.preheat.rang = true;
+  audio.cue();
+  if (navigator.vibrate) { try { navigator.vibrate([90, 60, 90]); } catch {} }
+  toast(`Fire’s ready — ${state.fuel.ready.toLowerCase()}`);
+}
+
+function renderPreheat() {
+  const f = state.fuel;
+  const rem = preheatRem();
+  const block = $('#preheat'), btn = $('#preheat-btn');
+  if (rem == null) {
+    block.classList.add('hidden');
+    btn.textContent = `PREHEAT · ${f.preheatMin || 15}m`;
+    $('#fire-note').textContent = 'Already hot? Straight to FOOD’S ON.';
+    return;
+  }
+  const up = rem <= 0;
+  block.classList.remove('hidden');
+  block.classList.toggle('ready', up);
+  $('#preheat-time').textContent = up ? 'READY' : formatClock(rem);
+  $('#preheat-lbl').textContent = up ? f.ready.toUpperCase() : 'ON THE ' + f.lever;
+  btn.textContent = up ? 'RESET' : 'CANCEL';
+  $('#fire-note').textContent = up ? '' : 'The clock keeps running if you step away.';
+}
+
 function renderFire() {
   const f = state.fuel, m = modeById(state.mode);
   $('#fire-fuel').textContent = `${f.name} · ${m.name}`;
+
+  // the numbered walkthrough is the one thing assist level gates here
   const wrap = $('#fire-steps');
+  const showSteps = !state.assist || state.assist.steps;
+  wrap.classList.toggle('hidden', !showSteps);
   wrap.innerHTML = '';
-  f.steps.forEach((s, i) => {
-    const row = document.createElement('div');
-    row.className = 'fs-row';
-    row.innerHTML = `<div class="fs-n">${i + 1}</div><div class="fs-t">${s}</div>`;
-    wrap.appendChild(row);
-  });
+  if (showSteps) {
+    f.steps.forEach((s, i) => {
+      const row = document.createElement('div');
+      row.className = 'fs-row';
+      row.innerHTML = `<div class="fs-n">${i + 1}</div><div class="fs-t">${s}</div>`;
+      wrap.appendChild(row);
+    });
+  }
+
   $('#fire-lever').textContent = f.lever;
   $('#fire-ready').textContent = f.ready;
+  $('#food-on-btn').innerHTML = (isPit(state.selCook) ? 'MEAT’S ON' : 'FOOD’S ON') + ' &#8594;';
+  renderPreheat();
 }
 
 function lightFire() {
-  if (state.assist && state.assist.primer) {
-    renderFire();
-    showScreen('fire');
-    focusEl($('#fire-go'));
-    return;
-  }
-  ignite();
+  renderFire();
+  showScreen('fire');
+  focusEl(preheatRem() == null ? $('#preheat-btn') : $('#food-on-btn'));
 }
 
 function ignite() {
+  clearPreheat();
   if (isPit(state.selCook)) {
     state.items = [makePitItem(state.selCook)];
     startPit();
@@ -530,6 +656,7 @@ function finishCook() {
 function quitCook() {
   state.active = false;
   state.items = [];
+  clearPreheat();
   clearSession();
   goCooks();
 }
@@ -914,6 +1041,9 @@ function activatePitField(f) {
 
 /* per-frame refresh of clocks + due detection */
 function tick() {
+  // the preheat chimes on whatever screen you happen to be looking at
+  preheatWatch();
+  if (state.screen === 'fire') { renderPreheat(); return; }
   if (state.screen === 'monitor') { if (state.active) pitTick(); return; }
   if (state.screen !== 'coach' || !state.active) return;
 
@@ -1122,11 +1252,12 @@ function bindEvents() {
 /* ◀ always walks one question back up the flow */
 function handleBack() {
   switch (state.screen) {
-    case 'fuel':   goMode(); break;
-    case 'assist': goFuel(); break;
-    case 'cooks':  goAssist(); break;
-    case 'setup':  goCooks(); break;
-    case 'fire':   state.selCook ? openSetup(state.selCook.id) : goCooks(); break;
+    case 'fuel':     goMode(); break;
+    case 'assist':   goFuel(); break;
+    case 'cooks':    goAssist(); break;
+    case 'doneness': goCooks(); break;
+    case 'plan':     planBack(); break;
+    case 'fire':     goPlan(); break;
     case 'done':   goCooks(); break;
     case 'guide':
     case 'help':   goReturn(); break;
@@ -1134,6 +1265,11 @@ function handleBack() {
     case 'monitor': quitCook(); break;
     // mode: nowhere further back
   }
+}
+/* the plan's back arrow rewinds to whichever question preceded it */
+function planBack() {
+  if (state.selCook && state.selCook.doneness) goDoneness();
+  else goCooks();
 }
 function goReturn() {
   if (state.returnTo === 'cooks' && state.mode) goCooks();
@@ -1145,11 +1281,12 @@ function handleAction(a, el) {
     case 'pick-mode':     pickMode(el.dataset.key); break;
     case 'pick-fuel':     pickFuel(el.dataset.key); break;
     case 'pick-assist':   pickAssist(el.dataset.key); break;
-    case 'pick-cook':     openSetup(el.dataset.id); break;
+    case 'pick-cook':     openCook(el.dataset.id); break;
     case 'pick-doneness': pickDoneness(el.dataset.key); break;
     case 'add-item':      addItem(); break;
     case 'light-fire':    lightFire(); break;
-    case 'fire-ready':    ignite(); break;
+    case 'preheat':       togglePreheat(); break;
+    case 'food-on':       ignite(); break;
     case 'advance':       advanceItem(primaryItem()); break;
     case 'mon-field': {
       const it = pitItem(); if (!it) break;
@@ -1167,7 +1304,9 @@ function handleAction(a, el) {
     case 'go-fuel':       goFuel(); break;
     case 'go-assist':     goAssist(); break;
     case 'go-cooks':      goCooks(); break;
-    case 'go-setup':      state.selCook ? openSetup(state.selCook.id) : goCooks(); break;
+    case 'go-doneness':   goDoneness(); break;
+    case 'go-plan':       goPlan(); break;
+    case 'go-back-plan':  planBack(); break;
     case 'go-back':       goReturn(); break;
   }
 }
@@ -1253,21 +1392,38 @@ function applyUrlState() {
     case 'home-bbq':
       ensureContext('bbq'); goCooks(); return true;
 
-    /* ── setup ── */
-    case 'setup':
-      ensureContext('grill'); openSetup('ribeye'); return true;
-    case 'setup-smoke':
-      ensureContext('smoke'); openSetup('brisket'); return true;
-    case 'setup-bbq':
-      ensureContext('bbq'); openSetup('ribs'); return true;
+    /* ── the doneness ladder ── */
+    case 'doneness':
+      ensureContext('grill'); openCook('ribeye'); return true;
+    case 'doneness-burger':
+      ensureContext('grill'); openCook('burger'); return true;
 
-    /* ── the fire primer ── */
+    /* ── the plan ("setup" is the legacy key for this screen) ── */
+    case 'setup':
+    case 'plan':
+      ensureContext('grill'); openCook('ribeye'); goPlan(); return true;
+    case 'setup-smoke':
+    case 'plan-smoke':
+      ensureContext('smoke'); openCook('brisket'); return true;
+    case 'setup-bbq':
+    case 'plan-bbq':
+      ensureContext('bbq'); openCook('ribs'); return true;
+
+    /* ── the fire stage ── */
     case 'fire':
       ensureContext('grill'); state.assist = assistById('rookie'); applyAssist();
-      openSetup('ribeye'); renderFire(); showScreen('fire'); focusEl($('#fire-go')); return true;
+      openCook('ribeye'); goPlan(); lightFire(); return true;
+    case 'fire-preheat':
+      ensureContext('grill'); state.assist = assistById('rookie'); applyAssist();
+      openCook('ribeye'); goPlan(); lightFire();
+      state.preheat = { endTs: now() + 8.5 * 60000, dur: 20 * 60, rang: false };
+      renderPreheat(); return true;
+    case 'fire-pro':
+      ensureContext('grill'); state.assist = assistById('pro'); applyAssist();
+      openCook('ribeye'); goPlan(); lightFire(); return true;
     case 'fire-smoke':
       ensureContext('smoke'); state.assist = assistById('rookie'); applyAssist();
-      openSetup('brisket'); renderFire(); showScreen('fire'); focusEl($('#fire-go')); return true;
+      openCook('brisket'); lightFire(); return true;
 
     /* ── the pit monitor ── */
     case 'monitor': {

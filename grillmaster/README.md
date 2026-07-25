@@ -4,15 +4,28 @@ A hands-free grilling, smoking, and BBQ coach for the [Meta Ray-Ban Display glas
 
 > 🚀 **Live demo:** [rbm-demos.lnr.io/grillmaster](https://rbm-demos.lnr.io/grillmaster/)
 
-## Three questions before any food
+## One question per screen
 
-Nothing on the fire is generic, so the app asks the three things a person actually decides — in that order — and carries every answer into the live cook.
+Nothing asks two things at once. Each screen puts one question in 34px type, takes the answer, and gets out of the way — which is exactly what buys the rest of the app its size.
 
-1. **MODE** — grill, smoke, or bbq, as three tiles across the full width so the first screen never scrolls. Picks which engine coaches you.
-2. **FIRE** — charcoal, propane, live fire, pellet, electric (the list changes per mode). This is not a cosmetic choice: it decides what you turn to change the heat, how the app walks you through lighting it, and what the alarms say.
-3. **HELP** — how much hand-holding you want. **FIRST TIME** lights the fire with you step by step and keeps a fuel reminder on screen; **COACH ME** gives cues and timers, no lecture; **I GOT THIS** drops every explanatory line and spends the space on bigger numbers.
+1. **MODE** — grill, smoke, or bbq, as three tiles across the full width so the first screen never scrolls.
+2. **FIRE** — charcoal, propane, live fire, pellet, electric, offset (the list changes per mode). Not a cosmetic choice: it decides what you turn to change the heat, how the app walks you through lighting it, and what the alarms say.
+3. **HELP** — how much hand-holding. **FIRST TIME** spells out the lighting and keeps a fuel reminder on the HUD; **COACH ME** gives cues and timers, no lecture; **I GOT THIS** drops every explanatory line and spends the space on bigger numbers.
+4. **FOOD** — which cut, each row carrying its rough time and heat.
+5. **TASTE** — the doneness ladder, on its own screen, with the pull and eating temp on every rung. Cuts without a ladder (chicken, salmon, anything on the pit) skip this step, and the breadcrumb drops it rather than showing a step you were never asked.
+6. **PLAN** — the numbers you're committing to: pull temp, safe minimum, estimated time. Stack another item here and they all come off together.
+7. **FIRE** — light it. Every cook goes through this, at every assist level.
 
-Then, and only then, the cuts.
+A breadcrumb across the top of each screen shows where you are in that chain.
+
+## The fire is a stage, not a button
+
+The cook timer measures *food on the grate*, so it cannot start while the grate is cold — which is why picking a steak never drops you straight into a running countdown. The fire gets its own screen with a real clock on it:
+
+- **PREHEAT** starts a countdown sized to your fuel — 12 minutes for propane, 20 for charcoal, 35 for a wood fire burning down to coals — and chimes when it's up to temp, on whatever screen you happen to be looking at.
+- It keeps running if you step back to browse other cuts.
+- **FOOD'S ON** is the thing that actually starts the cook. Already have a hot grill? Skip the timer and go straight there.
+- Assist level changes how much of the lighting is spelled out, not whether the stage exists.
 
 ## Three modes, two engines
 
@@ -22,9 +35,9 @@ Then, and only then, the cuts.
 
 ## What it does
 
-- **One thing at a time.** GRILL always shows the single next move ("FLIP THE RIBEYE") at 40px with the clock next to it, so a glance is enough. No menus to read mid-cook.
+- **One thing at a time.** GRILL always shows the single next move ("FLIP THE RIBEYE") at 44px with the clock next to it, so a glance is enough. No menus to read mid-cook.
 - **The alarms speak your fire.** A pit that drops reads `PIT LOW · FEED IT COALS` on a kettle, `PIT LOW · TURN THE BURNER UP` on gas, `PIT LOW · ADD A SPLIT` on an offset. Same for the spritz nudge and the heat-lever reminder.
-- **A fire primer for first-timers.** Pick FIRST TIME and the cook starts with the three steps that actually light *your* fuel, plus what the heat lever is and how you know it's ready.
+- **A preheat clock, per fuel.** The fire stage counts down your fuel's real warm-up time and chimes when it's ready, wherever you are in the app. FIRST TIME also gets the three steps that actually light *that* fuel.
 - **Live temperature.** GRILL eases an *estimated* internal temp toward your target with a heat bar. SMOKE and BBQ take the real reading you dial in by hand and show meat and pit together, always next to the target and the USDA-safe floor.
 - **Hands-free temp entry.** On the pit you glance at your own thermometer and bump the reading with the D-pad. Each bump feeds the ETA and trips the wrap/pull thresholds. No Bluetooth probe required.
 - **Real smoking coaching.** The stall is detected and explained, not just waited out. Wrap fires at 165°F, pull at ~203°F, and the ETA says "STALL, ride it out" when the climb goes flat.
@@ -36,6 +49,7 @@ Then, and only then, the cuts.
 
 - **600×600, full width.** Content spans the whole 548px column instead of a narrow centered card. Choices are wide rows, gauges sit side by side, and the coach puts the cue beside the clock — big type reads better across than stacked down, so there is far less to cram into 600px of height.
 - **One centered axis.** Every title, cue, row, gauge and footer is centered on it. Back arrows and the ▲▼ bump affordance are absolutely positioned so they never pull a title off center. Mixed alignment reads as noise on a display you only ever glance at.
+- **Nothing scrolls that shouldn't.** The mode tiles, the fuel and doneness ladders, the plan, the fire stage and the temp guide are all sized to fit 600px outright. The only scroller is the 9-deep grill cut list, and D-pad focus scrolls itself into view there.
 - **Bright, not washed.** The waveguide is additive and only ever subtracts contrast, so labels, rules and glyphs all sit above web-normal luminance. There is no ambient background gradient anywhere — a wash bleaches against the real world, so the only decoration is a single hot rule and the glow on the type itself.
 
 ## Controls
@@ -46,12 +60,12 @@ Then, and only then, the cuts.
 | --- | --- | --- |
 | Mode (3 tiles across) | ◀ / ▶ | Move between GRILL, SMOKE and BBQ |
 | Mode (3 tiles across) | ▲ / ▼ | Hop between the tiles and the footer |
-| Fire / Help | ▲ / ▼ | Move down the list of choices |
-| Any question | Enter | Choose it and go to the next question |
-| Fire / Help / Cook list | ◀ | Step back one question |
-| Cook list | Enter | Open that cut's setup |
-| Setup | ▲ / ▼ | Move between doneness, ADD, and LIGHT IT |
-| Setup | Enter | Pick a doneness, stack another item, or light the fire |
+| Fire · Help · Food · Taste | ▲ / ▼ | Move down the list of choices |
+| Any question | Enter | Answer it and go to the next one |
+| Any question | ◀ | Step back one question |
+| Plan | ▲ / ▼ | Move between + ADD and FIRE IT UP |
+| Fire | ▲ / ▼ | Move between PREHEAT and FOOD'S ON |
+| Fire | Enter | Start/cancel the preheat clock, or put the food on |
 
 ### Grill (flip coach)
 
@@ -78,19 +92,19 @@ The countdown and thresholds do the work on their own; your inputs just tell the
 
 Reproducible via `?state=` URL routing (see below).
 
-> 📸 The shots below predate the three-question flow and the larger, brighter type — rerun the capture loop to refresh them, and to add the new `mode`, `fuel`, `assist`, `fire`, `coach-rookie`, and `coach-pro` states, which already have `?state=` keys but no PNG yet.
+> 📸 The shots below predate the one-question-per-screen flow and the larger, brighter type — rerun the capture loop to refresh them, and to add the new `mode`, `fuel`, `assist`, `doneness`, `plan`, `fire`, `fire-preheat`, `coach-rookie` and `coach-pro` states, which already have `?state=` keys but no PNG yet. `setup` is kept as an alias for `plan`.
 
 | Cook list · Grill | Cook list · Smoke | Cook list · BBQ |
 | --- | --- | --- |
 | ![Grill cook list](screenshots/home.png) | ![Smoke cook list](screenshots/home-smoke.png) | ![BBQ cook list](screenshots/home-bbq.png) |
 
-| Grill setup | Grill coach (multi-item) | Cue alert |
+| The plan | Grill coach (multi-item) | Cue alert |
 | --- | --- | --- |
-| ![Setup](screenshots/setup.png) | ![Coach](screenshots/coach.png) | ![Cue](screenshots/cue.png) |
+| ![Plan](screenshots/setup.png) | ![Coach](screenshots/coach.png) | ![Cue](screenshots/cue.png) |
 
-| Smoke setup | Pit monitor · brisket | Pit alarm + spritz |
+| Smoke plan | Pit monitor · brisket | Pit alarm + spritz |
 | --- | --- | --- |
-| ![Smoke setup](screenshots/setup-smoke.png) | ![Monitor](screenshots/monitor.png) | ![Alarm](screenshots/monitor-alarm.png) |
+| ![Smoke plan](screenshots/setup-smoke.png) | ![Monitor](screenshots/monitor.png) | ![Alarm](screenshots/monitor-alarm.png) |
 
 | BBQ monitor · ribs (time) | Plated | Temp guide |
 | --- | --- | --- |
@@ -112,7 +126,8 @@ Each screen has a deterministic `?state=` key that mirrors the screenshot filena
 
 ```sh
 for s in mode fuel fuel-smoke assist home home-smoke home-bbq \
-         setup setup-smoke setup-bbq fire fire-smoke \
+         doneness doneness-burger plan plan-smoke plan-bbq \
+         fire fire-preheat fire-pro fire-smoke \
          coach coach-rookie coach-pro cue \
          monitor monitor-stall monitor-alarm monitor-bbq done guide help; do
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
@@ -127,10 +142,10 @@ done
 
 ```
 grillmaster/
-├── index.html      # screen scaffold — mode, fire, help, cook list, setup, fire primer, coach, pit monitor, done, guide, help
-├── styles.css      # ember-on-black HUD theme, full-width and lens-bright
-├── data.js         # modes, fuels, assist levels + the cook library (grill flip-timelines, smoke/bbq pit phases, temps, tips)
-├── app.js          # the three-question flow, two engines (grill flip coach + temp-driven pit monitor), D-pad, alerts, persistence
+├── index.html      # one section per screen — mode, fire, help, food, taste, plan, fire stage, coach, pit monitor, done, guide, help
+├── styles.css      # ember-on-black HUD theme: big, bright, full-width, one centred axis
+├── data.js         # modes, fuels (lever + lighting + preheat + alarm copy), assist levels, and the cook library
+├── app.js          # the question flow, the preheat clock, two engines (grill flip coach + temp-driven pit monitor), D-pad, alerts, persistence
 ├── favicon.svg
 ├── README.md
 └── screenshots/    # generated via ?state= routing

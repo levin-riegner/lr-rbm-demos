@@ -56,7 +56,8 @@ const MODES = [
    The fuel is not decoration. It decides:
      lever    — the thing you physically turn to change the heat
      ready    — how you know the fire is actually ready
-     steps    — the light-it primer (shown to first-timers)
+     steps    — the light-it walkthrough
+     preheatMin — how long this fuel needs before food touches it
      lowFix   — pit-monitor alarm copy when the pit drops
      highFix  — ...and when it runs away
      spritz   — what the mid-cook nudge should say
@@ -65,7 +66,7 @@ const MODES = [
 const FUELS = {
   grill: [
     {
-      id: 'charcoal', glyph: '🪨', name: 'CHARCOAL', tag: 'LUMP OR BRIQUETTE',
+      id: 'charcoal', glyph: '🪨', name: 'CHARCOAL', tag: 'LUMP OR BRIQUETTE', preheatMin: 20,
       lever: 'BOTTOM VENT', ready: 'Coals ashed over grey',
       steps: [
         'Fill a chimney. One sheet of paper underneath, light it.',
@@ -77,7 +78,7 @@ const FUELS = {
       hint: 'Two zones: hot side to sear, cool side to hide.',
     },
     {
-      id: 'gas', glyph: '⛽', name: 'PROPANE', tag: 'GAS · KNOBS',
+      id: 'gas', glyph: '⛽', name: 'PROPANE', tag: 'GAS · KNOBS', preheatMin: 12,
       lever: 'THE KNOBS', ready: 'Lid thermometer settled',
       steps: [
         'Lid open, gas on, light the burners one at a time.',
@@ -89,7 +90,7 @@ const FUELS = {
       hint: 'Preheat properly. A cold grate sticks to everything.',
     },
     {
-      id: 'wood', glyph: '🌲', name: 'LIVE FIRE', tag: 'WOOD · COALS',
+      id: 'wood', glyph: '🌲', name: 'LIVE FIRE', tag: 'WOOD · COALS', preheatMin: 35,
       lever: 'THE RAKE', ready: 'Flames down, coals glowing',
       steps: [
         'Burn hardwood down hard — you cook on coals, not flames.',
@@ -101,7 +102,7 @@ const FUELS = {
       hint: 'Never cook over flame. Flame is soot, coals are heat.',
     },
     {
-      id: 'pellet', glyph: '🌾', name: 'PELLET', tag: 'HOPPER · DIAL',
+      id: 'pellet', glyph: '🌾', name: 'PELLET', tag: 'HOPPER · DIAL', preheatMin: 15,
       lever: 'THE DIAL', ready: 'Set temp reached, smoke thinning',
       steps: [
         'Hopper full, dial to high, let it run through startup.',
@@ -115,7 +116,7 @@ const FUELS = {
   ],
   smoke: [
     {
-      id: 'offset', glyph: '🌲', name: 'OFFSET', tag: 'STICK BURNER · SPLITS',
+      id: 'offset', glyph: '🌲', name: 'OFFSET', tag: 'STICK BURNER · SPLITS', preheatMin: 30,
       lever: 'FIREBOX & STACK', ready: 'Thin blue smoke, no white',
       steps: [
         'Coal base in the firebox, then feed dry hardwood splits.',
@@ -127,7 +128,7 @@ const FUELS = {
       hint: 'Small hot fires, often. A smouldering fire ruins meat.',
     },
     {
-      id: 'charcoal', glyph: '🪨', name: 'CHARCOAL', tag: 'KETTLE · DRUM · KAMADO',
+      id: 'charcoal', glyph: '🪨', name: 'CHARCOAL', tag: 'KETTLE · DRUM · KAMADO', preheatMin: 25,
       lever: 'BOTTOM VENT', ready: 'Settled at temp for 20 min',
       steps: [
         'Bank unlit coals, drop a small lit batch on one end.',
@@ -139,7 +140,7 @@ const FUELS = {
       hint: 'Chase temp with the bottom vent. Leave the top one open.',
     },
     {
-      id: 'pellet', glyph: '🌾', name: 'PELLET', tag: 'SET IT & WALK AWAY',
+      id: 'pellet', glyph: '🌾', name: 'PELLET', tag: 'SET IT & WALK AWAY', preheatMin: 15,
       lever: 'THE DIAL', ready: 'Holding the set temp',
       steps: [
         'Fill the hopper — a long cook eats more than you think.',
@@ -151,7 +152,7 @@ const FUELS = {
       hint: 'Steady but shy on smoke. A smoke tube fixes that.',
     },
     {
-      id: 'electric', glyph: '🔌', name: 'ELECTRIC', tag: 'CABINET · THERMOSTAT',
+      id: 'electric', glyph: '🔌', name: 'ELECTRIC', tag: 'CABINET · THERMOSTAT', preheatMin: 30,
       lever: 'THERMOSTAT', ready: 'Chips smouldering at temp',
       steps: [
         'Set the thermostat and preheat empty for 30 min.',
@@ -165,7 +166,7 @@ const FUELS = {
   ],
   bbq: [
     {
-      id: 'charcoal', glyph: '🪨', name: 'CHARCOAL', tag: 'TWO-ZONE KETTLE',
+      id: 'charcoal', glyph: '🪨', name: 'CHARCOAL', tag: 'TWO-ZONE KETTLE', preheatMin: 20,
       lever: 'BOTTOM VENT', ready: 'Holding 275°F indirect',
       steps: [
         'Coals banked hard to one side. Food goes on the empty side.',
@@ -177,7 +178,7 @@ const FUELS = {
       hint: 'Indirect means nothing under the meat. Nothing.',
     },
     {
-      id: 'pellet', glyph: '🌾', name: 'PELLET', tag: 'HOPPER · DIAL',
+      id: 'pellet', glyph: '🌾', name: 'PELLET', tag: 'HOPPER · DIAL', preheatMin: 15,
       lever: 'THE DIAL', ready: 'Holding the set temp',
       steps: [
         'Hopper full, dial to 275°F, run through startup.',
@@ -189,7 +190,7 @@ const FUELS = {
       hint: 'The whole chamber is indirect. Rotate racks instead.',
     },
     {
-      id: 'gas', glyph: '⛽', name: 'PROPANE', tag: 'BURNERS OFF ONE SIDE',
+      id: 'gas', glyph: '⛽', name: 'PROPANE', tag: 'BURNERS OFF ONE SIDE', preheatMin: 12,
       lever: 'THE KNOBS', ready: 'Lid gauge steady at 275°F',
       steps: [
         'Light one side only. The food sits over the dead burners.',
@@ -201,7 +202,7 @@ const FUELS = {
       hint: 'Gas gives you heat, not smoke. Add wood on purpose.',
     },
     {
-      id: 'wood', glyph: '🌲', name: 'WOOD', tag: 'COALS RAKED ASIDE',
+      id: 'wood', glyph: '🌲', name: 'WOOD', tag: 'COALS RAKED ASIDE', preheatMin: 35,
       lever: 'THE RAKE', ready: 'Coal bed steady, flames gone',
       steps: [
         'Burn a good pile of hardwood down to a deep coal bed.',
@@ -217,7 +218,10 @@ const FUELS = {
 
 /* ═══════════════════ STEP 3 — HOW MUCH HELP ═══════════════════
    The answer rewires the coach:
-     primer  — walk through lighting the fire before the cook starts
+     steps   — spell out how to light this fuel on the fire stage.
+               NOT a gate on the stage itself: every cook goes through
+               it, because the timer must start when food touches the
+               grate, not when you light the coals.
      subs    — keep the explanatory line under every cue
      hints   — show the fuel's heat lever + reminder during the cook
      alertMs — how long a heads-up holds before it clears itself
@@ -226,13 +230,13 @@ const FUELS = {
 const ASSIST_LEVELS = [
   { id: 'rookie', glyph: '🙋', name: 'FIRST TIME', tag: 'WALK ME THROUGH IT',
     sub: 'Light the fire together, every step explained',
-    primer: true, subs: true, hints: true, alertMs: 5200, safety: true },
+    steps: true, subs: true, hints: true, alertMs: 5200, safety: true },
   { id: 'coach', glyph: '👊', name: 'COACH ME', tag: 'CUES & TIMERS',
     sub: 'Tell me the next move, skip the lecture',
-    primer: false, subs: true, hints: false, alertMs: 3400, safety: true },
+    steps: true, subs: true, hints: false, alertMs: 3400, safety: true },
   { id: 'pro', glyph: '🤘', name: 'I GOT THIS', tag: 'NUMBERS ONLY',
     sub: 'Big clock, big temps, out of my way',
-    primer: false, subs: false, hints: false, alertMs: 2400, safety: false },
+    steps: false, subs: false, hints: false, alertMs: 2400, safety: false },
 ];
 
 /* Doneness ladders. pullF = pull here; the meat coasts up ~5°F
