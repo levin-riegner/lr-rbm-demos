@@ -496,15 +496,30 @@
 
     // GAME
     const acts = Array.from(document.querySelectorAll('.act.focusable'));
+    const deadBtn = document.querySelector('.dead-btn');
+    const deadVisible = state.dead && deadBtn;
     const cur = document.activeElement;
+
+    // If focus is on the ADOPT button: down returns to action bar, Enter/Space triggers it
+    if (cur === deadBtn) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); acts[0]?.focus(); return; }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); deadBtn.click(); return; }
+      return;
+    }
+
     let i = acts.indexOf(cur);
     if (i < 0) i = 0;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault(); acts[(i + 1) % acts.length].focus(); return;
+    // Left/right navigate the horizontal action bar
+    if (e.key === 'ArrowRight') { e.preventDefault(); acts[(i + 1) % acts.length].focus(); return; }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); acts[(i - 1 + acts.length) % acts.length].focus(); return; }
+    // Up jumps to ADOPT button when dead; otherwise wraps the action bar
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (deadVisible) { deadBtn.focus(); return; }
+      acts[(i - 1 + acts.length) % acts.length].focus();
+      return;
     }
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault(); acts[(i - 1 + acts.length) % acts.length].focus(); return;
-    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); acts[(i + 1) % acts.length].focus(); return; }
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       acts[i]?.click();
