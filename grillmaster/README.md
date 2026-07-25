@@ -48,6 +48,7 @@ The cook timer measures *food on the grate*, so it cannot start while the grate 
 
 ## Built for the lens
 
+- **A floor of 13px.** The whole small tier is three sizes — 13 / 14 / 15 — and nothing that carries meaning goes under 13px. Tracking on small caps stays at or under .18em, because on an additive lens over-spaced small type smears long before it looks airy.
 - **600×600, full width.** Content spans the whole 548px column instead of a narrow centered card. Choices are wide rows, gauges sit side by side, and the coach puts the cue beside the clock — big type reads better across than stacked down, so there is far less to cram into 600px of height.
 - **One centered axis.** Every title, cue, row, gauge and footer is centered on it. Back arrows and the ▲▼ bump affordance are absolutely positioned so they never pull a title off center. Mixed alignment reads as noise on a display you only ever glance at.
 - **Nothing scrolls that shouldn't.** The mode tiles, the fuel and doneness ladders, the plan, the fire stage and the temp guide are all sized to fit 600px outright. The only scroller is the 9-deep grill cut list, and D-pad focus scrolls itself into view there.
