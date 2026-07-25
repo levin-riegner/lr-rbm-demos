@@ -6,17 +6,33 @@
    do right now, count me down to the next one, and never make me
    touch a screen with greasy tongs in my hand."
 
+   Before any food appears, the app asks three questions, in the
+   order a person actually makes them:
+
+     1. MODE   grill / smoke / bbq        → which engine coaches you
+     2. FIRE   charcoal / gas / wood / …  → what you turn to change
+                                            the heat, how to light it,
+                                            what the alarms should say
+     3. HELP   first time / coach / pro   → how much the HUD explains
+
+   Only then does it show the cuts. Every answer is carried into the
+   live cook, so "PIT LOW" becomes "PIT LOW · FEED IT COALS" on a
+   kettle and "PIT LOW · TURN THE BURNER UP" on gas.
+
    A COOK SESSION holds one or more ITEMS. Each item walks its own
    timeline of STEPS (see data.js). The coach always shows the item
    whose next cue is soonest, and rails the rest.
    ───────────────────────────────────────────────────────────── */
 
-const SESSION_KEY = 'grillmaster.session.v1';
+const SESSION_KEY = 'grillmaster.session.v2';
 
 const state = {
-  screen: 'home',
-  mode: 'grill',
+  screen: 'mode',
   focusIdx: 0,
+  // the three answers
+  mode: null,       // 'grill' | 'smoke' | 'bbq'
+  fuel: null,       // FUELS[mode] entry
+  assist: null,     // ASSIST_LEVELS entry
   // setup scratch
   selCook: null,
   selDon: null,
@@ -26,6 +42,7 @@ const state = {
   coachFocus: 0,    // index into non-done items shown as primary
   alertUid: null,   // item currently popped in the cue alert
   seen: {},         // uid -> highest due stepIndex we've already alerted on
+  returnTo: 'mode', // where guide/help should go back to
 };
 
 let uidSeq = 1;
@@ -38,9 +55,27 @@ const lerp  = (a, b, t) => a + (b - a) * t;
 const cookById = (id) => COOKS.find(c => c.id === id);
 function now() { return Date.now(); }
 
+const modeById   = (id) => MODES.find(m => m.id === id);
+const fuelsFor   = (mode) => FUELS[mode] || [];
+const fuelById   = (mode, id) => fuelsFor(mode).find(f => f.id === id);
+const assistById = (id) => ASSIST_LEVELS.find(a => a.id === id);
+
 /* a "pit" cook is smoke or bbq — coached by the temp monitor, not the flip timer */
 const isPit = (c) => c && (c.mode === 'smoke' || c.mode === 'bbq');
 const heatLabel = (c) => c.mode === 'grill' ? c.grate : c.pitF + '°F';
+
+/* everything downstream assumes all three answers exist; URL-state and
+   restored sessions can land mid-flow, so fill the blanks with sane picks */
+function ensureContext(mode) {
+  if (mode) state.mode = mode;
+  if (!state.mode) state.mode = 'grill';
+  if (!state.fuel || !fuelById(state.mode, state.fuel.id)) state.fuel = fuelsFor(state.mode)[0];
+  if (!state.assist) state.assist = assistById('coach');
+  applyAssist();
+}
+function applyAssist() {
+  $('#app').dataset.assist = state.assist ? state.assist.id : 'coach';
+}
 
 function formatClock(sec, signed) {
   const neg = sec < 0;
@@ -93,42 +128,162 @@ function showScreen(name) {
   refreshFocus();
 }
 
-/* ═════════════════ HOME ═════════════════ */
-function renderHome() {
-  $$('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === state.mode));
-  $('#home-label').textContent =
-    state.mode === 'grill' ? 'CHOOSE A COOK · HOT & FAST'
-    : state.mode === 'smoke' ? 'CHOOSE A CUT · LOW & SLOW'
-    : 'CHOOSE A CUT · INDIRECT & MEDIUM';
+/* the MODE › FIRE › HELP › FOOD breadcrumb at the top of each step */
+const STEP_LABELS = ['MODE', 'FIRE', 'HELP', 'FOOD'];
+function paintStepRails() {
+  $$('.step-rail').forEach(el => {
+    const cur = Number(el.dataset.step);
+    el.innerHTML = STEP_LABELS
+      .map((l, i) => {
+        const n = i + 1;
+        const cls = n === cur ? 'sr on' : n < cur ? 'sr done' : 'sr';
+        return `<span class="${cls}">${l}</span>`;
+      })
+      .join('<span class="sr-sep">›</span>');
+  });
+}
 
-  const list = $('#cook-list');
+/* one wide row per choice, shared by all three question screens */
+function pickRow({ action, key, glyph, name, tag, sub, selected }) {
+  const b = document.createElement('button');
+  b.className = 'pick focusable' + (selected ? ' sel' : '');
+  b.dataset.action = action;
+  b.dataset.key = key;
+  b.innerHTML =
+    `<span class="pick-g">${glyph}</span>` +
+    `<span class="pick-body">` +
+      `<span class="pick-k">${name}</span>` +
+      (tag ? `<span class="pick-t">${tag}</span>` : '') +
+      (sub ? `<span class="pick-s">${sub}</span>` : '') +
+    `</span>` +
+    `<span class="pick-go">›</span>`;
+  return b;
+}
+
+/* ═════════════════ STEP 1 — MODE ═════════════════ */
+function renderModePick() {
+  const list = $('#mode-list');
   list.innerHTML = '';
-  COOKS.filter(c => c.mode === state.mode).forEach(c => {
+  list.classList.remove('compact');
+  MODES.forEach(m => list.appendChild(pickRow({
+    action: 'pick-mode', key: m.id, glyph: m.glyph,
+    name: m.name, tag: m.tag, sub: m.sub, selected: state.mode === m.id,
+  })));
+}
+function goMode() {
+  renderModePick();
+  showScreen('mode');
+  focusEl($('.pick.sel') || $('#mode-list .pick'));
+}
+function pickMode(id) {
+  state.mode = id;
+  // a fuel from another mode means nothing here — re-pick it
+  if (!state.fuel || !fuelById(id, state.fuel.id)) state.fuel = null;
+  goFuel();
+}
+
+/* ═════════════════ STEP 2 — THE FIRE ═════════════════ */
+function renderFuelPick() {
+  const m = modeById(state.mode);
+  const fuels = fuelsFor(state.mode);
+  $('#fuel-sub').textContent = `${m.name} · ${m.tag}`;
+  const list = $('#fuel-list');
+  list.innerHTML = '';
+  list.classList.toggle('compact', fuels.length > 3);
+  fuels.forEach(f => list.appendChild(pickRow({
+    action: 'pick-fuel', key: f.id, glyph: f.glyph,
+    name: f.name, tag: f.tag, sub: null,
+    selected: state.fuel && state.fuel.id === f.id,
+  })));
+}
+function goFuel() {
+  if (!state.mode) return goMode();
+  renderFuelPick();
+  showScreen('fuel');
+  focusEl($('#fuel-list .pick.sel') || $('#fuel-list .pick'));
+}
+function pickFuel(id) {
+  state.fuel = fuelById(state.mode, id);
+  goAssist();
+}
+
+/* ═════════════════ STEP 3 — HOW MUCH HELP ═════════════════ */
+function renderAssistPick() {
+  const m = modeById(state.mode);
+  $('#assist-sub').textContent = `${m.name} ON ${state.fuel.name}`;
+  const list = $('#assist-list');
+  list.innerHTML = '';
+  list.classList.remove('compact');
+  ASSIST_LEVELS.forEach(a => list.appendChild(pickRow({
+    action: 'pick-assist', key: a.id, glyph: a.glyph,
+    name: a.name, tag: a.tag, sub: a.sub,
+    selected: state.assist && state.assist.id === a.id,
+  })));
+}
+function goAssist() {
+  if (!state.fuel) return goFuel();
+  renderAssistPick();
+  showScreen('assist');
+  focusEl($('#assist-list .pick.sel') || $('#assist-list .pick'));
+}
+function pickAssist(id) {
+  state.assist = assistById(id);
+  applyAssist();
+  goCooks();
+}
+
+/* ═════════════════ STEP 4 — THE FOOD ═════════════════ */
+/* rough "how long am I in for", shown on every cook row */
+function cookQuickTime(c) {
+  if (isPit(c)) return pitRoughHours(c).replace('~', '');
+  const d = c.doneness ? (c.doneness.find(x => x.rec) || c.doneness[0]) : null;
+  const total = c.plan(d).filter(s => !s.rest).reduce((a, s) => a + s.sec, 0);
+  return Math.max(1, Math.round(total / 60)) + 'm';
+}
+
+function renderCooks() {
+  const m = modeById(state.mode);
+  const list = COOKS.filter(c => c.mode === state.mode);
+
+  $('#cooks-title').textContent = m.q;
+  $('#cooks-count').textContent = list.length + ' ' + m.unit;
+  $('#ctx-strip').innerHTML =
+    `<span class="ctx hot">${m.glyph} ${m.name}</span>` +
+    `<span class="ctx">${state.fuel.glyph} ${state.fuel.name}</span>` +
+    `<span class="ctx">${state.assist.glyph} ${state.assist.name}</span>`;
+
+  const el = $('#cook-list');
+  el.innerHTML = '';
+  list.forEach(c => {
     const row = document.createElement('button');
     row.className = 'cook-row focusable';
     row.dataset.action = 'pick-cook';
     row.dataset.id = c.id;
     row.innerHTML =
       `<span class="cg">${c.glyph}</span>` +
-      `<span class="cbody"><span class="cname">${c.name}</span>` +
-      `<span class="clevel">${c.level} · ${heatLabel(c)}</span></span>` +
-      `<span class="cgo">&#8250;</span>`;
-    list.appendChild(row);
+      `<span class="cbody">` +
+        `<span class="cname">${c.name.toUpperCase()}</span>` +
+        `<span class="clevel">${c.level} · ${c.cut.toUpperCase()}</span>` +
+      `</span>` +
+      `<span class="cstat">` +
+        `<span class="cs-v">${cookQuickTime(c)}</span>` +
+        `<span class="cs-k">${heatLabel(c)}</span>` +
+      `</span>`;
+    el.appendChild(row);
   });
 }
-
-function setMode(mode) {
-  state.mode = mode;
-  renderHome();
-  // drop focus onto the first cook so the list is immediately drivable
-  const first = $('.cook-row.focusable');
-  focusEl(first);
+function goCooks() {
+  ensureContext();
+  renderCooks();
+  showScreen('cooks');
+  focusEl($('#cook-list .cook-row'));
 }
 
 /* ═════════════════ SETUP ═════════════════ */
 function openSetup(cookId) {
   const c = cookById(cookId);
   if (!c) return;
+  ensureContext(c.mode);
   state.selCook = c;
   state.selDon = c.doneness ? (c.doneness.find(d => d.rec) || c.doneness[0]) : null;
 
@@ -136,7 +291,8 @@ function openSetup(cookId) {
   $('#setup-glyph').textContent = c.glyph;
   $('#setup-cut').textContent = c.cut;
   $('#setup-grate').textContent = isPit(c) ? 'PIT ' + c.pitF + '°F' : 'GRATE ' + c.grate;
-  $('#light-btn').textContent = isPit(c) ? 'LIGHT THE PIT →' : 'LIGHT THE FIRE →';
+  $('#setup-fuel').textContent = state.fuel.name;
+  $('#light-btn').textContent = isPit(c) ? 'LIGHT THE PIT →' : 'LIGHT IT →';
 
   // doneness picker only for cooks that have a ladder
   const donBlock = $('#doneness-block');
@@ -149,7 +305,7 @@ function openSetup(cookId) {
       b.className = 'don-btn focusable' + (d === state.selDon ? ' sel' : '');
       b.dataset.action = 'pick-doneness';
       b.dataset.key = d.key;
-      b.innerHTML = d.label + (d.rec ? '<span class="rec-dot">●</span>' : '');
+      b.innerHTML = (d.short || d.label) + (d.rec ? '<span class="rec-dot">●</span>' : '');
       donRow.appendChild(b);
     });
   } else {
@@ -162,7 +318,7 @@ function openSetup(cookId) {
   renderSetupTarget();
   updateTrayNote();
   showScreen('setup');
-  focusEl($('.don-btn.sel') || $('#light-btn'));
+  focusEl($('#light-btn'));
 }
 
 function pickDoneness(key) {
@@ -182,7 +338,6 @@ function renderSetupTarget() {
     $('#tgt-safe').textContent = c.safeF ? c.safeF + '°' : '—';
     safeCol.classList.toggle('safe', !!c.safeF);
     $('#tgt-time').textContent = pitRoughHours(c);
-    $('#tgt-pull').closest('.tgt-col').querySelector('.tgt-k').textContent = 'PULL AT';
     return;
   }
 
@@ -197,7 +352,7 @@ function renderSetupTarget() {
   $('#tgt-time').textContent = Math.max(1, Math.round(total / 60)) + 'm';
 }
 
-/* very rough "how long am I in for" for the setup screen */
+/* very rough "how long am I in for" for a pit cook */
 function pitRoughHours(c) {
   const timed = c.phases.filter(p => p.trigger && p.trigger.afterMin != null);
   if (timed.length) {
@@ -214,8 +369,7 @@ function updateTrayNote() {
   const n = state.items.length;
   const note = $('#tray-note');
   if (n === 0) { note.textContent = ''; return; }
-  const names = state.items.map(i => i.name).join(' · ');
-  note.textContent = `ON THE GRILL: ${names}`;
+  note.textContent = 'ON THE GRILL: ' + state.items.map(i => i.name).join(' · ');
 }
 
 /* build a live item instance from the current setup selection */
@@ -240,13 +394,39 @@ function addItem() {
   const it = makeItem(state.selCook, state.selDon);
   state.items.push(it);
   updateTrayNote();
-  toast(`${it.name} added, ${state.items.length} on the grill`);
+  toast(`${it.name} added — ${state.items.length} on the grill`);
   audio.tick();
-  // bounce back home to stack another
-  goHome();
+  // bounce back to the list to stack another
+  goCooks();
+}
+
+/* ═════════════════ THE FIRE PRIMER (FIRST TIME only) ═════════════════ */
+function renderFire() {
+  const f = state.fuel, m = modeById(state.mode);
+  $('#fire-fuel').textContent = `${f.name} · ${m.name}`;
+  const wrap = $('#fire-steps');
+  wrap.innerHTML = '';
+  f.steps.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'fs-row';
+    row.innerHTML = `<div class="fs-n">${i + 1}</div><div class="fs-t">${s}</div>`;
+    wrap.appendChild(row);
+  });
+  $('#fire-lever').textContent = f.lever;
+  $('#fire-ready').textContent = f.ready;
 }
 
 function lightFire() {
+  if (state.assist && state.assist.primer) {
+    renderFire();
+    showScreen('fire');
+    focusEl($('#fire-go'));
+    return;
+  }
+  ignite();
+}
+
+function ignite() {
   if (isPit(state.selCook)) {
     state.items = [makePitItem(state.selCook)];
     startPit();
@@ -353,7 +533,14 @@ function quitCook() {
   state.active = false;
   state.items = [];
   clearSession();
-  goHome();
+  goCooks();
+}
+
+/* the fuel reminder strip — FIRST TIME keeps it up the whole cook */
+function renderHint(el) {
+  const on = !!(state.assist && state.assist.hints && state.fuel);
+  el.classList.toggle('hidden', !on);
+  if (on) el.innerHTML = `<b>${state.fuel.lever}</b><span>${state.fuel.hint}</span>`;
 }
 
 /* full re-render of the coach screen */
@@ -361,7 +548,6 @@ function renderCoach() {
   const it = primaryItem();
   if (!it) return;
   const status = itemStatus(it);
-  const c = cookById(it.cookId);
   const last = it.stepIndex >= it.steps.length - 1;
   const cur = it.steps[it.stepIndex];
   const next = it.steps[it.stepIndex + 1];
@@ -415,15 +601,13 @@ function renderCoach() {
     tb.classList.add('hidden');
   }
 
+  renderHint($('#coach-hint'));
   renderRail();
-  // keep advance button label meaningful
-  $('#advance-btn').textContent = status === 'serve' ? 'SERVE ✓'
-    : status === 'due' ? 'DID IT ✓' : 'DID IT ✓';
+  $('#advance-btn').textContent = status === 'serve' ? 'SERVE ✓' : 'DID IT ✓';
 }
 
 function renderRail() {
   const rail = $('#rail');
-  const live = liveItems();
   const primary = primaryItem();
   rail.innerHTML = '';
   // show every OTHER live item (and completed ones dimmed)
@@ -580,7 +764,7 @@ function popPitAlert(it, phase) {
   audio.cue();
   if (navigator.vibrate) { try { navigator.vibrate([90, 60, 90]); } catch {} }
   clearTimeout(alertTimer);
-  alertTimer = setTimeout(ackCue, 3200);
+  alertTimer = setTimeout(ackCue, alertHold());
 }
 
 /* control-bar fields available right now */
@@ -642,7 +826,6 @@ function renderMonitor() {
   $('#mon-phase').textContent = it.resting ? 'REST' : phase.tag;
 
   if (it.resting) {
-    const rem = (it.restEndTs - now()) / 1000;
     $('#mon-cue').textContent = 'RESTING';
     $('#mon-sub').textContent = 'Keep it wrapped and let it relax.';
   } else {
@@ -650,15 +833,18 @@ function renderMonitor() {
     $('#mon-sub').textContent = phase.sub;
   }
 
-  // banners
+  // banners — the fix is written in the language of YOUR fire
   const alarm = $('#mon-alarm');
   if (it.pitBad && !it.resting) {
     alarm.classList.remove('hidden');
     const low = it.pitF < it.pitTarget;
-    $('#mon-alarm-txt').textContent = low ? 'PIT LOW · FEED THE FIRE' : 'PIT HIGH · CLOSE THE VENTS';
+    const fix = low ? state.fuel.lowFix : state.fuel.highFix;
+    $('#mon-alarm-txt').textContent = (low ? 'PIT LOW · ' : 'PIT HIGH · ') + fix;
     $('#mon-alarm .mb-ico').textContent = low ? '▼' : '▲';
   } else alarm.classList.add('hidden');
-  $('#mon-spritz').classList.toggle('hidden', !(it.spritzDue && !it.resting));
+  const spritzOn = it.spritzDue && !it.resting;
+  $('#mon-spritz').classList.toggle('hidden', !spritzOn);
+  if (spritzOn) $('#mon-spritz-txt').textContent = state.fuel.spritz;
 
   // gauges
   const gMeat = $('#g-meat'), gPit = $('#g-pit');
@@ -676,7 +862,7 @@ function renderMonitor() {
   gPit.classList.toggle('sel', selField === 'pit');
 
   // eta
-  const etaEl = $('#eta') || $('.eta');
+  const etaEl = $('.eta');
   if (it.resting) {
     const rem = Math.max(0, (it.restEndTs - now()) / 1000);
     $('#mon-eta').textContent = formatClock(rem);
@@ -688,6 +874,8 @@ function renderMonitor() {
     $('#mon-eta-sub').textContent = e.sub + ' · ' + fmtElapsed(now() - it.litAt);
     etaEl.classList.toggle('stall', !!e.stall);
   }
+
+  renderHint($('#mon-hint'));
 
   // control bar
   const bar = $('#mon-bar');
@@ -749,6 +937,9 @@ function tick() {
 
 /* ═════════════════ CUE ALERT ═════════════════ */
 let alertTimer = null;
+/* first-timers get longer to read it, pros get it out of the way */
+const alertHold = () => (state.assist ? state.assist.alertMs : 3400);
+
 function popCueAlert(it, status) {
   // pull the due item into the big card so glancing up shows the right thing
   const live = liveItems();
@@ -765,7 +956,7 @@ function popCueAlert(it, status) {
   if (navigator.vibrate) { try { navigator.vibrate([90, 60, 90]); } catch {} }
 
   clearTimeout(alertTimer);
-  alertTimer = setTimeout(ackCue, 3000);
+  alertTimer = setTimeout(ackCue, alertHold());
 }
 function ackCue() {
   clearTimeout(alertTimer);
@@ -781,18 +972,13 @@ function renderGuide() {
     const row = document.createElement('div');
     row.className = 'g-row';
     row.innerHTML =
-      `<div class="g-body"><div class="g-name">${g.name} <span style="color:var(--ash);font-weight:500">· ${g.note}</span></div>` +
-      `<div class="g-sub">${g.sub}</div></div>` +
+      `<div class="g-body">` +
+        `<div class="g-name">${g.name} <span class="g-note">· ${g.note}</span></div>` +
+        `<div class="g-sub">${g.sub}</div>` +
+      `</div>` +
       `<div class="g-temp">${g.temp}</div>`;
     list.appendChild(row);
   });
-}
-
-/* ═════════════════ navigation ═════════════════ */
-function goHome() {
-  renderHome();
-  showScreen('home');
-  focusEl($('.mode-btn.active') || $('.cook-row.focusable'));
 }
 
 /* ─────────── focus engine (D-pad) ─────────── */
@@ -810,7 +996,10 @@ function paintFocus(list) {
   list = list || focuslist();
   document.querySelectorAll('.focus').forEach(el => el.classList.remove('focus'));
   const el = list[state.focusIdx];
-  if (el) el.classList.add('focus');
+  if (!el) return;
+  el.classList.add('focus');
+  // long lists scroll; keep the focused row on the lens
+  if (el.scrollIntoView) el.scrollIntoView({ block: 'nearest' });
 }
 function focusEl(el) {
   if (!el) { refreshFocus(); return; }
@@ -864,7 +1053,7 @@ function bindEvents() {
   document.addEventListener('keydown', (e) => {
     // cue alert intercepts the first key as an acknowledgement
     if (state.alertUid != null) {
-      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); ackCue(); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ackCue(); }
       return;
     }
 
@@ -903,27 +1092,37 @@ function bindEvents() {
   });
 }
 
+/* ◀ always walks one question back up the flow */
 function handleBack() {
   switch (state.screen) {
-    case 'setup':
+    case 'fuel':   goMode(); break;
+    case 'assist': goFuel(); break;
+    case 'cooks':  goAssist(); break;
+    case 'setup':  goCooks(); break;
+    case 'fire':   state.selCook ? openSetup(state.selCook.id) : goCooks(); break;
+    case 'done':   goCooks(); break;
     case 'guide':
-    case 'help':
-    case 'done':
-      goHome(); break;
+    case 'help':   goReturn(); break;
     case 'coach':
-    case 'monitor':
-      quitCook(); break;
-    // home: nowhere to go
+    case 'monitor': quitCook(); break;
+    // mode: nowhere further back
   }
+}
+function goReturn() {
+  if (state.returnTo === 'cooks' && state.mode) goCooks();
+  else goMode();
 }
 
 function handleAction(a, el) {
   switch (a) {
-    case 'mode':          setMode(el.dataset.mode); break;
+    case 'pick-mode':     pickMode(el.dataset.key); break;
+    case 'pick-fuel':     pickFuel(el.dataset.key); break;
+    case 'pick-assist':   pickAssist(el.dataset.key); break;
     case 'pick-cook':     openSetup(el.dataset.id); break;
     case 'pick-doneness': pickDoneness(el.dataset.key); break;
     case 'add-item':      addItem(); break;
     case 'light-fire':    lightFire(); break;
+    case 'fire-ready':    ignite(); break;
     case 'advance':       advanceItem(primaryItem()); break;
     case 'mon-field': {
       const it = pitItem(); if (!it) break;
@@ -935,9 +1134,14 @@ function handleAction(a, el) {
     }
     case 'quit-cook':     quitCook(); break;
     case 'ack-cue':       ackCue(); break;
-    case 'show-guide':    renderGuide(); showScreen('guide'); focusEl($('#guide .crumb')); break;
-    case 'show-help':     showScreen('help'); focusEl($('#help .btn.primary')); break;
-    case 'go-home':       goHome(); break;
+    case 'show-guide':    state.returnTo = state.screen; renderGuide(); showScreen('guide'); focusEl($('#guide .crumb')); break;
+    case 'show-help':     state.returnTo = state.screen; showScreen('help'); focusEl($('#help .btn.primary')); break;
+    case 'go-mode':       goMode(); break;
+    case 'go-fuel':       goFuel(); break;
+    case 'go-assist':     goAssist(); break;
+    case 'go-cooks':      goCooks(); break;
+    case 'go-setup':      state.selCook ? openSetup(state.selCook.id) : goCooks(); break;
+    case 'go-back':       goReturn(); break;
   }
 }
 
@@ -945,7 +1149,10 @@ function handleAction(a, el) {
 function saveSession() {
   try {
     localStorage.setItem(SESSION_KEY, JSON.stringify({
-      mode: state.mode, active: state.active,
+      mode: state.mode,
+      fuelId: state.fuel ? state.fuel.id : null,
+      assistId: state.assist ? state.assist.id : null,
+      active: state.active,
       items: state.items, coachFocus: state.coachFocus, uidSeq,
     }));
   } catch {}
@@ -957,8 +1164,11 @@ function restoreSession() {
     if (!raw) return false;
     const s = JSON.parse(raw);
     if (!s.active || !Array.isArray(s.items) || !s.items.length) return false;
-    // rebuild step functions are already baked into stored items (plain data), good to go
+    // stored items are plain data — the step timelines are baked in, good to go
     state.mode = s.mode || 'grill';
+    state.fuel = fuelById(state.mode, s.fuelId);
+    state.assist = assistById(s.assistId);
+    ensureContext();
     state.items = s.items;
     state.coachFocus = s.coachFocus || 0;
     state.active = true;
@@ -995,21 +1205,47 @@ function applyUrlState() {
   if (!key) return false;
 
   switch (key) {
+    /* ── the four questions ── */
+    case 'mode':
+      goMode(); return true;
+    case 'fuel':
+      ensureContext('grill'); state.fuel = null; goFuel(); return true;
+    case 'fuel-smoke':
+      ensureContext('smoke'); state.fuel = null; goFuel(); return true;
+    case 'assist':
+      ensureContext('grill'); goAssist(); return true;
+    case 'assist-smoke':
+      ensureContext('smoke'); goAssist(); return true;
+
+    /* ── the cook list (legacy "home" keys) ── */
     case 'home':
-      state.mode = 'grill'; goHome(); return true;
+    case 'cooks':
+      ensureContext('grill'); goCooks(); return true;
     case 'home-smoke':
-      state.mode = 'smoke'; goHome(); return true;
+      ensureContext('smoke'); goCooks(); return true;
     case 'home-bbq':
-      state.mode = 'bbq'; goHome(); return true;
+      ensureContext('bbq'); goCooks(); return true;
+
+    /* ── setup ── */
     case 'setup':
-      state.mode = 'grill'; renderHome(); openSetup('ribeye'); return true;
+      ensureContext('grill'); openSetup('ribeye'); return true;
     case 'setup-smoke':
-      state.mode = 'smoke'; renderHome(); openSetup('brisket'); return true;
+      ensureContext('smoke'); openSetup('brisket'); return true;
     case 'setup-bbq':
-      state.mode = 'bbq'; renderHome(); openSetup('ribs'); return true;
+      ensureContext('bbq'); openSetup('ribs'); return true;
+
+    /* ── the fire primer ── */
+    case 'fire':
+      ensureContext('grill'); state.assist = assistById('rookie'); applyAssist();
+      openSetup('ribeye'); renderFire(); showScreen('fire'); focusEl($('#fire-go')); return true;
+    case 'fire-smoke':
+      ensureContext('smoke'); state.assist = assistById('rookie'); applyAssist();
+      openSetup('brisket'); renderFire(); showScreen('fire'); focusEl($('#fire-go')); return true;
+
+    /* ── the pit monitor ── */
     case 'monitor': {
       // brisket deep in the cook: wrapped, climbing out of the stall
-      state.mode = 'smoke';
+      ensureContext('smoke');
       state.items = [makePitItem(cookById('brisket'))];
       const it = pitItem();
       const t = now();
@@ -1027,7 +1263,7 @@ function applyUrlState() {
       return true;
     }
     case 'monitor-stall': {
-      state.mode = 'smoke';
+      ensureContext('smoke');
       state.items = [makePitItem(cookById('brisket'))];
       const it = pitItem();
       const t = now();
@@ -1038,7 +1274,9 @@ function applyUrlState() {
       return true;
     }
     case 'monitor-alarm': {
-      state.mode = 'smoke';
+      // pit dropped on a charcoal smoker — the fix is fuel-specific
+      ensureContext('smoke');
+      state.fuel = fuelById('smoke', 'charcoal');
       state.items = [makePitItem(cookById('pulled-pork'))];
       const it = pitItem();
       const t = now();
@@ -1051,7 +1289,7 @@ function applyUrlState() {
     }
     case 'monitor-bbq': {
       // ribs, time-driven, in the sauce phase
-      state.mode = 'bbq';
+      ensureContext('bbq');
       state.items = [makePitItem(cookById('ribs'))];
       const it = pitItem();
       const t = now();
@@ -1061,30 +1299,42 @@ function applyUrlState() {
       showScreen('monitor'); renderMonitor();
       return true;
     }
+
+    /* ── the grill coach ── */
     case 'coach': {
       // multi-item grill mid-cook: ribeye due to FLIP, veg cooking, shrimp cooking
-      state.mode = 'grill';
+      ensureContext('grill');
       state.items = [
         seedItem('ribeye', 'mr', 0, -8),   // first side done, FLIP is due
         seedItem('veg', null, 1, 92),
         seedItem('shrimp', null, 0, 41),
       ];
-      state.active = true; state.coachFocus = 0; state.seen = { };
+      state.active = true; state.coachFocus = 0; state.seen = {};
       // mark the due one as already alerted so no overlay in the shot
       state.seen[state.items[0].uid] = 'due:0';
       showScreen('coach'); focusEl($('#advance-btn')); renderCoach();
       return true;
     }
-    case 'coach-bbq': {
-      state.mode = 'bbq';
-      state.items = [ seedItem('brisket', null, 1, 1830) ]; // deep in the smoke, spritz phase
+    case 'coach-rookie': {
+      // same cook, but with the FIRST TIME fuel reminder showing
+      ensureContext('grill');
+      state.assist = assistById('rookie'); applyAssist();
+      state.items = [seedItem('ribeye', 'mr', 0, 64), seedItem('veg', null, 1, 121)];
+      state.active = true; state.coachFocus = 0; state.seen = {};
+      showScreen('coach'); focusEl($('#advance-btn')); renderCoach();
+      return true;
+    }
+    case 'coach-pro': {
+      ensureContext('grill');
+      state.assist = assistById('pro'); applyAssist();
+      state.items = [seedItem('ribeye', 'mr', 1, 47), seedItem('shrimp', null, 0, 88)];
       state.active = true; state.coachFocus = 0; state.seen = {};
       showScreen('coach'); focusEl($('#advance-btn')); renderCoach();
       return true;
     }
     case 'cue': {
-      state.mode = 'grill';
-      state.items = [ seedItem('ribeye', 'mr', 0, -3), seedItem('veg', null, 1, 70) ];
+      ensureContext('grill');
+      state.items = [seedItem('ribeye', 'mr', 0, -3), seedItem('veg', null, 1, 70)];
       state.active = true; state.coachFocus = 0; state.seen = {};
       showScreen('coach'); renderCoach();
       popCueAlert(state.items[0], 'due');
@@ -1093,13 +1343,16 @@ function applyUrlState() {
       clearTimeout(alertTimer);
       return true;
     }
+
+    /* ── the rest ── */
     case 'done':
-      state.items = [ makeItem(cookById('ribeye'), STEAK_DONENESS[1]), makeItem(cookById('veg'), null) ];
+      ensureContext('grill');
+      state.items = [makeItem(cookById('ribeye'), STEAK_DONENESS[1]), makeItem(cookById('veg'), null)];
       finishCook(); return true;
     case 'guide':
-      renderGuide(); showScreen('guide'); return true;
+      ensureContext('grill'); state.returnTo = 'mode'; renderGuide(); showScreen('guide'); return true;
     case 'help':
-      showScreen('help'); return true;
+      ensureContext('grill'); state.returnTo = 'mode'; showScreen('help'); return true;
   }
   return false;
 }
@@ -1107,13 +1360,14 @@ function applyUrlState() {
 /* ═════════════════ boot ═════════════════ */
 function boot() {
   bindEvents();
-  renderHome();
+  paintStepRails();
+  renderModePick();
 
   if (applyUrlState()) { startLoop(); return; }
   if (restoreSession()) { startLoop(); return; }
 
-  // default: land on home in grill mode
-  goHome();
+  // default: the first question
+  goMode();
   startLoop();
 }
 function startLoop() {

@@ -17,6 +17,12 @@
               Same pit monitor, tuned hotter, saucing/glazing, done by a
               mix of time and a lower target temp.
 
+   The app asks three questions before any food shows up:
+     1. MODE   — grill, smoke, or bbq                  (see MODES)
+     2. FIRE   — charcoal, gas, wood, pellet, electric (see FUELS)
+     3. HELP   — how much hand-holding you want        (see ASSIST_LEVELS)
+   All three change what the coach says, not just what it looks like.
+
    GRILL cooks expose  plan(doneness?) → [STEP]         (time engine)
    SMOKE/BBQ cooks expose  phases[] + pit config        (pit engine)
 
@@ -35,20 +41,214 @@
    the monitor projects the ETA from how fast it is actually climbing.
    ───────────────────────────────────────────────────────────── */
 
+/* ═══════════════════ STEP 1 — THE MODE ═══════════════════ */
+const MODES = [
+  { id: 'grill', glyph: '🔥', name: 'GRILL', tag: 'HOT & FAST',
+    sub: 'Direct flame · minutes', q: 'CHOOSE A COOK', unit: 'CUTS' },
+  { id: 'smoke', glyph: '🪵', name: 'SMOKE', tag: 'LOW & SLOW',
+    sub: 'Wood at 225°F · all day', q: 'CHOOSE A CUT', unit: 'CUTS' },
+  { id: 'bbq',   glyph: '🍖', name: 'BBQ',   tag: 'INDIRECT',
+    sub: '275–325°F · a few hours', q: 'CHOOSE A CUT', unit: 'CUTS' },
+];
+
+/* ═══════════════════ STEP 2 — THE FIRE ═══════════════════
+   The fuel is not decoration. It decides:
+     lever    — the thing you physically turn to change the heat
+     ready    — how you know the fire is actually ready
+     steps    — the light-it primer (shown to first-timers)
+     lowFix   — pit-monitor alarm copy when the pit drops
+     highFix  — ...and when it runs away
+     spritz   — what the mid-cook nudge should say
+     hint     — the one-line in-cook reminder for this fuel
+   ─────────────────────────────────────────────────────────── */
+const FUELS = {
+  grill: [
+    {
+      id: 'charcoal', glyph: '🪨', name: 'CHARCOAL', tag: 'LUMP OR BRIQUETTE',
+      lever: 'BOTTOM VENT', ready: 'Coals ashed over grey',
+      steps: [
+        'Fill a chimney. One sheet of paper underneath, light it.',
+        'Give it 15 minutes — the top coals go ashy grey.',
+        'Dump them banked to one side, grate on, lid down 5 min.',
+      ],
+      lowFix: 'FEED IT COALS', highFix: 'CHOKE THE BOTTOM VENT',
+      spritz: 'SPRITZ · CHECK THE COALS',
+      hint: 'Two zones: hot side to sear, cool side to hide.',
+    },
+    {
+      id: 'gas', glyph: '⛽', name: 'PROPANE', tag: 'GAS · KNOBS',
+      lever: 'THE KNOBS', ready: 'Lid thermometer settled',
+      steps: [
+        'Lid open, gas on, light the burners one at a time.',
+        'All burners high, lid down, 10–15 min to preheat.',
+        'Kill one burner — that side is now your cool zone.',
+      ],
+      lowFix: 'TURN THE BURNER UP', highFix: 'TURN THE BURNER DOWN',
+      spritz: 'SPRITZ THE MEAT',
+      hint: 'Preheat properly. A cold grate sticks to everything.',
+    },
+    {
+      id: 'wood', glyph: '🌲', name: 'LIVE FIRE', tag: 'WOOD · COALS',
+      lever: 'THE RAKE', ready: 'Flames down, coals glowing',
+      steps: [
+        'Burn hardwood down hard — you cook on coals, not flames.',
+        '30–40 min until the logs collapse into glowing embers.',
+        'Rake a deep bed one side, thin the other, grate low.',
+      ],
+      lowFix: 'RAKE IN MORE COALS', highFix: 'SPREAD THE COALS OUT',
+      spritz: 'SPRITZ · BURN DOWN MORE WOOD',
+      hint: 'Never cook over flame. Flame is soot, coals are heat.',
+    },
+    {
+      id: 'pellet', glyph: '🌾', name: 'PELLET', tag: 'HOPPER · DIAL',
+      lever: 'THE DIAL', ready: 'Set temp reached, smoke thinning',
+      steps: [
+        'Hopper full, dial to high, let it run through startup.',
+        '12–15 min to come up and clear the white startup smoke.',
+        'Searing? Grate direct over the firepot, or crank to max.',
+      ],
+      lowFix: 'BUMP THE DIAL UP', highFix: 'DIAL IT BACK',
+      spritz: 'SPRITZ · CHECK THE HOPPER',
+      hint: 'Pellet grills run cooler than they claim. Trust a probe.',
+    },
+  ],
+  smoke: [
+    {
+      id: 'offset', glyph: '🌲', name: 'OFFSET', tag: 'STICK BURNER · SPLITS',
+      lever: 'FIREBOX & STACK', ready: 'Thin blue smoke, no white',
+      steps: [
+        'Coal base in the firebox, then feed dry hardwood splits.',
+        'Stack wide open. Manage heat with the firebox intake only.',
+        'Wait for thin blue smoke — white smoke is bitter food.',
+      ],
+      lowFix: 'ADD A SPLIT', highFix: 'CLOSE THE INTAKE DOWN',
+      spritz: 'SPRITZ · TIME FOR ANOTHER SPLIT',
+      hint: 'Small hot fires, often. A smouldering fire ruins meat.',
+    },
+    {
+      id: 'charcoal', glyph: '🪨', name: 'CHARCOAL', tag: 'KETTLE · DRUM · KAMADO',
+      lever: 'BOTTOM VENT', ready: 'Settled at temp for 20 min',
+      steps: [
+        'Bank unlit coals, drop a small lit batch on one end.',
+        'Add two chunks of wood, top vent wide, bottom nearly shut.',
+        'Let it settle 20 min before you trust the number.',
+      ],
+      lowFix: 'CRACK THE BOTTOM VENT', highFix: 'CHOKE THE BOTTOM VENT',
+      spritz: 'SPRITZ · CHECK THE COAL BED',
+      hint: 'Chase temp with the bottom vent. Leave the top one open.',
+    },
+    {
+      id: 'pellet', glyph: '🌾', name: 'PELLET', tag: 'SET IT & WALK AWAY',
+      lever: 'THE DIAL', ready: 'Holding the set temp',
+      steps: [
+        'Fill the hopper — a long cook eats more than you think.',
+        'Set 225°F and let it stabilise for 15 min.',
+        'Want more smoke? Run the first hours as low as it will hold.',
+      ],
+      lowFix: 'CHECK THE HOPPER & AUGER', highFix: 'DIAL IT BACK',
+      spritz: 'SPRITZ · TOP UP THE HOPPER',
+      hint: 'Steady but shy on smoke. A smoke tube fixes that.',
+    },
+    {
+      id: 'electric', glyph: '🔌', name: 'ELECTRIC', tag: 'CABINET · THERMOSTAT',
+      lever: 'THERMOSTAT', ready: 'Chips smouldering at temp',
+      steps: [
+        'Set the thermostat and preheat empty for 30 min.',
+        'Load the chip tray — a small handful, not a heap.',
+        'Water pan full. It buffers the temp and keeps things moist.',
+      ],
+      lowFix: 'RAISE THE THERMOSTAT', highFix: 'LOWER THE THERMOSTAT',
+      spritz: 'SPRITZ · RELOAD THE CHIPS',
+      hint: 'Open the door as little as you can — it recovers slowly.',
+    },
+  ],
+  bbq: [
+    {
+      id: 'charcoal', glyph: '🪨', name: 'CHARCOAL', tag: 'TWO-ZONE KETTLE',
+      lever: 'BOTTOM VENT', ready: 'Holding 275°F indirect',
+      steps: [
+        'Coals banked hard to one side. Food goes on the empty side.',
+        'Drip pan under the meat, vents set for around 275°F.',
+        'Top vent above the meat so the smoke pulls across it.',
+      ],
+      lowFix: 'FEED IT COALS', highFix: 'CHOKE THE BOTTOM VENT',
+      spritz: 'SPRITZ · CHECK THE COALS',
+      hint: 'Indirect means nothing under the meat. Nothing.',
+    },
+    {
+      id: 'pellet', glyph: '🌾', name: 'PELLET', tag: 'HOPPER · DIAL',
+      lever: 'THE DIAL', ready: 'Holding the set temp',
+      steps: [
+        'Hopper full, dial to 275°F, run through startup.',
+        '15 min to settle and clear the startup smoke.',
+        'Grease tray lined — 275°F renders a lot of fat.',
+      ],
+      lowFix: 'BUMP THE DIAL UP', highFix: 'DIAL IT BACK',
+      spritz: 'SPRITZ · CHECK THE HOPPER',
+      hint: 'The whole chamber is indirect. Rotate racks instead.',
+    },
+    {
+      id: 'gas', glyph: '⛽', name: 'PROPANE', tag: 'BURNERS OFF ONE SIDE',
+      lever: 'THE KNOBS', ready: 'Lid gauge steady at 275°F',
+      steps: [
+        'Light one side only. The food sits over the dead burners.',
+        'Dial the lit side until the lid gauge holds 275°F.',
+        'Smoke box or a foil pouch of chips over the live burner.',
+      ],
+      lowFix: 'TURN THE LIVE BURNER UP', highFix: 'TURN THE LIVE BURNER DOWN',
+      spritz: 'SPRITZ · REFILL THE SMOKE BOX',
+      hint: 'Gas gives you heat, not smoke. Add wood on purpose.',
+    },
+    {
+      id: 'wood', glyph: '🌲', name: 'WOOD', tag: 'COALS RAKED ASIDE',
+      lever: 'THE RAKE', ready: 'Coal bed steady, flames gone',
+      steps: [
+        'Burn a good pile of hardwood down to a deep coal bed.',
+        'Rake it all to one end, food at the far end, lid down.',
+        'Feed one small split at a time to hold 275°F.',
+      ],
+      lowFix: 'ADD A SPLIT', highFix: 'PULL COALS AWAY',
+      spritz: 'SPRITZ · FEED THE FIRE',
+      hint: 'One split at a time. Two is a temperature spike.',
+    },
+  ],
+};
+
+/* ═══════════════════ STEP 3 — HOW MUCH HELP ═══════════════════
+   The answer rewires the coach:
+     primer  — walk through lighting the fire before the cook starts
+     subs    — keep the explanatory line under every cue
+     hints   — show the fuel's heat lever + reminder during the cook
+     alertMs — how long a heads-up holds before it clears itself
+     safety  — surface the safe-temp floor everywhere it applies
+   ───────────────────────────────────────────────────────────── */
+const ASSIST_LEVELS = [
+  { id: 'rookie', glyph: '🙋', name: 'FIRST TIME', tag: 'WALK ME THROUGH IT',
+    sub: 'Light the fire together, every step explained',
+    primer: true, subs: true, hints: true, alertMs: 5200, safety: true },
+  { id: 'coach', glyph: '👊', name: 'COACH ME', tag: 'CUES & TIMERS',
+    sub: 'Tell me the next move, skip the lecture',
+    primer: false, subs: true, hints: false, alertMs: 3400, safety: true },
+  { id: 'pro', glyph: '🤘', name: 'I GOT THIS', tag: 'NUMBERS ONLY',
+    sub: 'Big clock, big temps, out of my way',
+    primer: false, subs: false, hints: false, alertMs: 2400, safety: false },
+];
+
 /* Doneness ladders. pullF = pull here; the meat coasts up ~5°F
-   resting (carryover), landing at servF. */
+   resting (carryover), landing at servF. `short` keeps the picker
+   on one line at HUD type sizes. */
 const STEAK_DONENESS = [
-  { key: 'rare',   label: 'Rare',        pullF: 120, servF: 125 },
-  { key: 'mr',     label: 'Medium Rare', pullF: 128, servF: 133, rec: true },
-  { key: 'med',    label: 'Medium',      pullF: 138, servF: 143 },
-  { key: 'mw',     label: 'Medium Well', pullF: 148, servF: 153 },
-  { key: 'well',   label: 'Well Done',   pullF: 158, servF: 160 },
+  { key: 'rare',   label: 'Rare',        short: 'RARE',     pullF: 120, servF: 125 },
+  { key: 'mr',     label: 'Medium Rare', short: 'MED RARE', pullF: 128, servF: 133, rec: true },
+  { key: 'med',    label: 'Medium',      short: 'MEDIUM',   pullF: 138, servF: 143 },
+  { key: 'mw',     label: 'Medium Well', short: 'MED WELL', pullF: 148, servF: 153 },
+  { key: 'well',   label: 'Well Done',   short: 'WELL',     pullF: 158, servF: 160 },
 ];
 
 const BURGER_DONENESS = [
-  { key: 'med',  label: 'Medium',      pullF: 150, servF: 155 },
-  { key: 'mw',   label: 'Medium Well', pullF: 155, servF: 160, rec: true },
-  { key: 'well', label: 'Well Done',   pullF: 160, servF: 165 },
+  { key: 'med',  label: 'Medium',      short: 'MEDIUM',   pullF: 150, servF: 155 },
+  { key: 'mw',   label: 'Medium Well', short: 'MED WELL', pullF: 155, servF: 160, rec: true },
+  { key: 'well', label: 'Well Done',   short: 'WELL',     pullF: 160, servF: 165 },
 ];
 
 /* Per-side sear seconds scale with how far you're cooking it.

@@ -12,17 +12,10 @@
   <script defer src="https://cloud.umami.is/script.js" data-website-id="be32beae-a2a9-423f-b55d-e646ec260f93"></script>
 </head>
 <body>
-  <div id="app">
+  <div id="app" data-assist="coach">
 
-    <!-- heat haze behind everything; black = transparent on the lens -->
-    <div class="ember-field" aria-hidden="true">
-      <div class="ember e1"></div><div class="ember e2"></div>
-      <div class="ember e3"></div><div class="ember e4"></div>
-      <div class="ember e5"></div><div class="ember e6"></div>
-    </div>
-
-    <!-- ═════════ HOME, pick a mode, then a cook ═════════ -->
-    <section id="home" class="screen">
+    <!-- ═════════ STEP 1 — WHAT ARE WE DOING? ═════════ -->
+    <section id="mode" class="screen">
       <header class="brand">
         <div class="flame">▲</div>
         <div class="brand-txt">
@@ -30,35 +23,65 @@
           <div class="brand-tag">HANDS-FREE FIRE COACH</div>
         </div>
       </header>
+      <div class="ember-rule" aria-hidden="true"></div>
 
-      <div class="mode-toggle three" id="mode-toggle">
-        <button class="mode-btn focusable" data-action="mode" data-mode="grill">
-          <span class="mode-k">GRILL</span>
-          <span class="mode-s">hot &amp; fast</span>
-        </button>
-        <button class="mode-btn focusable" data-action="mode" data-mode="smoke">
-          <span class="mode-k">SMOKE</span>
-          <span class="mode-s">low &amp; slow</span>
-        </button>
-        <button class="mode-btn focusable" data-action="mode" data-mode="bbq">
-          <span class="mode-k">BBQ</span>
-          <span class="mode-s">indirect</span>
-        </button>
-      </div>
+      <div class="ask">TODAY WE ARE…</div>
+      <div class="pick-list" id="mode-list"></div>
 
-      <div class="list-label" id="home-label">CHOOSE A COOK</div>
-      <div class="cook-list" id="cook-list"></div>
-
-      <div class="home-foot">
+      <div class="foot-row">
         <button class="btn ghost focusable" data-action="show-guide">TEMP GUIDE</button>
         <button class="btn ghost focusable" data-action="show-help">HOW IT WORKS</button>
       </div>
     </section>
 
-    <!-- ═════════ SETUP, doneness + add to the cook ═════════ -->
+    <!-- ═════════ STEP 2 — WHAT'S THE FIRE? ═════════ -->
+    <section id="fuel" class="screen hidden">
+      <header class="wiz-head">
+        <div class="step-rail" data-step="2"></div>
+        <div class="wiz-row">
+          <button class="crumb focusable" data-action="go-mode">&#8592;</button>
+          <div class="wiz-title">WHAT’S THE FIRE?</div>
+        </div>
+        <div class="wiz-sub" id="fuel-sub">—</div>
+      </header>
+      <div class="pick-list" id="fuel-list"></div>
+    </section>
+
+    <!-- ═════════ STEP 3 — HOW MUCH HELP? ═════════ -->
+    <section id="assist" class="screen hidden">
+      <header class="wiz-head">
+        <div class="step-rail" data-step="3"></div>
+        <div class="wiz-row">
+          <button class="crumb focusable" data-action="go-fuel">&#8592;</button>
+          <div class="wiz-title">NEED A HAND?</div>
+        </div>
+        <div class="wiz-sub" id="assist-sub">—</div>
+      </header>
+      <div class="pick-list" id="assist-list"></div>
+    </section>
+
+    <!-- ═════════ STEP 4 — WHAT ARE WE COOKING? ═════════ -->
+    <section id="cooks" class="screen hidden">
+      <header class="wiz-head tight">
+        <div class="step-rail" data-step="4"></div>
+        <div class="wiz-row">
+          <button class="crumb focusable" data-action="go-assist">&#8592;</button>
+          <div class="wiz-title" id="cooks-title">CHOOSE A COOK</div>
+          <div class="wiz-count" id="cooks-count">—</div>
+        </div>
+        <div class="ctx-strip" id="ctx-strip"></div>
+      </header>
+      <div class="cook-list" id="cook-list"></div>
+      <div class="foot-row">
+        <button class="btn ghost focusable" data-action="show-guide">TEMP GUIDE</button>
+        <button class="btn ghost focusable" data-action="show-help">HOW IT WORKS</button>
+      </div>
+    </section>
+
+    <!-- ═════════ SETUP — doneness + add to the cook ═════════ -->
     <section id="setup" class="screen hidden">
       <header class="page-head">
-        <button class="crumb focusable" data-action="go-home">&#8592; COOKS</button>
+        <button class="crumb focusable" data-action="go-cooks">&#8592;</button>
         <div class="ph-title" id="setup-title">—</div>
       </header>
 
@@ -66,12 +89,15 @@
         <div class="hero-glyph" id="setup-glyph">🥩</div>
         <div class="hero-meta">
           <div class="hero-cut" id="setup-cut">—</div>
-          <div class="hero-grate"><span class="chip" id="setup-grate">—</span></div>
+          <div class="chip-row">
+            <span class="chip" id="setup-grate">—</span>
+            <span class="chip alt" id="setup-fuel">—</span>
+          </div>
         </div>
       </div>
 
       <div class="setup-block" id="doneness-block">
-        <div class="list-label">HOW DO YOU LIKE IT?</div>
+        <div class="ask small">HOW DO YOU LIKE IT?</div>
         <div class="doneness-row" id="doneness-row"></div>
       </div>
 
@@ -91,49 +117,77 @@
       </div>
 
       <div class="setup-actions">
-        <button class="btn add focusable" data-action="add-item" id="add-btn">+ ADD TO COOK</button>
-        <button class="btn primary focusable" data-action="light-fire" id="light-btn">LIGHT THE FIRE &#8594;</button>
+        <button class="btn add focusable" data-action="add-item" id="add-btn">+ ADD</button>
+        <button class="btn primary focusable" data-action="light-fire" id="light-btn">LIGHT IT &#8594;</button>
       </div>
       <div class="tray-note" id="tray-note"></div>
     </section>
 
-    <!-- ═════════ COACH, the live cook HUD ═════════ -->
-    <section id="coach" class="screen hidden">
+    <!-- ═════════ FIRE PRIMER — only for FIRST TIME ═════════ -->
+    <section id="fire" class="screen hidden">
+      <header class="page-head">
+        <button class="crumb focusable" data-action="go-setup">&#8592;</button>
+        <div class="ph-title">LIGHT IT UP</div>
+        <div class="ph-tail" id="fire-fuel">—</div>
+      </header>
 
-      <!-- primary card: the ONE thing to do right now -->
-      <div class="now">
-        <div class="now-top">
-          <span class="now-item" id="now-item">RIBEYE</span>
-          <span class="now-phase" id="now-phase">SEAR</span>
+      <div class="fire-steps" id="fire-steps"></div>
+
+      <div class="fire-facts">
+        <div class="ff-col">
+          <div class="ff-k">HEAT LEVER</div>
+          <div class="ff-v" id="fire-lever">—</div>
         </div>
-
-        <div class="now-cue" id="now-cue">SEAR, HANDS OFF</div>
-        <div class="now-sub" id="now-sub">—</div>
-
-        <div class="clock-wrap">
-          <div class="clock-ring" id="clock-ring">
-            <div class="clock-time" id="clock-time">0:00</div>
-            <div class="clock-lbl" id="clock-lbl">TO FLIP</div>
-          </div>
-        </div>
-
-        <!-- temp readout + doneness bar (hidden for no-probe cooks) -->
-        <div class="temp" id="temp-block">
-          <div class="temp-nums">
-            <span class="temp-est" id="temp-est">—°</span>
-            <span class="temp-sep">/</span>
-            <span class="temp-tgt" id="temp-tgt">—°</span>
-            <span class="temp-lbl">EST / TARGET</span>
-          </div>
-          <div class="temp-bar"><div class="temp-fill" id="temp-fill"></div><div class="temp-tick" id="temp-tick"></div></div>
+        <div class="ff-col">
+          <div class="ff-k">READY WHEN</div>
+          <div class="ff-v" id="fire-ready">—</div>
         </div>
       </div>
+
+      <div class="setup-actions">
+        <button class="btn primary big focusable" data-action="fire-ready" id="fire-go">FIRE’S READY &#8594;</button>
+      </div>
+    </section>
+
+    <!-- ═════════ COACH — the live grill HUD ═════════ -->
+    <section id="coach" class="screen hidden">
+
+      <div class="now-top">
+        <span class="now-item" id="now-item">RIBEYE</span>
+        <span class="now-phase" id="now-phase">SEAR</span>
+      </div>
+
+      <!-- primary card: the ONE thing to do right now, cue left / clock right -->
+      <div class="now">
+        <div class="now-copy">
+          <div class="now-cue" id="now-cue">SEAR, HANDS OFF</div>
+          <div class="now-sub" id="now-sub">—</div>
+        </div>
+        <div class="clock-ring" id="clock-ring">
+          <div class="clock-time" id="clock-time">0:00</div>
+          <div class="clock-lbl" id="clock-lbl">TO FLIP</div>
+        </div>
+      </div>
+
+      <!-- temp readout + doneness bar (hidden for no-probe cooks) -->
+      <div class="temp" id="temp-block">
+        <div class="temp-nums">
+          <span class="temp-est" id="temp-est">—°</span>
+          <span class="temp-sep">/</span>
+          <span class="temp-tgt" id="temp-tgt">—°</span>
+          <span class="temp-lbl">EST / TARGET</span>
+        </div>
+        <div class="temp-bar"><div class="temp-fill" id="temp-fill"></div><div class="temp-tick" id="temp-tick"></div></div>
+      </div>
+
+      <!-- fuel reminder, FIRST TIME only -->
+      <div class="hint hidden" id="coach-hint"></div>
 
       <!-- rail of every other item cooking right now -->
       <div class="rail" id="rail"></div>
 
-      <div class="coach-foot">
-        <button class="btn ghost focusable" data-action="quit-cook">&#8592; END</button>
+      <div class="foot-row">
+        <button class="btn ghost narrow focusable" data-action="quit-cook">&#8592; END</button>
         <button class="btn primary big focusable" data-action="advance" id="advance-btn">DID IT &#10003;</button>
       </div>
     </section>
@@ -150,7 +204,7 @@
         <span class="mb-ico">▲</span><span id="mon-alarm-txt">PIT LOW</span>
       </div>
       <div class="mon-banner spritz hidden" id="mon-spritz">
-        <span class="mb-ico">💧</span><span>SPRITZ / CHECK FUEL</span>
+        <span class="mb-ico">💧</span><span id="mon-spritz-txt">SPRITZ</span>
       </div>
 
       <div class="mon-cue" id="mon-cue">ON THE SMOKE</div>
@@ -176,6 +230,9 @@
         <span class="eta-s" id="mon-eta-sub">to WRAP · 3h 04m elapsed</span>
       </div>
 
+      <!-- fuel reminder, FIRST TIME only -->
+      <div class="hint hidden" id="mon-hint"></div>
+
       <!-- control bar (rendered by app.js) -->
       <div class="mon-bar" id="mon-bar"></div>
     </section>
@@ -187,7 +244,7 @@
         <div class="done-title" id="done-title">PLATED</div>
         <div class="done-sub" id="done-sub">Everything’s off the fire.</div>
         <div class="done-actions">
-          <button class="btn primary focusable" data-action="go-home">NEW COOK</button>
+          <button class="btn primary big focusable" data-action="go-cooks">NEW COOK</button>
         </div>
       </div>
     </section>
@@ -195,40 +252,39 @@
     <!-- ═════════ TEMP GUIDE ═════════ -->
     <section id="guide" class="screen hidden">
       <header class="page-head">
-        <button class="crumb focusable" data-action="go-home">&#8592; HOME</button>
+        <button class="crumb focusable" data-action="go-back">&#8592;</button>
         <div class="ph-title">DONENESS &amp; SAFETY</div>
       </header>
       <div class="guide-list" id="guide-list"></div>
-      <div class="guide-note">Pull 5°F early, meat keeps climbing off the heat (carryover).</div>
+      <div class="guide-note">Pull 5°F early — meat keeps climbing off the heat.</div>
     </section>
 
     <!-- ═════════ HELP ═════════ -->
     <section id="help" class="screen hidden">
       <header class="page-head">
-        <button class="crumb focusable" data-action="go-home">&#8592; HOME</button>
+        <button class="crumb focusable" data-action="go-back">&#8592;</button>
         <div class="ph-title">HOW IT WORKS</div>
       </header>
       <div class="help-body">
-        <div class="help-lead">Your hands are on the tongs, not a phone. Glance up, do the one thing it tells you, tap once.</div>
+        <div class="help-lead">Hands on the tongs, not a phone. Glance up, do the one thing it says, tap once.</div>
         <div class="help-row">
           <span class="hk">▲ ▼</span>
-          <div><b>SWITCH ITEM</b><span>Bring another thing on the grill into focus</span></div>
+          <div><b>MOVE</b><span>Walk a list, or switch which item is in the big card</span></div>
         </div>
         <div class="help-row">
           <span class="hk">ENTER</span>
-          <div><b>DID IT</b><span>Confirm the cue, advances to the next beat</span></div>
+          <div><b>DID IT</b><span>Confirm the cue and advance to the next beat</span></div>
         </div>
         <div class="help-row">
           <span class="hk">◀</span>
-          <div><b>BACK</b><span>Leave the cook or a screen</span></div>
+          <div><b>BACK</b><span>Step back a question, or leave the cook</span></div>
         </div>
         <div class="help-row">
           <span class="hk">▶</span>
-          <div><b>TIP</b><span>Cycle the pro tip for the focused item</span></div>
+          <div><b>TIP</b><span>Cycle the pro tip for what’s on the fire</span></div>
         </div>
-        <div class="help-foot">A countdown gets you to each cue on its own; ENTER just says you already did it.</div>
         <div class="done-actions">
-          <button class="btn primary focusable" data-action="go-home">GOT IT</button>
+          <button class="btn primary big focusable" data-action="go-back">GOT IT</button>
         </div>
       </div>
     </section>
@@ -240,7 +296,7 @@
         <div class="cue-eyebrow" id="cue-eyebrow">NOW</div>
         <div class="cue-big" id="cue-big">FLIP</div>
         <div class="cue-item" id="cue-item">—</div>
-        <button class="btn primary focusable" data-action="ack-cue">ON IT &#10003;</button>
+        <button class="btn primary big focusable" data-action="ack-cue">ON IT &#10003;</button>
       </div>
     </div>
 
