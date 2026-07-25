@@ -10,22 +10,27 @@ Nothing asks two things at once. Each screen puts one question in 34px type, tak
 
 1. **MODE** — grill, smoke, or bbq, as three tiles across the full width so the first screen never scrolls.
 2. **FIRE** — charcoal, propane, live fire, pellet, electric, offset (the list changes per mode). Not a cosmetic choice: it decides what you turn to change the heat, how the app walks you through lighting it, and what the alarms say.
-3. **HELP** — how much hand-holding. **FIRST TIME** spells out the lighting and keeps a fuel reminder on the HUD; **COACH ME** gives cues and timers, no lecture; **I GOT THIS** drops every explanatory line and spends the space on bigger numbers.
+3. **HELP** — how much hand-holding. **FIRST TIME** is walked through lighting the fire right here, before anything else, and keeps a fuel reminder on the HUD; **COACH ME** gives cues and timers, no lecture; **I GOT THIS** drops every explanatory line and spends the space on bigger numbers.
 4. **FOOD** — which cut, each row carrying its rough time and heat.
 5. **TASTE** — the doneness ladder, on its own screen, with the pull and eating temp on every rung. Cuts without a ladder (chicken, salmon, anything on the pit) skip this step, and the breadcrumb drops it rather than showing a step you were never asked.
 6. **PLAN** — the numbers you're committing to: pull temp, safe minimum, estimated time. Stack another item here and they all come off together.
-7. **FIRE** — light it. Every cook goes through this, at every assist level.
+7. **FIRE** — the ready gate: is it hot? Then food goes on.
 
 A breadcrumb across the top of each screen shows where you are in that chain.
 
-## The fire is a stage, not a button
+## Lighting the fire comes first, because it does
 
-The cook timer measures *food on the grate*, so it cannot start while the grate is cold — which is why picking a steak never drops you straight into a running countdown. The fire gets its own screen with a real clock on it:
+You don't pick your doneness and *then* light the coals — you light them, and they take 12 to 35 minutes while you work out what you're actually cooking. So the fire screen does two different jobs at two different moments, and never repeats itself.
 
-- **PREHEAT** starts a countdown sized to your fuel — 12 minutes for propane, 20 for charcoal, 35 for a wood fire burning down to coals — and chimes when it's up to temp, on whatever screen you happen to be looking at.
-- It keeps running if you step back to browse other cuts.
-- **FOOD'S ON** is the thing that actually starts the cook. Already have a hot grill? Skip the timer and go straight there.
-- Assist level changes how much of the lighting is spelled out, not whether the stage exists.
+**Up front, once, only if you asked.** Answer FIRST TIME to the HELP question and the very next thing is the three steps that light *your* fuel — a chimney and one sheet of paper for charcoal, burn hardwood down to embers for live fire, run the startup cycle for pellets. Start the preheat here and carry on. COACH ME and I GOT THIS never see it.
+
+**At the end, the ready gate.** By now the fire is lit, so there's no walkthrough — just the heat lever, how you know it's hot (*"coals ashed over grey"*), the clock if it's still running, and **FOOD'S ON**. If you do want the steps, **HOW DO I LIGHT IT?** pulls them up; they are never on screen unless you asked for them.
+
+Either way:
+
+- **PREHEAT** counts down your fuel's real warm-up — 12 minutes for propane, 20 for charcoal, 35 for wood burning down to coals — and chimes when it's up to temp, on whatever screen you're looking at.
+- **It keeps burning while you answer the rest.** The cook list and the plan carry a live `🔥 11:04` chip that flips green to `🔥 READY`, so you never lose track of a fire you already lit.
+- **FOOD'S ON** is what actually starts the cook, because the cook timer measures food on the grate. Already have a hot grill? Skip the clock and go straight there.
 
 ## Three modes, two engines
 
@@ -37,7 +42,7 @@ The cook timer measures *food on the grate*, so it cannot start while the grate 
 
 - **One thing at a time.** GRILL always shows the single next move ("FLIP THE RIBEYE") at 44px with the clock next to it, so a glance is enough. No menus to read mid-cook.
 - **The alarms speak your fire.** A pit that drops reads `PIT LOW · FEED IT COALS` on a kettle, `PIT LOW · TURN THE BURNER UP` on gas, `PIT LOW · ADD A SPLIT` on an offset. Same for the spritz nudge and the heat-lever reminder.
-- **A preheat clock, per fuel.** The fire stage counts down your fuel's real warm-up time and chimes when it's ready, wherever you are in the app. FIRST TIME also gets the three steps that actually light *that* fuel.
+- **A preheat clock, per fuel.** Counts down your fuel's real warm-up time, keeps running across every screen, and chimes when it's ready wherever you are. FIRST TIME gets walked through lighting it up front; everyone else can pull the steps up on demand and is otherwise never shown them.
 - **Live temperature.** GRILL eases an *estimated* internal temp toward your target with a heat bar. SMOKE and BBQ take the real reading you dial in by hand and show meat and pit together, always next to the target and the USDA-safe floor.
 - **Hands-free temp entry.** On the pit you glance at your own thermometer and bump the reading with the D-pad. Each bump feeds the ETA and trips the wrap/pull thresholds. No Bluetooth probe required.
 - **Real smoking coaching.** The stall is detected and explained, not just waited out. Wrap fires at 165°F, pull at ~203°F, and the ETA says "STALL, ride it out" when the climb goes flat.
@@ -66,8 +71,8 @@ The cook timer measures *food on the grate*, so it cannot start while the grate 
 | Any question | Enter | Answer it and go to the next one |
 | Any question | ◀ | Step back one question |
 | Plan | ▲ / ▼ | Move between + ADD and FIRE IT UP |
-| Fire | ▲ / ▼ | Move between PREHEAT and FOOD'S ON |
-| Fire | Enter | Start/cancel the preheat clock, or put the food on |
+| Fire | ▲ / ▼ | Move between PREHEAT, FOOD'S ON, and the steps toggle |
+| Fire | Enter | Start/cancel the preheat clock, show the steps, or put the food on |
 
 ### Grill (flip coach)
 
@@ -98,7 +103,7 @@ The countdown and thresholds do the work on their own; your inputs just tell the
 
 Reproducible via `?state=` URL routing (see below).
 
-> 📸 The shots below predate the one-question-per-screen flow and the larger, brighter type — rerun the capture loop to refresh them, and to add the new `mode`, `fuel`, `assist`, `doneness`, `plan`, `fire`, `fire-preheat`, `coach-rookie` and `coach-pro` states, which already have `?state=` keys but no PNG yet. `setup` is kept as an alias for `plan`.
+> 📸 The shots below predate the one-question-per-screen flow and the larger, brighter type — rerun the capture loop to refresh them, and to add the new `mode`, `fuel`, `assist`, `doneness`, `plan`, `fire-light`, `fire`, `fire-steps`, `home-preheating`, `coach-rookie` and `coach-pro` states, which already have `?state=` keys but no PNG yet. `setup` is kept as an alias for `plan`.
 
 | Cook list · Grill | Cook list · Smoke | Cook list · BBQ |
 | --- | --- | --- |
@@ -133,7 +138,8 @@ Each screen has a deterministic `?state=` key that mirrors the screenshot filena
 ```sh
 for s in mode fuel fuel-smoke assist home home-smoke home-bbq \
          doneness doneness-burger plan plan-smoke plan-bbq \
-         fire fire-preheat fire-pro fire-smoke \
+         fire-light fire-light-smoke fire fire-preheat fire-steps \
+         fire-pro fire-smoke home-preheating \
          coach coach-rookie coach-pro cue \
          monitor monitor-stall monitor-alarm monitor-bbq done guide help; do
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \

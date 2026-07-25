@@ -115,6 +115,11 @@ button { font-family: inherit; color: inherit; background: none; border: none; c
   color: var(--ash-2); border: 1px solid var(--line); background: var(--fill);
 }
 .ctx.hot { color: var(--ember-hi); border-color: var(--line-hot); }
+.preheat-live {
+  font-family: "JetBrains Mono", monospace; color: var(--ember-hi);
+  border-color: var(--ember); background: var(--fill-on);
+}
+.preheat-live.up { color: var(--safe); border-color: var(--safe); }
 
 /* ═════════ the pick list — one wide, centred row per choice ═════════ */
 .pick-list {
@@ -193,6 +198,9 @@ button { font-family: inherit; color: inherit; background: none; border: none; c
 /* ═════════ buttons ═════════ */
 .foot-row, .act-row { display: flex; justify-content: center; gap: 12px; margin-top: 16px; }
 .act-row { margin-top: 18px; }
+/* the optional walkthrough toggle — present, but not competing with FOOD'S ON */
+.act-row.secondary { margin-top: 10px; min-height: 0; }
+.act-row.secondary .btn { flex: none; min-width: 250px; font-size: 15px; padding: 10px 16px; }
 .btn {
   border-radius: 12px; font-weight: 700; letter-spacing: .09em;
   font-size: 19px; padding: 14px 18px; transition: all .13s ease;

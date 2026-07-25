@@ -218,10 +218,11 @@ const FUELS = {
 
 /* ═══════════════════ STEP 3 — HOW MUCH HELP ═══════════════════
    The answer rewires the coach:
-     steps   — spell out how to light this fuel on the fire stage.
-               NOT a gate on the stage itself: every cook goes through
-               it, because the timer must start when food touches the
-               grate, not when you light the coals.
+     steps   — offer the lighting walkthrough up front, once, right
+               after this question is answered. Only FIRST TIME gets
+               it unasked; everyone else can pull it up on demand from
+               the ready gate. It is never shown twice, and never shown
+               at the end — by then the fire is already lit.
      subs    — keep the explanatory line under every cue
      hints   — show the fuel's heat lever + reminder during the cook
      alertMs — how long a heads-up holds before it clears itself
@@ -233,7 +234,7 @@ const ASSIST_LEVELS = [
     steps: true, subs: true, hints: true, alertMs: 5200, safety: true },
   { id: 'coach', glyph: '👊', name: 'COACH ME', tag: 'CUES & TIMERS',
     sub: 'Tell me the next move, skip the lecture',
-    steps: true, subs: true, hints: false, alertMs: 3400, safety: true },
+    steps: false, subs: true, hints: false, alertMs: 3400, safety: true },
   { id: 'pro', glyph: '🤘', name: 'I GOT THIS', tag: 'NUMBERS ONLY',
     sub: 'Big clock, big temps, out of my way',
     steps: false, subs: false, hints: false, alertMs: 2400, safety: false },

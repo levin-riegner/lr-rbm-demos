@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=7">
   <script defer src="https://cloud.umami.is/script.js" data-website-id="be32beae-a2a9-423f-b55d-e646ec260f93"></script>
 </head>
 <body>
@@ -131,15 +131,22 @@
       <div class="note" id="plan-note"></div>
     </section>
 
-    <!-- ═════════ THE FIRE — every cook passes through here ═════════ -->
+    <!-- ═════════ THE FIRE — two jobs, one screen ═════════
+         phase "light": shown once, up front, only to whoever asked to be
+                        walked through it. Lighting happens BEFORE you pick
+                        food, because the fire needs 12–35 minutes.
+         phase "go":    the ready gate at the end of the flow. No lecture —
+                        just how you know it's hot, and FOOD'S ON. The
+                        walkthrough is available here on demand, never
+                        unprompted. -->
     <section id="fire" class="screen hidden">
       <header class="page-head">
-        <button class="crumb focusable" data-action="go-plan">&#8592;</button>
-        <div class="ph-title">LIGHT IT UP</div>
+        <button class="crumb focusable" data-action="fire-back">&#8592;</button>
+        <div class="ph-title" id="fire-title">LIGHT IT UP</div>
         <div class="ph-tail" id="fire-fuel">—</div>
       </header>
 
-      <div class="fire-steps" id="fire-steps"></div>
+      <div class="fire-steps hidden" id="fire-steps"></div>
 
       <div class="fire-facts">
         <div class="ff-col">
@@ -159,7 +166,10 @@
 
       <div class="act-row">
         <button class="btn add focusable" data-action="preheat" id="preheat-btn">PREHEAT</button>
-        <button class="btn primary focusable" data-action="food-on" id="food-on-btn">FOOD’S ON &#8594;</button>
+        <button class="btn primary focusable" data-action="fire-go" id="fire-go-btn">FOOD’S ON &#8594;</button>
+      </div>
+      <div class="act-row secondary">
+        <button class="btn ghost focusable hidden" data-action="toggle-steps" id="steps-btn">HOW DO I LIGHT IT?</button>
       </div>
       <div class="note" id="fire-note"></div>
     </section>
@@ -332,7 +342,7 @@
     <div id="toast" class="toast hidden"></div>
   </div>
 
-  <script src="data.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="data.js?v=7"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
