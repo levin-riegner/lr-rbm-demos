@@ -39,6 +39,77 @@
   --fill-on:   rgba(255,125,46,.20);
 
   --pad: 26px;            /* the full-width HUD gutter (600 - 52 = 548) */
+
+  /* micro-motion — see the MOTION block below */
+  --m-fast: 140ms;
+  --m-base: 210ms;
+  --m-ease: cubic-bezier(.22,.68,0,1);
+  --m-stagger: 26ms;
+}
+
+/* ═════════════════ MOTION ═════════════════
+   Amicro's vocabulary — fade-in, fade-up, zoom-in, text-reveal, stagger —
+   rebuilt in plain CSS. The library itself is React + Tailwind + Motion
+   installed over npm, and this app is deliberately vanilla with no build
+   step, so it is the motion that is borrowed, not the dependency. Its
+   pointer-driven pieces (tilt-card, magnetic-button, the carousels) have
+   no meaning on a device with no pointer, so those become the D-pad
+   equivalent: a press squash on activation.
+
+   Four rules, because this is a 600×600 additive lens and not a website:
+     1. opacity and transform only. Never a bright wash — it bleaches
+        against the real world.
+     2. nothing over ~210ms, and text is legible at frame one. A HUD is
+        read in a glance; motion must never be in the way of the reading.
+     3. it fires on real events only — a screen change, a value actually
+        changing, a button actually pressed. The coach and the pit monitor
+        re-render five times a second, and anything keyed to a render
+        instead of a change would strobe.
+     4. all of it off under prefers-reduced-motion, including the ambient
+        flame flicker.
+   ───────────────────────────────────────── */
+@keyframes m-fade    { from { opacity: 0 }                                   to { opacity: 1 } }
+@keyframes m-fade-up { from { opacity: 0; transform: translateY(9px) }        to { opacity: 1; transform: none } }
+@keyframes m-zoom    { from { opacity: 0; transform: scale(.94) }             to { opacity: 1; transform: none } }
+@keyframes m-reveal  { from { opacity: 0; transform: translateY(5px) }        to { opacity: 1; transform: none } }
+@keyframes m-bump    { 0%,100% { transform: none }  40% { transform: scale(1.08) } }
+@keyframes m-press   { 0% { transform: scale(1) }  45% { transform: scale(.962) }  100% { transform: scale(1) } }
+
+/* a screen arrives as a plain fade; its rows do the moving */
+.screen.m-enter    { animation: m-fade var(--m-base) var(--m-ease) both; }
+#splash.m-enter    { animation: m-fade var(--m-fast) linear both; }
+
+/* staggered entry for every list in the app. --i is set as each row is
+   built, so the cascade follows DOM order. */
+.pick-list > .pick,
+.cook-list > .cook-row,
+.safety-list > .fs-row,
+.fire-steps > .fs-row,
+.guide-list > .g-row,
+.ctx-strip > .ctx,
+.plan-target > .tgt-col {
+  animation: m-fade-up var(--m-base) var(--m-ease) both;
+  animation-delay: calc(var(--i, 0) * var(--m-stagger));
+}
+/* NB: no declarative transform on .focus for any of the above — an entry
+   animation with fill-mode both would win the cascade and pin it. Focus
+   is carried by border, fill and glow instead. */
+
+.m-press  { animation: m-press var(--m-fast) var(--m-ease); }
+.m-reveal { animation: m-reveal var(--m-base) var(--m-ease) both; }
+.m-bump   { animation: m-bump var(--m-fast) var(--m-ease); }
+
+/* overlays punch in rather than appearing */
+#cue-alert .cue-card,
+#end-confirm .cue-card { animation: m-zoom var(--m-base) var(--m-ease) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -523,13 +594,15 @@ button { font-family: inherit; color: inherit; background: none; border: none; c
 
 /* ═════════ toast ═════════ */
 .toast {
-  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(9px);
   z-index: 50; max-width: 540px; background: #140803; border: 2px solid var(--line-hot);
   color: var(--white); font-size: 17px; font-weight: 600; letter-spacing: .02em;
   padding: 13px 20px; border-radius: 12px; box-shadow: 0 0 30px rgba(255,125,46,.35);
-  opacity: 0; transition: opacity .2s ease; pointer-events: none; text-align: center;
+  opacity: 0; pointer-events: none; text-align: center;
+  transition: opacity var(--m-base) ease, transform var(--m-base) var(--m-ease);
 }
-.toast.show { opacity: 1; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* ═════════ assist levels rewire the HUD ═════════
    I GOT THIS drops every explanatory line and spends the space on

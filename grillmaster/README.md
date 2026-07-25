@@ -91,6 +91,11 @@ No side-by-side pair to compare before you can act, and no caption underneath ex
 
 ## Built for the lens
 
+- **Micro-motion, borrowed not installed.** Screens fade in, every list cascades its rows in at 26ms intervals, overlays punch in from 94%, the big cue does a short reveal when it actually changes, gauge readings bump when you dial them, and anything you press squashes. Nothing runs over 210ms and it's opacity-and-transform only — a bright wash bleaches against the real world. The whole layer is off under `prefers-reduced-motion`, including the ambient flame flicker.
+
+  The vocabulary comes from [Amicro](https://github.com/Subhan-code/Amicro--Micro-transitions-) (fade-in, fade-up, zoom-in, text-reveal, stagger) but not the code: that library is React + Tailwind + Motion over npm, and these demos are deliberately vanilla with no build step. Its pointer-driven pieces — tilt-card, magnetic-button, the carousels — have no meaning on a device with no pointer, so those became the D-pad equivalent: a press squash on activation.
+
+  The one thing that mattered in building it: the coach and the pit monitor re-render five times a second, so every animation is keyed to a **value actually changing**, never to a render. Verified at zero animation starts across four seconds of live cooking.
 - **A floor of 13px.** The whole small tier is three sizes — 13 / 14 / 15 — and nothing that carries meaning goes under 13px. Tracking on small caps stays at or under .18em, because on an additive lens over-spaced small type smears long before it looks airy.
 - **600×600, full width.** Content spans the whole 548px column instead of a narrow centered card. Choices are wide rows, gauges sit side by side, and the coach puts the cue beside the clock — big type reads better across than stacked down, so there is far less to cram into 600px of height.
 - **One centered axis.** Every title, cue, row, gauge and footer is centered on it. Back arrows and the ▲▼ bump affordance are absolutely positioned so they never pull a title off center. Mixed alignment reads as noise on a display you only ever glance at.

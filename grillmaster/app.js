@@ -129,6 +129,25 @@ function formatClock(sec, signed) {
   return out;
 }
 
+/* ─────────── micro-motion helpers ───────────
+   Every animation in the app goes through one of these two, because both
+   of them only fire when something actually changed. The coach and the pit
+   monitor re-render five times a second; anything keyed to a render rather
+   than a change would strobe on the lens. */
+function restartAnim(el, cls) {
+  if (!el) return;
+  el.classList.remove(cls);
+  void el.offsetWidth;            // reflow, so the animation can replay
+  el.classList.add(cls);
+}
+/* set text and animate ONLY if it is different from what is already there */
+function setText(el, txt, cls) {
+  if (!el || el.textContent === String(txt)) return false;
+  el.textContent = txt;
+  if (cls) restartAnim(el, cls);
+  return true;
+}
+
 /* ─────────── audio (short WebAudio blips, no assets) ─────────── */
 const audio = {
   ctx: null,
@@ -323,6 +342,7 @@ function renderSafety() {
   SAFETY.forEach((line, i) => {
     const row = document.createElement('div');
     row.className = 'fs-row';
+    row.style.setProperty('--i', i);
     row.innerHTML = `<div class="fs-n">${i + 1}</div><div class="fs-t">${line}</div>`;
     list.appendChild(row);
   });
@@ -347,6 +367,7 @@ function showScreen(name) {
   }
   state.screen = name;
   $$('.screen').forEach(s => s.classList.toggle('hidden', s.id !== name));
+  restartAnim($('#' + name), 'm-enter');
   paintStepRails();
   state.focusIdx = 0;
   refreshFocus();
@@ -377,9 +398,10 @@ function paintStepRails() {
 }
 
 /* one wide, centred row per choice, shared by all three question screens */
-function pickRow({ action, key, glyph, name, tag, sub, selected }) {
+function pickRow({ action, key, glyph, name, tag, sub, selected, i }) {
   const b = document.createElement('button');
   b.className = 'pick focusable' + (selected ? ' sel' : '');
+  if (i != null) b.style.setProperty('--i', i);
   b.dataset.action = action;
   b.dataset.key = key;
   b.innerHTML =
@@ -398,8 +420,8 @@ function renderModePick() {
   list.innerHTML = '';
   // three across, never a scroll — see .pick-list.side
   list.className = 'pick-list side';
-  MODES.forEach(m => list.appendChild(pickRow({
-    action: 'pick-mode', key: m.id, glyph: m.glyph,
+  MODES.forEach((m, i) => list.appendChild(pickRow({
+    action: 'pick-mode', key: m.id, glyph: m.glyph, i,
     name: m.name, tag: m.tag, sub: m.sub, selected: state.mode === m.id,
   })));
 }
@@ -423,8 +445,8 @@ function renderFuelPick() {
   const list = $('#fuel-list');
   list.innerHTML = '';
   list.classList.toggle('compact', fuels.length > 3);
-  fuels.forEach(f => list.appendChild(pickRow({
-    action: 'pick-fuel', key: f.id, glyph: f.glyph,
+  fuels.forEach((f, i) => list.appendChild(pickRow({
+    action: 'pick-fuel', key: f.id, glyph: f.glyph, i,
     name: f.name, tag: f.tag, sub: null,
     selected: state.fuel && state.fuel.id === f.id,
   })));
@@ -447,8 +469,8 @@ function renderAssistPick() {
   const list = $('#assist-list');
   list.innerHTML = '';
   list.classList.remove('compact');
-  ASSIST_LEVELS.forEach(a => list.appendChild(pickRow({
-    action: 'pick-assist', key: a.id, glyph: a.glyph,
+  ASSIST_LEVELS.forEach((a, i) => list.appendChild(pickRow({
+    action: 'pick-assist', key: a.id, glyph: a.glyph, i,
     name: a.name, tag: a.tag, sub: a.sub,
     selected: state.assist && state.assist.id === a.id,
   })));
@@ -489,9 +511,10 @@ function renderCooks() {
 
   const el = $('#cook-list');
   el.innerHTML = '';
-  list.forEach(c => {
+  list.forEach((c, i) => {
     const row = document.createElement('button');
     row.className = 'cook-row focusable';
+    row.style.setProperty('--i', i);
     row.dataset.action = 'pick-cook';
     row.dataset.id = c.id;
     const heat = isPit(c) ? 'PIT ' + heatLabel(c) : 'GRATE ' + heatLabel(c);
@@ -531,9 +554,9 @@ function renderDoneness() {
   $('#doneness-sub').textContent = c.name.toUpperCase();
   const list = $('#doneness-list');
   list.innerHTML = '';
-  c.doneness.forEach(d => {
+  c.doneness.forEach((d, i) => {
     list.appendChild(pickRow({
-      action: 'pick-doneness', key: d.key, glyph: null,
+      action: 'pick-doneness', key: d.key, glyph: null, i,
       name: (d.label || '').toUpperCase(),
       tag: `PULL ${d.pullF}°F · EATS AT ${d.servF}°F` + (d.rec ? ' · OUR PICK' : ''),
       sub: null,
@@ -728,7 +751,8 @@ function renderPreheat() {
   block.classList.remove('hidden');
   block.classList.toggle('ready', up);
   $('#preheat-time').textContent = up ? 'READY' : formatClock(rem);
-  $('#preheat-lbl').textContent = up ? 'THE FIRE IS READY' : 'UNTIL THE FIRE IS READY';
+  // "READY" is the one moment on this screen worth announcing
+  setText($('#preheat-lbl'), up ? 'THE FIRE IS READY' : 'UNTIL THE FIRE IS READY', 'm-reveal');
 }
 
 function renderFire() {
@@ -738,8 +762,8 @@ function renderFire() {
   const mins = f.preheatMin || 15;
   const meat = isPit(state.selCook) ? 'MEAT' : 'FOOD';
 
-  $('#fire-title').textContent = light ? 'LIGHT THE FIRE' : 'IS THE FIRE READY?';
-  $('#fire-fuel').textContent = `${f.name} · ${m.name}`;
+  setText($('#fire-title'), light ? 'LIGHT THE FIRE' : 'IS THE FIRE READY?');
+  setText($('#fire-fuel'), `${f.name} · ${m.name}`);
 
   // the walkthrough: open up front, closed at the gate until asked for
   const showSteps = light || state.fireStepsOpen;
@@ -749,6 +773,7 @@ function renderFire() {
     f.steps.forEach((s, i) => {
       const row = document.createElement('div');
       row.className = 'fs-row';
+      row.style.setProperty('--i', i);
       row.innerHTML = `<div class="fs-n">${i + 1}</div><div class="fs-t">${s}</div>`;
       wrap.appendChild(row);
     });
@@ -941,24 +966,24 @@ function renderCoach() {
   const cur = it.steps[it.stepIndex];
   const next = it.steps[it.stepIndex + 1];
 
-  $('#now-item').textContent = it.name + (it.doneness ? ' · ' + it.doneness.toUpperCase() : '');
+  setText($('#now-item'), it.name + (it.doneness ? ' · ' + it.doneness.toUpperCase() : ''));
 
   const ring = $('#clock-ring');
   const rem = remainingSec(it);
 
   if (status === 'due') {
     // next action is due, flip the card to show what to do NOW
-    $('#now-phase').textContent = next.tag;
-    $('#now-cue').textContent = next.cue;
-    $('#now-sub').textContent = next.sub;
+    setText($('#now-phase'), next.tag);
+    setText($('#now-cue'), next.cue, 'm-reveal');
+    setText($('#now-sub'), next.sub);
     $('#clock-time').textContent = formatClock(rem, true);
     $('#clock-lbl').textContent = 'DO IT NOW';
     ring.classList.add('due');
     ring.style.setProperty('--pct', '100%');
   } else if (status === 'serve') {
-    $('#now-phase').textContent = 'SERVE';
-    $('#now-cue').textContent = 'READY, SERVE IT';
-    $('#now-sub').textContent = 'Off the fire and onto the plate.';
+    setText($('#now-phase'), 'SERVE');
+    setText($('#now-cue'), 'READY, SERVE IT', 'm-reveal');
+    setText($('#now-sub'), 'Off the fire and onto the plate.');
     $('#clock-time').textContent = formatClock(rem, true);
     $('#clock-lbl').textContent = 'RESTED';
     ring.classList.add('due');
@@ -967,9 +992,9 @@ function renderCoach() {
     // mid-step: cur.cue is the action that STARTED this step, so showing it
     // here reads as an instruction you have already carried out. Show what
     // is happening instead — you flipped it, now it is on its second side.
-    $('#now-phase').textContent = cur.tag;
-    $('#now-cue').textContent = cur.hold || cur.cue;
-    $('#now-sub').textContent = cur.sub;
+    setText($('#now-phase'), cur.tag);
+    setText($('#now-cue'), cur.hold || cur.cue, 'm-reveal');
+    setText($('#now-sub'), cur.sub);
     $('#clock-time').textContent = formatClock(rem, false);
     $('#clock-lbl').textContent = isPaused() ? 'PAUSED'
       : last ? 'TO SERVE' : ('TO ' + (next ? next.tag : 'SERVE'));
@@ -987,7 +1012,7 @@ function renderCoach() {
     tb.classList.remove('hidden');
     const est = estTemp(it);
     $('#temp-est').textContent = est + '°';
-    $('#temp-tgt').textContent = it.targetF + '°';
+    setText($('#temp-tgt'), it.targetF + '°', 'm-bump');
     const span = Math.max(1, it.scaleMax - it.scaleMin);
     const fillPct = clamp(((est - it.scaleMin) / span) * 100, 0, 100);
     const tickPct = clamp(((it.targetF - it.scaleMin) / span) * 100, 0, 100);
@@ -1210,15 +1235,15 @@ function renderMonitor() {
   it.sel = clamp(it.sel, 0, fields.length - 1);
   const selField = fields[it.sel];
 
-  $('#mon-item').textContent = it.name;
-  $('#mon-phase').textContent = it.resting ? 'REST' : phase.tag;
+  setText($('#mon-item'), it.name);
+  setText($('#mon-phase'), it.resting ? 'REST' : phase.tag, 'm-bump');
 
   if (it.resting) {
-    $('#mon-cue').textContent = 'RESTING';
-    $('#mon-sub').textContent = 'Keep it wrapped and let it relax.';
+    setText($('#mon-cue'), 'RESTING', 'm-reveal');
+    setText($('#mon-sub'), 'Keep it wrapped and let it relax.');
   } else {
-    $('#mon-cue').textContent = phase.hold || phase.cue;
-    $('#mon-sub').textContent = phase.sub;
+    setText($('#mon-cue'), phase.hold || phase.cue, 'm-reveal');
+    setText($('#mon-sub'), phase.sub);
   }
 
   // banners — the fix is written in the language of YOUR fire
@@ -1240,11 +1265,12 @@ function renderMonitor() {
   gMeat.classList.toggle('hidden', it.noProbe);
   gaugesWrap.style.gridTemplateColumns = it.noProbe ? '1fr' : '1fr 1fr';
   if (!it.noProbe) {
-    $('#mon-meat').textContent = it.meatF + '°';
-    $('#mon-meat-tgt').textContent = it.targetF ? '→ ' + it.targetF + '°' : 'by feel';
+    // each ±5° bump is a deliberate act, so it gets acknowledged
+    setText($('#mon-meat'), it.meatF + '°', 'm-bump');
+    setText($('#mon-meat-tgt'), it.targetF ? '→ ' + it.targetF + '°' : 'by feel');
   }
-  $('#mon-pit').textContent = it.pitF + '°';
-  $('#mon-pit-tgt').textContent = 'hold ' + it.pitTarget + '°';
+  setText($('#mon-pit'), it.pitF + '°', 'm-bump');
+  setText($('#mon-pit-tgt'), 'hold ' + it.pitTarget + '°');
   gPit.classList.toggle('pit-bad', it.pitBad);
   gMeat.classList.toggle('sel', selField === 'meat');
   gPit.classList.toggle('sel', selField === 'pit');
@@ -1360,9 +1386,10 @@ function ackCue() {
 function renderGuide() {
   const list = $('#guide-list');
   list.innerHTML = '';
-  TEMP_GUIDE.forEach(g => {
+  TEMP_GUIDE.forEach((g, i) => {
     const row = document.createElement('div');
     row.className = 'g-row';
+    row.style.setProperty('--i', i);
     row.innerHTML =
       `<div class="g-body">` +
         `<div class="g-name">${g.name} <span class="g-note">· ${g.note}</span></div>` +
@@ -1466,6 +1493,7 @@ function bindEvents() {
     if (state.screen === 'splash') { splash.finish(); return; }
     const t = e.target.closest('[data-action]');
     if (!t) return;
+    restartAnim(t, 'm-press');
     handleAction(t.dataset.action, t);
   });
   document.addEventListener('mouseover', (e) => {
