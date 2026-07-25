@@ -8,7 +8,7 @@ A hands-free grilling, smoking, and BBQ coach for the [Meta Ray-Ban Display glas
 
 Nothing on the fire is generic, so the app asks the three things a person actually decides — in that order — and carries every answer into the live cook.
 
-1. **MODE** — grill, smoke, or bbq. Picks which engine coaches you.
+1. **MODE** — grill, smoke, or bbq, as three tiles across the full width so the first screen never scrolls. Picks which engine coaches you.
 2. **FIRE** — charcoal, propane, live fire, pellet, electric (the list changes per mode). This is not a cosmetic choice: it decides what you turn to change the heat, how the app walks you through lighting it, and what the alarms say.
 3. **HELP** — how much hand-holding you want. **FIRST TIME** lights the fire with you step by step and keeps a fuel reminder on screen; **COACH ME** gives cues and timers, no lecture; **I GOT THIS** drops every explanatory line and spends the space on bigger numbers.
 
@@ -44,9 +44,11 @@ Then, and only then, the cuts.
 
 | Where | Input | Result |
 | --- | --- | --- |
-| Any question | ▲ / ▼ | Move down the list of choices |
+| Mode (3 tiles across) | ◀ / ▶ | Move between GRILL, SMOKE and BBQ |
+| Mode (3 tiles across) | ▲ / ▼ | Hop between the tiles and the footer |
+| Fire / Help | ▲ / ▼ | Move down the list of choices |
 | Any question | Enter | Choose it and go to the next question |
-| Any question | ◀ | Step back one question |
+| Fire / Help / Cook list | ◀ | Step back one question |
 | Cook list | Enter | Open that cut's setup |
 | Setup | ▲ / ▼ | Move between doneness, ADD, and LIGHT IT |
 | Setup | Enter | Pick a doneness, stack another item, or light the fire |

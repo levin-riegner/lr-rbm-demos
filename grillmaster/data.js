@@ -43,12 +43,13 @@
 
 /* ═══════════════════ STEP 1 — THE MODE ═══════════════════ */
 const MODES = [
+  /* sub is set in ~175px of tile width — keep it to two short lines */
   { id: 'grill', glyph: '🔥', name: 'GRILL', tag: 'HOT & FAST',
-    sub: 'Direct flame · minutes', q: 'CHOOSE A COOK', unit: 'CUTS' },
+    sub: 'Direct flame, minutes', q: 'CHOOSE A COOK', unit: 'CUTS' },
   { id: 'smoke', glyph: '🪵', name: 'SMOKE', tag: 'LOW & SLOW',
-    sub: 'Wood at 225°F · all day', q: 'CHOOSE A CUT', unit: 'CUTS' },
+    sub: 'Wood at 225°F, hours', q: 'CHOOSE A CUT', unit: 'CUTS' },
   { id: 'bbq',   glyph: '🍖', name: 'BBQ',   tag: 'INDIRECT',
-    sub: '275–325°F · a few hours', q: 'CHOOSE A CUT', unit: 'CUTS' },
+    sub: '275–325°F, a while', q: 'CHOOSE A CUT', unit: 'CUTS' },
 ];
 
 /* ═══════════════════ STEP 2 — THE FIRE ═══════════════════

@@ -163,7 +163,8 @@ function pickRow({ action, key, glyph, name, tag, sub, selected }) {
 function renderModePick() {
   const list = $('#mode-list');
   list.innerHTML = '';
-  list.classList.remove('compact');
+  // three across, never a scroll — see .pick-list.side
+  list.className = 'pick-list side';
   MODES.forEach(m => list.appendChild(pickRow({
     action: 'pick-mode', key: m.id, glyph: m.glyph,
     name: m.name, tag: m.tag, sub: m.sub, selected: state.mode === m.id,
@@ -1013,6 +1014,28 @@ function moveFocus(delta) {
   audio.tick();
 }
 
+/* ─────────── mode screen D-pad (two rows, three across) ───────────
+   The first question is laid out horizontally, so ◀ ▶ walk the tiles
+   and ▲ ▼ hop between the tile row and the footer. ◀ has nothing to
+   go back to here, which is exactly why it is free to steer. */
+function modeKey(key) {
+  const tiles = $$('#mode-list .pick');
+  const foot  = $$('#mode .foot-row .btn');
+  const el = focuslist()[state.focusIdx];
+  const inFoot = foot.includes(el);
+  const row = inFoot ? foot : tiles;
+  const i = row.indexOf(el);
+  if (i < 0) { focusEl(tiles[0]); return; }
+
+  const land = (next) => { if (next) { focusEl(next); audio.tick(); } };
+  switch (key) {
+    case 'ArrowLeft':  land(row[(i - 1 + row.length) % row.length]); return;
+    case 'ArrowRight': land(row[(i + 1) % row.length]); return;
+    case 'ArrowDown':  land(inFoot ? tiles[Math.min(i, tiles.length - 1)] : foot[Math.min(i, foot.length - 1)]); return;
+    case 'ArrowUp':    land(inFoot ? tiles[Math.min(i, tiles.length - 1)] : foot[Math.min(i, foot.length - 1)]); return;
+  }
+}
+
 /* ─────────── coach-specific D-pad (switch items) ─────────── */
 function coachCycle(delta) {
   const live = liveItems();
@@ -1057,6 +1080,13 @@ function bindEvents() {
     if (state.screen === 'monitor') {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', ' '].includes(e.key)) e.preventDefault();
       monitorKey(e.key);
+      return;
+    }
+
+    // the first question is a horizontal row, so it steers in 2D
+    if (state.screen === 'mode' && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+      modeKey(e.key);
       return;
     }
 
