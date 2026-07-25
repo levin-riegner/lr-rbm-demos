@@ -50,6 +50,7 @@ const state = {
   active: false,
   coachFocus: 0,    // index into non-done items shown as primary
   alertUid: null,   // item currently popped in the cue alert
+  endAsk: false,    // the "end this cook?" confirm is up
   seen: {},         // uid -> highest due stepIndex we've already alerted on
   returnTo: 'mode', // where guide/help should go back to
 };
@@ -657,7 +658,45 @@ function finishCook() {
   focusEl($('#done .btn.primary'));
 }
 
+/* ═════════════════ ENDING A COOK ═════════════════
+   ◀ means "one question back" everywhere else in the app, so on the
+   coach and the pit monitor it must not silently throw away a live
+   cook — a touchpad swipe mirrors to ◀, and a brisket is nine hours
+   of work. Both the END button and ◀ ask first, and the safe answer
+   is the one that starts focused. */
+function endDetail() {
+  const pit = pitItem();
+  if (pit) {
+    const elapsed = fmtElapsed(now() - pit.litAt);
+    return pit.noProbe ? `${pit.name} · ${elapsed}` : `${pit.name} · ${pit.meatF}° · ${elapsed}`;
+  }
+  const it = primaryItem();
+  if (!it) return '';
+  const next = it.steps[it.stepIndex + 1];
+  const n = liveItems().length;
+  return `${it.name} · ${formatClock(Math.abs(remainingSec(it)))} to ${next ? next.tag : 'SERVE'}`
+    + (n > 1 ? ` · ${n} on the fire` : '');
+}
+
+function askEndCook() {
+  if (!state.active) { quitCook(); return; }
+  if (state.alertUid != null) ackCue();
+  $('#end-detail').textContent = endDetail();
+  $('#end-confirm').classList.remove('hidden');
+  state.endAsk = true;
+  focusEl($('#end-confirm .btn.primary'));   // KEEP COOKING is the default
+}
+function closeEndAsk() {
+  state.endAsk = false;
+  $('#end-confirm').classList.add('hidden');
+  // hand focus back to whatever the screen had
+  refreshFocus();
+  if (state.screen === 'coach') focusEl($('#advance-btn'));
+}
+
 function quitCook() {
+  state.endAsk = false;
+  $('#end-confirm').classList.add('hidden');
   state.active = false;
   state.items = [];
   clearPreheat();
@@ -1038,7 +1077,7 @@ function activatePitField(f) {
     case 'pull':   confirmPull(); break;
     case 'spritz': resetSpritz(); break;
     case 'tip':    pitTipCycle(); break;
-    case 'end':    quitCook(); break;
+    case 'end':    askEndCook(); break;
     // meat / pit are adjusted with ▲▼, Enter is a no-op on them
   }
 }
@@ -1115,6 +1154,7 @@ function renderGuide() {
 
 /* ─────────── focus engine (D-pad) ─────────── */
 function focuslist() {
+  if (state.endAsk) return $$('#end-confirm .focusable');
   const scr = $('#' + state.screen);
   if (!scr) return [];
   return $$('.focusable', scr).filter(el => el.offsetParent !== null && !el.disabled);
@@ -1205,6 +1245,18 @@ function bindEvents() {
   });
 
   document.addEventListener('keydown', (e) => {
+    // the end confirm sits above everything and steers with any direction
+    if (state.endAsk) {
+      if (['ArrowLeft', 'ArrowUp'].includes(e.key))   { e.preventDefault(); moveFocus(-1); return; }
+      if (['ArrowRight', 'ArrowDown'].includes(e.key)) { e.preventDefault(); moveFocus(1); return; }
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const el = focuslist()[state.focusIdx];
+        if (el) el.click();
+      }
+      return;
+    }
+
     // cue alert intercepts the first key as an acknowledgement
     if (state.alertUid != null) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ackCue(); }
@@ -1266,7 +1318,7 @@ function handleBack() {
     case 'guide':
     case 'help':   goReturn(); break;
     case 'coach':
-    case 'monitor': quitCook(); break;
+    case 'monitor': askEndCook(); break;
     // mode: nowhere further back
   }
 }
@@ -1300,7 +1352,9 @@ function handleAction(a, el) {
       activatePitField(el.dataset.field);
       break;
     }
-    case 'quit-cook':     quitCook(); break;
+    case 'ask-end':       askEndCook(); break;
+    case 'end-keep':      closeEndAsk(); break;
+    case 'end-yes':       quitCook(); break;
     case 'ack-cue':       ackCue(); break;
     case 'show-guide':    state.returnTo = state.screen; renderGuide(); showScreen('guide'); focusEl($('#guide .crumb')); break;
     case 'show-help':     state.returnTo = state.screen; showScreen('help'); focusEl($('#help .btn.primary')); break;

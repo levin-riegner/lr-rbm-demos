@@ -462,12 +462,20 @@ button { font-family: inherit; color: inherit; background: none; border: none; c
 .help-copy b { font-size: 18px; font-weight: 700; display: block; letter-spacing: .04em; }
 .help-copy span { font-size: 14.5px; color: var(--ash); }
 
-/* ═════════ CUE ALERT overlay ═════════ */
+/* ═════════ overlays — cue alert, and the end confirm above it ═════════ */
 .overlay {
   position: absolute; inset: 0; z-index: 40;
   display: flex; align-items: center; justify-content: center;
   background: rgba(0,0,0,.9);
 }
+.overlay.top { z-index: 45; background: rgba(0,0,0,.94); }
+.end-title {
+  font-size: 44px; font-weight: 700; line-height: 1; margin: 12px 0 8px;
+  color: var(--white); text-shadow: 0 0 26px rgba(255,125,46,.6);
+}
+.end-actions { display: flex; gap: 12px; margin-top: 26px; }
+.end-actions .btn { flex: 1; }
+#end-confirm .cue-card { border-color: var(--coal); box-shadow: 0 0 56px rgba(255,75,38,.45); }
 .cue-card {
   position: relative; text-align: center; padding: 36px 44px;
   border: 2px solid var(--ember); border-radius: 22px; background: #0b0402;
@@ -484,7 +492,7 @@ button { font-family: inherit; color: inherit; background: none; border: none; c
   text-shadow: 0 0 30px rgba(255,125,46,.8); line-height: 1;
 }
 .cue-item { font-size: 20px; color: var(--ash-2); letter-spacing: .05em; margin-bottom: 26px; }
-.cue-card .btn { width: 100%; }
+#cue-alert .cue-card .btn { width: 100%; }
 
 /* ═════════ toast ═════════ */
 .toast {

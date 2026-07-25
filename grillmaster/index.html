@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
   <script defer src="https://cloud.umami.is/script.js" data-website-id="be32beae-a2a9-423f-b55d-e646ec260f93"></script>
 </head>
 <body>
@@ -202,7 +202,7 @@
       <div class="rail" id="rail"></div>
 
       <div class="foot-row">
-        <button class="btn ghost narrow focusable" data-action="quit-cook">&#8592; END</button>
+        <button class="btn ghost narrow focusable" data-action="ask-end">END COOK</button>
         <button class="btn primary big focusable" data-action="advance" id="advance-btn">DID IT &#10003;</button>
       </div>
     </section>
@@ -292,7 +292,7 @@
         </div>
         <div class="help-row">
           <span class="hk">◀</span>
-          <div class="help-copy"><b>BACK</b><span>One question back, or leave the cook</span></div>
+          <div class="help-copy"><b>BACK</b><span>One question back. Mid-cook it asks before ending.</span></div>
         </div>
         <div class="help-row">
           <span class="hk">▶</span>
@@ -303,6 +303,19 @@
         <button class="btn primary big focusable" data-action="go-back">GOT IT</button>
       </div>
     </section>
+
+    <!-- ═════════ END CONFIRM — a live cook is not a stray swipe away ═════════ -->
+    <div id="end-confirm" class="overlay top hidden">
+      <div class="cue-card">
+        <div class="cue-eyebrow">STILL ON THE FIRE</div>
+        <div class="end-title">END THIS COOK?</div>
+        <div class="cue-item" id="end-detail">—</div>
+        <div class="end-actions">
+          <button class="btn primary focusable" data-action="end-keep">KEEP COOKING</button>
+          <button class="btn ghost focusable" data-action="end-yes">END IT</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ═════════ CUE ALERT (a step came due) ═════════ -->
     <div id="cue-alert" class="overlay hidden">
@@ -319,7 +332,7 @@
     <div id="toast" class="toast hidden"></div>
   </div>
 
-  <script src="data.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="data.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

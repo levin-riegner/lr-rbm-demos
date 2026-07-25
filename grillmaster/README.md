@@ -43,6 +43,7 @@ The cook timer measures *food on the grate*, so it cannot start while the grate 
 - **Real smoking coaching.** The stall is detected and explained, not just waited out. Wrap fires at 165°F, pull at ~203°F, and the ETA says "STALL, ride it out" when the climb goes flat.
 - **Doneness, done right.** Steaks and burgers get a doneness ladder with carryover-aware pull temps (pull 5°F early, the meat keeps climbing off the heat).
 - **Cue alerts.** Every phase change fires a full-bleed heads-up with a chime and a haptic buzz, then auto-clears — held longer for first-timers, snapped away fast for pros.
+- **A live cook is not one swipe from gone.** ◀ means "one question back" everywhere else, and the touchpad mirrors swipes onto it, so mid-cook it asks instead: *END THIS COOK? — RIBEYE STEAK · 0:08 to FLIP · 3 on the fire*, with KEEP COOKING focused by default. Nine hours of brisket should take more than a stray gesture to throw away.
 - **Temp Guide** and **survives a nap**: a built-in food-safety reference, and an in-progress cook saved locally so if the glasses sleep and wake you land right back on it (a must for an overnight brisket).
 
 ## Built for the lens
@@ -74,7 +75,8 @@ The cook timer measures *food on the grate*, so it cannot start while the grate 
 | Coach | ▲ / ▼ | Switch which item is in the big card |
 | Coach | Enter | **DID IT** — confirm the cue and advance that item |
 | Coach | ▶ | Cycle the pro tip |
-| Coach | ◀ | End the cook |
+| Coach | ◀ or **END COOK** | Asks first — see below |
+| End confirm | ◀ / ▶ | Move between KEEP COOKING and END IT |
 | Cue alert | Enter | Acknowledge the heads-up |
 
 ### Smoke & BBQ (pit monitor)
@@ -84,7 +86,10 @@ The cook timer measures *food on the grate*, so it cannot start while the grate 
 | Monitor | ◀ / ▶ | Move across the control bar (MEAT · PIT · SPRITZ · TIP · END) |
 | Monitor | ▲ / ▼ | With MEAT or PIT selected, bump that temperature ±5°F |
 | Monitor | Enter | Activate the selected control (log spritz, cycle tip, confirm PULL, end) |
+| End confirm | ◀ / ▶ | Move between KEEP COOKING and END IT |
 | Cue alert | Enter | Acknowledge the heads-up |
+
+On the monitor ◀ and ▶ belong to the control bar, so there is no back gesture mid-cook — the **END** field is the way out, and it asks first.
 
 The countdown and thresholds do the work on their own; your inputs just tell the coach what the fire and the meat are actually doing.
 
