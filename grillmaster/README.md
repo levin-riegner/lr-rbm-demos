@@ -8,18 +8,17 @@ A hands-free grilling, smoking, and BBQ coach for the [Meta Ray-Ban Display glas
 
 A **canvas splash** on a cold start: a bed of coals breathing at the bottom, sparks lifting off them, and GRILLMASTER heating through the colours steel actually passes through — dull brown, coal red, ember orange, white — left to right, one letter at a time. Everything is painted on cleared canvas, so the black stays black and only the hot pixels reach your eye. Any input skips it, it honours `prefers-reduced-motion`, and it never appears for a `?state=` capture or a resumed cook.
 
-Then, on a first launch only, **BEFORE YOU LIGHT IT** — six rules chosen because they cover the ways people actually get hurt or set something alight, not a wall nobody reads:
+Then, on a first launch only, **BEFORE YOU LIGHT IT** — five plain lines, in the same numbered form as the lighting steps so it reads as part of the app rather than a warning label bolted on:
 
-| | |
-| --- | --- |
-| 🧯 | **WATER NEARBY, NEVER ON GREASE** — grease fires spread when you throw water at them. Lid down, vents shut. |
-| 🧽 | **CLEAN GRATE, EMPTY GREASE TRAY** — old drippings are what catch fire. |
-| 📏 | **THREE FEET OF CLEAR AIR** — never indoors, never under an eave. |
-| 🌬️ | **CHECK THE WIND FIRST** — vents into it, not your face. |
-| ♨️ | **COALS STAY HOT FOR HOURS** — dead ash, metal can, lid on. |
-| 🧼 | **ONE PLATE RAW, ONE COOKED** — and wash your hands. |
+1. Water nearby — but never on a grease fire.
+2. Clean grate, empty grease tray.
+3. Three feet of clear air. Never indoors.
+4. Coals stay hot for hours. Metal can only.
+5. Raw and cooked never share a plate.
 
-It's reachable any time from **SAFETY** on the front door. The propane rule that matters most — *lid open before the gas goes on* — lives in the gas fuels' own lighting steps, where you'll actually be reading it.
+Each one is there because it prevents a fire, a poisoning or a burn. The wind, the mitts and the leak check live in the per-fuel lighting steps instead, where they're actually relevant — including the one that matters most, *lid open before the gas goes on*.
+
+It's reachable any time from **SAFETY** on the front door.
 
 ## One question per screen
 

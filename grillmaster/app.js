@@ -320,15 +320,10 @@ const markSafetySeen = () => { try { localStorage.setItem(SAFETY_KEY, '1'); } ca
 function renderSafety() {
   const list = $('#safety-list');
   list.innerHTML = '';
-  SAFETY.forEach(s => {
+  SAFETY.forEach((line, i) => {
     const row = document.createElement('div');
-    row.className = 'sf-row';
-    row.innerHTML =
-      `<span class="sf-ico">${s.icon}</span>` +
-      `<span class="sf-body">` +
-        `<span class="sf-lead">${s.lead}</span>` +
-        `<span class="sf-sub">${s.sub}</span>` +
-      `</span>`;
+    row.className = 'fs-row';
+    row.innerHTML = `<div class="fs-n">${i + 1}</div><div class="fs-t">${line}</div>`;
     list.appendChild(row);
   });
 }

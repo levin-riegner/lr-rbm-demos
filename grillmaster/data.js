@@ -638,21 +638,15 @@ const COOKS = [
 ];
 
 /* Shown once on a first launch, and from the front door after that.
-   Six rules chosen because they cover the ways people actually get hurt
-   or set something alight — not a wall nobody reads. */
+   Five plain lines. Every one of them is here because it prevents a fire,
+   a poisoning or a burn — the wind, the mitts and the rest live in the
+   per-fuel lighting steps where they are actually relevant. */
 const SAFETY = [
-  { icon: '🧯', lead: 'WATER NEARBY, NEVER ON GREASE',
-    sub: 'Grease fires spread when you throw water at them. Lid down, vents shut, walk away.' },
-  { icon: '🧽', lead: 'CLEAN GRATE, EMPTY GREASE TRAY',
-    sub: 'Old drippings are what turn an ordinary flare-up into a fire.' },
-  { icon: '📏', lead: 'THREE FEET OF CLEAR AIR',
-    sub: 'Never under an eave, on a balcony, or anywhere indoors — including the garage.' },
-  { icon: '🌬️', lead: 'CHECK THE WIND FIRST',
-    sub: 'Point the vents into it, not your face. Wind moves flame and steals your heat.' },
-  { icon: '♨️', lead: 'COALS STAY HOT FOR HOURS',
-    sub: 'Let the ash die out completely, then a metal can with a lid. Never a plastic bin.' },
-  { icon: '🧼', lead: 'ONE PLATE RAW, ONE PLATE COOKED',
-    sub: 'Wash your hands, and keep the marinade brush off anything finished.' },
+  'Water nearby — but never on a grease fire.',
+  'Clean grate, empty grease tray.',
+  'Three feet of clear air. Never indoors.',
+  'Coals stay hot for hours. Metal can only.',
+  'Raw and cooked never share a plate.',
 ];
 
 /* Doneness reference for the TEMP GUIDE screen (beginner safety net). */
