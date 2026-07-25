@@ -110,7 +110,7 @@ flight-status/
 ├── index.html      # screens + compact strip + status views
 ├── styles.css      # 600×600 right-aligned HUD; navy + amber + cyan
 ├── app.js          # state machine, deterministic mock data, swipe handling
-├── favicon.svg     # amber plane on black
+├── favicon.png     # black "FL" on amber
 └── screenshots/    # generated state captures used by this README
 ```
 

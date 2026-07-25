@@ -126,7 +126,7 @@ stub/
 ├── index.html      # all 7 screens (empty home, home carousel, capture, scanning, confirm, detail, delete)
 ├── styles.css      # 600×600 purple + cyan; ticket-stub card with side notches
 ├── app.js          # state machine, localStorage persistence, demo OCR pool
-├── favicon.svg     # purple stub w/ a perforated middle
+├── favicon.png     # black "ST" on purple
 └── screenshots/    # generated state captures used by this README
 ```
 

@@ -90,7 +90,7 @@ twitch-chat/
 ├── index.html      # picker + chat screens
 ├── styles.css      # 600×600 black, Twitch-purple accents, three message-size presets
 ├── app.js          # IRC client (justinfan anon), D-pad state machine, demo/?state= routing
-├── favicon.svg     # purple Twitch glyph on black
+├── favicon.png     # black "TW" on purple
 └── screenshots/    # generated state captures used by this README
 ```
 

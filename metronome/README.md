@@ -107,7 +107,7 @@ metronome/
 ├── index.html      # home, wizard steps, play screen (full + compact)
 ├── styles.css      # 600×600 pure-black HUD; cyan focus + warm-orange accent
 ├── app.js          # state machine, audio engine, nod detector, swipe/d-pad
-├── favicon.svg     # cyan quarter note on black
+├── favicon.png     # black "MT" on cyan
 └── screenshots/    # generated state captures used by this README
 ```
 

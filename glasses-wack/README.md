@@ -47,7 +47,7 @@ glasses-wack/
 ├── index.html      # the 12-row list of API checks
 ├── styles.css      # 600×600 black HUD; pink + amber accents
 ├── app.js          # per-test runners, dispatch, focus + run-all
-└── favicon.svg     # pink "W" mark on black
+└── favicon.png     # black "GW" on pink
 ```
 
 ---

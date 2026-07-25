@@ -36,7 +36,7 @@ The repo also ships a `simulator/` that overlays any URL onto a real-world backg
     ├── index.html
     ├── styles.css
     ├── app.js
-    ├── favicon.svg          # optional
+    ├── favicon.png          # optional, raster only (512×512), never SVG
     ├── README.md            # optional but encouraged, follow the template
     └── screenshots/         # optional, generated via ?state= URL routing
 ```
@@ -51,7 +51,8 @@ A folder at the root is **a demo** if it contains `index.html`. Anything else (`
 - **Run locally:** `npx serve -l <port> <app-name>` then open in Chrome at 600×600. The simulator can iframe the local URL.
 - **Building a new app = build + hand off a URL.** When asked to create/build a demo, just write the files, start `npx serve -l <port> <app-name>`, and reply with the `localhost` URL. Do **not** run/verify the app, drive headless Chrome, or generate screenshots — that's the developer's job. Only test or capture screenshots when explicitly asked.
 - **`?state=…` URL routing** is the standard for screenshot reproducibility. If an app has more than one screen worth photographing, wire `?state=<name>` so headless Chrome can capture each state deterministically. See `flight-status/`, `lr-glimmer/`, `zork-terminal/` for the pattern.
-- **Favicon:** SVG when possible, themed to the app's accent color.
+- **Favicon:** raster PNG only (`favicon.png`, 512×512), themed to the app's accent color, referenced via `<link rel="icon" type="image/png" href="favicon.png">` right after `<title>`. Never SVG — SVG favicons are unsupported on-device. See the `rbm-demo-favicon` skill.
+- **Web-app meta tags:** every demo's `<head>` includes a non-empty `<meta name="description" content="…">` and `<meta name="mrbd-web-app-capable" content="yes">`.
 - **Byline:** `<sub>Made by <name> at [L+R](https://www.levinriegner.com).</sub>` at the bottom of the per-app README.
 - **Analytics:** every demo's `index.html` includes a Umami tracking tag in `<head>`. The same shared `data-website-id` is used across all demos (Umami attributes hits per URL path under `rbm-demos.lnr.io`). When adding a new demo, copy the `<script defer src="https://cloud.umami.is/script.js" data-website-id="...">` line verbatim from any existing `index.html`. The `simulator/` is intentionally excluded.
 

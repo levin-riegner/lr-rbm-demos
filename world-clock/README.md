@@ -34,7 +34,7 @@ world-clock/
 ├── index.html
 ├── styles.css
 ├── app.js
-└── favicon.svg
+└── favicon.png     # black "WC" on teal
 ```
 
 <sub>Made by Gautier de Lataillade at [L+R](https://www.levinriegner.com).</sub>

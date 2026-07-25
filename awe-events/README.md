@@ -67,7 +67,7 @@ awe-events/
 ├── index.html      # day picker, event list, and detail screens
 ├── styles.css      # 500×600 dark theme, teal L+R accent, gold featured
 ├── app.js          # bundled event data + D-pad state machine
-├── favicon.svg     # teal L+R mark
+├── favicon.png     # black "AE" on yellow
 └── screenshots/    # capture used by this README
 ```
 

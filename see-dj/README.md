@@ -119,7 +119,7 @@ see-dj/
 ├── index.html      # top-half HUD: 2 decks + 4-ch mixer + crossfader
 ├── styles.css      # 600×300 black booth telemetry; cyan + jade + amber + red
 ├── app.js          # scripted timeline, beat clock, pitch ramp, END alert, ?state= routing
-├── favicon.svg     # cyan jog-wheel mark
+├── favicon.png     # black "DJ" on cyan
 └── screenshots/    # generated state captures used by this README
 ```
 

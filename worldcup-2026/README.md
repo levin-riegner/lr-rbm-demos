@@ -132,7 +132,7 @@ worldcup-2026/
 ├── index.html      # home + 7 sub-screens (groups, group detail, teams, team detail, bracket, fixtures, live)
 ├── styles.css      # 600×600 right-aligned HUD; pitch green + trophy gold on pure black
 ├── app.js          # state machine, embedded schedule, time-zone math, mock live results
-├── favicon.svg     # trophy + pitch line on black
+├── favicon.png     # black "26" on gold
 └── screenshots/    # 16 state captures used by this README
 ```
 
