@@ -30,7 +30,7 @@
 
   // ───────── State ─────────
   const defaultState = () => ({
-    name: 'ORB-7',
+    name: 'LUMIS',
     eggVariant: 'amethyst',
     born: Date.now(),
     lastTick: Date.now(),
@@ -46,7 +46,7 @@
 
   let state = load() || defaultState();
   if (!state.eggVariant) state.eggVariant = 'amethyst';
-  if (!state.name) state.name = 'ORB-7';
+  if (!state.name) state.name = 'LUMIS';
   if (!state.generation) state.generation = 1;
   let walkStep = 0;
   let menuOpen = false;
@@ -80,7 +80,7 @@
     sp.style.visibility = 'hidden';
 
     const freshState = defaultState();
-    freshState.name = 'EMBER-7';
+    freshState.name = 'LUMIS';
     freshState.generation = 1;
 
     // Show a game-area screen, hide all others
@@ -128,7 +128,7 @@
     if (urlState === 'naming') {
       state = freshState;
       walkStep = 2;
-      pendingName = 'EMBER-7';
+      pendingName = 'LUMIS';
       pendingEgg = state.eggVariant;
       syncNamingScreen();
       showWalk(2);
@@ -141,7 +141,7 @@
       state = freshState;
       if (urlState === 'adopt') state.generation = 2;
       walkStep = 3;
-      pendingName = 'EMBER-7';
+      pendingName = 'LUMIS';
       pendingEgg = null;
       syncNamingScreen();
       showWalk(3);
@@ -155,7 +155,7 @@
       state = freshState;
       state.eggVariant = variant;
       walkStep = 3;
-      pendingName = 'EMBER-7';
+      pendingName = 'LUMIS';
       pendingEgg = variant;
       refreshPalette();
       syncNamingScreen();
@@ -206,7 +206,7 @@
       state = freshState;
       state.dead = true;
       state.stageIdx = 1;
-      state.name = 'EMBER-7';
+      state.name = 'LUMIS';
       refreshPalette();
       showGame(() => {
         document.body.classList.add('dead');
@@ -273,7 +273,7 @@
     }
   }
   function finishWalk() {
-    state.name = (pendingName || 'ORB-7').toUpperCase().slice(0, 14);
+    state.name = (pendingName || 'LUMIS').toUpperCase().slice(0, 14);
     if (pendingEgg) state.eggVariant = pendingEgg;
     refreshPalette();
     save();
@@ -377,7 +377,7 @@
   function syncNamingScreen() {
     const el = $('nameDisplay');
     if (!el) return;
-    el.value = pendingName || 'ORB-7';
+    el.value = pendingName || 'LUMIS';
     if (!el._inputBound) {
       el._inputBound = true;
       el.addEventListener('input', () => {
@@ -805,8 +805,8 @@
     setStat('happy');
     setStat('energy');
     setStat('hygiene');
-    $('petName').textContent = state.dead ? '— — —' : (state.name || 'ORB-7');
-    const tag = $('modelTag'); if (tag) tag.textContent = `${state.name || 'ORB-7'} / v1.0`;
+    $('petName').textContent = state.dead ? '— — —' : (state.name || 'LUMIS');
+    const tag = $('modelTag'); if (tag) tag.textContent = `${state.name || 'LUMIS'} / v1.0`;
     const gen = $('genTag'); if (gen) gen.textContent = `GEN ${String(state.generation || 1).padStart(2, '0')}`;
     $('stageLabel').textContent = STAGE_NAMES[state.stageIdx];
     const days = Math.max(1, Math.floor(state.age / 24) + 1);
@@ -816,7 +816,7 @@
     const wasDead = document.body.classList.contains('dead');
     document.body.classList.toggle('dead', state.dead);
     const deadMsg = $('deadMessage');
-    if (deadMsg) deadMsg.textContent = state.dead ? `RIP ${state.name || 'ORB-7'}` : '';
+    if (deadMsg) deadMsg.textContent = state.dead ? `RIP ${state.name || 'LUMIS'}` : '';
     if (state.dead && !wasDead) {
       const db = document.querySelector('.dead-btn');
       if (db) db.focus();
