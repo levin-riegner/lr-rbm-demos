@@ -455,7 +455,7 @@
   }
 
   function focusFirstAction() {
-    if (state.dead) return;
+    if (state.dead) { document.querySelector('.act-menu.focusable')?.focus(); return; }
     const first = document.querySelector('.act.focusable');
     if (first) first.focus();
   }
@@ -494,8 +494,10 @@
       return;
     }
 
-    // GAME
-    const acts = Array.from(document.querySelectorAll('.act.focusable'));
+    // GAME — when dead only MENU is reachable in the action bar
+    const acts = state.dead
+      ? Array.from(document.querySelectorAll('.act-menu.focusable'))
+      : Array.from(document.querySelectorAll('.act.focusable'));
     const deadBtn = document.querySelector('.dead-btn');
     const deadVisible = state.dead && deadBtn;
     const cur = document.activeElement;
