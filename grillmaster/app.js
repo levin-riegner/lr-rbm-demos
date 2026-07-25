@@ -31,7 +31,7 @@
    whose next cue is soonest, and rails the rest.
    ───────────────────────────────────────────────────────────── */
 
-const SESSION_KEY = 'grillmaster.session.v2';
+const SESSION_KEY = 'grillmaster.session.v4';
 
 const state = {
   screen: 'mode',
@@ -131,6 +131,10 @@ function toast(msg) {
 
 /* ─────────── screen routing ─────────── */
 function showScreen(name) {
+  if (!$('#' + name)) {
+    console.warn(`grillmaster: no screen "${name}", falling back to the first question`);
+    name = 'mode';
+  }
   state.screen = name;
   $$('.screen').forEach(s => s.classList.toggle('hidden', s.id !== name));
   paintStepRails();
