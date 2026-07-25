@@ -195,21 +195,47 @@ html, body {
 }
 
 .diagram-wrap {
-  height: 180px;
-  flex: 0 0 180px;
-  max-height: 180px;
+  height: 200px;
+  flex: 0 0 200px;
+  max-height: 200px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-soft);
+  background: #fafafa;
   border: 2px solid var(--line);
   border-radius: 4px;
   padding: 4px;
-  margin-bottom: 8px;
+  margin-bottom: 2px;
 }
-.diagram { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.diagram {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  overflow: hidden;
+}
 .diagram svg { width: 100%; height: 100%; display: block; }
+.knot-img {
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.img-credit {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--ink-faint);
+  text-align: right;
+  margin: 0 2px 6px;
+  text-transform: uppercase;
+}
 
 /* ─── step text & tip ─── */
 .step-text {
