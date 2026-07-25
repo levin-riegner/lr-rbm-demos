@@ -39,7 +39,7 @@ A Tamagotchi-inspired virtual companion for Meta Display glasses that lives at t
 | Naming screen | RANDOM | Roll a random luminous-entity name from the built-in pool |
 | Dead screen | D-pad Up | Move focus to ADOPT NEW COMPANION button |
 | Dead screen | D-pad Down (from ADOPT) | Return focus to action bar |
-| Dead screen | D-pad Left / Right | Navigate action buttons |
+| Dead screen | D-pad Left / Right | Navigate action bar (only MENU is reachable — others are locked) |
 | Dead screen | Enter / Space | Trigger focused button |
 | Dead screen | ADOPT NEW COMPANION | Begin new companion flow |
 
