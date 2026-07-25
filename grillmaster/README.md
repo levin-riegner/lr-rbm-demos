@@ -14,7 +14,7 @@ Nothing asks two things at once. Each screen puts one question in 34px type, tak
 4. **FOOD** — which cut, each row carrying its rough time and heat.
 5. **TASTE** — the doneness ladder, on its own screen, with the pull and eating temp on every rung. Cuts without a ladder (chicken, salmon, anything on the pit) skip this step, and the breadcrumb drops it rather than showing a step you were never asked.
 6. **PLAN** — the numbers you're committing to: pull temp, safe minimum, estimated time. Stack another item here and they all come off together.
-7. **FIRE** — the ready gate: is it hot? Then food goes on.
+7. **FIRE** — the ready gate: is it hot? Then the food goes on.
 
 A breadcrumb across the top of each screen shows where you are in that chain.
 
@@ -22,15 +22,33 @@ A breadcrumb across the top of each screen shows where you are in that chain.
 
 You don't pick your doneness and *then* light the coals — you light them, and they take 12 to 35 minutes while you work out what you're actually cooking. So the fire screen does two different jobs at two different moments, and never repeats itself.
 
-**Up front, once, only if you asked.** Answer FIRST TIME to the HELP question and the very next thing is the three steps that light *your* fuel — a chimney and one sheet of paper for charcoal, burn hardwood down to embers for live fire, run the startup cycle for pellets. Start the preheat here and carry on. COACH ME and I GOT THIS never see it.
+**Up front, once, only if you asked.** Answer FIRST TIME to the HELP question and the very next thing is the three steps that light *your* fuel — a chimney and one sheet of paper for charcoal, burn hardwood down to embers for live fire, run the startup cycle for pellets. COACH ME and I GOT THIS never see it.
 
-**At the end, the ready gate.** By now the fire is lit, so there's no walkthrough — just the heat lever, how you know it's hot (*"coals ashed over grey"*), the clock if it's still running, and **FOOD'S ON**. If you do want the steps, **HOW DO I LIGHT IT?** pulls them up; they are never on screen unless you asked for them.
+**At the end, the ready gate.** `IS THE FIRE READY?`, answered by two plain sentences — *"Ready when: coals ashed over grey."* and *"Change the heat with the bottom vent."* — and nothing else. No walkthrough, because by now the fire is lit.
 
-Either way:
+Every action on that screen is a **full-width row that says what pressing it does**, stacked in the order you'd actually do them:
 
-- **PREHEAT** counts down your fuel's real warm-up — 12 minutes for propane, 20 for charcoal, 35 for wood burning down to coals — and chimes when it's up to temp, on whatever screen you're looking at.
-- **It keeps burning while you answer the rest.** The cook list and the plan carry a live `🔥 11:04` chip that flips green to `🔥 READY`, so you never lose track of a fire you already lit.
-- **FOOD'S ON** is what actually starts the cook, because the cook timer measures food on the grate. Already have a hot grill? Skip the clock and go straight there.
+```
+IS THE FIRE READY?
+CHARCOAL · GRILL
+
+Ready when: coals ashed over grey.
+Change the heat with the bottom vent.
+
+┌──────────────────────────────────┐
+│    SHOW ME HOW TO LIGHT IT       │
+├──────────────────────────────────┤
+│    START A 20 MIN TIMER          │
+├──────────────────────────────────┤
+│    PUT THE FOOD ON               │
+└──────────────────────────────────┘
+```
+
+No side-by-side pair to compare before you can act, and no caption underneath explaining which button to press — if a screen needs that, its buttons are wrong.
+
+- **The timer** counts down your fuel's real warm-up — 12 minutes for propane, 20 for charcoal, 35 for wood burning down to coals — and chimes when it's up to temp, on whatever screen you're looking at.
+- **The fire keeps burning while you answer the rest.** The cook list and the plan carry a live `🔥 11:04` chip that flips green to `🔥 READY`, so you never lose track of a fire you already lit.
+- **PUT THE FOOD ON** is what actually starts the cook, because the cook timer measures food on the grate. Already have a hot grill? Press it and skip the timer.
 
 ## Three modes, two engines
 
@@ -71,8 +89,8 @@ Either way:
 | Any question | Enter | Answer it and go to the next one |
 | Any question | ◀ | Step back one question |
 | Plan | ▲ / ▼ | Move between + ADD and FIRE IT UP |
-| Fire | ▲ / ▼ | Move between PREHEAT, FOOD'S ON, and the steps toggle |
-| Fire | Enter | Start/cancel the preheat clock, show the steps, or put the food on |
+| Fire | ▲ / ▼ | Move down the three stacked actions |
+| Fire | Enter | Show the steps, start/cancel the timer, or put the food on |
 
 ### Grill (flip coach)
 

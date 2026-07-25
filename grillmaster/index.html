@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="styles.css?v=9">
   <script defer src="https://cloud.umami.is/script.js" data-website-id="be32beae-a2a9-423f-b55d-e646ec260f93"></script>
 </head>
 <body>
@@ -131,32 +131,27 @@
       <div class="note" id="plan-note"></div>
     </section>
 
-    <!-- ═════════ THE FIRE — two jobs, one screen ═════════
-         phase "light": shown once, up front, only to whoever asked to be
-                        walked through it. Lighting happens BEFORE you pick
-                        food, because the fire needs 12–35 minutes.
-         phase "go":    the ready gate at the end of the flow. No lecture —
-                        just how you know it's hot, and FOOD'S ON. The
-                        walkthrough is available here on demand, never
-                        unprompted. -->
+    <!-- ═════════ THE FIRE ═════════
+         Two moments, one screen. Up front ("light") the walkthrough is
+         open and the last button carries on to the food. At the gate
+         ("go") the walkthrough is closed until asked for.
+
+         Every action is a full-width row that says what it does, stacked
+         in the order you would do them. No side-by-side pairs to choose
+         between, and no caption explaining which one to press. -->
     <section id="fire" class="screen hidden">
       <header class="page-head">
         <button class="crumb focusable" data-action="fire-back">&#8592;</button>
-        <div class="ph-title" id="fire-title">LIGHT IT UP</div>
-        <div class="ph-tail" id="fire-fuel">—</div>
+        <div class="ph-title" id="fire-title">LIGHT THE FIRE</div>
       </header>
+
+      <div class="fire-fuel" id="fire-fuel">—</div>
 
       <div class="fire-steps hidden" id="fire-steps"></div>
 
-      <div class="fire-facts">
-        <div class="ff-col">
-          <div class="ff-k">HEAT LEVER</div>
-          <div class="ff-v" id="fire-lever">—</div>
-        </div>
-        <div class="ff-col">
-          <div class="ff-k">READY WHEN</div>
-          <div class="ff-v" id="fire-ready">—</div>
-        </div>
+      <div class="fire-facts" id="fire-facts">
+        <div class="ff-line" id="fire-ready">—</div>
+        <div class="ff-line dim" id="fire-lever">—</div>
       </div>
 
       <div class="preheat hidden" id="preheat">
@@ -164,14 +159,11 @@
         <span class="preheat-lbl" id="preheat-lbl">—</span>
       </div>
 
-      <div class="act-row">
-        <button class="btn add focusable" data-action="preheat" id="preheat-btn">PREHEAT</button>
-        <button class="btn primary focusable" data-action="fire-go" id="fire-go-btn">FOOD’S ON &#8594;</button>
+      <div class="stack">
+        <button class="btn ghost focusable" data-action="toggle-steps" id="steps-btn">SHOW ME HOW TO LIGHT IT</button>
+        <button class="btn add focusable" data-action="preheat" id="preheat-btn">START A TIMER</button>
+        <button class="btn primary focusable" data-action="fire-go" id="fire-go-btn">PUT THE FOOD ON</button>
       </div>
-      <div class="act-row secondary">
-        <button class="btn ghost focusable hidden" data-action="toggle-steps" id="steps-btn">HOW DO I LIGHT IT?</button>
-      </div>
-      <div class="note" id="fire-note"></div>
     </section>
 
     <!-- ═════════ COACH — the live grill HUD ═════════ -->
@@ -342,7 +334,7 @@
     <div id="toast" class="toast hidden"></div>
   </div>
 
-  <script src="data.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="data.js?v=9"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

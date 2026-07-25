@@ -539,32 +539,29 @@ function preheatChip(cls) {
 }
 
 function renderPreheat() {
-  const f = state.fuel;
   const rem = preheatRem();
-  const block = $('#preheat'), btn = $('#preheat-btn');
-  if (rem == null) {
-    block.classList.add('hidden');
-    btn.textContent = `PREHEAT · ${f.preheatMin || 15}m`;
-    return;
-  }
+  const block = $('#preheat');
+  if (rem == null) { block.classList.add('hidden'); return; }
   const up = rem <= 0;
   block.classList.remove('hidden');
   block.classList.toggle('ready', up);
   $('#preheat-time').textContent = up ? 'READY' : formatClock(rem);
-  $('#preheat-lbl').textContent = up ? f.ready.toUpperCase() : 'ON THE ' + f.lever;
-  btn.textContent = up ? 'RESET' : 'CANCEL';
+  $('#preheat-lbl').textContent = up ? 'THE FIRE IS READY' : 'UNTIL THE FIRE IS READY';
 }
 
 function renderFire() {
   const f = state.fuel, m = modeById(state.mode);
   const light = state.firePhase === 'light';
-  $('#fire-fuel').textContent = `${f.name} · ${m.name}`;
-  $('#fire-title').textContent = light ? 'LIGHT IT UP' : 'FIRE READY?';
+  const rem = preheatRem();
+  const mins = f.preheatMin || 15;
+  const meat = isPit(state.selCook) ? 'MEAT' : 'FOOD';
 
-  // the walkthrough: open by default only in the up-front phase
+  $('#fire-title').textContent = light ? 'LIGHT THE FIRE' : 'IS THE FIRE READY?';
+  $('#fire-fuel').textContent = `${f.name} · ${m.name}`;
+
+  // the walkthrough: open up front, closed at the gate until asked for
   const showSteps = light || state.fireStepsOpen;
   const wrap = $('#fire-steps');
-  // never carry one fuel's steps over to another
   if (wrap.dataset.fuel !== f.id) { wrap.innerHTML = ''; wrap.dataset.fuel = f.id; }
   if (showSteps && !wrap.childElementCount) {
     f.steps.forEach((s, i) => {
@@ -576,25 +573,26 @@ function renderFire() {
   }
   wrap.classList.toggle('hidden', !showSteps);
 
-  $('#fire-lever').textContent = f.lever;
-  $('#fire-ready').textContent = f.ready;
+  // the two summary lines say the same thing as the steps, so they step
+  // aside when the steps are up rather than repeat them
+  $('#fire-facts').classList.toggle('hidden', showSteps);
+  $('#fire-ready').textContent = `Ready when: ${f.ready.toLowerCase()}.`;
+  // lever values carry inconsistent articles ("BOTTOM VENT" vs "THE KNOBS"),
+  // so strip any leading "the" and supply exactly one
+  const lever = f.lever.toLowerCase().replace(/^the /, '');
+  $('#fire-lever').textContent = `Change the heat with the ${lever}.`;
 
-  // the steps toggle only exists at the ready gate, where they are optional
+  // every button says what pressing it does
   const stepsBtn = $('#steps-btn');
   stepsBtn.classList.toggle('hidden', light);
-  stepsBtn.textContent = state.fireStepsOpen ? 'HIDE THE STEPS' : 'HOW DO I LIGHT IT?';
+  stepsBtn.textContent = state.fireStepsOpen ? 'HIDE THE STEPS' : 'SHOW ME HOW TO LIGHT IT';
 
-  $('#fire-go-btn').innerHTML = light
-    ? 'NEXT &#8594;'
-    : (isPit(state.selCook) ? 'MEAT’S ON' : 'FOOD’S ON') + ' &#8594;';
+  $('#preheat-btn').textContent = rem == null ? `START A ${mins} MIN TIMER`
+    : rem <= 0 ? 'START THE TIMER AGAIN' : 'CANCEL THE TIMER';
+
+  $('#fire-go-btn').textContent = light ? 'NEXT: PICK YOUR FOOD' : `PUT THE ${meat} ON`;
 
   renderPreheat();
-
-  const rem = preheatRem();
-  $('#fire-note').textContent = light
-    ? 'The clock keeps running while you pick your food.'
-    : (rem == null ? 'Already hot? Straight to ' + (isPit(state.selCook) ? 'MEAT’S ON.' : 'FOOD’S ON.')
-                   : (rem <= 0 ? '' : 'Still coming up to temp.'));
 }
 
 function goFire(phase) {
@@ -602,9 +600,7 @@ function goFire(phase) {
   if (phase === 'light') state.fireStepsOpen = false;
   renderFire();
   showScreen('fire');
-  focusEl(phase === 'light'
-    ? (preheatRem() == null ? $('#preheat-btn') : $('#fire-go-btn'))
-    : $('#fire-go-btn'));
+  focusEl(phase === 'light' && preheatRem() == null ? $('#preheat-btn') : $('#fire-go-btn'));
 }
 
 /* reached from the plan — the ready gate, never the walkthrough */

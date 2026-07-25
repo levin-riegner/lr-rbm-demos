@@ -198,9 +198,11 @@ button { font-family: inherit; color: inherit; background: none; border: none; c
 /* ═════════ buttons ═════════ */
 .foot-row, .act-row { display: flex; justify-content: center; gap: 12px; margin-top: 16px; }
 .act-row { margin-top: 18px; }
-/* the optional walkthrough toggle — present, but not competing with FOOD'S ON */
-.act-row.secondary { margin-top: 10px; min-height: 0; }
-.act-row.secondary .btn { flex: none; min-width: 250px; font-size: 15px; padding: 10px 16px; }
+/* One action per row, full width, in the order you would do them — the
+   same shape as every question screen. Side-by-side buttons make you
+   compare two things before you can act. */
+.stack { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.stack .btn { flex: none; width: 100%; }
 .btn {
   border-radius: 12px; font-weight: 700; letter-spacing: .09em;
   font-size: 19px; padding: 14px 18px; transition: all .13s ease;
@@ -263,21 +265,22 @@ button { font-family: inherit; color: inherit; background: none; border: none; c
 .tgt-col.safe .tgt-v { color: var(--safe); text-shadow: 0 0 18px rgba(85,240,153,.35); }
 
 /* ═════════ THE FIRE ═════════ */
-.fire-steps { display: flex; flex-direction: column; gap: 13px; margin-bottom: auto; }
+.fire-fuel {
+  font-size: 16px; font-weight: 700; letter-spacing: .16em;
+  color: var(--ember-hi); margin-bottom: 16px;
+}
+.fire-steps { display: flex; flex-direction: column; gap: 11px; margin-bottom: auto; }
 .fs-row { display: flex; align-items: center; justify-content: center; gap: 16px; }
 .fs-n {
   font-family: "JetBrains Mono", monospace; font-size: 21px; font-weight: 800;
   color: var(--ember); flex: none; width: 46px; height: 46px; line-height: 42px;
   border: 2px solid var(--line-hot); border-radius: 50%; background: var(--fill);
 }
-.fs-t { font-size: 20px; line-height: 1.3; color: var(--white); max-width: 410px; }
+.fs-t { font-size: 19px; line-height: 1.3; color: var(--white); max-width: 420px; }
 
-.fire-facts {
-  display: grid; grid-template-columns: 1fr 1.3fr; gap: 14px;
-  border-top: 2px solid var(--line); padding-top: 15px; margin-top: 16px;
-}
-.ff-k { font-size: 13px; font-weight: 700; letter-spacing: .16em; color: var(--ash); margin-bottom: 7px; }
-.ff-v { font-size: 20px; font-weight: 700; color: var(--ember-hi); line-height: 1.2; }
+.fire-facts { margin-bottom: auto; }
+.ff-line { font-size: 20px; font-weight: 600; color: var(--white); line-height: 1.3; }
+.ff-line.dim { font-size: 16px; font-weight: 500; color: var(--ash); margin-top: 9px; }
 
 /* the preheat clock — real minutes, because a cold grate is the
    commonest way a cook goes wrong before it has even started */
