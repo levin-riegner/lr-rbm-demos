@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <title>Grillmaster</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="be32beae-a2a9-423f-b55d-e646ec260f93"></script>
+</head>
+<body>
+  <div id="app">
+
+    <!-- heat haze behind everything; black = transparent on the lens -->
+    <div class="ember-field" aria-hidden="true">
+      <div class="ember e1"></div><div class="ember e2"></div>
+      <div class="ember e3"></div><div class="ember e4"></div>
+      <div class="ember e5"></div><div class="ember e6"></div>
+    </div>
+
+    <!-- ═════════ HOME, pick a mode, then a cook ═════════ -->
+    <section id="home" class="screen">
+      <header class="brand">
+        <div class="flame">▲</div>
+        <div class="brand-txt">
+          <div class="brand-name">GRILLMASTER</div>
+          <div class="brand-tag">HANDS-FREE FIRE COACH</div>
+        </div>
+      </header>
+
+      <div class="mode-toggle three" id="mode-toggle">
+        <button class="mode-btn focusable" data-action="mode" data-mode="grill">
+          <span class="mode-k">GRILL</span>
+          <span class="mode-s">hot &amp; fast</span>
+        </button>
+        <button class="mode-btn focusable" data-action="mode" data-mode="smoke">
+          <span class="mode-k">SMOKE</span>
+          <span class="mode-s">low &amp; slow</span>
+        </button>
+        <button class="mode-btn focusable" data-action="mode" data-mode="bbq">
+          <span class="mode-k">BBQ</span>
+          <span class="mode-s">indirect</span>
+        </button>
+      </div>
+
+      <div class="list-label" id="home-label">CHOOSE A COOK</div>
+      <div class="cook-list" id="cook-list"></div>
+
+      <div class="home-foot">
+        <button class="btn ghost focusable" data-action="show-guide">TEMP GUIDE</button>
+        <button class="btn ghost focusable" data-action="show-help">HOW IT WORKS</button>
+      </div>
+    </section>
+
+    <!-- ═════════ SETUP, doneness + add to the cook ═════════ -->
+    <section id="setup" class="screen hidden">
+      <header class="page-head">
+        <button class="crumb focusable" data-action="go-home">&#8592; COOKS</button>
+        <div class="ph-title" id="setup-title">—</div>
+      </header>
+
+      <div class="setup-hero">
+        <div class="hero-glyph" id="setup-glyph">🥩</div>
+        <div class="hero-meta">
+          <div class="hero-cut" id="setup-cut">—</div>
+          <div class="hero-grate"><span class="chip" id="setup-grate">—</span></div>
+        </div>
+      </div>
+
+      <div class="setup-block" id="doneness-block">
+        <div class="list-label">HOW DO YOU LIKE IT?</div>
+        <div class="doneness-row" id="doneness-row"></div>
+      </div>
+
+      <div class="setup-target" id="setup-target">
+        <div class="tgt-col">
+          <div class="tgt-k">PULL AT</div>
+          <div class="tgt-v" id="tgt-pull">—</div>
+        </div>
+        <div class="tgt-col">
+          <div class="tgt-k">SAFE MIN</div>
+          <div class="tgt-v" id="tgt-safe">—</div>
+        </div>
+        <div class="tgt-col">
+          <div class="tgt-k">EST. TIME</div>
+          <div class="tgt-v" id="tgt-time">—</div>
+        </div>
+      </div>
+
+      <div class="setup-actions">
+        <button class="btn add focusable" data-action="add-item" id="add-btn">+ ADD TO COOK</button>
+        <button class="btn primary focusable" data-action="light-fire" id="light-btn">LIGHT THE FIRE &#8594;</button>
+      </div>
+      <div class="tray-note" id="tray-note"></div>
+    </section>
+
+    <!-- ═════════ COACH, the live cook HUD ═════════ -->
+    <section id="coach" class="screen hidden">
+
+      <!-- primary card: the ONE thing to do right now -->
+      <div class="now">
+        <div class="now-top">
+          <span class="now-item" id="now-item">RIBEYE</span>
+          <span class="now-phase" id="now-phase">SEAR</span>
+        </div>
+
+        <div class="now-cue" id="now-cue">SEAR, HANDS OFF</div>
+        <div class="now-sub" id="now-sub">—</div>
+
+        <div class="clock-wrap">
+          <div class="clock-ring" id="clock-ring">
+            <div class="clock-time" id="clock-time">0:00</div>
+            <div class="clock-lbl" id="clock-lbl">TO FLIP</div>
+          </div>
+        </div>
+
+        <!-- temp readout + doneness bar (hidden for no-probe cooks) -->
+        <div class="temp" id="temp-block">
+          <div class="temp-nums">
+            <span class="temp-est" id="temp-est">—°</span>
+            <span class="temp-sep">/</span>
+            <span class="temp-tgt" id="temp-tgt">—°</span>
+            <span class="temp-lbl">EST / TARGET</span>
+          </div>
+          <div class="temp-bar"><div class="temp-fill" id="temp-fill"></div><div class="temp-tick" id="temp-tick"></div></div>
+        </div>
+      </div>
+
+      <!-- rail of every other item cooking right now -->
+      <div class="rail" id="rail"></div>
+
+      <div class="coach-foot">
+        <button class="btn ghost focusable" data-action="quit-cook">&#8592; END</button>
+        <button class="btn primary big focusable" data-action="advance" id="advance-btn">DID IT &#10003;</button>
+      </div>
+    </section>
+
+    <!-- ═════════ MONITOR — the pit HUD (smoke + bbq) ═════════ -->
+    <section id="monitor" class="screen hidden">
+      <div class="mon-head">
+        <span class="mon-item" id="mon-item">BEEF BRISKET</span>
+        <span class="mon-phase" id="mon-phase">SMOKE</span>
+      </div>
+
+      <!-- state banners -->
+      <div class="mon-banner alarm hidden" id="mon-alarm">
+        <span class="mb-ico">▲</span><span id="mon-alarm-txt">PIT LOW</span>
+      </div>
+      <div class="mon-banner spritz hidden" id="mon-spritz">
+        <span class="mb-ico">💧</span><span>SPRITZ / CHECK FUEL</span>
+      </div>
+
+      <div class="mon-cue" id="mon-cue">ON THE SMOKE</div>
+      <div class="mon-sub" id="mon-sub">Fat-side up, lid down.</div>
+
+      <!-- dual gauges -->
+      <div class="gauges">
+        <div class="gauge" id="g-meat">
+          <div class="g-k">MEAT</div>
+          <div class="g-v" id="mon-meat">—°</div>
+          <div class="g-tgt" id="mon-meat-tgt">→ 203°</div>
+        </div>
+        <div class="gauge" id="g-pit">
+          <div class="g-k">PIT</div>
+          <div class="g-v" id="mon-pit">225°</div>
+          <div class="g-tgt" id="mon-pit-tgt">hold 225°</div>
+        </div>
+      </div>
+
+      <!-- estimate to next threshold -->
+      <div class="eta">
+        <span class="eta-v" id="mon-eta">~2h 10m</span>
+        <span class="eta-s" id="mon-eta-sub">to WRAP · 3h 04m elapsed</span>
+      </div>
+
+      <!-- control bar (rendered by app.js) -->
+      <div class="mon-bar" id="mon-bar"></div>
+    </section>
+
+    <!-- ═════════ DONE ═════════ -->
+    <section id="done" class="screen hidden">
+      <div class="done-inner">
+        <div class="done-mark">✔</div>
+        <div class="done-title" id="done-title">PLATED</div>
+        <div class="done-sub" id="done-sub">Everything’s off the fire.</div>
+        <div class="done-actions">
+          <button class="btn primary focusable" data-action="go-home">NEW COOK</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ TEMP GUIDE ═════════ -->
+    <section id="guide" class="screen hidden">
+      <header class="page-head">
+        <button class="crumb focusable" data-action="go-home">&#8592; HOME</button>
+        <div class="ph-title">DONENESS &amp; SAFETY</div>
+      </header>
+      <div class="guide-list" id="guide-list"></div>
+      <div class="guide-note">Pull 5°F early, meat keeps climbing off the heat (carryover).</div>
+    </section>
+
+    <!-- ═════════ HELP ═════════ -->
+    <section id="help" class="screen hidden">
+      <header class="page-head">
+        <button class="crumb focusable" data-action="go-home">&#8592; HOME</button>
+        <div class="ph-title">HOW IT WORKS</div>
+      </header>
+      <div class="help-body">
+        <div class="help-lead">Your hands are on the tongs, not a phone. Glance up, do the one thing it tells you, tap once.</div>
+        <div class="help-row">
+          <span class="hk">▲ ▼</span>
+          <div><b>SWITCH ITEM</b><span>Bring another thing on the grill into focus</span></div>
+        </div>
+        <div class="help-row">
+          <span class="hk">ENTER</span>
+          <div><b>DID IT</b><span>Confirm the cue, advances to the next beat</span></div>
+        </div>
+        <div class="help-row">
+          <span class="hk">◀</span>
+          <div><b>BACK</b><span>Leave the cook or a screen</span></div>
+        </div>
+        <div class="help-row">
+          <span class="hk">▶</span>
+          <div><b>TIP</b><span>Cycle the pro tip for the focused item</span></div>
+        </div>
+        <div class="help-foot">A countdown gets you to each cue on its own; ENTER just says you already did it.</div>
+        <div class="done-actions">
+          <button class="btn primary focusable" data-action="go-home">GOT IT</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════ CUE ALERT (a step came due) ═════════ -->
+    <div id="cue-alert" class="overlay hidden">
+      <div class="cue-card">
+        <div class="cue-pulse"></div>
+        <div class="cue-eyebrow" id="cue-eyebrow">NOW</div>
+        <div class="cue-big" id="cue-big">FLIP</div>
+        <div class="cue-item" id="cue-item">—</div>
+        <button class="btn primary focusable" data-action="ack-cue">ON IT &#10003;</button>
+      </div>
+    </div>
+
+    <!-- toast -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
