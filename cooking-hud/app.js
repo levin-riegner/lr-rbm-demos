@@ -137,7 +137,10 @@ function applySeeThrough(on) {
   try { localStorage.setItem(ST_KEY, on ? '1' : '0'); } catch {}
 }
 function loadSeeThrough() {
-  try { return localStorage.getItem(ST_KEY) === '1'; } catch { return false; }
+  try {
+    const v = localStorage.getItem(ST_KEY);
+    return v === null ? true : v === '1';
+  } catch { return true; }
 }
 function toggleSeeThrough() {
   applySeeThrough(!document.body.classList.contains('see-through'));
