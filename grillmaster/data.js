@@ -278,13 +278,13 @@ const COOKS = [
       const s = STEAK_SIDE_SEC[d.key];
       const mid = Math.round(d.pullF - (d.pullF - this.startF) * 0.45);
       return [
-        { action: 'SEAR', tag: 'SEAR', cue: 'SEAR, HANDS OFF',
+        { action: 'SEAR', tag: 'SEAR', cue: 'SEAR, HANDS OFF', hold: 'BUILDING THE CRUST',
           sub: 'Lay it down, lid open, and leave it to build a crust.',
           sec: s, atEndF: mid },
-        { action: 'FLIP', tag: 'FLIP', cue: 'FLIP THE RIBEYE',
+        { action: 'FLIP', tag: 'FLIP', cue: 'FLIP THE RIBEYE', hold: 'SECOND SIDE DOWN',
           sub: 'One clean flip. Crust side up now.',
           sec: s, atEndF: d.pullF },
-        { action: 'PULL', tag: 'PULL', cue: `PULL AT ${d.pullF}°F`,
+        { action: 'PULL', tag: 'PULL', cue: `PULL AT ${d.pullF}°F`, hold: 'RESTING',
           sub: `Rest 5 min. It climbs to ~${d.servF}°F off the heat.`,
           sec: 300, atEndF: d.servF, rest: true },
       ];
@@ -304,16 +304,16 @@ const COOKS = [
       const s = BURGER_SIDE_SEC[d.key];
       const mid = Math.round(d.pullF - (d.pullF - this.startF) * 0.5);
       return [
-        { action: 'SEAR', tag: 'SIDE 1', cue: 'FIRST SIDE DOWN',
+        { action: 'SEAR', tag: 'SIDE 1', cue: 'FIRST SIDE DOWN', hold: 'FIRST SIDE COOKING',
           sub: 'Set it and leave it. No pressing.',
           sec: s, atEndF: mid },
-        { action: 'FLIP', tag: 'FLIP', cue: 'FLIP THE PATTIES',
+        { action: 'FLIP', tag: 'FLIP', cue: 'FLIP THE PATTIES', hold: 'SECOND SIDE DOWN',
           sub: 'One flip. Add cheese now if you want it molten.',
           sec: Math.round(s * 0.75), atEndF: Math.round((mid + d.pullF) / 2) },
-        { action: 'MOVE', tag: 'MELT', cue: 'LID DOWN, MELT',
+        { action: 'MOVE', tag: 'MELT', cue: 'LID DOWN, MELT', hold: 'CHEESE MELTING',
           sub: 'Cover to melt cheese and finish the center.',
           sec: Math.round(s * 0.35), atEndF: d.pullF },
-        { action: 'PULL', tag: 'BUILD', cue: 'PULL & BUILD',
+        { action: 'PULL', tag: 'BUILD', cue: 'PULL & BUILD', hold: 'RESTING',
           sub: 'Rest 2 min, then dress the bun.',
           sec: 120, atEndF: d.servF, rest: true },
       ];
@@ -330,16 +330,16 @@ const COOKS = [
     ],
     plan() {
       return [
-        { action: 'SEAR', tag: 'MARK', cue: 'MARK SIDE ONE',
+        { action: 'SEAR', tag: 'MARK', cue: 'MARK SIDE ONE', hold: 'MARKING SIDE ONE',
           sub: 'Grate lines first. Don’t move it early.',
           sec: 210, atEndF: 95 },
-        { action: 'FLIP', tag: 'FLIP', cue: 'FLIP THE CHICKEN',
+        { action: 'FLIP', tag: 'FLIP', cue: 'FLIP THE CHICKEN', hold: 'MARKING SIDE TWO',
           sub: 'Mark the second side.',
           sec: 210, atEndF: 130 },
-        { action: 'MOVE', tag: 'INDIRECT', cue: 'SLIDE TO COOL ZONE',
+        { action: 'MOVE', tag: 'INDIRECT', cue: 'SLIDE TO COOL ZONE', hold: 'FINISHING GENTLY',
           sub: 'Lid down, finish gently to temp.',
           sec: 300, atEndF: 162 },
-        { action: 'PULL', tag: 'PULL', cue: 'PULL AT 162°F',
+        { action: 'PULL', tag: 'PULL', cue: 'PULL AT 162°F', hold: 'RESTING',
           sub: 'Rest 5 min. Carryover carries it past 165°F safe.',
           sec: 300, atEndF: 166, rest: true },
       ];
@@ -356,13 +356,13 @@ const COOKS = [
     ],
     plan() {
       return [
-        { action: 'SEAR', tag: 'SKIN', cue: 'SKIN SIDE DOWN',
+        { action: 'SEAR', tag: 'SKIN', cue: 'SKIN SIDE DOWN', hold: 'CRISPING THE SKIN',
           sub: 'Let the skin crisp and release on its own.',
           sec: 300, atEndF: 105 },
-        { action: 'FLIP', tag: 'FLIP', cue: 'GENTLE FLIP',
+        { action: 'FLIP', tag: 'FLIP', cue: 'GENTLE FLIP', hold: 'FLESH SIDE DOWN',
           sub: 'One spatula, quick turn. It’s delicate.',
           sec: 150, atEndF: 128 },
-        { action: 'PULL', tag: 'PLATE', cue: 'PULL & PLATE',
+        { action: 'PULL', tag: 'PLATE', cue: 'PULL & PLATE', hold: 'RESTING',
           sub: 'Flakes easily at the thick end = done.',
           sec: 120, atEndF: 132, rest: true },
       ];
@@ -379,16 +379,16 @@ const COOKS = [
     ],
     plan() {
       return [
-        { action: 'ROLL', tag: 'ROLL 1', cue: 'ROLL, QUARTER TURN',
+        { action: 'ROLL', tag: 'ROLL 1', cue: 'ROLL, QUARTER TURN', hold: 'BROWNING',
           sub: 'Even color, no splitting.',
           sec: 180, atEndF: 110 },
-        { action: 'ROLL', tag: 'ROLL 2', cue: 'ROLL AGAIN',
+        { action: 'ROLL', tag: 'ROLL 2', cue: 'ROLL AGAIN', hold: 'BROWNING',
           sub: 'Next quarter turn.',
           sec: 180, atEndF: 140 },
-        { action: 'ROLL', tag: 'ROLL 3', cue: 'LAST QUARTER TURN',
+        { action: 'ROLL', tag: 'ROLL 3', cue: 'LAST QUARTER TURN', hold: 'COMING UP TO 160°F',
           sub: 'Bring it home to 160°F.',
           sec: 180, atEndF: 160 },
-        { action: 'PULL', tag: 'BUN', cue: 'INTO THE BUN',
+        { action: 'PULL', tag: 'BUN', cue: 'INTO THE BUN', hold: 'RESTING',
           sub: 'Rest a minute so the juice sets.',
           sec: 60, atEndF: 162, rest: true },
       ];
@@ -405,13 +405,13 @@ const COOKS = [
     ],
     plan() {
       return [
-        { action: 'ROLL', tag: 'CHAR', cue: 'ROLL FOR CHAR',
+        { action: 'ROLL', tag: 'CHAR', cue: 'ROLL FOR CHAR', hold: 'CHARRING',
           sub: 'Turn every side to the fire.',
           sec: 120 },
-        { action: 'ROLL', tag: 'FINISH', cue: 'FINISH THE CHAR',
+        { action: 'ROLL', tag: 'FINISH', cue: 'FINISH THE CHAR', hold: 'CHARRING',
           sub: 'Blistered and hot through.',
           sec: 120 },
-        { action: 'PULL', tag: 'DRESS', cue: 'DRESS & SERVE',
+        { action: 'PULL', tag: 'DRESS', cue: 'DRESS & SERVE', hold: 'READY TO EAT',
           sub: 'Toast the bun on the grate while you’re at it.',
           sec: 30, rest: true },
       ];
@@ -428,13 +428,13 @@ const COOKS = [
     ],
     plan() {
       return [
-        { action: 'SEAR', tag: 'SEAR', cue: 'SEAR SIDE ONE',
+        { action: 'SEAR', tag: 'SEAR', cue: 'SEAR SIDE ONE', hold: 'BUILDING THE CRUST',
           sub: 'Build a crust before you touch it.',
           sec: 240, atEndF: 100 },
-        { action: 'FLIP', tag: 'FLIP', cue: 'FLIP THE CHOP',
+        { action: 'FLIP', tag: 'FLIP', cue: 'FLIP THE CHOP', hold: 'SECOND SIDE DOWN',
           sub: 'Second side down, then stand it on the fat edge.',
           sec: 240, atEndF: 140 },
-        { action: 'PULL', tag: 'PULL', cue: 'PULL AT 142°F',
+        { action: 'PULL', tag: 'PULL', cue: 'PULL AT 142°F', hold: 'RESTING',
           sub: 'Rest 3 min → 145°F safe, still juicy.',
           sec: 180, atEndF: 146, rest: true },
       ];
@@ -451,15 +451,41 @@ const COOKS = [
     ],
     plan() {
       return [
-        { action: 'SEAR', tag: 'SIDE 1', cue: 'LAY THE SKEWERS',
+        { action: 'SEAR', tag: 'SIDE 1', cue: 'LAY THE SKEWERS', hold: 'FIRST SIDE COOKING',
           sub: 'First side, until edges turn opaque.',
           sec: 120, atEndF: 90 },
-        { action: 'FLIP', tag: 'FLIP', cue: 'FLIP THE SKEWERS',
+        { action: 'FLIP', tag: 'FLIP', cue: 'FLIP THE SKEWERS', hold: 'SECOND SIDE COOKING',
           sub: 'They curl into a loose “C” when ready.',
           sec: 90, atEndF: 120 },
-        { action: 'PULL', tag: 'PLATE', cue: 'OFF NOW, DON’T WAIT',
+        { action: 'PULL', tag: 'PLATE', cue: 'OFF NOW, DON’T WAIT', hold: 'RESTING',
           sub: 'Carryover finishes them on the plate.',
           sec: 20, atEndF: 122, rest: true },
+      ];
+    },
+  },
+  {
+    id: 'chicken-skewers', mode: 'grill', name: 'Chicken Skewers', glyph: '🍢',
+    level: 'PARTY FOOD', cut: 'Cubed thigh · direct heat',
+    grate: 'MED-HIGH', safeF: 165, restSec: 120, startF: 46,
+    tips: [
+      'Thigh, not breast. Cubes of thigh stay juicy on a skewer; breast dries out.',
+      'Two parallel skewers per row so the cubes turn instead of spinning.',
+      'Sauce only in the last couple of minutes — sugar burns long before chicken is safe.',
+    ],
+    plan() {
+      return [
+        { action: 'SEAR', tag: 'SIDE 1', cue: 'SKEWERS DOWN', hold: 'FIRST SIDE COOKING',
+          sub: 'Lay them across the bars so nothing falls through.',
+          sec: 210, atEndF: 105 },
+        { action: 'FLIP', tag: 'TURN', cue: 'TURN THE SKEWERS', hold: 'SECOND SIDE DOWN',
+          sub: 'Quarter turn. Let each face take colour.',
+          sec: 210, atEndF: 140 },
+        { action: 'FLIP', tag: 'FINISH', cue: 'LAST TURN — SAUCE NOW', hold: 'COMING UP TO 165°F',
+          sub: 'If you are glazing, this is the moment.',
+          sec: 180, atEndF: 163 },
+        { action: 'PULL', tag: 'PULL', cue: 'PULL AT 163°F', hold: 'RESTING',
+          sub: 'Rest 2 min. Carryover carries it past 165°F safe.',
+          sec: 120, atEndF: 167, rest: true },
       ];
     },
   },
@@ -474,16 +500,16 @@ const COOKS = [
     ],
     plan() {
       return [
-        { action: 'ROLL', tag: 'CHAR 1', cue: 'CHAR & TURN',
+        { action: 'ROLL', tag: 'CHAR 1', cue: 'CHAR & TURN', hold: 'CHARRING',
           sub: 'Get color on the first faces.',
           sec: 180 },
-        { action: 'ROLL', tag: 'CHAR 2', cue: 'TURN AGAIN',
+        { action: 'ROLL', tag: 'CHAR 2', cue: 'TURN AGAIN', hold: 'CHARRING',
           sub: 'Rotate to the next side.',
           sec: 180 },
-        { action: 'ROLL', tag: 'CHAR 3', cue: 'LAST TURN',
+        { action: 'ROLL', tag: 'CHAR 3', cue: 'LAST TURN', hold: 'CHARRING',
           sub: 'Even char all around.',
           sec: 180 },
-        { action: 'PULL', tag: 'PLATTER', cue: 'TO THE PLATTER',
+        { action: 'PULL', tag: 'PLATTER', cue: 'TO THE PLATTER', hold: 'READY TO EAT',
           sub: 'Soft with a little bite is the sweet spot.',
           sec: 20, rest: true },
       ];
@@ -503,11 +529,11 @@ const COOKS = [
       'Rest an hour-plus, wrapped, in a dry cooler. This is not optional.',
     ],
     phases: [
-      { tag: 'SMOKE', cue: 'ON THE SMOKE', sub: 'Fat-side up, lid down. Settle in around 225°F.' },
-      { tag: 'STALL', cue: 'STALL INCOMING', sub: 'The climb flattens near 160°F. It’s moisture, not trouble.', trigger: { atF: 150 } },
-      { tag: 'WRAP',  cue: 'WRAP AT 165°F',  sub: 'Butcher paper, tight. Powers you through the stall.', trigger: { atF: 165 } },
-      { tag: 'PROBE', cue: 'START PROBING',  sub: 'Check for butter-tender every couple degrees now.', trigger: { atF: 198 } },
-      { tag: 'PULL',  cue: 'PULL IT NOW',    sub: 'Probe slides with zero resistance. Rest it long.', trigger: { atF: 203 }, pull: true },
+      { tag: 'SMOKE', cue: 'ON THE SMOKE', hold: 'ON THE SMOKE', sub: 'Fat-side up, lid down. Settle in around 225°F.' },
+      { tag: 'STALL', cue: 'STALL INCOMING', hold: 'RIDING OUT THE STALL', sub: 'The climb flattens near 160°F. It’s moisture, not trouble.', trigger: { atF: 150 } },
+      { tag: 'WRAP',  cue: 'WRAP AT 165°F', hold: 'WRAPPED, CLIMBING ON',  sub: 'Butcher paper, tight. Powers you through the stall.', trigger: { atF: 165 } },
+      { tag: 'PROBE', cue: 'START PROBING', hold: 'PROBING FOR TENDER',  sub: 'Check for butter-tender every couple degrees now.', trigger: { atF: 198 } },
+      { tag: 'PULL',  cue: 'PULL IT NOW', hold: 'READY TO PULL',    sub: 'Probe slides with zero resistance. Rest it long.', trigger: { atF: 203 }, pull: true },
     ],
   },
   {
@@ -520,10 +546,10 @@ const COOKS = [
       'Pull it at ~203°F, when the blade bone wiggles free clean.',
     ],
     phases: [
-      { tag: 'SMOKE', cue: 'FAT-CAP UP',    sub: 'Onto the smoke, lid down, around 250°F.' },
-      { tag: 'STALL', cue: 'STALL INCOMING', sub: 'Same stall as brisket. Wrap to beat it.', trigger: { atF: 150 } },
-      { tag: 'WRAP',  cue: 'WRAP AT 165°F',  sub: 'Foil or paper. Drive it to 203°F.', trigger: { atF: 165 } },
-      { tag: 'PULL',  cue: 'PULL & SHRED',   sub: 'Blade bone wiggles free clean. Rest 45 min, then shred.', trigger: { atF: 203 }, pull: true },
+      { tag: 'SMOKE', cue: 'FAT-CAP UP', hold: 'ON THE SMOKE',    sub: 'Onto the smoke, lid down, around 250°F.' },
+      { tag: 'STALL', cue: 'STALL INCOMING', hold: 'RIDING OUT THE STALL', sub: 'Same stall as brisket. Wrap to beat it.', trigger: { atF: 150 } },
+      { tag: 'WRAP',  cue: 'WRAP AT 165°F', hold: 'WRAPPED, CLIMBING ON',  sub: 'Foil or paper. Drive it to 203°F.', trigger: { atF: 165 } },
+      { tag: 'PULL',  cue: 'PULL & SHRED', hold: 'READY TO PULL',   sub: 'Blade bone wiggles free clean. Rest 45 min, then shred.', trigger: { atF: 203 }, pull: true },
     ],
   },
   {
@@ -536,10 +562,10 @@ const COOKS = [
       'Probe between the bones. Jiggly and tender beats any exact number.',
     ],
     phases: [
-      { tag: 'SMOKE', cue: 'BONE-DOWN', sub: 'Onto the smoke, ~250°F, lid down.' },
-      { tag: 'STALL', cue: 'STALL INCOMING', sub: 'They stall like brisket. Ride it.', trigger: { atF: 160 } },
-      { tag: 'PROBE', cue: 'PROBE THE MEAT', sub: 'Feel between the bones for total give.', trigger: { atF: 198 } },
-      { tag: 'PULL',  cue: 'PULL IT NOW',    sub: 'Jiggly and probe-tender. Rest 30 min.', trigger: { atF: 203 }, pull: true },
+      { tag: 'SMOKE', cue: 'BONE-DOWN', hold: 'ON THE SMOKE', sub: 'Onto the smoke, ~250°F, lid down.' },
+      { tag: 'STALL', cue: 'STALL INCOMING', hold: 'RIDING OUT THE STALL', sub: 'They stall like brisket. Ride it.', trigger: { atF: 160 } },
+      { tag: 'PROBE', cue: 'PROBE THE MEAT', hold: 'PROBING FOR TENDER', sub: 'Feel between the bones for total give.', trigger: { atF: 198 } },
+      { tag: 'PULL',  cue: 'PULL IT NOW', hold: 'READY TO PULL',    sub: 'Jiggly and probe-tender. Rest 30 min.', trigger: { atF: 203 }, pull: true },
     ],
   },
 
@@ -556,10 +582,10 @@ const COOKS = [
       'The bend test beats any thermometer: lift a rack and it should crack, not snap.',
     ],
     phases: [
-      { tag: 'SMOKE', cue: 'BONE-DOWN, BARE', sub: 'Phase 1: 3 hrs of open smoke at 275°F.' },
-      { tag: 'WRAP',  cue: 'WRAP WITH LIQUID', sub: 'Phase 2: foil + butter/juice, 2 hrs to tenderize.', trigger: { afterMin: 180 } },
-      { tag: 'SAUCE', cue: 'UNWRAP & SAUCE',  sub: 'Phase 3: 1 hr open to set the glaze and firm the bark.', trigger: { afterMin: 300 } },
-      { tag: 'BEND',  cue: 'BEND TEST',       sub: 'Lift a rack, the surface should crack. Rest 10 min.', trigger: { afterMin: 360 }, pull: true },
+      { tag: 'SMOKE', cue: 'BONE-DOWN, BARE', hold: 'OPEN SMOKE · PHASE 1', sub: 'Phase 1: 3 hrs of open smoke at 275°F.' },
+      { tag: 'WRAP',  cue: 'WRAP WITH LIQUID', hold: 'WRAPPED · PHASE 2', sub: 'Phase 2: foil + butter/juice, 2 hrs to tenderize.', trigger: { afterMin: 180 } },
+      { tag: 'SAUCE', cue: 'UNWRAP & SAUCE', hold: 'GLAZE SETTING · PHASE 3',  sub: 'Phase 3: 1 hr open to set the glaze and firm the bark.', trigger: { afterMin: 300 } },
+      { tag: 'BEND',  cue: 'BEND TEST', hold: 'READY FOR THE BEND TEST',       sub: 'Lift a rack, the surface should crack. Rest 10 min.', trigger: { afterMin: 360 }, pull: true },
     ],
   },
   {
@@ -572,10 +598,10 @@ const COOKS = [
       'Breast 165°F, thigh 175°F. The thigh is the one that lags.',
     ],
     phases: [
-      { tag: 'ROAST', cue: 'SKIN-UP, FLAT', sub: 'Onto the grill, indirect, around 325°F.' },
-      { tag: 'CRISP', cue: 'CRISP THE SKIN', sub: 'Skin drying? Nudge the heat up to set it.', trigger: { atF: 150 } },
-      { tag: 'GLAZE', cue: 'BRUSH THE GLAZE', sub: 'Sauce it now so it sets in the last stretch.', trigger: { atF: 160 } },
-      { tag: 'PULL',  cue: 'PULL AT 175°F',  sub: 'Thigh 175°F, breast 165°F. Rest 10 min before carving.', trigger: { atF: 175 }, pull: true },
+      { tag: 'ROAST', cue: 'SKIN-UP, FLAT', hold: 'ROASTING', sub: 'Onto the grill, indirect, around 325°F.' },
+      { tag: 'CRISP', cue: 'CRISP THE SKIN', hold: 'CRISPING THE SKIN', sub: 'Skin drying? Nudge the heat up to set it.', trigger: { atF: 150 } },
+      { tag: 'GLAZE', cue: 'BRUSH THE GLAZE', hold: 'GLAZE SETTING', sub: 'Sauce it now so it sets in the last stretch.', trigger: { atF: 160 } },
+      { tag: 'PULL',  cue: 'PULL AT 175°F', hold: 'READY TO PULL',  sub: 'Thigh 175°F, breast 165°F. Rest 10 min before carving.', trigger: { atF: 175 }, pull: true },
     ],
   },
   {
@@ -588,9 +614,9 @@ const COOKS = [
       'Wings taste best pulled hotter than safe, ~175°F, which renders the connective tissue.',
     ],
     phases: [
-      { tag: 'ROAST', cue: 'INDIRECT TO RENDER', sub: 'Around 300°F to melt the fat out of the skin.' },
-      { tag: 'CRISP', cue: 'CRANK & CRISP', sub: 'Slide over direct heat to blister the skin.', trigger: { atF: 150 } },
-      { tag: 'SAUCE', cue: 'TOSS IN SAUCE', sub: 'Off the heat, into the bowl, coat every wing.', trigger: { atF: 175 }, pull: true },
+      { tag: 'ROAST', cue: 'INDIRECT TO RENDER', hold: 'RENDERING THE FAT', sub: 'Around 300°F to melt the fat out of the skin.' },
+      { tag: 'CRISP', cue: 'CRANK & CRISP', hold: 'CRISPING', sub: 'Slide over direct heat to blister the skin.', trigger: { atF: 150 } },
+      { tag: 'SAUCE', cue: 'TOSS IN SAUCE', hold: 'READY TO SAUCE', sub: 'Off the heat, into the bowl, coat every wing.', trigger: { atF: 175 }, pull: true },
     ],
   },
   {
@@ -603,10 +629,10 @@ const COOKS = [
       'Always slice across the grain, and the grain changes direction, so watch it.',
     ],
     phases: [
-      { tag: 'ROAST', cue: 'FAT-CAP UP', sub: 'Indirect at 300°F, building a salt-and-pepper bark.' },
-      { tag: 'WATCH', cue: 'WATCH THE CLIMB', sub: 'Getting close. Have the hot side ready to sear.', trigger: { atF: 105 } },
-      { tag: 'SEAR',  cue: 'SEAR ALL SIDES', sub: 'Pull to direct heat, ~60s a side for the crust.', trigger: { atF: 118 } },
-      { tag: 'PULL',  cue: 'PULL AT 128°F',  sub: 'Med-rare. Rest 8 min, slice across the grain.', trigger: { atF: 128 }, pull: true },
+      { tag: 'ROAST', cue: 'FAT-CAP UP', hold: 'ROASTING', sub: 'Indirect at 300°F, building a salt-and-pepper bark.' },
+      { tag: 'WATCH', cue: 'WATCH THE CLIMB', hold: 'CLIMBING', sub: 'Getting close. Have the hot side ready to sear.', trigger: { atF: 105 } },
+      { tag: 'SEAR',  cue: 'SEAR ALL SIDES', hold: 'SEARING', sub: 'Pull to direct heat, ~60s a side for the crust.', trigger: { atF: 118 } },
+      { tag: 'PULL',  cue: 'PULL AT 128°F', hold: 'READY TO PULL',  sub: 'Med-rare. Rest 8 min, slice across the grain.', trigger: { atF: 128 }, pull: true },
     ],
   },
 ];

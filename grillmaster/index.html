@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=12">
   <script defer src="https://cloud.umami.is/script.js" data-website-id="be32beae-a2a9-423f-b55d-e646ec260f93"></script>
 </head>
 <body>
@@ -124,11 +124,9 @@
         </div>
       </div>
 
-      <div class="act-row">
-        <button class="btn add focusable" data-action="add-item" id="add-btn">+ ADD</button>
-        <button class="btn primary focusable" data-action="light-fire" id="light-btn">FIRE IT UP &#8594;</button>
+      <div class="stack">
+        <button class="btn primary focusable" data-action="light-fire" id="light-btn">FIRE IT UP</button>
       </div>
-      <div class="note" id="plan-note"></div>
     </section>
 
     <!-- ═════════ THE FIRE ═════════
@@ -200,12 +198,12 @@
       <!-- fuel reminder, FIRST TIME only -->
       <div class="hint hidden" id="coach-hint"></div>
 
-      <!-- rail of every other item cooking right now -->
-      <div class="rail" id="rail"></div>
+      <div class="spacer"></div>
 
       <div class="foot-row">
         <button class="btn ghost narrow focusable" data-action="ask-end">END COOK</button>
-        <button class="btn primary big focusable" data-action="advance" id="advance-btn">DID IT &#10003;</button>
+        <button class="btn ghost narrow focusable" data-action="pause" id="pause-btn">PAUSE</button>
+        <button class="btn primary big focusable" data-action="advance" id="advance-btn">DONE &#10003;</button>
       </div>
     </section>
 
@@ -334,7 +332,7 @@
     <div id="toast" class="toast hidden"></div>
   </div>
 
-  <script src="data.js?v=9"></script>
-  <script src="app.js?v=9"></script>
+  <script src="data.js?v=12"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>

@@ -13,7 +13,7 @@ Nothing asks two things at once. Each screen puts one question in 34px type, tak
 3. **HELP** — how much hand-holding. **FIRST TIME** is walked through lighting the fire right here, before anything else, and keeps a fuel reminder on the HUD; **COACH ME** gives cues and timers, no lecture; **I GOT THIS** drops every explanatory line and spends the space on bigger numbers.
 4. **FOOD** — which cut, each row carrying its rough time and heat.
 5. **TASTE** — the doneness ladder, on its own screen, with the pull and eating temp on every rung. Cuts without a ladder (chicken, salmon, anything on the pit) skip this step, and the breadcrumb drops it rather than showing a step you were never asked.
-6. **PLAN** — the numbers you're committing to: pull temp, safe minimum, estimated time. Stack another item here and they all come off together.
+6. **PLAN** — the numbers you're committing to: pull temp, safe minimum or rest, estimated time. One cut per cook.
 7. **FIRE** — the ready gate: is it hot? Then the food goes on.
 
 A breadcrumb across the top of each screen shows where you are in that chain.
@@ -52,13 +52,16 @@ No side-by-side pair to compare before you can act, and no caption underneath ex
 
 ## Three modes, two engines
 
-- **GRILL** — hot & fast, direct heat, minutes. Steaks, burgers, chicken, salmon, sausages, dogs, chops, shrimp, veg. A **flip coach**: the big card shows the one next action with the countdown ring beside it, and you can stack several items into one cook so the steak, the corn, and the shrimp all come off together (the hard part of grilling).
+- **GRILL** — hot & fast, direct heat, minutes. Steaks, burgers, chicken breast, chicken skewers, salmon, sausages & brats, dogs, chops, shrimp skewers, veg. A **flip coach**: the big card shows the one next action with the countdown ring beside it, and confirms each beat as you do it.
 - **SMOKE** — low & slow over wood, ~225°F, hours, driven by temperature. Brisket, pulled pork, beef short ribs. A **pit monitor**, not a countdown: pit temp and meat temp side by side, the stall called out when the climb flattens, wrap and pull *at temperature*, and a self-correcting ETA that recomputes from how fast the meat is actually climbing.
 - **BBQ** — indirect medium heat, ~275–325°F, a couple hours. The backyard-cookout cuts: ribs (3-2-1), spatchcock chicken, wings, tri-tip. Same pit monitor, tuned hotter, with saucing and glazing cues and a lower target temp. Some cooks advance on temperature, some on time (ribs by the clock and the bend test).
 
 ## What it does
 
-- **One thing at a time.** GRILL always shows the single next move ("FLIP THE RIBEYE") at 44px with the clock next to it, so a glance is enough. No menus to read mid-cook.
+- **One thing at a time, and it means it.** One cut per cook, one instruction on screen, one button that matters. Nothing to switch between mid-cook.
+- **The cue never tells you to do what you just did.** Every step carries two lines: the action that *starts* it and the state you're in *during* it. Press DONE on "FLIP THE RIBEYE" and the screen changes to **SECOND SIDE DOWN** — because you already flipped it, and you're now waiting. The old version left the flip instruction up for the whole side.
+- **The confirm button only shouts when it's your turn.** Mid-step the countdown is doing the work, so the button goes quiet — outlined, normal size, and honest about what pressing it means: **I DID IT ALREADY**. The moment the cue comes due it turns orange, grows and pulses: **DONE ✓**. A big filled button under a "hands off" instruction is an invitation to skip a whole beat of the cook.
+- **PAUSE stops the whole cook.** Beer run, flare-up, phone call. Countdowns, elapsed time, spritz intervals and the temperature projection all freeze together on one cook clock rather than drifting apart, the ring greys out so a frozen timer never looks live, and RESUME picks up exactly where it stopped.
 - **The alarms speak your fire.** A pit that drops reads `PIT LOW · FEED IT COALS` on a kettle, `PIT LOW · TURN THE BURNER UP` on gas, `PIT LOW · ADD A SPLIT` on an offset. Same for the spritz nudge and the heat-lever reminder.
 - **A preheat clock, per fuel.** Counts down your fuel's real warm-up time, keeps running across every screen, and chimes when it's ready wherever you are. FIRST TIME gets walked through lighting it up front; everyone else can pull the steps up on demand and is otherwise never shown them.
 - **Live temperature.** GRILL eases an *estimated* internal temp toward your target with a heat bar. SMOKE and BBQ take the real reading you dial in by hand and show meat and pit together, always next to the target and the USDA-safe floor.
@@ -96,8 +99,8 @@ No side-by-side pair to compare before you can act, and no caption underneath ex
 
 | Where | Input | Result |
 | --- | --- | --- |
-| Coach | ▲ / ▼ | Switch which item is in the big card |
-| Coach | Enter | **DID IT** — confirm the cue and advance that item |
+| Coach | ▲ / ▼ | Move between END COOK, PAUSE and DONE |
+| Coach | Enter | Press the focused button — **DONE ✓** when a cue is due, **I DID IT ALREADY** to jump ahead |
 | Coach | ▶ | Cycle the pro tip |
 | Coach | ◀ or **END COOK** | Asks first — see below |
 | End confirm | ◀ / ▶ | Move between KEEP COOKING and END IT |
@@ -107,7 +110,7 @@ No side-by-side pair to compare before you can act, and no caption underneath ex
 
 | Where | Input | Result |
 | --- | --- | --- |
-| Monitor | ◀ / ▶ | Move across the control bar (MEAT · PIT · SPRITZ · TIP · END) |
+| Monitor | ◀ / ▶ | Move across the control bar (MEAT · PIT · SPRITZ · TIP · PAUSE · END) |
 | Monitor | ▲ / ▼ | With MEAT or PIT selected, bump that temperature ±5°F |
 | Monitor | Enter | Activate the selected control (log spritz, cycle tip, confirm PULL, end) |
 | End confirm | ◀ / ▶ | Move between KEEP COOKING and END IT |
@@ -121,13 +124,13 @@ The countdown and thresholds do the work on their own; your inputs just tell the
 
 Reproducible via `?state=` URL routing (see below).
 
-> 📸 The shots below predate the one-question-per-screen flow and the larger, brighter type — rerun the capture loop to refresh them, and to add the new `mode`, `fuel`, `assist`, `doneness`, `plan`, `fire-light`, `fire`, `fire-steps`, `home-preheating`, `coach-rookie` and `coach-pro` states, which already have `?state=` keys but no PNG yet. `setup` is kept as an alias for `plan`.
+> 📸 The shots below predate the one-question-per-screen flow and the larger, brighter type — rerun the capture loop to refresh them, and to add the new `mode`, `fuel`, `assist`, `doneness`, `plan`, `fire-light`, `fire`, `fire-steps`, `home-preheating`, `coach-hold`, `coach-paused`, `coach-rookie` and `coach-pro` states, which already have `?state=` keys but no PNG yet. `setup` is kept as an alias for `plan`.
 
 | Cook list · Grill | Cook list · Smoke | Cook list · BBQ |
 | --- | --- | --- |
 | ![Grill cook list](screenshots/home.png) | ![Smoke cook list](screenshots/home-smoke.png) | ![BBQ cook list](screenshots/home-bbq.png) |
 
-| The plan | Grill coach (multi-item) | Cue alert |
+| The plan | Grill coach | Cue alert |
 | --- | --- | --- |
 | ![Plan](screenshots/setup.png) | ![Coach](screenshots/coach.png) | ![Cue](screenshots/cue.png) |
 
@@ -158,7 +161,7 @@ for s in mode fuel fuel-smoke assist home home-smoke home-bbq \
          doneness doneness-burger plan plan-smoke plan-bbq \
          fire-light fire-light-smoke fire fire-preheat fire-steps \
          fire-pro fire-smoke home-preheating \
-         coach coach-rookie coach-pro cue \
+         coach coach-hold coach-paused coach-rookie coach-pro cue \
          monitor monitor-stall monitor-alarm monitor-bbq done guide help; do
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
     --headless --disable-gpu --force-device-scale-factor=2 \

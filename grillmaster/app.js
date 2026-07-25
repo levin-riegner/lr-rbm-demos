@@ -48,10 +48,13 @@ const state = {
   preheat: { endTs: 0, dur: 0, rang: false },
   firePhase: 'go',      // 'light' up front, 'go' at the ready gate
   fireStepsOpen: false, // the walkthrough, only ever opened on purpose
+  // the cook runs on its own clock so it can be stopped mid-cook. Every
+  // deadline the engines set is stamped in clock() time, not wall time.
+  pausedMs: 0,          // total time spent paused
+  pauseStart: 0,        // when the current pause began, 0 while running
   // live cook
-  items: [],        // [{ uid, cookId, glyph, name, doneness, steps, stepIndex, endTs, done, hasTemp, targetF, scaleMin, scaleMax, tipIndex }]
+  items: [],        // exactly one: [{ uid, cookId, glyph, name, doneness, steps, stepIndex, endTs, done, hasTemp, targetF, scaleMin, scaleMax, tipIndex }]
   active: false,
-  coachFocus: 0,    // index into non-done items shown as primary
   alertUid: null,   // item currently popped in the cue alert
   endAsk: false,    // the "end this cook?" confirm is up
   seen: {},         // uid -> highest due stepIndex we've already alerted on
@@ -67,6 +70,27 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lerp  = (a, b, t) => a + (b - a) * t;
 const cookById = (id) => COOKS.find(c => c.id === id);
 function now() { return Date.now(); }
+
+/* The cook's own clock. It stops while paused, so every countdown, every
+   elapsed reading and every temperature projection freezes together
+   instead of drifting apart. Wall time (now()) is still used for things
+   outside the cook: the preheat and the alert dismiss timers. */
+function clock() { return (state.pauseStart || now()) - state.pausedMs; }
+const isPaused = () => !!state.pauseStart;
+
+function togglePause() {
+  if (state.pauseStart) {
+    state.pausedMs += now() - state.pauseStart;
+    state.pauseStart = 0;
+    toast('Timers running again');
+  } else {
+    state.pauseStart = now();
+    toast('Timers paused — nothing is counting down');
+  }
+  audio.tick();
+  saveSession();
+  if (state.screen === 'monitor') renderMonitor(); else renderCoach();
+}
 
 const modeById   = (id) => MODES.find(m => m.id === id);
 const fuelsFor   = (mode) => FUELS[mode] || [];
@@ -359,13 +383,9 @@ function renderPlan() {
   const row = $('#plan .chip-row');
   $$('.preheat-live', row).forEach(el => el.remove());
   row.insertAdjacentHTML('beforeend', preheatChip('chip'));
-  $('#light-btn').innerHTML = (isPit(c) ? 'FIRE UP THE PIT' : 'FIRE IT UP') + ' &#8594;';
-
-  // pit cooks (smoke/bbq) are one cut, coached solo, no stacking
-  $('#add-btn').classList.toggle('hidden', isPit(c));
+  $('#light-btn').textContent = isPit(c) ? 'FIRE UP THE PIT' : 'FIRE IT UP';
 
   renderPlanTarget();
-  updatePlanNote();
 }
 function goPlan() {
   if (!state.selCook) return goCooks();
@@ -424,17 +444,6 @@ function renderPlanTarget() {
   $('#tgt-time').textContent = Math.max(1, Math.round(total / 60)) + 'm';
 }
 
-function updatePlanNote() {
-  const note = $('#plan-note');
-  if (state.items.length) {
-    note.textContent = 'ALSO ON: ' + state.items.map(i => i.name).join(' · ');
-  } else if (!isPit(state.selCook)) {
-    note.textContent = 'ADD more and they all come off together.';
-  } else {
-    note.textContent = '';
-  }
-}
-
 /* very rough "how long am I in for" for a pit cook */
 function pitRoughHours(c) {
   const timed = c.phases.filter(p => p.trigger && p.trigger.afterMin != null);
@@ -464,15 +473,6 @@ function makeItem(c, d) {
     scaleMax: hasTemp ? Math.max(...temps) : 100,
     tipIndex: 0,
   };
-}
-
-function addItem() {
-  const it = makeItem(state.selCook, state.selDon);
-  state.items.push(it);
-  toast(`${it.name} added — ${state.items.length} on the grill`);
-  audio.tick();
-  // bounce back to the list to stack another
-  goCooks();
 }
 
 /* ═════════════════ THE FIRE STAGE ═════════════════
@@ -615,31 +615,22 @@ function toggleFireSteps() {
 
 function ignite() {
   clearPreheat();
-  if (isPit(state.selCook)) {
-    state.items = [makePitItem(state.selCook)];
-    startPit();
-    return;
-  }
-  // ensure the current selection is included
-  const alreadyIn = state.items.some(i =>
-    i.cookId === state.selCook.id &&
-    i.doneness === (state.selDon ? state.selDon.label : null));
-  if (!alreadyIn || state.items.length === 0) {
-    state.items.push(makeItem(state.selCook, state.selDon));
-  }
-  startCook();
+  state.pausedMs = 0; state.pauseStart = 0;
+  state.items = isPit(state.selCook)
+    ? [makePitItem(state.selCook)]
+    : [makeItem(state.selCook, state.selDon)];
+  if (isPit(state.selCook)) startPit(); else startCook();
 }
 
 /* ═════════════════ COACH, the live cook ═════════════════ */
 function startCook() {
-  const t = now();
+  const t = clock();
   state.items.forEach(it => {
     it.stepIndex = 0;
     it.endTs = t + it.steps[0].sec * 1000;
     it.done = false;
   });
   state.active = true;
-  state.coachFocus = 0;
   state.seen = {};
   saveSession();
   showScreen('coach');
@@ -647,17 +638,14 @@ function startCook() {
   renderCoach();
 }
 
-/* the item currently in the big card */
+/* one cut per cook — there is only ever one item */
 function primaryItem() {
-  const live = liveItems();
-  if (live.length === 0) return null;
-  state.coachFocus = clamp(state.coachFocus, 0, live.length - 1);
-  return live[state.coachFocus];
+  const it = state.items[0];
+  return it && !it.done ? it : null;
 }
-function liveItems() { return state.items.filter(i => !i.done); }
 
 /* remaining seconds to this item's next cue (negative = overdue) */
-function remainingSec(it) { return (it.endTs - now()) / 1000; }
+function remainingSec(it) { return (it.endTs - clock()) / 1000; }
 
 /* status of an item: 'cooking' | 'due' | 'serve' | 'done' */
 function itemStatus(it) {
@@ -693,25 +681,19 @@ function advanceItem(it) {
     toast(`${it.name}, plated ✓`);
   } else {
     it.stepIndex++;
-    it.endTs = now() + it.steps[it.stepIndex].sec * 1000;
+    it.endTs = clock() + it.steps[it.stepIndex].sec * 1000;
     audio.tick();
   }
   saveSession();
-
-  if (liveItems().length === 0) { finishCook(); return; }
-  // keep focus sane
-  state.coachFocus = clamp(state.coachFocus, 0, liveItems().length - 1);
+  if (it.done) { finishCook(); return; }
   renderCoach();
 }
 
 function finishCook() {
   state.active = false;
   clearSession();
-  const multi = state.items.length > 1;
-  $('#done-title').textContent = multi ? 'ALL PLATED' : 'PLATED';
-  $('#done-sub').textContent = multi
-    ? `${state.items.length} items off the fire, together.`
-    : 'Off the fire. Let it rest, then eat.';
+  $('#done-title').textContent = 'PLATED';
+  $('#done-sub').textContent = 'Off the fire. Let it rest, then eat.';
   audio.done();
   showScreen('done');
   focusEl($('#done .btn.primary'));
@@ -726,15 +708,13 @@ function finishCook() {
 function endDetail() {
   const pit = pitItem();
   if (pit) {
-    const elapsed = fmtElapsed(now() - pit.litAt);
+    const elapsed = fmtElapsed(clock() - pit.litAt);
     return pit.noProbe ? `${pit.name} · ${elapsed}` : `${pit.name} · ${pit.meatF}° · ${elapsed}`;
   }
   const it = primaryItem();
   if (!it) return '';
   const next = it.steps[it.stepIndex + 1];
-  const n = liveItems().length;
-  return `${it.name} · ${formatClock(Math.abs(remainingSec(it)))} to ${next ? next.tag : 'SERVE'}`
-    + (n > 1 ? ` · ${n} on the fire` : '');
+  return `${it.name} · ${formatClock(Math.abs(remainingSec(it)))} to ${next ? next.tag : 'SERVE'}`;
 }
 
 function askEndCook() {
@@ -802,15 +782,22 @@ function renderCoach() {
     ring.classList.add('due');
     ring.style.setProperty('--pct', '100%');
   } else {
+    // mid-step: cur.cue is the action that STARTED this step, so showing it
+    // here reads as an instruction you have already carried out. Show what
+    // is happening instead — you flipped it, now it is on its second side.
     $('#now-phase').textContent = cur.tag;
-    $('#now-cue').textContent = cur.cue;
+    $('#now-cue').textContent = cur.hold || cur.cue;
     $('#now-sub').textContent = cur.sub;
     $('#clock-time').textContent = formatClock(rem, false);
-    $('#clock-lbl').textContent = last ? 'TO SERVE' : ('TO ' + (next ? next.tag : 'SERVE'));
+    $('#clock-lbl').textContent = isPaused() ? 'PAUSED'
+      : last ? 'TO SERVE' : ('TO ' + (next ? next.tag : 'SERVE'));
     ring.classList.remove('due');
     const pct = clamp((1 - rem / cur.sec) * 100, 0, 100);
     ring.style.setProperty('--pct', pct.toFixed(1) + '%');
   }
+  ring.classList.toggle('paused', isPaused());
+  $('#pause-btn').textContent = isPaused() ? 'RESUME' : 'PAUSE';
+  $('#pause-btn').classList.toggle('on', isPaused());
 
   // temp block
   const tb = $('#temp-block');
@@ -829,35 +816,27 @@ function renderCoach() {
   }
 
   renderHint($('#coach-hint'));
-  renderRail();
-  $('#advance-btn').textContent = status === 'serve' ? 'SERVE ✓' : 'DID IT ✓';
+  renderAdvance(status, next);
 }
 
-function renderRail() {
-  const rail = $('#rail');
-  const primary = primaryItem();
-  rail.innerHTML = '';
-  // show every OTHER live item (and completed ones dimmed)
-  state.items.forEach((it) => {
-    if (it === primary) return;
-    const status = itemStatus(it);
-    const row = document.createElement('div');
-    row.className = 'rail-item' + (status === 'due' || status === 'serve' ? ' due' : '') + (it.done ? ' done' : '');
-    const cur = it.steps[it.stepIndex];
-    const next = it.steps[it.stepIndex + 1];
-    let timeTxt, tagTxt;
-    if (it.done) { timeTxt = 'DONE'; tagTxt = '✓'; }
-    else if (status === 'serve') { timeTxt = 'SERVE'; tagTxt = 'REST'; }
-    else if (status === 'due') { timeTxt = formatClock(remainingSec(it), true); tagTxt = next.tag; }
-    else { timeTxt = formatClock(remainingSec(it), false); tagTxt = next ? next.tag : cur.tag; }
-    row.innerHTML =
-      `<span class="rg">${it.glyph}</span>` +
-      `<span class="rname">${it.name}</span>` +
-      `<span class="rtag">${tagTxt}</span>` +
-      `<span class="rtime">${timeTxt}</span>`;
-    rail.appendChild(row);
-  });
-  rail.style.display = rail.children.length ? '' : 'none';
+/* The confirm button only earns its size when there is something to
+   confirm. Mid-step the cue says HANDS OFF and the countdown is doing
+   the work, so a big orange DID IT sitting under it reads as "press me
+   now that the food is on" — which advances the cook by a whole beat.
+   So while it is cooking the button goes quiet and says what pressing
+   it would actually mean; when the cue comes due it turns primary,
+   grows, and pulses. */
+function renderAdvance(status, next) {
+  const btn = $('#advance-btn');
+  const armed = status === 'due' || status === 'serve';
+  btn.classList.toggle('primary', armed);
+  btn.classList.toggle('big', armed);
+  btn.classList.toggle('ghost', !armed);
+  btn.classList.toggle('armed', armed);
+  btn.textContent = status === 'serve' ? 'SERVE IT ✓'
+    : armed ? 'DONE ✓'
+    : 'I DID IT ALREADY';
+  btn.title = armed ? '' : (next ? 'Jump ahead to ' + next.tag : '');
 }
 
 /* ═════════════════ PIT ENGINE — smoke + bbq monitor ═════════════════ */
@@ -880,7 +859,7 @@ function pitItem() { const i = state.items[0]; return i && i.kind === 'pit' ? i 
 
 function startPit() {
   const it = pitItem();
-  const t = now();
+  const t = clock();
   it.litAt = t; it.lastSpritzAt = t;
   it.history = [{ t, f: it.meatF }];
   it.phaseIndex = 0; it.resting = false; it.done = false; it.sel = 0;
@@ -897,7 +876,7 @@ const isPullPhase = (it) => !!(pitPhase(it) && pitPhase(it).pull);
 function triggerMet(phase, it) {
   if (!phase || !phase.trigger) return false;
   if (phase.trigger.atF != null) return it.meatF >= phase.trigger.atF;
-  if (phase.trigger.afterMin != null) return (now() - it.litAt) >= phase.trigger.afterMin * 60000;
+  if (phase.trigger.afterMin != null) return (clock() - it.litAt) >= phase.trigger.afterMin * 60000;
   return false;
 }
 
@@ -934,7 +913,7 @@ function pitEta(it) {
   const next = pitNext(it);
   if (!next) return { v: 'AT TEMP', sub: 'ready to pull' };
   if (next.trigger && next.trigger.afterMin != null) {
-    const remMs = next.trigger.afterMin * 60000 - (now() - it.litAt);
+    const remMs = next.trigger.afterMin * 60000 - (clock() - it.litAt);
     return { v: fmtDur(remMs / 60000).replace('~', ''), sub: 'to ' + next.tag };
   }
   // temp-driven
@@ -954,7 +933,7 @@ function pitTick() {
   if (!it) return;
 
   if (it.resting) {
-    if (now() >= it.restEndTs) { finishCook(); return; }
+    if (clock() >= it.restEndTs) { finishCook(); return; }
     renderMonitor();
     return;
   }
@@ -974,7 +953,7 @@ function pitTick() {
 
   // spritz nudge (chime once when it first comes due)
   if (it.spritzMs > 0) {
-    const due = now() - it.lastSpritzAt >= it.spritzMs;
+    const due = clock() - it.lastSpritzAt >= it.spritzMs;
     if (due && !it.spritzDue) { audio.tick(); }
     it.spritzDue = due;
   }
@@ -1001,14 +980,14 @@ function pitFields(it) {
   f.push('pit');
   if (isPullPhase(it) && !it.resting) f.push('pull');
   if (it.spritzMs > 0 && !it.resting) f.push('spritz');
-  f.push('tip'); f.push('end');
+  f.push('tip'); f.push('pause'); f.push('end');
   return f;
 }
 
 function bumpMeat(d) {
   const it = pitItem(); if (!it || it.noProbe) return;
   it.meatF = clamp(it.meatF + d, 32, 250);
-  it.history.push({ t: now(), f: it.meatF });
+  it.history.push({ t: clock(), f: it.meatF });
   audio.tick();
   renderMonitor();
 }
@@ -1020,14 +999,14 @@ function bumpPit(d) {
 }
 function resetSpritz() {
   const it = pitItem(); if (!it) return;
-  it.lastSpritzAt = now(); it.spritzDue = false;
+  it.lastSpritzAt = clock(); it.spritzDue = false;
   toast('Spritz logged'); audio.tick();
   renderMonitor();
 }
 function confirmPull() {
   const it = pitItem(); if (!it) return;
   it.resting = true;
-  it.restEndTs = now() + it.restSec * 1000;
+  it.restEndTs = clock() + it.restSec * 1000;
   audio.done();
   toast(`${it.name} pulled, resting`);
   saveSession();
@@ -1056,7 +1035,7 @@ function renderMonitor() {
     $('#mon-cue').textContent = 'RESTING';
     $('#mon-sub').textContent = 'Keep it wrapped and let it relax.';
   } else {
-    $('#mon-cue').textContent = phase.cue;
+    $('#mon-cue').textContent = phase.hold || phase.cue;
     $('#mon-sub').textContent = phase.sub;
   }
 
@@ -1091,14 +1070,18 @@ function renderMonitor() {
   // eta
   const etaEl = $('.eta');
   if (it.resting) {
-    const rem = Math.max(0, (it.restEndTs - now()) / 1000);
+    const rem = Math.max(0, (it.restEndTs - clock()) / 1000);
     $('#mon-eta').textContent = formatClock(rem);
     $('#mon-eta-sub').textContent = 'until it’s ready to serve';
+    etaEl.classList.remove('stall');
+  } else if (isPaused()) {
+    $('#mon-eta').textContent = 'PAUSED';
+    $('#mon-eta-sub').textContent = 'nothing is counting · ' + fmtElapsed(clock() - it.litAt);
     etaEl.classList.remove('stall');
   } else {
     const e = pitEta(it);
     $('#mon-eta').textContent = e.v;
-    $('#mon-eta-sub').textContent = e.sub + ' · ' + fmtElapsed(now() - it.litAt);
+    $('#mon-eta-sub').textContent = e.sub + ' · ' + fmtElapsed(clock() - it.litAt);
     etaEl.classList.toggle('stall', !!e.stall);
   }
 
@@ -1106,7 +1089,8 @@ function renderMonitor() {
 
   // control bar
   const bar = $('#mon-bar');
-  const labels = { meat: 'MEAT', pit: 'PIT', pull: 'PULL ✓', spritz: 'SPRITZ ✓', tip: 'TIP', end: 'END' };
+  const labels = { meat: 'MEAT', pit: 'PIT', pull: 'PULL ✓', spritz: 'SPRITZ ✓',
+                   tip: 'TIP', pause: isPaused() ? 'RESUME' : 'PAUSE', end: 'END' };
   bar.innerHTML = '';
   fields.forEach((f, i) => {
     const b = document.createElement('button');
@@ -1136,6 +1120,7 @@ function activatePitField(f) {
     case 'pull':   confirmPull(); break;
     case 'spritz': resetSpritz(); break;
     case 'tip':    pitTipCycle(); break;
+    case 'pause':  togglePause(); break;
     case 'end':    askEndCook(); break;
     // meat / pit are adjusted with ▲▼, Enter is a no-op on them
   }
@@ -1171,11 +1156,6 @@ let alertTimer = null;
 const alertHold = () => (state.assist ? state.assist.alertMs : 3400);
 
 function popCueAlert(it, status) {
-  // pull the due item into the big card so glancing up shows the right thing
-  const live = liveItems();
-  const idx = live.indexOf(it);
-  if (idx >= 0) state.coachFocus = idx;
-
   const next = it.steps[it.stepIndex + 1];
   $('#cue-eyebrow').textContent = it.name;
   $('#cue-big').textContent = status === 'serve' ? 'SERVE' : next.tag;
@@ -1269,14 +1249,6 @@ function modeKey(key) {
   }
 }
 
-/* ─────────── coach-specific D-pad (switch items) ─────────── */
-function coachCycle(delta) {
-  const live = liveItems();
-  if (live.length <= 1) return;
-  state.coachFocus = (state.coachFocus + delta + live.length) % live.length;
-  renderCoach();
-  audio.tick();
-}
 function coachTip() {
   const it = primaryItem();
   if (!it) return;
@@ -1337,13 +1309,9 @@ function bindEvents() {
 
     switch (e.key) {
       case 'ArrowUp':
-        e.preventDefault();
-        state.screen === 'coach' ? coachCycle(-1) : moveFocus(-1);
-        return;
+        e.preventDefault(); moveFocus(-1); return;
       case 'ArrowDown':
-        e.preventDefault();
-        state.screen === 'coach' ? coachCycle(1) : moveFocus(1);
-        return;
+        e.preventDefault(); moveFocus(1); return;
       case 'ArrowLeft':
         e.preventDefault();
         handleBack();
@@ -1355,7 +1323,6 @@ function bindEvents() {
       case 'Enter':
       case ' ': {
         e.preventDefault();
-        if (state.screen === 'coach') { advanceItem(primaryItem()); return; }
         const el = focuslist()[state.focusIdx];
         if (el) el.click();
         return;
@@ -1398,7 +1365,6 @@ function handleAction(a, el) {
     case 'pick-assist':   pickAssist(el.dataset.key); break;
     case 'pick-cook':     openCook(el.dataset.id); break;
     case 'pick-doneness': pickDoneness(el.dataset.key); break;
-    case 'add-item':      addItem(); break;
     case 'light-fire':    lightFire(); break;
     case 'preheat':       togglePreheat(); break;
     case 'toggle-steps':  toggleFireSteps(); break;
@@ -1413,6 +1379,7 @@ function handleAction(a, el) {
       activatePitField(el.dataset.field);
       break;
     }
+    case 'pause':         togglePause(); break;
     case 'ask-end':       askEndCook(); break;
     case 'end-keep':      closeEndAsk(); break;
     case 'end-yes':       quitCook(); break;
@@ -1437,8 +1404,8 @@ function saveSession() {
       mode: state.mode,
       fuelId: state.fuel ? state.fuel.id : null,
       assistId: state.assist ? state.assist.id : null,
-      active: state.active,
-      items: state.items, coachFocus: state.coachFocus, uidSeq,
+      active: state.active, items: state.items, uidSeq,
+      pausedMs: state.pausedMs, pauseStart: state.pauseStart,
     }));
   } catch {}
 }
@@ -1455,7 +1422,8 @@ function restoreSession() {
     state.assist = assistById(s.assistId);
     ensureContext();
     state.items = s.items;
-    state.coachFocus = s.coachFocus || 0;
+    state.pausedMs = s.pausedMs || 0;
+    state.pauseStart = s.pauseStart || 0;
     state.active = true;
     uidSeq = s.uidSeq || (Math.max(...s.items.map(i => i.uid)) + 1);
     if (pitItem()) {
@@ -1464,8 +1432,8 @@ function restoreSession() {
       renderMonitor();
       return true;
     }
-    // if everything already finished, don't resume
-    if (liveItems().length === 0) { clearSession(); return false; }
+    // already finished? don't resume it
+    if (!primaryItem()) { clearSession(); return false; }
     showScreen('coach');
     focusEl($('#advance-btn'));
     renderCoach();
@@ -1481,7 +1449,7 @@ function seedItem(cookId, donKey, stepIndex, remSec) {
   const d = donKey && c.doneness ? c.doneness.find(x => x.key === donKey) : null;
   const it = makeItem(c, d);
   it.stepIndex = stepIndex;
-  it.endTs = now() + remSec * 1000;
+  it.endTs = clock() + remSec * 1000;
   return it;
 }
 function applyUrlState() {
@@ -1619,40 +1587,52 @@ function applyUrlState() {
 
     /* ── the grill coach ── */
     case 'coach': {
-      // multi-item grill mid-cook: ribeye due to FLIP, veg cooking, shrimp cooking
+      // a cue has come due: first side is seared, the flip is overdue
       ensureContext('grill');
-      state.items = [
-        seedItem('ribeye', 'mr', 0, -8),   // first side done, FLIP is due
-        seedItem('veg', null, 1, 92),
-        seedItem('shrimp', null, 0, 41),
-      ];
-      state.active = true; state.coachFocus = 0; state.seen = {};
-      // mark the due one as already alerted so no overlay in the shot
+      state.items = [seedItem('ribeye', 'mr', 0, -8)];
+      state.active = true; state.seen = {};
+      // mark it already alerted so no overlay lands in the shot
       state.seen[state.items[0].uid] = 'due:0';
       showScreen('coach'); focusEl($('#advance-btn')); renderCoach();
       return true;
     }
+    case 'coach-hold': {
+      // mid-step, nothing due — the confirm button stands down
+      ensureContext('grill');
+      state.items = [seedItem('ribeye', 'mr', 1, 64)];
+      state.active = true; state.seen = {};
+      showScreen('coach'); focusEl($('#advance-btn')); renderCoach();
+      return true;
+    }
+    case 'coach-paused': {
+      ensureContext('grill');
+      state.items = [seedItem('ribeye', 'mr', 1, 64)];
+      state.active = true; state.seen = {};
+      state.pauseStart = now();
+      showScreen('coach'); focusEl($('#pause-btn')); renderCoach();
+      return true;
+    }
     case 'coach-rookie': {
-      // same cook, but with the FIRST TIME fuel reminder showing
+      // with the FIRST TIME fuel reminder showing
       ensureContext('grill');
       state.assist = assistById('rookie'); applyAssist();
-      state.items = [seedItem('ribeye', 'mr', 0, 64), seedItem('veg', null, 1, 121)];
-      state.active = true; state.coachFocus = 0; state.seen = {};
+      state.items = [seedItem('ribeye', 'mr', 0, 64)];
+      state.active = true; state.seen = {};
       showScreen('coach'); focusEl($('#advance-btn')); renderCoach();
       return true;
     }
     case 'coach-pro': {
       ensureContext('grill');
       state.assist = assistById('pro'); applyAssist();
-      state.items = [seedItem('ribeye', 'mr', 1, 47), seedItem('shrimp', null, 0, 88)];
-      state.active = true; state.coachFocus = 0; state.seen = {};
+      state.items = [seedItem('ribeye', 'mr', 1, 47)];
+      state.active = true; state.seen = {};
       showScreen('coach'); focusEl($('#advance-btn')); renderCoach();
       return true;
     }
     case 'cue': {
       ensureContext('grill');
-      state.items = [seedItem('ribeye', 'mr', 0, -3), seedItem('veg', null, 1, 70)];
-      state.active = true; state.coachFocus = 0; state.seen = {};
+      state.items = [seedItem('ribeye', 'mr', 0, -3)];
+      state.active = true; state.seen = {};
       showScreen('coach'); renderCoach();
       popCueAlert(state.items[0], 'due');
       // mark seen + kill the auto-dismiss so the overlay holds for the capture
@@ -1664,7 +1644,7 @@ function applyUrlState() {
     /* ── the rest ── */
     case 'done':
       ensureContext('grill');
-      state.items = [makeItem(cookById('ribeye'), STEAK_DONENESS[1]), makeItem(cookById('veg'), null)];
+      state.items = [makeItem(cookById('ribeye'), STEAK_DONENESS[1])];
       finishCook(); return true;
     case 'guide':
       ensureContext('grill'); state.returnTo = 'mode'; renderGuide(); showScreen('guide'); return true;
