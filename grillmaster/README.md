@@ -34,7 +34,8 @@ Then, and only then, the cuts.
 
 ## Built for the lens
 
-- **600×600, full width.** Content spans the whole 548px column instead of a narrow centered card. Choices are wide rows, gauges sit side by side, and the coach puts the cue on the left with the clock on the right — big type reads better across than stacked down, so there is far less to cram into 600px of height.
+- **600×600, full width.** Content spans the whole 548px column instead of a narrow centered card. Choices are wide rows, gauges sit side by side, and the coach puts the cue beside the clock — big type reads better across than stacked down, so there is far less to cram into 600px of height.
+- **One centered axis.** Every title, cue, row, gauge and footer is centered on it. Back arrows and the ▲▼ bump affordance are absolutely positioned so they never pull a title off center. Mixed alignment reads as noise on a display you only ever glance at.
 - **Bright, not washed.** The waveguide is additive and only ever subtracts contrast, so labels, rules and glyphs all sit above web-normal luminance. There is no ambient background gradient anywhere — a wash bleaches against the real world, so the only decoration is a single hot rule and the glow on the type itself.
 
 ## Controls

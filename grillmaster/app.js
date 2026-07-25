@@ -143,20 +143,19 @@ function paintStepRails() {
   });
 }
 
-/* one wide row per choice, shared by all three question screens */
+/* one wide, centred row per choice, shared by all three question screens */
 function pickRow({ action, key, glyph, name, tag, sub, selected }) {
   const b = document.createElement('button');
   b.className = 'pick focusable' + (selected ? ' sel' : '');
   b.dataset.action = action;
   b.dataset.key = key;
   b.innerHTML =
-    `<span class="pick-g">${glyph}</span>` +
-    `<span class="pick-body">` +
+    `<span class="pick-head">` +
+      `<span class="pick-g">${glyph}</span>` +
       `<span class="pick-k">${name}</span>` +
-      (tag ? `<span class="pick-t">${tag}</span>` : '') +
-      (sub ? `<span class="pick-s">${sub}</span>` : '') +
     `</span>` +
-    `<span class="pick-go">›</span>`;
+    (tag ? `<span class="pick-t">${tag}</span>` : '') +
+    (sub ? `<span class="pick-s">${sub}</span>` : '');
   return b;
 }
 
@@ -245,8 +244,7 @@ function renderCooks() {
   const m = modeById(state.mode);
   const list = COOKS.filter(c => c.mode === state.mode);
 
-  $('#cooks-title').textContent = m.q;
-  $('#cooks-count').textContent = list.length + ' ' + m.unit;
+  $('#cooks-title').textContent = `${m.q} · ${list.length} ${m.unit}`;
   $('#ctx-strip').innerHTML =
     `<span class="ctx hot">${m.glyph} ${m.name}</span>` +
     `<span class="ctx">${state.fuel.glyph} ${state.fuel.name}</span>` +
@@ -259,15 +257,14 @@ function renderCooks() {
     row.className = 'cook-row focusable';
     row.dataset.action = 'pick-cook';
     row.dataset.id = c.id;
+    const heat = isPit(c) ? 'PIT ' + heatLabel(c) : 'GRATE ' + heatLabel(c);
     row.innerHTML =
-      `<span class="cg">${c.glyph}</span>` +
-      `<span class="cbody">` +
+      `<span class="cook-head">` +
+        `<span class="cg">${c.glyph}</span>` +
         `<span class="cname">${c.name.toUpperCase()}</span>` +
-        `<span class="clevel">${c.level} · ${c.cut.toUpperCase()}</span>` +
       `</span>` +
-      `<span class="cstat">` +
-        `<span class="cs-v">${cookQuickTime(c)}</span>` +
-        `<span class="cs-k">${heatLabel(c)}</span>` +
+      `<span class="cmeta">` +
+        `<span class="cs-v">${cookQuickTime(c)}</span> · ${heat} · ${c.level}` +
       `</span>`;
     el.appendChild(row);
   });
