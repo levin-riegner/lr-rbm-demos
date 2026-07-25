@@ -12,7 +12,8 @@ A Tamagotchi-inspired virtual companion for Meta Display glasses that lives at t
 - **Six actions.** FEED, PLAY, REST, WASH, HEAL, and MENU. Each action refills the corresponding stat. MENU opens a pause overlay with RESUME, RENAME COMPANION, and NEW COMPANION.
 - **Five evolution stages.** EGG → SPRITE → DRONE → ORACLE → ARCHON. The companion evolves automatically as it ages — provided it stays alive. Higher stages decay faster.
 - **Random events.** Poop appears unpredictably (hygiene penalty until washed), mood shifts, and illness occur — keeping you on your toes.
-- **Naming & egg selection.** On first launch (or after adopting a new companion) you choose a name — type it directly, or roll a random generated one — then pick an egg colour: Amethyst, Jade, or Ember.
+- **Naming & egg selection.** On first launch (or after adopting a new companion) you choose a name — type it directly, or roll a random name from a curated list of luminous-entity names (LUMIEL, VELOX, ZEPHYRA…) — then pick an egg colour: Amethyst, Jade, or Ember.
+- **Background-aware decay.** Stats drain 10× slower when the browser tab is hidden, so the companion stays alive across longer play sessions without demanding constant attention.
 - **Generation tracking.** A GEN counter in the footer increments each time a companion dies and a new one is adopted, preserving your lineage across generations.
 - **Offline catch-up.** Stats update on re-open based on elapsed real time, capped at 2 hours to prevent instant death from being away too long.
 - **Persistent state.** Everything is saved to `localStorage` and restored on the next visit.
@@ -35,7 +36,7 @@ A Tamagotchi-inspired virtual companion for Meta Display glasses that lives at t
 | Menu | RENAME COMPANION | Edit companion name |
 | Menu | NEW COMPANION | Abandon current, start adoption flow |
 | Naming screen | Type | Edit name directly (max 14 chars, auto-uppercase) |
-| Naming screen | RANDOM | Roll a random generated name |
+| Naming screen | RANDOM | Roll a random luminous-entity name from the built-in pool |
 | Dead screen | ADOPT NEW COMPANION | Begin new companion flow |
 
 ---

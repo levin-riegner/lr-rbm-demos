@@ -16,9 +16,15 @@
   const WALK_STEPS = 4;
   const NAMING_STEP = 2;
 
-  // Curated retro-future name pool
-  const NAME_PREFIX = ['ECHO','NOVA','LUMEN','MOTE','AURA','NIMBUS','PIXIE','ZEPHYR','KESTREL','SOLAR','PULSE','EMBER','COMET','VESPER','HALO','ORACLE','CINDER','ATLAS','WREN','CIRRUS','TENDR','GLIMMER','SAGE','ONYX','RUNE'];
-  const NAME_SUFFIX = ['7','3','01','9','Q','V','ZX','II','IV','X','42','77','-A','-K','-M'];
+  // Companion name pool — each name evokes a light phenomenon or luminous entity,
+  // tuned to feel native to the GLIMMER universe. No numbers; every name stands alone.
+  const COMPANION_NAMES = [
+    'LUMIS','VELOX','PYREL','SOLIN','NOVAX','AELIR','FLUXIT',
+    'CRESIS','GLINTIS','SHIMARA','VEYRA','ZINDAR','VELMIS','SOLETH',
+    'ZENDRIX','KIREN','NEXAR','PYRIEL','AELITH','LUMIEL','SOLVAR',
+    'VELDRIS','SOLNIX','FLARIX','HAELIX','NOXIEL','ZEPHYRA','ASTRIEL',
+    'LUMIREN','VEXIRA','SOLMIS','PYROVA','NEXIEL','DRIFTEX','MYRIEL','CRESTIX',
+  ];
 
   const $ = (id) => document.getElementById(id);
 
@@ -46,8 +52,10 @@
   let menuOpen = false;
   let pendingName = state.name;
   let pendingEgg = null;
-  let recognizer = null;
-  let listening = false;
+
+  // Decay runs 10× slower when the tab is hidden so the pet survives longer play sessions
+  let appVisible = !document.hidden;
+  document.addEventListener('visibilitychange', () => { appVisible = !document.hidden; });
 
   function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
   function load() { try { return JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { return null; } }
@@ -238,7 +246,6 @@
     if (action === 'back') return walkBack();
     if (action === 'start') return finishWalk();
     if (action === 'dice') return rollName();
-    if (action === 'mic')  return startListening();
     if (action && action.startsWith('egg-')) return pickEgg(action.slice(4));
   }
   function pickEgg(variant) {
@@ -260,12 +267,12 @@
     if (walkStep > 0) {
       walkStep--;
       $('walk').dataset.step = String(walkStep);
-      stopListening();
+      // Clear any per-screen .hidden overrides so the CSS data-step rule can show the right screen
+      document.querySelectorAll('.walk-screen').forEach(s => s.classList.remove('hidden'));
       focusFirstInWalk();
     }
   }
   function finishWalk() {
-    stopListening();
     state.name = (pendingName || 'ORB-7').toUpperCase().slice(0, 14);
     if (pendingEgg) state.eggVariant = pendingEgg;
     refreshPalette();
@@ -394,58 +401,9 @@
     if (el) el.textContent = msg;
   }
   function rollName() {
-    const p = NAME_PREFIX[Math.floor(Math.random() * NAME_PREFIX.length)];
-    const s = NAME_SUFFIX[Math.floor(Math.random() * NAME_SUFFIX.length)];
-    pendingName = p + (s.startsWith('-') ? s : '-' + s);
+    pendingName = COMPANION_NAMES[Math.floor(Math.random() * COMPANION_NAMES.length)];
     syncNamingScreen();
     setNameStatus('suggestion · keep or roll again');
-  }
-  function startListening() {
-    if (listening) return stopListening();
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) {
-      setNameStatus('voice unavailable · use random');
-      return;
-    }
-    try {
-      recognizer = new SR();
-      recognizer.lang = 'en-US';
-      recognizer.maxAlternatives = 1;
-      recognizer.interimResults = false;
-      recognizer.continuous = false;
-      recognizer.onstart = () => {
-        listening = true;
-        $('nameDisplay').classList.add('listening');
-        setNameStatus('listening · speak a name');
-      };
-      recognizer.onresult = (e) => {
-        const text = (e.results[0][0].transcript || '').trim();
-        const cleaned = text.replace(/[^A-Za-z0-9 \-]/g, '').toUpperCase().slice(0, 14);
-        if (cleaned) {
-          pendingName = cleaned;
-          syncNamingScreen();
-          setNameStatus('captured · keep or try again');
-        } else {
-          setNameStatus('didn\'t catch that');
-        }
-      };
-      recognizer.onerror = (e) => {
-        setNameStatus(e.error === 'not-allowed' ? 'mic blocked' : 'voice error');
-      };
-      recognizer.onend = () => {
-        listening = false;
-        $('nameDisplay').classList.remove('listening');
-        recognizer = null;
-      };
-      recognizer.start();
-    } catch (err) {
-      setNameStatus('voice unavailable');
-    }
-  }
-  function stopListening() {
-    if (recognizer && listening) try { recognizer.stop(); } catch (e) {}
-    listening = false;
-    $('nameDisplay')?.classList.remove('listening');
   }
 
   // ───────── Game start ─────────
@@ -637,10 +595,6 @@
       walkStep = NAMING_STEP;
       $('walk').dataset.step = String(NAMING_STEP);
       $('walk').classList.remove('hidden');
-      // Show naming and egg screens (hide welcome/about)
-      document.querySelectorAll('.walk-screen').forEach((s, i) => {
-        s.classList.toggle('hidden', i < NAMING_STEP);
-      });
       bindWalkButtons();
       startWalkAnimations();
       focusFirstInWalk();
@@ -676,45 +630,48 @@
       if (s > 0) flashEvolution();
     }
 
+    // 10× slower decay when tab is hidden so sessions survive in the background
+    const vis = appVisible ? 1 : 0.1;
+
     if (state.stageIdx === 0) {
-      state.hunger = clamp(state.hunger - 0.2);
+      state.hunger = clamp(state.hunger - 0.2 * vis);
       return;
     }
 
     const decay = 0.6 + state.stageIdx * 0.15;
 
     if (state.sleeping) {
-      state.energy = clamp(state.energy + 4);
-      state.hunger = clamp(state.hunger - decay * 0.3);
+      state.energy = clamp(state.energy + 4 * vis);
+      state.hunger = clamp(state.hunger - decay * 0.3 * vis);
       if (state.energy >= 100) {
         state.sleeping = false;
         flashEmote('☀');
         say('REST CYCLE COMPLETE');
       }
     } else {
-      state.hunger = clamp(state.hunger - decay);
-      state.happy = clamp(state.happy - decay * 0.7);
-      state.energy = clamp(state.energy - decay * 0.5);
-      state.hygiene = clamp(state.hygiene - decay * 0.6);
+      state.hunger = clamp(state.hunger - decay * vis);
+      state.happy = clamp(state.happy - decay * 0.7 * vis);
+      state.energy = clamp(state.energy - decay * 0.5 * vis);
+      state.hygiene = clamp(state.hygiene - decay * 0.6 * vis);
     }
 
-    if (!state.pooped && state.stageIdx > 0 && Math.random() < 0.06) {
+    if (!state.pooped && state.stageIdx > 0 && Math.random() < 0.06 * vis) {
       state.pooped = true;
       state.hygiene = clamp(state.hygiene - 18);
       say('WASTE DETECTED');
     }
 
     const neglect = (100 - state.hunger) + (100 - state.hygiene) + (100 - state.happy);
-    if (!state.sick && neglect > 200 && Math.random() < 0.12) {
+    if (!state.sick && neglect > 200 && Math.random() < 0.12 * vis) {
       state.sick = true;
       flashEmote('!');
       say('ANOMALY · NEEDS HEAL');
     }
 
-    if (state.sick) state.health = clamp(state.health - 1.2);
-    if (state.hunger <= 0 || state.hygiene <= 0) state.health = clamp(state.health - 0.6);
+    if (state.sick) state.health = clamp(state.health - 1.2 * vis);
+    if (state.hunger <= 0 || state.hygiene <= 0) state.health = clamp(state.health - 0.6 * vis);
     if (!state.sick && state.health < 100 && state.hunger > 50 && state.hygiene > 50)
-      state.health = clamp(state.health + 0.2);
+      state.health = clamp(state.health + 0.2 * vis);
 
     if (state.health <= 0) {
       state.dead = true;
