@@ -32,6 +32,7 @@
    ───────────────────────────────────────────────────────────── */
 
 const SESSION_KEY = 'grillmaster.session.v4';
+const SAFETY_KEY  = 'grillmaster.safety.v1';
 
 const state = {
   screen: 'mode',
@@ -58,7 +59,8 @@ const state = {
   alertUid: null,   // item currently popped in the cue alert
   endAsk: false,    // the "end this cook?" confirm is up
   seen: {},         // uid -> highest due stepIndex we've already alerted on
-  returnTo: 'mode', // where guide/help should go back to
+  returnTo: 'mode', // where guide/help/safety should go back to
+  safetyFirst: false,
 };
 
 let uidSeq = 1;
@@ -155,6 +157,191 @@ function toast(msg) {
   el.textContent = msg; el.classList.remove('hidden'); el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.classList.remove('show'); }, 1900);
+}
+
+/* ═════════════════ SPLASH ═════════════════
+   Canvas, cold boot only. A bed of coals breathing at the bottom, sparks
+   lifting off it, and GRILLMASTER heating through the colours steel
+   actually goes through — dull brown, coal red, ember orange, white.
+
+   Everything is drawn on cleared (pure black) canvas, which is exactly
+   what the waveguide wants: the black is transparent and only the hot
+   pixels reach your eye. No filled background, ever. */
+function heatColor(p) {
+  const stops = [[0, 74, 36, 16], [0.40, 255, 75, 38], [0.72, 255, 180, 87], [1, 255, 251, 244]];
+  for (let i = 1; i < stops.length; i++) {
+    if (p <= stops[i][0]) {
+      const a = stops[i - 1], b = stops[i], t = (p - a[0]) / (b[0] - a[0]);
+      return `rgb(${lerp(a[1], b[1], t) | 0},${lerp(a[2], b[2], t) | 0},${lerp(a[3], b[3], t) | 0})`;
+    }
+  }
+  return 'rgb(255,251,244)';
+}
+
+const splash = {
+  DUR: 2600, raf: 0, t0: 0, ctx: null, coals: [], sparks: [], ended: true, onDone: null,
+
+  prepare() {
+    const cv = $('#splash-canvas');
+    if (!cv || !cv.getContext) return false;
+    this.ctx = cv.getContext('2d');
+    this.coals = [];
+    for (let i = 0; i < 44; i++) {
+      this.coals.push({
+        x: 40 + Math.random() * 520, y: 452 + Math.random() * 58,
+        r: 2 + Math.random() * 4.5, ph: Math.random() * 6.283, sp: 0.7 + Math.random() * 1.1,
+      });
+    }
+    this.sparks = [];
+    return true;
+  },
+
+  start(onDone) {
+    this.onDone = onDone;
+    if (!this.prepare()) { this.finish(); return; }
+    this.ended = false;
+    let reduced = false;
+    try { reduced = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch {}
+    if (reduced) {
+      // one settled frame, then move on — no motion for anyone who asked for none
+      for (let i = 0; i < 70; i++) this.step(1.2);
+      this.draw(1.9);
+      setTimeout(() => this.finish(), 900);
+      return;
+    }
+    this.t0 = performance.now();
+    this.raf = requestAnimationFrame((t) => this.frame(t));
+  },
+
+  frame(t) {
+    if (this.ended) return;
+    const el = (t - this.t0) / 1000;
+    this.step(el);
+    this.draw(el);
+    if (el * 1000 >= this.DUR) { this.finish(); return; }
+    this.raf = requestAnimationFrame((n) => this.frame(n));
+  },
+
+  step(el) {
+    if (el < 2.1 && this.sparks.length < 140) {
+      for (let i = 0; i < 2; i++) {
+        const c = this.coals[(Math.random() * this.coals.length) | 0];
+        this.sparks.push({
+          x: c.x, y: c.y, vx: (Math.random() - 0.5) * 26, vy: -(60 + Math.random() * 130),
+          age: 0, ttl: 0.9 + Math.random() * 1.3, r: 0.7 + Math.random() * 1.7,
+        });
+      }
+    }
+    const dt = 1 / 60;
+    for (const s of this.sparks) {
+      s.age += dt; s.x += s.vx * dt; s.y += s.vy * dt;
+      s.vy += 14 * dt; s.vx *= 0.995;
+    }
+    this.sparks = this.sparks.filter(s => s.age < s.ttl && s.y > -20);
+  },
+
+  draw(el) {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    ctx.clearRect(0, 0, 600, 600);
+
+    for (const c of this.coals) {
+      const g = 0.35 + 0.65 * Math.pow(Math.sin(el * 1.9 * c.sp + c.ph), 2);
+      ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, 6.2832);
+      ctx.shadowColor = 'rgba(255,110,32,.95)'; ctx.shadowBlur = 16 * g;
+      ctx.fillStyle = `rgba(255,${(80 + g * 90) | 0},${(18 + g * 40) | 0},${(0.30 + g * 0.55).toFixed(3)})`;
+      ctx.fill();
+    }
+    for (const s of this.sparks) {
+      const life = 1 - s.age / s.ttl;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r * (0.4 + life * 0.6), 0, 6.2832);
+      ctx.shadowColor = 'rgba(255,150,60,.9)'; ctx.shadowBlur = 8 * life;
+      ctx.fillStyle = `rgba(255,${(150 + life * 90) | 0},${(70 + life * 110) | 0},${(life * 0.85).toFixed(3)})`;
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    const word = 'GRILLMASTER', track = 2;
+    ctx.font = '700 56px "Space Grotesk", system-ui, sans-serif';
+    ctx.textBaseline = 'alphabetic';
+    const w = [...word].map(ch => ctx.measureText(ch).width);
+    const total = w.reduce((a, b) => a + b, 0) + track * (word.length - 1);
+    let x = (600 - total) / 2;
+    const prog = clamp(el / 1.45, 0, 1);
+    [...word].forEach((ch, i) => {
+      const p = clamp((prog - (i / word.length) * 0.5) / 0.45, 0, 1);
+      ctx.fillStyle = heatColor(p);
+      ctx.shadowColor = 'rgba(255,125,46,.9)'; ctx.shadowBlur = 26 * p;
+      ctx.fillText(ch, x, 300);
+      x += w[i] + track;
+    });
+    ctx.shadowBlur = 0;
+
+    const late = clamp((el - 1.35) / 0.55, 0, 1);
+    if (late > 0) {
+      ctx.textAlign = 'center';
+      ctx.font = '600 15px "Space Grotesk", system-ui, sans-serif';
+      ctx.fillStyle = `rgba(221,210,193,${(late * 0.95).toFixed(2)})`;
+      ctx.fillText('HOT & FAST TO LOW & SLOW · HANDS FREE', 300, 338);
+      ctx.textAlign = 'left';
+      const half = 152 * late;
+      const grad = ctx.createLinearGradient(300 - half, 0, 300 + half, 0);
+      grad.addColorStop(0, 'rgba(255,75,38,0)');
+      grad.addColorStop(0.5, `rgba(255,180,87,${late.toFixed(2)})`);
+      grad.addColorStop(1, 'rgba(255,75,38,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(300 - half, 358, half * 2, 2);
+    }
+  },
+
+  finish() {
+    if (this.ended) return;
+    this.ended = true;
+    cancelAnimationFrame(this.raf);
+    const done = this.onDone; this.onDone = null;
+    if (done) done();
+  },
+};
+
+/* draw with the real wordmark if the webfont turns up quickly, but never
+   hold the app hostage to a font request that is failing */
+function withFont(fn) {
+  let ran = false;
+  const go = () => { if (!ran) { ran = true; fn(); } };
+  setTimeout(go, 700);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(go, go);
+  else go();
+}
+
+/* ═════════════════ SAFETY ═════════════════ */
+const safetySeen = () => { try { return !!localStorage.getItem(SAFETY_KEY); } catch { return true; } };
+const markSafetySeen = () => { try { localStorage.setItem(SAFETY_KEY, '1'); } catch {} };
+
+function renderSafety() {
+  const list = $('#safety-list');
+  list.innerHTML = '';
+  SAFETY.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'sf-row';
+    row.innerHTML =
+      `<span class="sf-ico">${s.icon}</span>` +
+      `<span class="sf-body">` +
+        `<span class="sf-lead">${s.lead}</span>` +
+        `<span class="sf-sub">${s.sub}</span>` +
+      `</span>`;
+    list.appendChild(row);
+  });
+}
+function goSafety(firstRun) {
+  state.safetyFirst = !!firstRun;
+  $('#safety-back').classList.toggle('hidden', !!firstRun);
+  $('#safety-ok').textContent = firstRun ? 'GOT IT' : 'BACK';
+  showScreen('safety');
+  focusEl($('#safety-ok'));
+}
+function safetyOk() {
+  if (state.safetyFirst) { markSafetySeen(); goMode(); }
+  else goReturn();
 }
 
 /* ─────────── screen routing ─────────── */
@@ -1249,6 +1436,21 @@ function modeKey(key) {
   }
 }
 
+/* Put the current step's countdown back to the top. For when you got
+   pulled away, or the cue fired before you were ready to act on it — the
+   beat itself is right, the clock just needs another run at it. */
+function resetTimer() {
+  const it = primaryItem();
+  if (!it) return;
+  const cur = it.steps[it.stepIndex];
+  it.endTs = clock() + cur.sec * 1000;
+  delete state.seen[it.uid];      // let this beat's cue fire again
+  audio.tick();
+  saveSession();
+  toast(`Timer back to ${formatClock(cur.sec)} on ${cur.tag}`);
+  renderCoach();
+}
+
 function coachTip() {
   const it = primaryItem();
   if (!it) return;
@@ -1266,6 +1468,7 @@ function bindEvents() {
 
   // click / tap (mouse for dev, tap mirrors on device where supported)
   document.addEventListener('click', (e) => {
+    if (state.screen === 'splash') { splash.finish(); return; }
     const t = e.target.closest('[data-action]');
     if (!t) return;
     handleAction(t.dataset.action, t);
@@ -1276,6 +1479,9 @@ function bindEvents() {
   });
 
   document.addEventListener('keydown', (e) => {
+    // the splash is skippable with anything at all
+    if (state.screen === 'splash') { e.preventDefault(); splash.finish(); return; }
+
     // the end confirm sits above everything and steers with any direction
     if (state.endAsk) {
       if (['ArrowLeft', 'ArrowUp'].includes(e.key))   { e.preventDefault(); moveFocus(-1); return; }
@@ -1307,6 +1513,16 @@ function bindEvents() {
       return;
     }
 
+    // the coach's controls are a horizontal row too: ◀ ▶ walk them, and the
+    // free vertical axis cycles the pro tip. Nothing destructive on a swipe.
+    if (state.screen === 'coach' && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+      if (e.key === 'ArrowLeft') moveFocus(-1);
+      else if (e.key === 'ArrowRight') moveFocus(1);
+      else coachTip();
+      return;
+    }
+
     switch (e.key) {
       case 'ArrowUp':
         e.preventDefault(); moveFocus(-1); return;
@@ -1318,7 +1534,6 @@ function bindEvents() {
         return;
       case 'ArrowRight':
         e.preventDefault();
-        if (state.screen === 'coach') coachTip();
         return;
       case 'Enter':
       case ' ': {
@@ -1380,10 +1595,13 @@ function handleAction(a, el) {
       break;
     }
     case 'pause':         togglePause(); break;
+    case 'reset-timer':   resetTimer(); break;
     case 'ask-end':       askEndCook(); break;
     case 'end-keep':      closeEndAsk(); break;
     case 'end-yes':       quitCook(); break;
     case 'ack-cue':       ackCue(); break;
+    case 'show-safety':   state.returnTo = state.screen; goSafety(false); break;
+    case 'safety-ok':     safetyOk(); break;
     case 'show-guide':    state.returnTo = state.screen; renderGuide(); showScreen('guide'); focusEl($('#guide .crumb')); break;
     case 'show-help':     state.returnTo = state.screen; showScreen('help'); focusEl($('#help .btn.primary')); break;
     case 'go-mode':       goMode(); break;
@@ -1458,6 +1676,20 @@ function applyUrlState() {
   if (!key) return false;
 
   switch (key) {
+    /* ── the front door ── */
+    case 'splash':
+      showScreen('splash');
+      withFont(() => {
+        if (!splash.prepare()) return;
+        for (let i = 0; i < 80; i++) splash.step(1.0);  // a live-looking spark field
+        splash.draw(2.2);                                // the settled frame
+      });
+      return true;
+    case 'safety':
+      ensureContext('grill'); state.returnTo = 'mode'; goSafety(false); return true;
+    case 'safety-first':
+      ensureContext('grill'); goSafety(true); return true;
+
     /* ── the four questions ── */
     case 'mode':
       goMode(); return true;
@@ -1659,13 +1891,20 @@ function boot() {
   bindEvents();
   paintStepRails();
   renderModePick();
+  renderSafety();
 
+  // a ?state= capture or a resumed cook both skip the splash outright
   if (applyUrlState()) { startLoop(); return; }
   if (restoreSession()) { startLoop(); return; }
 
-  // default: the first question
-  goMode();
   startLoop();
+  // state.screen has to actually say 'splash', or the skip-on-any-input
+  // guard in bindEvents never matches and the splash can't be dismissed
+  showScreen('splash');
+  withFont(() => splash.start(() => {
+    if (safetySeen()) goMode();
+    else goSafety(true);
+  }));
 }
 function startLoop() {
   setInterval(tick, 200);

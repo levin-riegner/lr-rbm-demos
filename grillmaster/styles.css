@@ -63,6 +63,25 @@ button { font-family: inherit; color: inherit; background: none; border: none; c
 }
 .hidden { display: none !important; }
 
+/* ═════════ SPLASH ═════════
+   The canvas fills the panel and paints on cleared black, so the lens
+   shows the world everywhere the coals and the wordmark aren't. */
+#splash { padding: 0; }
+#splash-canvas { display: block; width: 600px; height: 600px; }
+
+/* ═════════ SAFETY ═════════
+   Six rows sized to fit 600px outright — nothing here is focusable except
+   the button, so a scroll would strand half the list. */
+.safety-list { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.sf-row {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  padding: 14px; border: 2px solid var(--line); border-radius: 12px;
+}
+.sf-ico { font-size: 26px; line-height: 1; flex: none; }
+.sf-body { flex: 1; min-width: 0; }
+.sf-lead { display: block; font-size: 16px; font-weight: 700; letter-spacing: .05em; color: var(--white); line-height: 1.15; }
+.sf-sub { display: block; font-size: 14px; color: var(--ash); margin-top: 3px; line-height: 1.2; }
+
 /* ═════════ shared: brand, asks, rules ═════════ */
 .brand { display: flex; align-items: center; justify-content: center; gap: 16px; }
 .flame {
@@ -146,7 +165,6 @@ button { font-family: inherit; color: inherit; background: none; border: none; c
 .pick.focus .pick-t { color: var(--ember-hi); }
 .pick.focus .pick-s { color: var(--ash-2); }
 .pick.focus .pick-g { filter: none; }
-.pick.sel { border-color: var(--line-hot); }
 
 /* ── SIDE-BY-SIDE — the first question, three tiles across ──
    Three modes fit the 548px column at ~175px each, so screen one
@@ -197,6 +215,9 @@ button { font-family: inherit; color: inherit; background: none; border: none; c
 
 /* ═════════ buttons ═════════ */
 .foot-row, .act-row { display: flex; justify-content: center; gap: 12px; margin-top: 16px; }
+/* three utilities across the front door need a size down to stay on one line */
+.foot-row.three { gap: 9px; }
+.foot-row.three .btn { font-size: 15px; padding: 13px 8px; letter-spacing: .06em; }
 .act-row { margin-top: 18px; }
 /* One action per row, full width, in the order you would do them — the
    same shape as every question screen. Side-by-side buttons make you
@@ -210,6 +231,10 @@ button { font-family: inherit; color: inherit; background: none; border: none; c
 }
 .btn.ghost { border-color: var(--line-hot); color: var(--ash-2); }
 .btn.ghost.narrow { flex: .5; font-size: 16px; }
+/* the live cook's control row: compact ghosts, DONE takes what's left */
+.foot-row.cook { gap: 9px; }
+.foot-row.cook .btn.ghost { flex: none; font-size: 15px; padding: 13px 12px; letter-spacing: .05em; }
+.foot-row.cook .btn.primary { flex: 1; }
 .btn.primary { background: var(--ember); color: #1a0b02; }
 .btn.add { border-color: var(--ember); color: var(--ember-hi); }
 .btn.big { font-size: 23px; padding: 17px 20px; flex: 2; }

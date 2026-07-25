@@ -4,18 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
   <title>Grillmaster</title>
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=12">
+  <link rel="stylesheet" href="styles.css?v=14">
   <script defer src="https://cloud.umami.is/script.js" data-website-id="be32beae-a2a9-423f-b55d-e646ec260f93"></script>
 </head>
 <body>
   <div id="app" data-assist="coach">
 
+    <!-- ═════════ SPLASH — canvas, cold boot only ═════════
+         Skipped entirely for ?state= captures and for a restored cook. -->
+    <section id="splash" class="screen">
+      <canvas id="splash-canvas" width="600" height="600"></canvas>
+    </section>
+
+    <!-- ═════════ SAFETY — once on a first launch, then on demand ═════════ -->
+    <section id="safety" class="screen hidden">
+      <header class="page-head">
+        <button class="crumb focusable hidden" data-action="go-back" id="safety-back">&#8592;</button>
+        <div class="ph-title">BEFORE YOU LIGHT IT</div>
+      </header>
+      <div class="safety-list" id="safety-list"></div>
+      <div class="stack">
+        <button class="btn primary focusable" data-action="safety-ok" id="safety-ok">GOT IT</button>
+      </div>
+    </section>
+
     <!-- ═════════ Q1 — WHAT ARE WE DOING? ═════════ -->
-    <section id="mode" class="screen">
+    <section id="mode" class="screen hidden">
       <header class="brand">
         <div class="flame">▲</div>
         <div class="brand-txt">
@@ -28,7 +46,8 @@
       <div class="ask">HOW ARE WE COOKING?</div>
       <div class="pick-list side" id="mode-list"></div>
 
-      <div class="foot-row">
+      <div class="foot-row three">
+        <button class="btn ghost focusable" data-action="show-safety">SAFETY</button>
         <button class="btn ghost focusable" data-action="show-guide">TEMP GUIDE</button>
         <button class="btn ghost focusable" data-action="show-help">HOW IT WORKS</button>
       </div>
@@ -71,7 +90,8 @@
         <div class="ctx-strip" id="ctx-strip"></div>
       </header>
       <div class="cook-list" id="cook-list"></div>
-      <div class="foot-row">
+      <div class="foot-row three">
+        <button class="btn ghost focusable" data-action="show-safety">SAFETY</button>
         <button class="btn ghost focusable" data-action="show-guide">TEMP GUIDE</button>
         <button class="btn ghost focusable" data-action="show-help">HOW IT WORKS</button>
       </div>
@@ -200,9 +220,11 @@
 
       <div class="spacer"></div>
 
-      <div class="foot-row">
-        <button class="btn ghost narrow focusable" data-action="ask-end">END COOK</button>
-        <button class="btn ghost narrow focusable" data-action="pause" id="pause-btn">PAUSE</button>
+      <!-- a horizontal row, so ◀ ▶ steers it. ▲ ▼ cycle the pro tip. -->
+      <div class="foot-row cook">
+        <button class="btn ghost focusable" data-action="ask-end">END COOK</button>
+        <button class="btn ghost focusable" data-action="pause" id="pause-btn">PAUSE</button>
+        <button class="btn ghost focusable" data-action="reset-timer">RESET TIMER</button>
         <button class="btn primary big focusable" data-action="advance" id="advance-btn">DONE &#10003;</button>
       </div>
     </section>
@@ -284,19 +306,19 @@
         <div class="help-lead">One question per screen, then hands on the tongs. Glance up, do the one thing it says, tap once.</div>
         <div class="help-row">
           <span class="hk">▲ ▼</span>
-          <div class="help-copy"><b>MOVE</b><span>Walk a list, or switch item mid-cook. ◀ ▶ steers the mode tiles.</span></div>
+          <div class="help-copy"><b>MOVE</b><span>Down a list of choices. During a cook, cycle the pro tip.</span></div>
+        </div>
+        <div class="help-row">
+          <span class="hk">◀ ▶</span>
+          <div class="help-copy"><b>ACROSS</b><span>The mode tiles, and the controls during a cook</span></div>
         </div>
         <div class="help-row">
           <span class="hk">ENTER</span>
-          <div class="help-copy"><b>CHOOSE</b><span>Answer the question, or confirm the cue</span></div>
+          <div class="help-copy"><b>GO</b><span>Answer the question, or press the button in focus</span></div>
         </div>
         <div class="help-row">
           <span class="hk">◀</span>
-          <div class="help-copy"><b>BACK</b><span>One question back. Mid-cook it asks before ending.</span></div>
-        </div>
-        <div class="help-row">
-          <span class="hk">▶</span>
-          <div class="help-copy"><b>TIP</b><span>Cycle the pro tip for what’s on the fire</span></div>
+          <div class="help-copy"><b>BACK</b><span>One question back. During a cook, use END COOK.</span></div>
         </div>
       </div>
       <div class="foot-row">
@@ -332,7 +354,7 @@
     <div id="toast" class="toast hidden"></div>
   </div>
 
-  <script src="data.js?v=12"></script>
-  <script src="app.js?v=12"></script>
+  <script src="data.js?v=14"></script>
+  <script src="app.js?v=14"></script>
 </body>
 </html>

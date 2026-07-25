@@ -81,7 +81,7 @@ const FUELS = {
       id: 'gas', glyph: '⛽', name: 'PROPANE', tag: 'GAS · KNOBS', preheatMin: 12,
       lever: 'THE KNOBS', ready: 'Lid thermometer settled',
       steps: [
-        'Lid open, gas on, light the burners one at a time.',
+        'Lid OPEN before the gas goes on — never light it closed. Burners one at a time.',
         'All burners high, lid down, 10–15 min to preheat.',
         'Kill one burner — that side is now your cool zone.',
       ],
@@ -193,7 +193,7 @@ const FUELS = {
       id: 'gas', glyph: '⛽', name: 'PROPANE', tag: 'BURNERS OFF ONE SIDE', preheatMin: 12,
       lever: 'THE KNOBS', ready: 'Lid gauge steady at 275°F',
       steps: [
-        'Light one side only. The food sits over the dead burners.',
+        'Lid OPEN, then light one side only. The food sits over the dead burners.',
         'Dial the lit side until the lid gauge holds 275°F.',
         'Smoke box or a foil pouch of chips over the live burner.',
       ],
@@ -635,6 +635,24 @@ const COOKS = [
       { tag: 'PULL',  cue: 'PULL AT 128°F', hold: 'READY TO PULL',  sub: 'Med-rare. Rest 8 min, slice across the grain.', trigger: { atF: 128 }, pull: true },
     ],
   },
+];
+
+/* Shown once on a first launch, and from the front door after that.
+   Six rules chosen because they cover the ways people actually get hurt
+   or set something alight — not a wall nobody reads. */
+const SAFETY = [
+  { icon: '🧯', lead: 'WATER NEARBY, NEVER ON GREASE',
+    sub: 'Grease fires spread when you throw water at them. Lid down, vents shut, walk away.' },
+  { icon: '🧽', lead: 'CLEAN GRATE, EMPTY GREASE TRAY',
+    sub: 'Old drippings are what turn an ordinary flare-up into a fire.' },
+  { icon: '📏', lead: 'THREE FEET OF CLEAR AIR',
+    sub: 'Never under an eave, on a balcony, or anywhere indoors — including the garage.' },
+  { icon: '🌬️', lead: 'CHECK THE WIND FIRST',
+    sub: 'Point the vents into it, not your face. Wind moves flame and steals your heat.' },
+  { icon: '♨️', lead: 'COALS STAY HOT FOR HOURS',
+    sub: 'Let the ash die out completely, then a metal can with a lid. Never a plastic bin.' },
+  { icon: '🧼', lead: 'ONE PLATE RAW, ONE PLATE COOKED',
+    sub: 'Wash your hands, and keep the marinade brush off anything finished.' },
 ];
 
 /* Doneness reference for the TEMP GUIDE screen (beginner safety net). */

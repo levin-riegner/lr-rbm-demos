@@ -4,6 +4,23 @@ A hands-free grilling, smoking, and BBQ coach for the [Meta Ray-Ban Display glas
 
 > 🚀 **Live demo:** [rbm-demos.lnr.io/grillmaster](https://rbm-demos.lnr.io/grillmaster/)
 
+## Opening it
+
+A **canvas splash** on a cold start: a bed of coals breathing at the bottom, sparks lifting off them, and GRILLMASTER heating through the colours steel actually passes through — dull brown, coal red, ember orange, white — left to right, one letter at a time. Everything is painted on cleared canvas, so the black stays black and only the hot pixels reach your eye. Any input skips it, it honours `prefers-reduced-motion`, and it never appears for a `?state=` capture or a resumed cook.
+
+Then, on a first launch only, **BEFORE YOU LIGHT IT** — six rules chosen because they cover the ways people actually get hurt or set something alight, not a wall nobody reads:
+
+| | |
+| --- | --- |
+| 🧯 | **WATER NEARBY, NEVER ON GREASE** — grease fires spread when you throw water at them. Lid down, vents shut. |
+| 🧽 | **CLEAN GRATE, EMPTY GREASE TRAY** — old drippings are what catch fire. |
+| 📏 | **THREE FEET OF CLEAR AIR** — never indoors, never under an eave. |
+| 🌬️ | **CHECK THE WIND FIRST** — vents into it, not your face. |
+| ♨️ | **COALS STAY HOT FOR HOURS** — dead ash, metal can, lid on. |
+| 🧼 | **ONE PLATE RAW, ONE COOKED** — and wash your hands. |
+
+It's reachable any time from **SAFETY** on the front door. The propane rule that matters most — *lid open before the gas goes on* — lives in the gas fuels' own lighting steps, where you'll actually be reading it.
+
 ## One question per screen
 
 Nothing asks two things at once. Each screen puts one question in 34px type, takes the answer, and gets out of the way — which is exactly what buys the rest of the app its size.
@@ -61,6 +78,7 @@ No side-by-side pair to compare before you can act, and no caption underneath ex
 - **One thing at a time, and it means it.** One cut per cook, one instruction on screen, one button that matters. Nothing to switch between mid-cook.
 - **The cue never tells you to do what you just did.** Every step carries two lines: the action that *starts* it and the state you're in *during* it. Press DONE on "FLIP THE RIBEYE" and the screen changes to **SECOND SIDE DOWN** — because you already flipped it, and you're now waiting. The old version left the flip instruction up for the whole side.
 - **The confirm button only shouts when it's your turn.** Mid-step the countdown is doing the work, so the button goes quiet — outlined, normal size, and honest about what pressing it means: **I DID IT ALREADY**. The moment the cue comes due it turns orange, grows and pulses: **DONE ✓**. A big filled button under a "hands off" instruction is an invitation to skip a whole beat of the cook.
+- **RESET TIMER puts the current beat back to full.** For when you got pulled away, or the cue fired before you were ready — the beat is right, the clock just needs another run at it. It re-arms that beat's cue too.
 - **PAUSE stops the whole cook.** Beer run, flare-up, phone call. Countdowns, elapsed time, spritz intervals and the temperature projection all freeze together on one cook clock rather than drifting apart, the ring greys out so a frozen timer never looks live, and RESUME picks up exactly where it stopped.
 - **The alarms speak your fire.** A pit that drops reads `PIT LOW · FEED IT COALS` on a kettle, `PIT LOW · TURN THE BURNER UP` on gas, `PIT LOW · ADD A SPLIT` on an offset. Same for the spritz nudge and the heat-lever reminder.
 - **A preheat clock, per fuel.** Counts down your fuel's real warm-up time, keeps running across every screen, and chimes when it's ready wherever you are. FIRST TIME gets walked through lighting it up front; everyone else can pull the steps up on demand and is otherwise never shown them.
@@ -99,12 +117,13 @@ No side-by-side pair to compare before you can act, and no caption underneath ex
 
 | Where | Input | Result |
 | --- | --- | --- |
-| Coach | ▲ / ▼ | Move between END COOK, PAUSE and DONE |
+| Coach | ◀ / ▶ | Walk the control row: END COOK · PAUSE · RESET TIMER · DONE |
+| Coach | ▲ / ▼ | Cycle the pro tip for what's on the fire |
 | Coach | Enter | Press the focused button — **DONE ✓** when a cue is due, **I DID IT ALREADY** to jump ahead |
-| Coach | ▶ | Cycle the pro tip |
-| Coach | ◀ or **END COOK** | Asks first — see below |
 | End confirm | ◀ / ▶ | Move between KEEP COOKING and END IT |
 | Cue alert | Enter | Acknowledge the heads-up |
+
+The control row is horizontal, so ◀ ▶ steer it — which leaves the vertical axis free for the tip and, more importantly, means no swipe can end a cook. **END COOK** is the only way out and it asks first.
 
 ### Smoke & BBQ (pit monitor)
 
@@ -124,7 +143,7 @@ The countdown and thresholds do the work on their own; your inputs just tell the
 
 Reproducible via `?state=` URL routing (see below).
 
-> 📸 The shots below predate the one-question-per-screen flow and the larger, brighter type — rerun the capture loop to refresh them, and to add the new `mode`, `fuel`, `assist`, `doneness`, `plan`, `fire-light`, `fire`, `fire-steps`, `home-preheating`, `coach-hold`, `coach-paused`, `coach-rookie` and `coach-pro` states, which already have `?state=` keys but no PNG yet. `setup` is kept as an alias for `plan`.
+> 📸 The shots below predate the one-question-per-screen flow and the larger, brighter type — rerun the capture loop to refresh them, and to add the new `mode`, `fuel`, `assist`, `doneness`, `plan`, `fire-light`, `fire`, `fire-steps`, `splash`, `safety`, `home-preheating`, `coach-hold`, `coach-paused`, `coach-rookie` and `coach-pro` states, which already have `?state=` keys but no PNG yet. `setup` is kept as an alias for `plan`.
 
 | Cook list · Grill | Cook list · Smoke | Cook list · BBQ |
 | --- | --- | --- |
@@ -157,7 +176,7 @@ Then open `http://localhost:4225/` in Chrome sized to 600×600, or point the sim
 Each screen has a deterministic `?state=` key that mirrors the screenshot filename. Loop headless Chrome over them:
 
 ```sh
-for s in mode fuel fuel-smoke assist home home-smoke home-bbq \
+for s in splash safety mode fuel fuel-smoke assist home home-smoke home-bbq \
          doneness doneness-burger plan plan-smoke plan-bbq \
          fire-light fire-light-smoke fire fire-preheat fire-steps \
          fire-pro fire-smoke home-preheating \
@@ -175,11 +194,11 @@ done
 
 ```
 grillmaster/
-├── index.html      # one section per screen — mode, fire, help, food, taste, plan, fire stage, coach, pit monitor, done, guide, help
+├── index.html      # one section per screen — splash, safety, mode, fire, help, food, taste, plan, fire stage, coach, pit monitor, done, guide, help
 ├── styles.css      # ember-on-black HUD theme: big, bright, full-width, one centred axis
-├── data.js         # modes, fuels (lever + lighting + preheat + alarm copy), assist levels, and the cook library
-├── app.js          # the question flow, the preheat clock, two engines (grill flip coach + temp-driven pit monitor), D-pad, alerts, persistence
-├── favicon.svg
+├── data.js         # modes, fuels (lever + lighting + preheat + alarm copy), assist levels, safety rules, and the cook library
+├── app.js          # the canvas splash, the question flow, the cook clock, two engines (grill flip coach + temp-driven pit monitor), D-pad, alerts, persistence
+├── favicon.png    # 512×512 — the device does not support SVG favicons
 ├── README.md
 └── screenshots/    # generated via ?state= routing
 ```
