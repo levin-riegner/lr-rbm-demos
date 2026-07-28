@@ -133,25 +133,13 @@ html, body {
 /* every screen except the boat picker sits below the bar */
 #scHome, #scSos, #scSteps, #scCheck, #scCard, #scMayday { padding-top: 48px; }
 
-/* ═════════════════════ BOAT PICKER ═════════════════════ */
-.brandblock { padding-top: 10px; }
-.brand-name { font-size: 46px; font-weight: 700; letter-spacing: .02em; line-height: 1; color: var(--ink); }
-.brand-tag  { font-size: 13px; font-weight: 600; letter-spacing: .2em; color: var(--haze); margin-top: 7px; }
-
-.rule {
-  height: 2px; margin: 12px 0 14px; border-radius: 2px;
-  background: linear-gradient(90deg, var(--aqua), var(--line-lit) 60%, transparent);
-}
-.ask { font-size: 15px; font-weight: 700; letter-spacing: .2em; color: var(--ink-2); margin-bottom: 12px; }
-
 /* ═════════════════════ MENUS ═════════════════════
-   One renderer for the boat picker, the home list, and the
-   emergency index. A window that scrolls the track under a
-   fixed viewport, so the row count is free and the type stays
-   large no matter how many entries there are. */
+   One renderer for the home list and the emergency index. A
+   window that scrolls the track under a fixed viewport, so the
+   row count is free and the type stays large no matter how many
+   entries there are. */
 .menu-window { flex: 1; min-height: 0; overflow: hidden; position: relative; }
 .menu { display: flex; flex-direction: column; gap: 7px; transition: transform var(--m-base) var(--m-ease); }
-#boatList { gap: 9px; }
 
 .row {
   display: grid; grid-template-columns: auto 1fr; align-items: center;
@@ -188,15 +176,6 @@ html, body {
 
 .row.done { border-left-color: var(--go); }
 .row.done .num { color: var(--go); }
-
-/* boat picker rows carry a character line, so they are taller */
-.row.boat { grid-template-columns: 1fr; gap: 0; padding: 11px 14px; }
-.row.boat .label { font-size: 30px; }
-.row.boat .spec {
-  font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;
-  color: var(--ink-2); letter-spacing: .02em; margin-top: 6px;
-}
-.row.boat.on .spec { color: var(--aqua-hi); }
 
 /* section dividers inside the home list */
 .row.section {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
-  <meta name="description" content="Hands-free skipper's coach for small boats: handover questions, pre-departure checks, starting, docking, anchoring, and emergency drills.">
+  <meta name="description" content="Hands-free skipper's coach for the Poseidon Blu Water 170: pre-departure checks, starting, docking, anchoring, and emergency drills with a live-GPS mayday script.">
   <meta name="mrbd-web-app-capable" content="yes">
   <title>Skipper</title>
   <link rel="icon" type="image/png" href="favicon.png">
@@ -20,36 +20,22 @@
   <!-- ══════════ PERSISTENT STATUS BAR ══════════
        Boat, clock, and the countdown to the time you promised to
        be back. Hidden only on the boat picker. -->
-  <div id="statusbar" class="statusbar hidden">
-    <span class="sb-badge" id="sbBadge">N470</span>
-    <span class="sb-boat" id="sbBoat">NIKITA 470</span>
+  <div id="statusbar" class="statusbar">
+    <span class="sb-badge" id="sbBadge">BW170</span>
+    <span class="sb-boat" id="sbBoat">BLU WATER 170</span>
     <span class="sb-spacer"></span>
     <span class="sb-due" id="sbDue"></span>
     <span class="sb-clock" id="sbClock">--:--</span>
   </div>
 
-  <!-- ══════════ BOAT PICKER ══════════ -->
-  <section id="scBoat" class="screen">
-    <div class="brandblock">
-      <div class="brand-name">SKIPPER</div>
-      <div class="brand-tag">EVERYTHING YOU NEED, ON THE LENS</div>
-    </div>
-    <div class="rule"></div>
-    <div class="ask">WHICH BOAT ARE YOU ON?</div>
-    <div class="menu" id="boatList"></div>
-    <div class="hints">
-      <span><b>▲▼</b> PICK</span><span class="hsep">·</span><span><b>⏎</b> START</span>
-    </div>
-  </section>
-
   <!-- ══════════ HOME ══════════ -->
-  <section id="scHome" class="screen hidden">
+  <section id="scHome" class="screen">
     <div class="wx" id="wxFlag"></div>
     <div class="menu-window">
       <div class="menu" id="homeList"></div>
     </div>
     <div class="hints">
-      <span><b>▲▼</b> PICK</span><span class="hsep">·</span><span><b>⏎</b> OPEN</span><span class="hsep">·</span><span><b>◀</b> BOAT</span>
+      <span><b>▲▼</b> PICK</span><span class="hsep">·</span><span><b>⏎</b> OPEN</span>
     </div>
   </section>
 

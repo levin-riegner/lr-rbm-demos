@@ -1,12 +1,15 @@
 /* ─────────────────────────────────────────────────────────────
    SKIPPER — Meta Ray-Ban Display
 
-   A skipper's coach for three specific rental hulls, written for
-   someone whose only source of information all day is this lens.
+   A skipper's coach for one boat — the Poseidon Blu Water 170 —
+   written for someone whose only source of information all day is
+   this lens. The operator briefs you on the boat in person, so
+   there is no handover flow: the app opens on the last look
+   before you cast off.
 
    NAVIGATION CONTRACT — two shapes, and that is the whole app.
 
-     MENUS (boat picker, home, emergency index)
+     MENUS (home, emergency index)
        ▲ ▼   move        ⏎ / ▶  open        ◀  back
 
      CONTENT (steps, checklists, boat card, mayday)
@@ -36,7 +39,6 @@
      done at the dock must survive the browser reloading in a
      pocket. Everything the user has told the app is local. */
   const LS = {
-    boat: 'skipper.boat',
     ticks: 'skipper.ticks',
     values: 'skipper.values',
   };
@@ -47,9 +49,7 @@
   const writeJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } };
 
   const state = {
-    screen: 'boat',
-    boatKey: null,
-    boatIdx: 0,
+    screen: 'home',
     homeIdx: 1,          // index 0 is the THE DAY section header
     sosIdx: 0,
     origin: 'home',      // where ▼ and the end of a flow return to
@@ -67,7 +67,7 @@
     geoWatch: null,
   };
 
-  const boat = () => D.BOATS[state.boatKey];
+  const boat = () => D.BOAT;
 
   /* ═══════════════════ HELPERS ═══════════════════ */
 
@@ -79,17 +79,6 @@
     const k = tickKey(listKey, item);
     if (on) state.ticks[k] = 1; else delete state.ticks[k];
     writeJSON(LS.ticks, state.ticks);
-  }
-
-  /* only / not gate content to particular hulls — this is what
-     makes the auxiliary-engine step exist on the Blu Water and
-     the tube-pressure check exist only on the RIB */
-  function forBoat(list) {
-    return list.filter((it) => {
-      if (it.only && !it.only.includes(state.boatKey)) return false;
-      if (it.not && it.not.includes(state.boatKey)) return false;
-      return true;
-    });
   }
 
   function tokens(text) {
@@ -119,7 +108,7 @@
   /* ═══════════════════ SCREEN ROUTER ═══════════════════ */
 
   const SCREENS = {
-    boat: $('scBoat'), home: $('scHome'), sos: $('scSos'), steps: $('scSteps'),
+    home: $('scHome'), sos: $('scSos'), steps: $('scSteps'),
     check: $('scCheck'), card: $('scCard'), mayday: $('scMayday'),
   };
 
@@ -129,7 +118,6 @@
       el.classList.toggle('hidden', k !== name);
       if (k === name) { el.classList.remove('m-enter'); void el.offsetWidth; el.classList.add('m-enter'); }
     });
-    $('statusbar').classList.toggle('hidden', name === 'boat');
     // the GPS receiver only runs while the MAYDAY screen is open
     if (name === 'mayday') startGeo(); else stopGeo();
   }
@@ -160,38 +148,6 @@
      on an additive lens reads as a flicker rather than as
      polish — motion has to fire on real events, and "the
      selection moved" is not "the list arrived". */
-
-  /* ═══════════════════ BOAT PICKER ═══════════════════ */
-
-  function buildBoats() {
-    $('boatList').innerHTML = D.BOAT_ORDER.map((k, i) => {
-      const b = D.BOATS[k];
-      return `<div class="row boat" style="--i:${i}">
-        <div class="cell">
-          <div class="label">${esc(b.name)}</div>
-          <div class="sub">${esc(b.sub)}</div>
-          <div class="spec">${esc(b.loa)} · ${b.people} PEOPLE · ${esc(b.hp)}</div>
-        </div>
-      </div>`;
-    }).join('');
-    paintBoats();
-  }
-
-  function paintBoats() {
-    Array.from($('boatList').children).forEach((el, i) =>
-      el.classList.toggle('on', i === state.boatIdx));
-  }
-
-  function chooseBoat() {
-    state.boatKey = D.BOAT_ORDER[state.boatIdx];
-    try { localStorage.setItem(LS.boat, state.boatKey); } catch { /* ignore */ }
-    // the lifejacket count defaults to this hull's plate rating
-    if (!state.values.jackets) setSettingValue('jackets', String(boat().people));
-    state.homeIdx = 1;
-    renderStatus();
-    buildHome();
-    show('home');
-  }
 
   /* ═══════════════════ STATUS BAR ═══════════════════ */
 
@@ -255,7 +211,7 @@
       let pill = '';
       let done = false;
       if (r.kind === 'check') {
-        const items = forBoat(D.CHECKS[r.key].items);
+        const items = D.CHECKS[r.key].items;
         const n = items.filter((it) => isTicked(r.key, it)).length;
         done = n === items.length;
         pill = `<div class="tickpill">${n}/${items.length} ${done ? '✓ DONE' : 'DONE'}</div>`;
@@ -332,7 +288,7 @@
   /* ═══════════════════ STEP FLOWS ═══════════════════ */
 
   function openFlow(flow, isDrill) {
-    state.flow = { ...flow, steps: forBoat(flow.steps) };
+    state.flow = { ...flow, steps: flow.steps };
     state.flowIsDrill = isDrill;
     state.stepIdx = 0;
     renderStep();
@@ -405,7 +361,7 @@
   function openCheck(key) {
     state.checkKey = key;
     state.editing = false;
-    const items = forBoat(D.CHECKS[key].items);
+    const items = D.CHECKS[key].items;
     // land on the first thing still outstanding, not on item one
     const first = items.findIndex((it) => !isTicked(key, it));
     state.checkIdx = first === -1 ? 0 : first;
@@ -416,7 +372,7 @@
   function buildCheck() {
     const c = D.CHECKS[state.checkKey];
     $('ckTitle').textContent = c.title;
-    $('ckList').innerHTML = forBoat(c.items).map((it, i) => `
+    $('ckList').innerHTML = c.items.map((it, i) => `
       <div class="ck-row" style="--i:${i}">
         <div class="ck-box"></div>
         <div>
@@ -432,7 +388,7 @@
      instead of on every repaint. */
   function paintCheck() {
     const c = D.CHECKS[state.checkKey];
-    const items = forBoat(c.items);
+    const items = c.items;
     const track = $('ckList');
     const kids = track.children;
     let doneCount = 0;
@@ -483,7 +439,7 @@
   }
 
   function moveCheck(dir) {
-    const items = forBoat(D.CHECKS[state.checkKey].items);
+    const items = D.CHECKS[state.checkKey].items;
     state.checkIdx = (state.checkIdx + dir + items.length) % items.length;
     paintCheck();
   }
@@ -491,7 +447,7 @@
   /* ⏎ ticks and then jumps to the next outstanding item, so a
      dozen checks clears in a dozen presses with no navigating. */
   function actCheck() {
-    const items = forBoat(D.CHECKS[state.checkKey].items);
+    const items = D.CHECKS[state.checkKey].items;
     const it = items[state.checkIdx];
 
     if (it.type === 'set' && !state.editing) { state.editing = true; paintCheck(); return; }
@@ -516,7 +472,7 @@
   }
 
   function spinValue(dir) {
-    const items = forBoat(D.CHECKS[state.checkKey].items);
+    const items = D.CHECKS[state.checkKey].items;
     const it = items[state.checkIdx];
     const cfg = D.SETTINGS[it.setting];
     const cur = cfg.options.indexOf(settingValue(it.setting));
@@ -539,7 +495,7 @@
       ['ENGINE', esc(b.hp), b.hpConfirm],
       ['FUEL', esc(b.fuel), b.fuelConfirm],
       ['CE CATEGORY', esc(b.ce), b.ceConfirm],
-      ['LICENCE', esc(b.licence), b.licenceConfirm, b.traits.bigPower ? 'warn' : ''],
+      ['LICENCE', esc(b.licence), b.licenceConfirm],
     ];
     const rowsB = [
       ['BACK BY', `<span class="mono">${esc(settingValue('returnBy'))}</span>`, false, 'big'],
@@ -655,17 +611,11 @@
   function handle(k) {
     switch (state.screen) {
 
-      case 'boat':
-        if (k === 'up')   { state.boatIdx = (state.boatIdx - 1 + D.BOAT_ORDER.length) % D.BOAT_ORDER.length; paintBoats(); }
-        if (k === 'down') { state.boatIdx = (state.boatIdx + 1) % D.BOAT_ORDER.length; paintBoats(); }
-        if (k === 'ok' || k === 'right') chooseBoat();
-        return;
-
+      // home is the root now, so ◀ has nowhere to go and does nothing
       case 'home':
         if (k === 'up')    moveHome(-1);
         if (k === 'down')  moveHome(1);
         if (k === 'ok' || k === 'right') { press($('homeList').children[state.homeIdx]); openHome(); }
-        if (k === 'left')  { buildBoats(); show('boat'); }
         return;
 
       case 'sos':
@@ -755,23 +705,11 @@
 
   /* ═══════════════════ ?state= ROUTING ═══════════════════
      Deterministic screenshots, and a way to link straight to a
-     screen. ?boat=mostro selects the hull first, so a capture
-     can show the RIB-only steps. */
+     screen. */
   function applyStateParam() {
     const q = new URLSearchParams(location.search);
-    const b = (q.get('boat') || '').toLowerCase();
-    if (D.BOATS[b]) {
-      state.boatIdx = D.BOAT_ORDER.indexOf(b);
-      state.boatKey = b;
-      if (!state.values.jackets) setSettingValue('jackets', String(boat().people));
-      renderStatus();
-    }
-
     const raw = (q.get('state') || '').toLowerCase();
     if (!raw) return;
-
-    if (raw === 'boat') { buildBoats(); show('boat'); return; }
-    if (!state.boatKey) { state.boatKey = D.BOAT_ORDER[0]; renderStatus(); }
 
     if (raw === 'home') { buildHome(); show('home'); return; }
     if (raw === 'sos' || raw === 'emergency') { state.sosIdx = 0; buildSos(); show('sos'); return; }
@@ -791,7 +729,7 @@
 
     if (D.CHECKS[key]) {
       openCheck(key);
-      const items = forBoat(D.CHECKS[key].items);
+      const items = D.CHECKS[key].items;
       state.checkIdx = Math.min(stepN - 1, items.length - 1);
       paintCheck();
       return;
@@ -812,17 +750,13 @@
 
   /* ═══════════════════ BOOT ═══════════════════ */
 
-  const saved = (() => { try { return localStorage.getItem(LS.boat); } catch { return null; } })();
-  if (saved && D.BOATS[saved]) {
-    state.boatKey = saved;
-    state.boatIdx = D.BOAT_ORDER.indexOf(saved);
-    renderStatus();
-    buildHome();
-    show('home');
-  } else {
-    buildBoats();
-    show('boat');
-  }
+  // the lifejacket count starts at this hull's plate rating, so the
+  // SET UP wheel opens on a sensible number rather than a dash
+  if (!state.values.jackets) setSettingValue('jackets', String(boat().people));
+
+  renderStatus();
+  buildHome();
+  show('home');
 
   tickClock();
   setInterval(tickClock, 15000);

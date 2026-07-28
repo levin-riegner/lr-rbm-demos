@@ -20,136 +20,59 @@
       the skipped one is the drain plug.
    3. Numbers that vary unit-to-unit are marked, never guessed.
       A confidently wrong fuel capacity is worse than a blank —
-      so per-hull figures below are only the published ones, and
+      so the figures below are only the published ones, and
       anything that changes between individual rental boats is
-      flagged CONFIRM and asked about on the HANDOVER screen.
+      flagged CONFIRM on the boat card.
 
-   SOURCES for the hull figures
-   ----------------------------
-   Nikita 470 (sold as SEAROVER 470) — NauticExpo / Nikita Boats.
+   ONE BOAT
+   --------
+   This build is for the Poseidon Blu Water 170 only, and the
+   briefing/handover flow is gone: the operator walks you through
+   the boat in person, so the app starts at the last look before
+   you cast off. Earlier revisions carried the Nikita 470 and the
+   Mostro Corvette 68 alongside it, with per-hull step gating —
+   git history has that if it is ever wanted again.
+
+   SOURCE for the hull figures
+   ---------------------------
    Poseidon Blu Water 170 — Poseidon Boats, itBoat, Greek charter
      listings (4-stroke 30 hp + 4 hp auxiliary, 60 L integral tank).
-   Mostro Corvette 68 — 2024 RIB, Paros charter listings
-     (~6.8 m / 22.97 ft, ~250 hp, 9 persons).
    ───────────────────────────────────────────────────────────── */
 
 (() => {
   'use strict';
 
-  /* ═══════════════════════ BOATS ═══════════════════════
-     `traits` are the switches the procedures read. They are what
-     make START THE ENGINE a different list of steps on a 30 hp
-     license-free console boat and on a 250 hp RIB.
-
+  /* ═══════════════════════ THE BOAT ═══════════════════════
      tokens usable in any step/check text:
-       {{boat}} {{people}} {{hp}} {{fuel}} {{loa}}          */
+       {{boat}} {{people}} {{hp}} {{loa}} {{type}}          */
 
-  const BOATS = {
-    nikita: {
-      key: 'nikita',
-      name: 'NIKITA 470',
-      sub: 'SEAROVER 470 · GRP CENTER CONSOLE',
-      badge: 'N470',
-      // published figures
-      loa: '4.73 m',
-      type: 'OPEN BOAT',
-      beam: '2.00 m',
-      draft: '0.31 m',
-      dry: '480 kg',
-      people: 6,
-      maxLoad: '555 kg',
-      hp: 'OUTBOARD, UP TO 60 hp',
-      hpConfirm: true,
-      fuel: 'PORTABLE / UNDER-DECK TANK',
-      fuelConfirm: true,
-      ce: 'C — INSHORE, SHELTERED WATER',
-      licence: 'NONE IN GREECE IF THE ENGINE IS 30 hp OR LESS',
-      licenceConfirm: true,
-      traits: {
-        rib: false,
-        bigPower: false,
-        aux: false,
-        tiltIsPower: false,
-        gelcoat: true,
-      },
-      // the one-line character sketch that sets expectations
-      character:
-        'Light, small, and quick to plane. Six people is the plate ' +
-        'rating, not a comfortable day — with a full load she sits ' +
-        'deep and gets wet in any chop.',
-    },
-
-    bluwater: {
-      key: 'bluwater',
-      name: 'BLU WATER 170',
-      sub: 'POSEIDON · GRP CENTER CONSOLE',
-      badge: 'BW170',
-      loa: '4.99 m',
-      type: 'OPEN BOAT',
-      // published listings give length and draft but no reliable
-      // beam, so it is a blank to ask about rather than a guess
-      beam: '—',
-      beamConfirm: true,
-      draft: '0.30 m',
-      dry: '—',
-      people: 7,
-      maxLoad: 'SEE THE BUILDER PLATE IN THE COCKPIT',
-      hp: 'YAMAHA 30 hp 4-STROKE · 4 hp AUXILIARY',
-      hpConfirm: true,
-      fuel: '60 L INTEGRAL (+12 L SPARE CAN)',
-      fuelConfirm: true,
-      ce: 'C — COASTAL, RIVERS AND CANALS',
-      licence: 'NONE IN GREECE AT 30 hp',
-      licenceConfirm: true,
-      traits: {
-        rib: false,
-        bigPower: false,
-        aux: true,
-        tiltIsPower: false,
-        gelcoat: true,
-      },
-      character:
-        'The classic Greek license-free day boat. Slow, forgiving, ' +
-        'self-draining cockpit, and a 4 hp auxiliary on the bracket ' +
-        'that turns a dead main engine into an inconvenience instead ' +
-        'of an emergency.',
-    },
-
-    mostro: {
-      key: 'mostro',
-      name: 'MOSTRO CORVETTE',
-      sub: 'CORVETTE 68 · 6.8 m OFFSHORE RIB',
-      badge: 'MC68',
-      loa: '6.8 m (22.97 ft)',
-      type: 'RIB',
-      beam: '—',
-      draft: '—',
-      dry: '—',
-      people: 9,
-      maxLoad: 'SEE THE BUILDER PLATE',
-      hp: 'UP TO ~250 hp OUTBOARD',
-      hpConfirm: true,
-      fuel: 'LARGE UNDER-DECK TANK',
-      fuelConfirm: true,
-      ce: 'CONFIRM WITH THE OPERATOR',
-      ceConfirm: true,
-      licence: 'YES — A BOAT LICENCE IS REQUIRED FOR THIS POWER',
-      traits: {
-        rib: true,
-        bigPower: true,
-        aux: false,
-        tiltIsPower: true,
-        gelcoat: false,
-      },
-      character:
-        'A different animal. Roughly eight times the power of the ' +
-        'other two, so the throttle is a decision and not a request. ' +
-        'Tubes forgive the dock and punish neglect: soft tubes ruin ' +
-        'the way she handles.',
-    },
+  const BOAT = {
+    name: 'BLU WATER 170',
+    sub: 'POSEIDON · GRP CENTER CONSOLE',
+    badge: 'BW170',
+    loa: '4.99 m',
+    type: 'OPEN BOAT',
+    // published listings give length and draft but no reliable
+    // beam, so it is a blank to ask about rather than a guess
+    beam: '—',
+    beamConfirm: true,
+    draft: '0.30 m',
+    people: 7,
+    maxLoad: 'SEE THE BUILDER PLATE IN THE COCKPIT',
+    hp: 'YAMAHA 30 hp 4-STROKE · 4 hp AUXILIARY',
+    hpConfirm: true,
+    fuel: '60 L INTEGRAL (+12 L SPARE CAN)',
+    fuelConfirm: true,
+    ce: 'C — COASTAL, RIVERS AND CANALS',
+    licence: 'NONE IN GREECE AT 30 hp',
+    licenceConfirm: true,
+    // the one-line character sketch that sets expectations
+    character:
+      'The classic Greek license-free day boat. Slow, forgiving, ' +
+      'self-draining cockpit, and a 4 hp auxiliary on the bracket ' +
+      'that turns a dead main engine into an inconvenience instead ' +
+      'of an emergency.',
   };
-
-  const BOAT_ORDER = ['nikita', 'bluwater', 'mostro'];
 
   /* ═══════════════════ SETTABLE VALUES ═══════════════════
      There is no keyboard on the glasses, so these are wheels.
@@ -188,104 +111,36 @@
      `only` / `not` gate an item to particular hulls.            */
 
   const CHECKS = {
-    handover: {
-      title: 'HANDOVER',
-      eyebrow: 'ASK BEFORE YOU SIGN',
+    setup: {
+      title: 'SET UP',
+      eyebrow: 'THREE THINGS TO RECORD',
       intro:
-        'The person handing you the keys will tell you everything ' +
-        'in ninety seconds and you will remember a third of it. ' +
-        'Make them show you, not tell you.',
+        'Set these once at the dock. The return time drives the ' +
+        'countdown in the top bar for the rest of the day.',
       items: [
         {
-          text: 'SHOW ME THE KILL CORD',
+          text: 'WHAT TIME MUST YOU BE BACK?',
           note:
-            'The red lanyard that stops the engine if you leave the helm. ' +
-            'Ask where it clips. Most engines will not start without it fitted.',
-        },
-        {
-          text: 'START IT, STOP IT, THEN LET ME DO IT',
-          note:
-            'Do the whole sequence yourself once, while someone who knows ' +
-            'the boat is standing there. This is the single most useful ' +
-            'sixty seconds of the day.',
-        },
-        {
-          text: 'WHERE IS THE FUEL VALVE AND THE TANK VENT?',
-          note:
-            'You need to open it to run and close it to stop. A closed vent ' +
-            'makes an engine that dies five minutes out for no reason.',
-        },
-        {
-          text: 'HOW MUCH FUEL, AND IS IT PAID FOR?',
-          note:
-            'Ask for the gauge reading and what "full" costs. Then set it here ' +
-            'so you can prove what you started with.',
-          type: 'set',
-          setting: 'fuel',
-        },
-        {
-          text: 'IS THE DRAIN PLUG IN? SHOW ME WHERE IT IS',
-          note:
-            'The bung in the transom. Out means the boat fills. It is the ' +
-            'most common way a small boat sinks and it is always avoidable.',
-        },
-        {
-          text: 'WHERE IS THE BILGE PUMP SWITCH?',
-          note: 'Find it now, in daylight, dry, calm. Not later.',
-        },
-        {
-          text: 'COUNT THE LIFEJACKETS WITH ME',
-          note:
-            'One per person, and at least one that fits each child. Count ' +
-            'them, do not accept a number.',
-          type: 'set',
-          setting: 'jackets',
-        },
-        {
-          text: 'SHOW ME THE ANCHOR AND HOW MUCH ROPE',
-          note:
-            'You need to know the length to know where you can anchor. Check ' +
-            'the bitter end is actually tied to the boat.',
-        },
-        {
-          text: 'WHERE IS THE HORN, THE FLARES, THE EXTINGUISHER, THE FIRST AID KIT?',
-          note:
-            'Four locations. Touch each one. Under a seat cushion you have ' +
-            'never lifted is not a location you know.',
-        },
-        {
-          text: 'IS THERE A VHF RADIO, AND IS IT WORKING?',
-          note:
-            'If yes, learn how to switch it on and set channel 16. If no, ' +
-            'that changes your whole plan — stay in phone signal and close ' +
-            'to other boats.',
-        },
-        {
-          text: 'WHAT IS THIS BOAT CALLED, AND WHAT IS YOUR NUMBER?',
-          note:
-            'You will need the boat name to call for help and their number ' +
-            'for everything else. Say both back to them out loud.',
-        },
-        {
-          text: 'WHERE MUST I NOT GO?',
-          note:
-            'Every operator has a line on the chart — a crossing, a headland, ' +
-            'a reef, a beach. Ask which way the wind will turn today, too. ' +
-            'They watch it every day of the season.',
-        },
-        {
-          text: 'WHAT TIME BACK, AND EXACTLY WHERE DO I TIE UP?',
-          note:
-            'Get the berth, not just the harbour. Then set the time — the ' +
-            'header will count down to it all day.',
+            'The operator\'s deadline, not your intention. The header will ' +
+            'count down to it and turn red in the last half hour.',
           type: 'set',
           setting: 'returnBy',
         },
         {
-          text: 'WALK THE HULL AND PHOTOGRAPH EVERY MARK',
+          text: 'COUNT THE LIFEJACKETS ABOARD',
           note:
-            'Both sides, the transom, the prop, the tubes. Five minutes now ' +
-            'settles an argument later that you would otherwise lose.',
+            'One per person, and at least one that fits each child. Count ' +
+            'them yourself rather than accepting a number.',
+          type: 'set',
+          setting: 'jackets',
+        },
+        {
+          text: 'WHAT IS THE FUEL GAUGE SHOWING?',
+          note:
+            'Record what you started with, so thirds mean something later ' +
+            'and so there is no argument at the end of the day.',
+          type: 'set',
+          setting: 'fuel',
         },
       ],
     },
@@ -320,14 +175,6 @@
           note:
             'One third out, one third back, one third untouched. Chop and ' +
             'headwind can double the burn — the reserve is not optional.',
-        },
-        {
-          text: 'TUBE PRESSURE FIRM',
-          note:
-            'Press hard with a thumb — firm, barely any give. Tubes soften ' +
-            'overnight and in cool water, and a soft tube makes the boat ' +
-            'wallow and steer badly.',
-          only: ['mostro'],
         },
         {
           text: 'LIFEJACKETS ON THE CHILDREN, IN REACH FOR EVERYONE',
@@ -418,13 +265,6 @@
             'water, it stays IN. Getting this backwards sinks the boat.',
         },
         {
-          text: 'TUBES WIPED, PRESSURE CHECKED',
-          note:
-            'Salt dries abrasive on hypalon, and tubes go soft as the air ' +
-            'cools tonight.',
-          only: ['mostro'],
-        },
-        {
           text: 'FENDERS SET, LINES DOUBLED IF WIND IS COMING',
           note:
             'Fenders at the rubbing line. If it is going to blow overnight, ' +
@@ -471,7 +311,6 @@
           do: 'SQUEEZE THE PRIMER BULB UNTIL IT GOES HARD',
           why: 'It fills the fuel line so the engine has something to fire on. Hold the bulb with the arrow pointing up toward the engine.',
           watch: 'If the bulb never firms up, the fuel line is loose or the tank is dry.',
-          not: ['mostro'],
         },
         {
           do: 'TILT THE ENGINE FULLY DOWN',
@@ -495,7 +334,6 @@
           do: 'COLD ENGINE: FAST IDLE UP ONE NOTCH',
           why: 'A cold outboard needs a little extra throttle or choke to catch. If she is already warm, skip this.',
           watch: 'Too much fast idle and she will lurch when you shift. Bring it back down as soon as she runs.',
-          not: ['mostro'],
         },
         {
           do: 'TURN THE KEY. RELEASE IT THE MOMENT SHE FIRES',
@@ -506,12 +344,6 @@
           do: 'LOOK FOR THE PEE. A STEADY STREAM OF WATER',
           why: 'That little jet out of the back of the engine is proof the water pump is cooling it. It should appear within ten seconds.',
           watch: 'NO STREAM = SHUT DOWN NOW. Running dry destroys the engine in minutes. See NO TELLTALE under EMERGENCY.',
-        },
-        {
-          do: 'CHECK THE GAUGES: OIL, TEMP, VOLTS, TRIM',
-          why: 'On a big outboard the alarms are your early warning. Learn what normal looks like now, at the dock.',
-          watch: 'A buzzer at start-up is not "it always does that". Find out what it is.',
-          only: ['mostro'],
         },
         {
           do: 'LET HER IDLE HALF A MINUTE AND LISTEN',
@@ -532,14 +364,7 @@
         },
         {
           do: 'FENDERS DOWN THE SIDE YOU WILL BE AGAINST',
-          why: 'Fenders go on before you move, at the height of the rubbing line, tied to a cleat or grabrail.',
-          watch: 'Tubes bounce, they do not absorb a concrete edge. Fender the quarters where the tube meets the transom.',
-          only: ['mostro'],
-        },
-        {
-          do: 'FENDERS DOWN THE SIDE YOU WILL BE AGAINST',
           why: 'Gelcoat scratches for free and costs a deposit. Fenders on before you move, at the rubbing line.',
-          not: ['mostro'],
         },
         {
           do: 'HANDS AND FEET INSIDE THE BOAT',
@@ -568,13 +393,7 @@
         {
           do: 'LOOK BEHIND YOU, THEN BUILD SPEED SMOOTHLY',
           why: 'Trim fully down, throttle up progressively, let the bow come up and settle, then trim out a touch until she feels light and quiet.',
-          watch: 'Everyone seated and holding on before you plane. Nobody sitting on the bow or the tubes.',
-        },
-        {
-          do: 'REMEMBER: THIS THROTTLE IS A DECISION',
-          why: 'Two hundred and fifty horsepower on six metres accelerates faster than the crew expects. Give warning, then feed it in over three or four seconds.',
-          watch: 'A fast open boat also torque-steers to one side. Keep both hands on the wheel every time you accelerate.',
-          only: ['mostro'],
+          watch: 'Everyone seated and holding on before you plane. Nobody sitting on the bow or the gunwale.',
         },
       ],
     },
@@ -613,14 +432,7 @@
         },
         {
           do: 'CREW SEATED, NOBODY ON THE BOW',
-          why: 'On the plane a small boat leaves the water. Anyone forward of the console is one wave away from going over, and the propeller is right there.',
-          watch: 'Sitting on the tubes at speed is exactly how people end up in the water on a RIB.',
-          only: ['mostro'],
-        },
-        {
-          do: 'CREW SEATED, NOBODY ON THE BOW',
           why: 'On the plane a small boat leaves the water. Anyone forward of the console is one wave away from going over the side.',
-          not: ['mostro'],
         },
         {
           do: 'STAY OUTSIDE THE YELLOW BUOYS OFF BEACHES',
@@ -1052,7 +864,6 @@
           do: 'RIG THE FOUR HORSEPOWER AUXILIARY',
           why: 'That is what it is there for. Clamp it on the bracket, connect its own fuel, tilt down, and get yourself home slowly.',
           watch: 'It will make about three knots. Go with the wind, not against it.',
-          only: ['bluwater'],
         },
         {
           do: 'IT CRANKS BUT WILL NOT CATCH: SMELL FOR FUEL',
@@ -1341,16 +1152,16 @@
 
   const MENU = [
     { kind: 'section', label: 'THE DAY' },
-    { kind: 'check', key: 'handover', num: '01', label: 'HANDOVER',        sub: 'ASK BEFORE YOU SIGN' },
-    { kind: 'check', key: 'predep',   num: '02', label: 'BEFORE CAST OFF', sub: 'THE LAST LOOK' },
-    { kind: 'steps', key: 'start',    num: '03', label: 'START THE ENGINE',sub: 'COLD START, IN ORDER' },
-    { kind: 'steps', key: 'leave',    num: '04', label: 'LEAVE THE BERTH', sub: 'GETTING OFF CLEANLY' },
-    { kind: 'steps', key: 'underway', num: '05', label: 'UNDERWAY',        sub: 'DRIVING HER WELL' },
-    { kind: 'steps', key: 'anchor',   num: '06', label: 'ANCHOR & SWIM',   sub: 'STOPPING SOMEWHERE LOVELY' },
-    { kind: 'steps', key: 'alongside',num: '07', label: 'COME ALONGSIDE',  sub: 'DOCKING ON THE SIDE' },
-    { kind: 'steps', key: 'medmoor',  num: '08', label: 'MED MOOR STERN-TO',sub: 'THE GREEK HARBOUR WALL' },
-    { kind: 'check', key: 'shutdown', num: '09', label: 'SHUT DOWN',       sub: 'PUTTING HER TO BED' },
+    { kind: 'check', key: 'predep',   num: '01', label: 'BEFORE CAST OFF', sub: 'THE LAST LOOK' },
+    { kind: 'steps', key: 'start',    num: '02', label: 'START THE ENGINE',sub: 'COLD START, IN ORDER' },
+    { kind: 'steps', key: 'leave',    num: '03', label: 'LEAVE THE BERTH', sub: 'GETTING OFF CLEANLY' },
+    { kind: 'steps', key: 'underway', num: '04', label: 'UNDERWAY',        sub: 'DRIVING HER WELL' },
+    { kind: 'steps', key: 'anchor',   num: '05', label: 'ANCHOR & SWIM',   sub: 'STOPPING SOMEWHERE LOVELY' },
+    { kind: 'steps', key: 'alongside',num: '06', label: 'COME ALONGSIDE',  sub: 'DOCKING ON THE SIDE' },
+    { kind: 'steps', key: 'medmoor',  num: '07', label: 'MED MOOR STERN-TO',sub: 'THE GREEK HARBOUR WALL' },
+    { kind: 'check', key: 'shutdown', num: '08', label: 'SHUT DOWN',       sub: 'PUTTING HER TO BED' },
     { kind: 'section', label: 'REFERENCE' },
+    { kind: 'check', key: 'setup',    label: 'SET UP',           sub: 'TIME BACK · JACKETS · FUEL' },
     { kind: 'card',  key: 'card',     label: 'BOAT CARD',        sub: 'NUMBERS AND LIMITS' },
     { kind: 'steps', key: 'rules',    label: 'RULES OF THE ROAD',sub: 'WHO GIVES WAY' },
     { kind: 'steps', key: 'lines',    label: 'LINES & KNOTS',    sub: 'FOUR THINGS, THAT IS ALL' },
@@ -1358,6 +1169,6 @@
   ];
 
   window.SKIPPER_DATA = {
-    BOATS, BOAT_ORDER, SETTINGS, CHECKS, FLOWS, EMERGENCY, DRILLS, MAYDAY, MENU,
+    BOAT, SETTINGS, CHECKS, FLOWS, EMERGENCY, DRILLS, MAYDAY, MENU,
   };
 })();
