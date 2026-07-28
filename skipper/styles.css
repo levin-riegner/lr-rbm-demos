@@ -1,0 +1,400 @@
+/* ─────────────────────────────────────────────────────────────
+   SKIPPER — 600×600 additive-lens HUD.
+
+   Read at arm's length, in Aegean sun, by someone holding a
+   wheel with one hand and a wet rope with the other. That gives
+   five rules, and every number in this file comes out of one of
+   them:
+
+   1. BLACK IS TRANSPARENT. Pure #000 backgrounds, no ambient
+      gradients, no washes. Only the lit pixels reach the eye,
+      so the world shows through everything dark.
+   2. BIG. One instruction fills the panel. The step text runs
+      28–46px and auto-fits (app.js sets --do-size); 13px is the
+      hard floor and nothing carrying meaning goes under it.
+   3. BRIGHT. The waveguide subtracts contrast and never adds it,
+      so "muted" here still sits well above web-normal luminance.
+      --haze is the dimmest ink allowed to carry meaning.
+   4. ONE QUESTION PER SCREEN. Everything else is a hint strip.
+   5. GLANCEABLE STRUCTURE. Colour is a channel, not decoration:
+      aqua = navigate, white = the instruction, sun = the mistake
+      people make, go = done, stop = emergency. Never mixed.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --bg:       #000;
+  --ink:      #eef8ff;   /* the instruction — hottest pixel on the lens */
+  --ink-2:    #cfe3ee;   /* secondary copy */
+  --haze:     #93aab8;   /* dimmest ink that still carries meaning */
+  --aqua:     #35dcff;   /* primary / navigation / selection */
+  --aqua-hi:  #a6f0ff;
+  --sun:      #ffb43c;   /* caution — the mistake people actually make */
+  --go:       #46f0a0;   /* ticked, holding, good */
+  --stop:     #ff5747;   /* emergency */
+  --line:     #22343e;
+  --line-lit: #1c6a80;
+  --fill:     rgba(53,220,255,.10);
+  --fill-on:  rgba(53,220,255,.20);
+  --fill-hot: rgba(255,87,71,.16);
+  --fill-go:  rgba(70,240,160,.14);
+
+  --pad: 26px;           /* full-width gutter: 600 − 52 = 548 */
+  --do-size: 40px;       /* overwritten per-step by the auto-fitter */
+
+  /* micro-motion */
+  --m-fast: 130ms;
+  --m-base: 200ms;
+  --m-ease: cubic-bezier(.22,.68,0,1);
+  --m-stagger: 24ms;
+}
+
+/* ═════════════════════ MOTION ═════════════════════
+   The same restrained vocabulary the other demos in this repo
+   use — fade, fade-up, press — in plain CSS, no dependency.
+
+   Four rules for a lens: opacity and transform only (a bright
+   wash bleaches against the world); nothing over ~200ms and the
+   text is legible at frame one; it fires on real events only, so
+   the per-second clock tick can never make anything move; and
+   all of it off under prefers-reduced-motion.
+   ───────────────────────────────────────────────── */
+@keyframes m-fade    { from { opacity: 0 }                            to { opacity: 1 } }
+@keyframes m-fade-up { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+@keyframes m-slide   { from { opacity: 0; transform: translateX(10px) }to { opacity: 1; transform: none } }
+@keyframes m-press   { 0% { transform: none } 45% { transform: scale(.965) } 100% { transform: none } }
+@keyframes m-tick    { 0% { transform: scale(.6); opacity: 0 } 60% { transform: scale(1.15) } 100% { transform: none; opacity: 1 } }
+@keyframes m-pulse   { 0%,100% { opacity: 1 } 50% { opacity: .55 } }
+
+.screen.m-enter { animation: m-fade var(--m-base) var(--m-ease) both; }
+
+/* staggered entry for every list in the app; --i is set as rows are built */
+.menu > .row,
+.ck-list > .ck-row,
+.md-lines > .md-line,
+.card-grid > .cg,
+.md-script > .ms { animation: m-fade-up var(--m-base) var(--m-ease) both; animation-delay: calc(var(--i,0) * var(--m-stagger)); }
+
+.m-press { animation: m-press var(--m-fast) ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ═════════════════════ FRAME ═════════════════════ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 600px; height: 600px; overflow: hidden;
+  background: var(--bg); color: var(--ink);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 600;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+#app { position: relative; width: 600px; height: 600px; background: var(--bg); overflow: hidden; }
+
+.screen {
+  position: absolute; inset: 0;
+  padding: 12px var(--pad) 10px;
+  display: flex; flex-direction: column;
+  z-index: 2;
+}
+.hidden { display: none !important; }
+
+/* ═════════════════════ STATUS BAR ═════════════════════
+   The one piece of chrome that persists. It answers the two
+   ambient questions of a rented boat day — what am I on, and
+   how long until I have to be back — without being asked. */
+.statusbar {
+  position: absolute; top: 0; left: 0; right: 0; height: 38px; z-index: 6;
+  display: flex; align-items: center; gap: 9px;
+  padding: 0 var(--pad);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.sb-badge {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800;
+  font-size: 13px; letter-spacing: .06em;
+  color: #000; background: var(--aqua);
+  padding: 3px 7px; border-radius: 4px;
+}
+.sb-boat  { font-size: 15px; font-weight: 700; letter-spacing: .1em; color: var(--ink-2); }
+.sb-spacer{ flex: 1; }
+.sb-due {
+  font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px;
+  letter-spacing: .04em; color: var(--sun);
+}
+.sb-due.late { color: var(--stop); animation: m-pulse 1.6s ease-in-out infinite; }
+.sb-clock {
+  font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 15px;
+  letter-spacing: .04em; color: var(--haze);
+}
+/* every screen except the boat picker sits below the bar */
+#scHome, #scSos, #scSteps, #scCheck, #scCard, #scMayday { padding-top: 48px; }
+
+/* ═════════════════════ BOAT PICKER ═════════════════════ */
+.brandblock { padding-top: 10px; }
+.brand-name { font-size: 46px; font-weight: 700; letter-spacing: .02em; line-height: 1; color: var(--ink); }
+.brand-tag  { font-size: 13px; font-weight: 600; letter-spacing: .2em; color: var(--haze); margin-top: 7px; }
+
+.rule {
+  height: 2px; margin: 12px 0 14px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--aqua), var(--line-lit) 60%, transparent);
+}
+.ask { font-size: 15px; font-weight: 700; letter-spacing: .2em; color: var(--ink-2); margin-bottom: 12px; }
+
+/* ═════════════════════ MENUS ═════════════════════
+   One renderer for the boat picker, the home list, and the
+   emergency index. A window that scrolls the track under a
+   fixed viewport, so the row count is free and the type stays
+   large no matter how many entries there are. */
+.menu-window { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+.menu { display: flex; flex-direction: column; gap: 7px; transition: transform var(--m-base) var(--m-ease); }
+#boatList { gap: 9px; }
+
+.row {
+  display: grid; grid-template-columns: auto 1fr; align-items: center;
+  gap: 13px; padding: 9px 13px;
+  border: 2px solid var(--line); border-left: 5px solid var(--line);
+  border-radius: 7px; flex: none;
+  transition: border-color var(--m-fast) ease, background var(--m-fast) ease, transform var(--m-fast) var(--m-ease);
+}
+.row .num {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 20px;
+  color: var(--haze); min-width: 26px; text-align: center; line-height: 1;
+}
+.row .cell { min-width: 0; }
+.row .label { font-size: 25px; font-weight: 700; letter-spacing: .01em; line-height: 1.1; color: var(--ink-2); }
+.row .sub   { font-size: 13px; font-weight: 600; letter-spacing: .13em; color: var(--haze); margin-top: 3px; }
+.row .tickpill {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800;
+  color: var(--go); letter-spacing: .04em; margin-top: 4px;
+}
+
+.row.on {
+  border-color: var(--aqua); border-left-color: var(--aqua);
+  background: var(--fill); transform: translateX(4px);
+}
+.row.on .num   { color: var(--aqua); }
+.row.on .label { color: var(--ink); }
+.row.on .sub   { color: var(--aqua-hi); }
+
+.row.hot { border-left-color: var(--stop); }
+.row.hot .label { color: var(--stop); }
+.row.hot.on { border-color: var(--stop); border-left-color: var(--stop); background: var(--fill-hot); }
+.row.hot.on .label, .row.hot.on .num { color: var(--stop); }
+.row.hot.on .sub { color: #ffb0a7; }
+
+.row.done { border-left-color: var(--go); }
+.row.done .num { color: var(--go); }
+
+/* boat picker rows carry a character line, so they are taller */
+.row.boat { grid-template-columns: 1fr; gap: 0; padding: 11px 14px; }
+.row.boat .label { font-size: 30px; }
+.row.boat .spec {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;
+  color: var(--ink-2); letter-spacing: .02em; margin-top: 6px;
+}
+.row.boat.on .spec { color: var(--aqua-hi); }
+
+/* section dividers inside the home list */
+.row.section {
+  display: block; border: none; border-radius: 0; padding: 8px 0 2px;
+  font-size: 13px; font-weight: 700; letter-spacing: .24em; color: var(--haze);
+  border-bottom: 1px solid var(--line); margin-bottom: 1px;
+}
+
+/* afternoon-wind advisory on home — the local knowledge that
+   actually changes a day's plan in the Cyclades */
+.wx {
+  font-size: 13px; font-weight: 700; letter-spacing: .12em;
+  color: var(--sun); border: 1px solid var(--line-lit); border-left: 4px solid var(--sun);
+  border-radius: 5px; padding: 6px 10px; margin-bottom: 9px;
+  animation: m-fade var(--m-base) var(--m-ease) both;
+}
+.wx.hidden { display: none; }
+
+/* ═════════════════════ CONTENT HEADS ═════════════════════ */
+.chead {
+  display: flex; align-items: center; gap: 12px;
+  padding-bottom: 7px; margin-bottom: 10px;
+  border-bottom: 2px solid var(--line-lit);
+}
+.chead.hot { border-bottom-color: var(--stop); }
+.ch-title {
+  flex: 1; min-width: 0; font-size: 24px; font-weight: 700; letter-spacing: .04em;
+  color: var(--aqua); line-height: 1.05;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.chead.hot .ch-title { color: var(--stop); }
+.ch-count {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 16px;
+  letter-spacing: .03em; color: var(--ink-2);
+  border: 2px solid var(--line); border-radius: 5px; padding: 2px 7px;
+}
+.ch-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .2em; color: var(--haze); margin-bottom: 10px; }
+.hot-ink { color: var(--stop) !important; }
+
+/* ═════════════════════ STEP FLOW ═════════════════════
+   The instruction is the screen. WHY sits under it because a
+   step you understand is a step you actually perform, and WATCH
+   is amber because it is always the same sentence: here is the
+   mistake everybody makes. */
+.stepbody { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 13px; }
+
+.st-do {
+  font-size: var(--do-size); font-weight: 700; line-height: 1.06;
+  letter-spacing: -.005em; color: var(--ink);
+  text-shadow: 0 0 24px rgba(53,220,255,.22);
+  animation: m-slide var(--m-base) var(--m-ease) both;
+}
+.st-why {
+  font-size: 18px; font-weight: 600; line-height: 1.34; color: var(--ink-2);
+  animation: m-fade-up var(--m-base) var(--m-ease) both; animation-delay: 40ms;
+}
+.st-watch {
+  display: flex; gap: 9px; align-items: flex-start;
+  border: 2px solid var(--sun); border-radius: 7px;
+  background: rgba(255,180,60,.09); padding: 7px 10px;
+  animation: m-fade-up var(--m-base) var(--m-ease) both; animation-delay: 80ms;
+}
+.st-watch .wl {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 800;
+  letter-spacing: .14em; color: var(--sun); padding-top: 3px; flex: none;
+}
+.st-watch .wt { font-size: 16px; font-weight: 600; line-height: 1.28; color: var(--sun); }
+
+.dots { display: flex; gap: 5px; justify-content: center; margin: 11px 0 9px; }
+.dots i {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--line);
+  transition: background var(--m-fast) ease, transform var(--m-fast) ease;
+}
+.dots i.done { background: var(--line-lit); }
+.dots i.now  { background: var(--aqua); transform: scale(1.5); }
+.chead.hot ~ .dots i.now { background: var(--stop); }
+
+/* ═════════════════════ CHECKLIST ═════════════════════
+   Ticked with ⏎, which then jumps to the next unticked item —
+   so three presses clears three items and you never navigate.
+   ◀▶ moves instead of ▲▼ so that ▲ can stay wired to the
+   emergency index from every content screen in the app. */
+.ck-bar { height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+.ck-fill { height: 100%; width: 0; background: var(--go); border-radius: 3px; transition: width var(--m-base) var(--m-ease); }
+
+.ck-window { height: 296px; overflow: hidden; position: relative; }
+.ck-list { display: flex; flex-direction: column; gap: 7px; transition: transform var(--m-base) var(--m-ease); }
+
+.ck-row {
+  display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 12px;
+  min-height: 60px; padding: 7px 11px;
+  border: 2px solid var(--line); border-left: 5px solid var(--line); border-radius: 7px;
+  transition: border-color var(--m-fast) ease, background var(--m-fast) ease, transform var(--m-fast) var(--m-ease);
+}
+.ck-box {
+  width: 30px; height: 30px; border: 3px solid var(--haze); border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 21px; font-weight: 800; color: var(--go); line-height: 1;
+}
+.ck-text { font-size: 21px; font-weight: 700; line-height: 1.12; color: var(--ink-2); }
+.ck-val {
+  font-family: 'JetBrains Mono', monospace; font-size: 19px; font-weight: 800;
+  letter-spacing: .02em; color: var(--sun); margin-top: 4px;
+}
+.ck-row.on { border-color: var(--aqua); border-left-color: var(--aqua); background: var(--fill); transform: translateX(4px); }
+.ck-row.on .ck-text { color: var(--ink); }
+.ck-row.on .ck-box  { border-color: var(--aqua); }
+.ck-row.ticked { border-left-color: var(--go); }
+.ck-row.ticked .ck-box { border-color: var(--go); background: var(--fill-go); }
+.ck-row.ticked .ck-box span { animation: m-tick 220ms var(--m-ease) both; }
+.ck-row.ticked .ck-text { color: var(--haze); }
+.ck-row.on.ticked .ck-text { color: var(--ink-2); }
+
+/* value editing: ◀▶ becomes the wheel, so the row says so */
+.ck-row.editing { border-color: var(--sun); border-left-color: var(--sun); background: rgba(255,180,60,.10); }
+.ck-row.editing .ck-val { color: var(--sun); font-size: 25px; }
+.ck-row.editing .ck-val::before { content: '◀ '; color: var(--sun); }
+.ck-row.editing .ck-val::after  { content: ' ▶'; color: var(--sun); }
+
+/* the WHY for the focused item — this is where the checklist
+   earns its keep, because "ask about the drain plug" means
+   nothing without the sentence explaining what it is */
+.ck-note {
+  height: 82px; margin-top: 9px; padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 16px; font-weight: 600; line-height: 1.27; color: var(--ink-2);
+  overflow: hidden;
+}
+.ck-note.intro { color: var(--haze); }
+
+/* ═════════════════════ BOAT CARD ═════════════════════ */
+.card-body { flex: 1; min-height: 0; overflow: hidden; }
+.card-grid { display: flex; flex-direction: column; gap: 6px; }
+.cg {
+  display: grid; grid-template-columns: 128px 1fr; gap: 11px; align-items: baseline;
+  padding: 4px 0; border-bottom: 1px solid var(--line);
+}
+.cg-k { font-size: 13px; font-weight: 700; letter-spacing: .13em; color: var(--haze); }
+.cg-v { font-size: 19px; font-weight: 700; line-height: 1.14; color: var(--ink); }
+.cg-v .mono { font-family: 'JetBrains Mono', monospace; }
+.cg-v.big { font-size: 24px; }
+.cg-v.warn { color: var(--sun); }
+.cg-v .cf {
+  display: inline-block; font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 800; letter-spacing: .1em; color: var(--sun);
+  border: 1px solid var(--sun); border-radius: 3px; padding: 1px 4px; margin-left: 6px;
+  vertical-align: 2px;
+}
+.card-note {
+  font-size: 15px; font-weight: 600; line-height: 1.3; color: var(--ink-2);
+  border-left: 4px solid var(--aqua); padding: 4px 0 4px 11px; margin-top: 11px;
+}
+.card-foot { font-size: 13px; font-weight: 600; letter-spacing: .04em; color: var(--haze); margin-top: 10px; line-height: 1.32; }
+
+/* ═════════════════════ MAYDAY ═════════════════════
+   Three pages: how to talk, exactly what to say, and what to do
+   when nobody answers. The script page is the reason the app
+   exists — verbatim, short lines, readable while terrified. */
+.md-tabs { display: flex; gap: 6px; margin-bottom: 9px; }
+.md-tab {
+  flex: 1; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: .13em;
+  color: var(--haze); border: 2px solid var(--line); border-radius: 5px; padding: 4px 0;
+}
+.md-tab.on { color: #000; background: var(--stop); border-color: var(--stop); }
+
+.md-body { flex: 1; min-height: 0; overflow: hidden; }
+.md-head { font-size: 15px; font-weight: 700; letter-spacing: .16em; color: var(--stop); margin-bottom: 9px; }
+
+.md-lines { display: flex; flex-direction: column; gap: 6px; }
+.md-line { display: grid; grid-template-columns: 74px 1fr; gap: 11px; align-items: baseline; }
+.md-line .k {
+  font-family: 'JetBrains Mono', monospace; font-size: 17px; font-weight: 800;
+  color: var(--stop); letter-spacing: .02em;
+}
+.md-line .v { font-size: 16px; font-weight: 600; line-height: 1.26; color: var(--ink-2); }
+
+.md-script { display: flex; flex-direction: column; gap: 2px; }
+.ms { font-size: 21px; font-weight: 700; line-height: 1.16; color: var(--ink); }
+.ms.big { color: var(--stop); font-size: 25px; letter-spacing: .02em; }
+.ms.hint { color: var(--sun); font-size: 19px; }
+.ms .pos {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 21px;
+  color: var(--go); display: block; padding-left: 14px;
+}
+.ms .pos.waiting { color: var(--haze); animation: m-pulse 1.4s ease-in-out infinite; }
+
+.md-foot {
+  font-size: 14px; font-weight: 600; line-height: 1.3; color: var(--haze);
+  border-top: 1px solid var(--line); margin-top: 9px; padding-top: 7px;
+}
+
+/* ═════════════════════ HINT STRIP ═════════════════════ */
+.hints {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding-top: 8px; margin-top: auto;
+  font-size: 13px; font-weight: 700; letter-spacing: .12em; color: var(--haze);
+  border-top: 1px solid var(--line);
+}
+.hints b { color: var(--aqua); font-weight: 800; letter-spacing: 0; }
+.hints .hsep { color: var(--line-lit); }
+.hints .sos-hint b { color: var(--stop); }

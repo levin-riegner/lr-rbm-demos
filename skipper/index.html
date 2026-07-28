@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="Hands-free skipper's coach for small boats: handover questions, pre-departure checks, starting, docking, anchoring, and emergency drills.">
+  <meta name="mrbd-web-app-capable" content="yes">
+  <title>Skipper</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="be32beae-a2a9-423f-b55d-e646ec260f93"></script>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ══════════ PERSISTENT STATUS BAR ══════════
+       Boat, clock, and the countdown to the time you promised to
+       be back. Hidden only on the boat picker. -->
+  <div id="statusbar" class="statusbar hidden">
+    <span class="sb-badge" id="sbBadge">N470</span>
+    <span class="sb-boat" id="sbBoat">NIKITA 470</span>
+    <span class="sb-spacer"></span>
+    <span class="sb-due" id="sbDue"></span>
+    <span class="sb-clock" id="sbClock">--:--</span>
+  </div>
+
+  <!-- ══════════ BOAT PICKER ══════════ -->
+  <section id="scBoat" class="screen">
+    <div class="brandblock">
+      <div class="brand-name">SKIPPER</div>
+      <div class="brand-tag">EVERYTHING YOU NEED, ON THE LENS</div>
+    </div>
+    <div class="rule"></div>
+    <div class="ask">WHICH BOAT ARE YOU ON?</div>
+    <div class="menu" id="boatList"></div>
+    <div class="hints">
+      <span><b>▲▼</b> PICK</span><span class="hsep">·</span><span><b>⏎</b> START</span>
+    </div>
+  </section>
+
+  <!-- ══════════ HOME ══════════ -->
+  <section id="scHome" class="screen hidden">
+    <div class="wx" id="wxFlag"></div>
+    <div class="menu-window">
+      <div class="menu" id="homeList"></div>
+    </div>
+    <div class="hints">
+      <span><b>▲▼</b> PICK</span><span class="hsep">·</span><span><b>⏎</b> OPEN</span><span class="hsep">·</span><span><b>◀</b> BOAT</span>
+    </div>
+  </section>
+
+  <!-- ══════════ EMERGENCY INDEX ══════════ -->
+  <section id="scSos" class="screen hidden">
+    <header class="chead hot">
+      <span class="ch-title" id="sosTitle">EMERGENCY</span>
+      <span class="ch-count" id="sosCount"></span>
+    </header>
+    <div class="ch-eyebrow hot-ink">PICK THE ONE THAT IS HAPPENING</div>
+    <div class="menu-window sos-window">
+      <div class="menu" id="sosList"></div>
+    </div>
+    <div class="hints">
+      <span><b>▲▼</b> PICK</span><span class="hsep">·</span><span><b>⏎</b> OPEN</span><span class="hsep">·</span><span><b>◀</b> MENU</span>
+    </div>
+  </section>
+
+  <!-- ══════════ STEP FLOW ══════════ -->
+  <section id="scSteps" class="screen hidden">
+    <header class="chead" id="stHead">
+      <span class="ch-title" id="stTitle">START THE ENGINE</span>
+      <span class="ch-count" id="stCount">1/12</span>
+    </header>
+
+    <div class="stepbody">
+      <div class="st-do" id="stDo">—</div>
+      <div class="st-why" id="stWhy"></div>
+      <div class="st-watch hidden" id="stWatch">
+        <span class="wl">WATCH</span>
+        <span class="wt" id="stWatchText"></span>
+      </div>
+    </div>
+
+    <div class="dots" id="stDots"></div>
+    <div class="hints">
+      <span><b>◀▶</b> STEP</span><span class="hsep">·</span><span><b>⏎</b> NEXT</span><span class="hsep">·</span><span><b>▼</b> MENU</span><span class="hsep">·</span><span class="sos-hint"><b>▲</b> SOS</span>
+    </div>
+  </section>
+
+  <!-- ══════════ CHECKLIST ══════════ -->
+  <section id="scCheck" class="screen hidden">
+    <header class="chead">
+      <span class="ch-title" id="ckTitle">BEFORE CAST OFF</span>
+      <span class="ch-count" id="ckCount">0/12</span>
+    </header>
+
+    <div class="ck-bar"><div class="ck-fill" id="ckFill"></div></div>
+
+    <div class="ck-window">
+      <div class="ck-list" id="ckList"></div>
+    </div>
+
+    <div class="ck-note" id="ckNote"></div>
+
+    <div class="hints" id="ckHints">
+      <span><b>◀▶</b> MOVE</span><span class="hsep">·</span><span><b>⏎</b> TICK</span><span class="hsep">·</span><span><b>▼</b> MENU</span><span class="hsep">·</span><span class="sos-hint"><b>▲</b> SOS</span>
+    </div>
+  </section>
+
+  <!-- ══════════ BOAT CARD ══════════ -->
+  <section id="scCard" class="screen hidden">
+    <header class="chead">
+      <span class="ch-title" id="cdTitle">BOAT CARD</span>
+      <span class="ch-count" id="cdCount">1/2</span>
+    </header>
+    <div class="card-body" id="cardBody"></div>
+    <div class="hints">
+      <span><b>◀▶</b> PAGE</span><span class="hsep">·</span><span><b>▼</b> MENU</span><span class="hsep">·</span><span class="sos-hint"><b>▲</b> SOS</span>
+    </div>
+  </section>
+
+  <!-- ══════════ MAYDAY ══════════ -->
+  <section id="scMayday" class="screen hidden">
+    <header class="chead hot">
+      <span class="ch-title">MAYDAY</span>
+      <span class="ch-count" id="mdCount">2/3</span>
+    </header>
+    <div class="md-tabs" id="mdTabs"></div>
+    <div class="md-body" id="mdBody"></div>
+    <div class="hints">
+      <span><b>◀▶</b> PAGE</span><span class="hsep">·</span><span><b>▼</b> MENU</span>
+    </div>
+  </section>
+
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
