@@ -49,7 +49,6 @@ Each app is a small, self-contained web project designed for the 600x600 display
 | **Twitch Chat HUD** — large-type Twitch chat feed streamed anonymously over IRC WebSocket for hands-free streamers | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/twitch-chat) | [open](https://rbm-demos.lnr.io/twitch-chat/) | — | <img src="twitch-chat/screenshots/chatting.png" width="120"> |
 | **Weather Dashboard** — 5-day forecast for preset cities via Open-Meteo with a 10-minute cache | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/weather-dashboard) | [open](https://rbm-demos.lnr.io/weather-dashboard/) | — | <img src="https://github.com/user-attachments/assets/7a2298b7-244b-43bb-ae75-5a6ee7c626ca" width="120"> |
 | **World Clock** — live local times for favorite cities with a D-pad city picker | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/world-clock) | [open](https://rbm-demos.lnr.io/world-clock/) | — | <img src="world-clock/screenshots/preview.png" width="120"> |
-| **World Cup 2026** — glanceable tournament companion with countdown, 12 groups, full fixtures, bracket walker, and a live-match takeover | [code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/worldcup-2026) | [open](https://rbm-demos.lnr.io/worldcup-2026/) | — | <img src="worldcup-2026/screenshots/home.png" width="120"> |
 
 ### Proof of concept demos
 
