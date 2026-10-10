@@ -54,7 +54,9 @@ Voice control needs WebMCP enabled on the glasses (Developer Mode or rollout); r
 
 ## Screenshots
 
-No screenshots yet.
+| Preview |
+| --- |
+| <img src="screenshots/preview.png" width="300"> |
 
 ---
 

@@ -56,7 +56,9 @@ Every tool goes through the same functions the buttons call, so the countdown, p
 
 ## Screenshots
 
-No screenshots yet. The app has no `?state=` routing; a plain capture of the Home screen is the only deterministic state.
+| Preview |
+| --- |
+| <img src="screenshots/preview.png" width="300"> |
 
 ---
 

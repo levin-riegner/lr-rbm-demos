@@ -41,7 +41,9 @@ The phone side (`mobile.html`) is an ordinary touch page: PIN entry, presets and
 
 ## Screenshots
 
-No screenshots yet. The app has no `?state=` routing; the screen shown depends on the live WebSocket state.
+| Preview |
+| --- |
+| <img src="screenshots/preview.png" width="300"> |
 
 ---
 

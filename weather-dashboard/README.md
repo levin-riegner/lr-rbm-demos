@@ -54,7 +54,9 @@ The app registers three WebMCP tools on `document.modelContext` (`weather_get_st
 
 ## Screenshots
 
-No screenshots yet. The app has no `?state=` routing.
+| Preview |
+| --- |
+| <img src="screenshots/preview.png" width="300"> |
 
 ---
 

@@ -42,7 +42,7 @@ for d in */; do [ -f "${d}index.html" ] && [ "${d%/}" != "simulator" ] && echo "
 
 ### 3. Read the current `README.md`
 
-Read it **once**. Extract the demo rows from the tables under `## Hosted demos` (grouped as Primary / Secondary / Proof of concept / Testing; each row is `| [**Name**](…)<br><sub>pitch</sub> | preview | [Launch app](…) | [Open in simulator](…) | case study or — | <sub>status</sub> |`).
+Read it **once**. Extract the demo rows from the tables under `## Hosted demos` (grouped as Primary / Secondary / Proof of concept / Testing; each row is `| [**Name**](…) | description | preview | [Launch app](…) | [Open in simulator](…) | case study or — | <sub>status</sub> |`).
 
 ### 4. Decide if a sync is warranted
 
@@ -61,7 +61,7 @@ For each warranted change:
 
 - **Adding a demo:** insert one row in alphabetical position of the `### Secondary demos — Works in progress!` table (unless the summary you were given names another group).
   - Display label: read `<title>…</title>` from `<app>/index.html`. If empty, title-case the folder name (e.g. `pentatonic-solo` → `Pentatonic Solo`). Pitch: one short clause from the app's `<meta name="description">`.
-  - Columns: `| [**Name**](https://github.com/levin-riegner/lr-rbm-demos/tree/main/<app>)<br><sub>pitch</sub> | preview | [Launch app](https://rbm-demos.lnr.io/<app>/) | [Open in simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2F<app>%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) | — | <sub>status</sub> |` where preview is `<img src="<app>/screenshots/preview.png" width="160">` if that file exists else `—`, and status is the marker from the app README's `**Status: …**` callout (✅ Working, 🔌 Working with live data, 🧪 Concept) plus 🎙 if `app.js` contains `registerTool`.
+  - Columns: `| [**Name**](https://github.com/levin-riegner/lr-rbm-demos/tree/main/<app>) | one-sentence description | <img src="<app>/screenshots/preview.gif" width="160"> (or preview.png) | [Launch app](https://rbm-demos.lnr.io/<app>/) | [Open in simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2F<app>%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) | — | <sub>status</sub> |` where status is the marker from the app README's `**Status: …**` callout (✅ Working, 🔌 Working with live data, 🧪 Concept) plus feature markers from the code: 🎙 `registerTool`, 🧭 devicemotion/deviceorientation, 📍 geolocation, 🔊 AudioContext/Audio, 💾 localStorage, ✍️ text input/textarea.
 - **Removing a demo:** remove the matching row.
 - **Simulator change:** add or remove one bullet in the `## Simulator` features list, mirroring the language and tense of existing bullets.
 - **Preserve special cases verbatim.** `teleprompter` has two entries (`(admin)` and `(glasses)`) — do **not** collapse them.

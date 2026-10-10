@@ -36,7 +36,9 @@ A simulated live-transcription HUD for the Meta Ray-Ban Display glasses. A frien
 
 ## Screenshots
 
-No screenshots yet. The app reads a `?state=…` URL parameter so each screen can be captured deterministically: `live`, `translated`, `midstory`, `midstory-translated`, `scrollback`.
+| Preview (animated) | Preview |
+| --- | --- |
+| <img src="screenshots/preview.gif" width="300"> | <img src="screenshots/preview.png" width="300"> |
 
 ---
 

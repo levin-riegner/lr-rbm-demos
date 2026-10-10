@@ -39,7 +39,9 @@ A diagnostics page for the Meta Ray-Ban Display glasses' browser. Eight categori
 
 ## Screenshots
 
-No screenshots yet. The app reads a `?state=…` URL parameter (alias `?screen=`) so each category can be captured deterministically: `home`, `browser`, `useragent`, `screen-info`, `network`, `hardware`, `performance`, `apis`, `location`. An optional `?row=N` (or `?row=last`) focuses a given row on that screen.
+| Preview (animated) | Preview |
+| --- | --- |
+| <img src="screenshots/preview.gif" width="300"> | <img src="screenshots/preview.png" width="300"> |
 
 ---
 

@@ -52,7 +52,9 @@ Coins are matched by symbol or name (BTC, ETH, SOL, ADA, DOT, LINK, AVAX, MATIC)
 
 ## Screenshots
 
-No screenshots yet. The app has no `?state=` routing; a plain capture of the Home screen is the only deterministic state.
+| Preview |
+| --- |
+| <img src="screenshots/preview.png" width="300"> |
 
 ---
 
