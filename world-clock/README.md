@@ -42,6 +42,22 @@ npx serve -l 5050 world-clock
 
 Then open `http://localhost:5050` in Chrome at 600×600.
 
+### Regenerating screenshots
+
+> 🛠️ **Developer tooling only.** The app itself has zero Chrome dependency — it's vanilla HTML/CSS/JS that runs in the Ray-Ban Meta Display's built-in browser. The block below is just the local recipe used on a Mac to refresh the PNGs in `screenshots/`.
+
+The app has no `?state=` routing, so a single plain capture of the home screen is the recipe:
+
+```bash
+npx serve -l 5050 world-clock &
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+mkdir -p world-clock/screenshots
+"$CHROME" --headless --disable-gpu --hide-scrollbars \
+  --window-size=600,600 --virtual-time-budget=2000 \
+  --screenshot="world-clock/screenshots/preview.png" \
+  "http://localhost:5050/"
+```
+
 ## Files
 
 ```

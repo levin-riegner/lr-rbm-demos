@@ -94,6 +94,8 @@ Features:
 - Adjust HUD brightness, size, and background brightness
 - Press **H** to hide all UI overlays for clean screen recordings
 
+Meta also ships an official **Display Simulator** Chrome extension with its [Web Apps AI toolkit](https://github.com/facebook/meta-wearables-webapp): a 600×600 additive-display frame with D-pad input, display tuning, recording, and a QA checklist. Use it alongside the L+R simulator for day-to-day testing; neither replaces a pass on the glasses.
+
 ## Running an app locally
 
 ```bash

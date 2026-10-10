@@ -40,6 +40,21 @@ npx serve -l 4242 glasses-wack
 
 > ⚠️ Some checks (WebNFC, Battery, Wake Lock, vibration) require a real device or a Chromium build with the relevant flag — desktop Chrome will mark them N/A or fail gracefully.
 
+### Regenerating screenshots
+
+> 🛠️ **Developer tooling only.** The app itself has zero Chrome dependency — it's vanilla HTML/CSS/JS that runs in the Ray-Ban Meta Display's built-in browser. The block below is just the local recipe used on a Mac to refresh the PNGs in `screenshots/`.
+
+The app has a single screen and no `?state=` routing, so one plain capture is enough:
+
+```bash
+npx serve -l 4242 glasses-wack &
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+"$CHROME" --headless --disable-gpu --hide-scrollbars \
+  --window-size=600,600 --virtual-time-budget=2000 \
+  --screenshot="glasses-wack/screenshots/preview.png" \
+  "http://localhost:4242/"
+```
+
 ## Files
 
 ```

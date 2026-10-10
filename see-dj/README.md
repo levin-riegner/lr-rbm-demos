@@ -68,7 +68,13 @@ Only high-end standalones have the hardware ports to act as players or integrate
 
 ## Controls
 
-**None.** This is a passive read-only HUD — the DJ drives the gear, the glasses just report what the CDJs and mixer are doing. No D-pad input, no swipes, no Enter binding.
+| Where | Input | Result |
+| --- | --- | --- |
+| HUD | ▲ ▼ ◀ ▶ | Nothing — the HUD is read-only |
+| HUD | Enter | Nothing — the HUD is read-only |
+| HUD | Back gesture (thumb + middle finger) | Not handled in-app; leaves the app as usual |
+
+This is a passive read-only HUD — the DJ drives the gear, the glasses just report what the CDJs and mixer are doing. `app.js` registers no key handler at all; the only listeners are `visibilitychange` (stops the clock and telemetry feed while hidden, restarts it on return) and `DOMContentLoaded`.
 
 ---
 
