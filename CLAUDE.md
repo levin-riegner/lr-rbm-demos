@@ -20,17 +20,19 @@ The L+R simulator (additive waveguide blend over a real-world background) is hos
 
 - **Display:** 600×600, single eye, additive (transparent), **30 Hz panel** — anything you draw sits on top of the world. Prefer pure `#000` backgrounds; black = transparent on the lens. Frame budget is 33 ms; never assume 60 fps.
 - **Inputs available on the device:**
-  - D-pad: `▲ ▼ ◀ ▶` (EMG swipes / touchpad, delivered as arrow keys)
-  - `Enter` (index-finger pinch, the primary action)
-  - **Back gesture** (thumb + middle-finger pinch), delivered to the page as the `Escape` key. Handle it as "go back / dismiss". Document it in READMEs as **Back gesture**, never as an `Esc` key. Do not add in-app Back buttons.
+  - D-pad: `▲ ▼ ◀ ▶`. On the Meta Neural Band this is a thumb swipe along the index finger; the temple touchpad swipes the same way. Delivered as arrow keys.
+  - `Enter`: index finger pinched to thumb (the primary action).
+  - **Back gesture**: middle finger pinched to thumb, delivered to the page as the `Escape` key. Handle it as "go back / dismiss". Document it in READMEs as **Back gesture**, never as an `Esc` key. Do not add in-app Back buttons.
   - **Text entry:** a standard `<input>` / `<textarea>` opens the glasses' handwriting/voice composer when the wearer focuses and activates it. Read committed text from `input` / `change`. Never build a custom keyboard; keep the flow usable if composition is unavailable. Pick-from-list, wheel-pickers and digit carousels are still the idiomatic choice for constrained values.
   - **Voice via Meta AI (WebMCP):** apps can register tools on `document.modelContext` so the wearer can drive them by speaking. Additive only; see the `rbm-webmcp` skill.
   - Sensors: `devicemotion` / `deviceorientation` / `navigator.geolocation`, always behind an explicit Enable/Start action and `requestPermission()` where present.
-- **Inputs that DO NOT exist on the device — never document them as controls:**
+- **Inputs that DO NOT reach a web app — never document them as controls or features:**
   - A physical `Esc` key (document the Back gesture instead)
   - Mouse / tap-to-click on UI, Pointer Lock
   - An on-screen keyboard
   - A "×" close button
+  - Wrist rotation (pinch and turn), pinch-and-hold scrolling, double-tap wake, or any custom Neural Band gesture: Meta reserves these for the system. Web apps get exactly four swipes, select and back.
+  - Vibration / haptics: `navigator.vibrate` is a no-op on the glasses. Don't advertise haptic feedback.
 
 ## Repo layout
 
@@ -102,8 +104,8 @@ Match the **`flight-status/README.md`** template when adding or rewriting a per-
 The repo-root README is the front door. Keep its sections and order:
 
 1. Title `# Ray-Ban Meta Display glasses concept applications by L+R` + the showcase pitch paragraph (links to Meta docs)
-2. The DisplayGlasses.dev paragraph (simulator + getting started guide), the `Built by the team at L+R.` line, then the **Legend** table (Status markers ✅ 🔌 🧪 and Feature markers 🎙 ✍️ 🧭 📍 🎤 📷 🌐 📡 🤖 🔗 🔊 🎞️ 📳 💾) and the one-line note that every demo self-hosts fonts, works offline, handles the back gesture and has a QR in its README. The pitch copy is the developer's; don't reword it.
-3. `## Hosted demos` — grouped tables (Primary / Secondary / Proof of concept / Testing) with columns `Demo | Description | Preview | Live | Simulator | Case study | Status`. One row per demo folder. Demo is `[**Name**](https://github.com/levin-riegner/lr-rbm-demos/tree/main/<app-name>)`; Description is one plain sentence; Preview is `<img src="<app>/screenshots/preview.gif" width="160">` (or `preview.png`), every demo has one; Live is `[Launch app](https://rbm-demos.lnr.io/<app-name>/)`; Simulator is `[Open in simulator](https://displayglasses.dev/?url=<live url, URL-encoded>&pos=center&size=60&bright=100&bg=hiking&bg-dark=10)`; Case study is `[Case study](…)` or `—`; Status is `<sub>` + the marker from the app README's status callout (✅ working, 🔌 working with live data, 🧪 concept) + the feature markers detected from its code (🎙 `registerTool(` call, ✍️ text input, 🧭 device motion/orientation, 📍 geolocation, 🎤 speech recognition or mic capture, 📷 camera capture, 🌐 external fetch, 📡 WebSocket/socket.io, 🤖 an `api/` function calling an AI model, 🔗 the deep-link pair, 🔊 audio, 🎞️ canvas or animation frames, 📳 vibration, 💾 localStorage) + `</sub>`. The legend sits above the tables. No QR column (the QR lives in each app README). **Agents should not invent `github.com/user-attachments/…` preview URLs.**
+2. The DisplayGlasses.dev paragraph (simulator + getting started guide), the `Built by the team at L+R.` line, then the **Legend** table (Status markers ✅ 🔌 🧪 and Feature markers 🎙 ✍️ 🧭 📍 🎤 📷 🌐 📡 🤖 🔗 🔊 🎞️ 💾) and the one-line note that every demo self-hosts fonts, works offline, handles the back gesture and has a QR in its README. The pitch copy is the developer's; don't reword it.
+3. `## Hosted demos` — grouped tables (Primary / Secondary / Proof of concept / Testing) with columns `Demo | Description | Preview | Live | Simulator | Case study | Status`. One row per demo folder. Demo is `[**Name**](https://github.com/levin-riegner/lr-rbm-demos/tree/main/<app-name>)`; Description is one plain sentence; Preview is `<img src="<app>/screenshots/preview.gif" width="160">` (or `preview.png`), every demo has one; Live is `[Launch app](https://rbm-demos.lnr.io/<app-name>/)`; Simulator is `[Open in simulator](https://displayglasses.dev/?url=<live url, URL-encoded>&pos=center&size=60&bright=100&bg=hiking&bg-dark=10)`; Case study is `[Case study](…)` or `—`; Status is `<sub>` + the marker from the app README's status callout (✅ working, 🔌 working with live data, 🧪 concept) + the feature markers detected from its code (🎙 `registerTool(` call, ✍️ text input, 🧭 device motion/orientation, 📍 geolocation, 🎤 speech recognition or mic capture, 📷 camera capture, 🌐 external fetch, 📡 WebSocket/socket.io, 🤖 an `api/` function calling an AI model, 🔗 the deep-link pair, 🔊 audio, 🎞️ canvas or animation frames, 💾 localStorage) + `</sub>`. The legend sits above the tables. No QR column (the QR lives in each app README). **Agents should not invent `github.com/user-attachments/…` preview URLs.**
 4. `## Simulator` — short description + live link + bulleted feature list
 5. `## Running an app locally` — generic `python3 -m http.server 8080` snippet
 6. `## License`

@@ -89,7 +89,7 @@ No side-by-side pair to compare before you can act, and no caption underneath ex
 - **Hands-free temp entry.** On the pit you glance at your own thermometer and bump the reading with the D-pad. Each bump feeds the ETA and trips the wrap/pull thresholds. No Bluetooth probe required.
 - **Real smoking coaching.** The stall is detected and explained, not just waited out. Wrap fires at 165°F, pull at ~203°F, and the ETA says "STALL, ride it out" when the climb goes flat.
 - **Doneness, done right.** Steaks and burgers get a doneness ladder with carryover-aware pull temps (pull 5°F early, the meat keeps climbing off the heat).
-- **Cue alerts.** Every phase change fires a full-bleed heads-up with a chime and a haptic buzz, then auto-clears — held longer for first-timers, snapped away fast for pros.
+- **Cue alerts.** Every phase change fires a full-bleed heads-up with a chime, then auto-clears (the code also calls `navigator.vibrate`, which the glasses ignore: there is no haptic feedback on the device) — held longer for first-timers, snapped away fast for pros.
 - **A live cook is not one swipe from gone.** ◀ means "one question back" everywhere else, and the touchpad mirrors swipes onto it, so mid-cook it asks instead: *END THIS COOK? — RIBEYE STEAK · 0:08 to FLIP · 3 on the fire*, with KEEP COOKING focused by default. Nine hours of brisket should take more than a stray gesture to throw away.
 - **Temp Guide** and **survives a nap**: a built-in food-safety reference, and an in-progress cook saved locally so if the glasses sleep and wake you land right back on it (a must for an overnight brisket).
 
