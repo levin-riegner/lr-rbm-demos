@@ -215,11 +215,13 @@ function playNote(slot) {
 // ---------------------------------------------------------
 let pCtx, pCanvas;
 const particles = [];
+let particleRaf = null; // one stable handle per loop, so hidden can stop it
+let scopeRaf = null;
 
 function initParticles() {
   pCanvas = document.getElementById('particles');
   pCtx = pCanvas.getContext('2d');
-  requestAnimationFrame(tickParticles);
+  particleRaf = requestAnimationFrame(tickParticles);
 }
 
 function burstParticles(slot) {
@@ -258,7 +260,7 @@ function spawnParticle(cx, cy, speed) {
 
 let trickleAccum = 0;
 function tickParticles(t) {
-  if (!pCtx) { requestAnimationFrame(tickParticles); return; }
+  if (!pCtx) { particleRaf = requestAnimationFrame(tickParticles); return; }
 
   // trickle while a note is ringing — sparkle emanating from active pad
   if (currentVoice) {
@@ -313,7 +315,7 @@ function tickParticles(t) {
   }
 
   pCtx.globalCompositeOperation = 'source-over';
-  requestAnimationFrame(tickParticles);
+  particleRaf = requestAnimationFrame(tickParticles);
 }
 
 // ---------------------------------------------------------
@@ -325,10 +327,10 @@ function startScope() {
   scopeCtx = canvas.getContext('2d');
   scopeW = canvas.width;
   scopeH = canvas.height;
-  requestAnimationFrame(drawScope);
+  scopeRaf = requestAnimationFrame(drawScope);
 }
 function drawScope() {
-  if (!scopeCtx || !analyser) { requestAnimationFrame(drawScope); return; }
+  if (!scopeCtx || !analyser) { scopeRaf = requestAnimationFrame(drawScope); return; }
   analyser.getByteTimeDomainData(analyserData);
 
   scopeCtx.clearRect(0, 0, scopeW, scopeH);
@@ -375,7 +377,7 @@ function drawScope() {
     scopeCtx.shadowBlur = 0;
   }
 
-  requestAnimationFrame(drawScope);
+  scopeRaf = requestAnimationFrame(drawScope);
 }
 
 // ---------------------------------------------------------
@@ -419,13 +421,31 @@ document.addEventListener('keyup', (e) => {
 });
 
 // safety: cut ringing note when window loses focus
-window.addEventListener('blur', () => {
+function silenceVoice() {
   if (currentVoice) {
     cutVoice(currentVoice, QUICK_RELEASE);
     currentVoice = null;
     document.getElementById('now-sub').textContent = 'SILENT';
     document.querySelector('.stage')?.classList.remove('ringing');
   }
+}
+window.addEventListener('blur', silenceVoice);
+
+// hidden page: silence the synth, suspend the audio graph (delay tail
+// included) and stop both canvas loops; bring them back on return.
+function pauseForHidden() {
+  silenceVoice();
+  if (particleRaf) { cancelAnimationFrame(particleRaf); particleRaf = null; }
+  if (scopeRaf)    { cancelAnimationFrame(scopeRaf);    scopeRaf = null; }
+  if (actx && actx.state === 'running') { try { actx.suspend(); } catch (e) {} }
+}
+function resumeFromHidden() {
+  if (actx && actx.state === 'suspended') { try { actx.resume(); } catch (e) {} }
+  if (pCtx && !particleRaf)     particleRaf = requestAnimationFrame(tickParticles);
+  if (scopeCtx && !scopeRaf)    scopeRaf    = requestAnimationFrame(drawScope);
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pauseForHidden(); else resumeFromHidden();
 });
 
 // click/touch on pads (tap = trigger)

@@ -18,6 +18,7 @@ const state = {
   recognition: null,
   recognitionSupported: false,
   pendingConfirm: null,
+  confirmReturnEl: null,
   focusedEl: null,
 };
 
@@ -348,6 +349,16 @@ function openDetail(id) {
   $('#detail-time').textContent  = relTime(r.ts);
   showScreen('detail');
 }
+/* back gesture from a riff: the list opens with that riff focused again */
+function backToList() {
+  const id = state.currentRiffId;
+  openList();
+  if (!id) return;
+  requestAnimationFrame(() => {
+    const el = $(`.riff-item[data-id="${id}"]`);
+    if (el) setFocus(el);
+  });
+}
 function deleteCurrentRiff() {
   if (!state.currentRiffId) return;
   askConfirm('DELETE RIFF?', 'This Riff will be permanently removed.', () => {
@@ -364,16 +375,35 @@ function askConfirm(eyebrow, msg, onYes) {
   $('#confirm-eyebrow').textContent = eyebrow;
   $('#confirm-msg').textContent = msg;
   state.pendingConfirm = onYes;
+  state.confirmReturnEl = state.focusedEl; // where to land when cancelled
   $('#confirm').classList.remove('hidden');
   requestAnimationFrame(() => setFocus($('#confirm-yes')));
 }
 function closeConfirm(run) {
   $('#confirm').classList.add('hidden');
   const fn = state.pendingConfirm;
+  const back = state.confirmReturnEl;
   state.pendingConfirm = null;
+  state.confirmReturnEl = null;
   if (run && typeof fn === 'function') fn();
-  requestAnimationFrame(() => autoFocus());
+  requestAnimationFrame(() => {
+    // cancelling returns focus to the button that opened the confirm
+    if (!run && back && document.contains(back) && back.offsetParent !== null) setFocus(back);
+    else autoFocus();
+  });
 }
+
+/* ─────────── Lifecycle (hidden page) ─────────── */
+// The mic cannot keep listening once the app is off the lens, so a hidden
+// page ends the take cleanly: the timer and visualizer stop and whatever
+// was transcribed stays on screen as READY TO SAVE. Nothing restarts on
+// its own; the wearer taps the mic again.
+function pauseForHidden() {
+  if (state.recording) stopRecording();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pauseForHidden();
+});
 
 /* ─────────── Toast ─────────── */
 let toastTimer = null;
@@ -519,7 +549,7 @@ function bindEvents() {
       case 'Escape':
         if (!$('#confirm').classList.contains('hidden')) closeConfirm(false);
         else if (!$('#record').classList.contains('hidden')) cancelRecord();
-        else if (!$('#detail').classList.contains('hidden')) openList();
+        else if (!$('#detail').classList.contains('hidden')) backToList();
         else if (!$('#list').classList.contains('hidden')) goHome();
         return;
     }

@@ -198,7 +198,11 @@ function heatColor(p) {
 }
 
 const splash = {
-  DUR: 2600, raf: 0, t0: 0, ctx: null, coals: [], sparks: [], ended: true, onDone: null,
+  DUR: 2600, raf: 0, t0: 0, ctx: null, coals: [], sparks: [], ended: true, onDone: null, held: false,
+
+  /* a hidden page stops the frame loop; it picks the clock back up on return */
+  pause()  { if (!this.ended && this.raf) { cancelAnimationFrame(this.raf); this.raf = 0; this.held = true; } },
+  resume() { if (!this.ended && this.held) { this.held = false; this.raf = requestAnimationFrame((t) => this.frame(t)); } },
 
   prepare() {
     const cv = $('#splash-canvas');
@@ -1505,6 +1509,17 @@ function bindEvents() {
     // the splash is skippable with anything at all
     if (state.screen === 'splash') { e.preventDefault(); splash.finish(); return; }
 
+    // the back gesture (Escape) closes one level: the confirm, the alert,
+    // or one question back — the same places ◀ goes
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (state.endAsk) { closeEndAsk(); return; }
+      if (state.alertUid != null) { ackCue(); return; }
+      if (state.screen === 'safety') { if (!state.safetyFirst) goReturn(); return; }
+      handleBack();
+      return;
+    }
+
     // the end confirm sits above everything and steers with any direction
     if (state.endAsk) {
       if (['ArrowLeft', 'ArrowUp'].includes(e.key))   { e.preventDefault(); moveFocus(-1); return; }
@@ -1912,6 +1927,7 @@ function applyUrlState() {
 /* ═════════════════ boot ═════════════════ */
 function boot() {
   bindEvents();
+  registerWebMcp();
   paintStepRails();
   renderModePick();
   renderSafety();
@@ -1929,8 +1945,193 @@ function boot() {
     else goSafety(true);
   }));
 }
+let loopId = null;
 function startLoop() {
-  setInterval(tick, 200);
+  if (loopId) return;
+  loopId = setInterval(tick, 200);
+}
+function stopLoop() {
+  clearInterval(loopId);
+  loopId = null;
+}
+
+/* Every deadline is a clock() stamp, so the 200ms loop is only a repaint:
+   stop it (and the splash) while the page is hidden, catch up on return. */
+function pauseForHidden() {
+  stopLoop();
+  splash.pause();
+}
+function resumeFromHidden() {
+  splash.resume();
+  startLoop();
+  tick();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pauseForHidden(); else resumeFromHidden();
+});
+
+/* ---- WebMCP (Meta AI voice control) --------------------------------------
+   Additive: the app works identically when document.modelContext is absent.
+   Utterances: "what do I do now?", "I flipped it" / "done", "pause the
+   cook", "put the timer back", "end this cook". */
+function voiceSnapshot() {
+  const rem = preheatRem();
+  const out = {
+    screen: state.screen,
+    paused: isPaused(),
+    preheat_remaining_sec: rem == null ? null : Math.max(0, Math.round(rem)),
+  };
+  const pit = pitItem();
+  const it = primaryItem();
+  if (state.active && pit && !pit.done) {
+    const phase = pitPhase(pit);
+    out.cook = { name: pit.name, mode: pit.mode, engine: 'pit monitor' };
+    out.phase = pit.resting ? 'REST' : phase.tag;
+    out.doing = pit.resting ? 'Resting — keep it wrapped.' : (phase.hold || phase.cue);
+    out.meat_f = pit.noProbe ? null : pit.meatF;
+    out.target_f = pit.targetF;
+    out.pit_f = pit.pitF;
+    out.pit_target_f = pit.pitTarget;
+    out.pit_alarm = !!pit.pitBad;
+    out.spritz_due = !!pit.spritzDue;
+    out.can_pull = isPullPhase(pit) && !pit.resting;
+    out.eta = pit.resting ? formatClock(Math.max(0, (pit.restEndTs - clock()) / 1000)) : pitEta(pit).v;
+    out.elapsed = fmtElapsed(clock() - pit.litAt);
+  } else if (state.active && it) {
+    const st = itemStatus(it);
+    const cur = it.steps[it.stepIndex];
+    const next = it.steps[it.stepIndex + 1];
+    out.cook = { name: it.name, doneness: it.doneness, engine: 'flip coach' };
+    out.status = st;
+    out.step = cur.tag;
+    out.doing = cur.hold || cur.cue;
+    out.remaining_sec = Math.round(remainingSec(it));
+    out.due_now = st === 'due' || st === 'serve';
+    out.next = next ? { tag: next.tag, cue: next.cue } : { tag: 'SERVE', cue: 'Off the fire and onto the plate.' };
+    const est = estTemp(it);
+    if (est != null) { out.est_temp_f = est; out.target_f = it.targetF; }
+  } else {
+    out.cook = null;
+    out.setup = {
+      mode: state.mode,
+      fuel: state.fuel ? state.fuel.name : null,
+      food: state.selCook ? state.selCook.name : null,
+    };
+  }
+  return out;
+}
+function voiceNoCook() {
+  return { error: true, message: 'No cook is running. Set one up on screen with the D-pad.', next_action: 'Tell the wearer to start a cook on screen, then stop.' };
+}
+
+function registerWebMcp() {
+  const ctx = document.modelContext;
+  if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+  function safeRegister(tool) {
+    try {
+      const r = ctx.registerTool(tool);
+      if (r && typeof r.then === 'function') {
+        r.then(undefined, (err) => { console.error(tool.name + ' registration failed', err); });
+      }
+    } catch (err) {
+      console.error(tool.name + ' registration failed', err);
+    }
+  }
+
+  safeRegister({
+    name: 'grill_get_state',
+    description: 'Report the live cook: what to do right now, the countdown to the next cue, estimated or dialled-in temperatures, pause state and the preheat clock. Read-only.',
+    inputSchema: { type: 'object', properties: {} },
+    annotations: { readOnlyHint: true },
+    execute: () => {
+      const out = voiceSnapshot();
+      out.next_action = 'Tell the wearer the one thing to do now and the time to the next cue, in one short sentence.';
+      return out;
+    }
+  });
+
+  safeRegister({
+    name: 'grill_next_step',
+    description: 'Confirm the current cue is done (flipped, moved, pulled) and move the cook to its next beat — the same as DONE / I DID IT ALREADY. On the pit monitor this confirms PULL when the pull phase is reached.',
+    inputSchema: { type: 'object', properties: {} },
+    execute: () => {
+      if (!state.active) return voiceNoCook();
+      const pit = pitItem();
+      if (pit) {
+        if (isPullPhase(pit) && !pit.resting) confirmPull();
+        else {
+          const out = voiceSnapshot(); out.error = true;
+          out.message = 'A pit cook advances on temperature and time, not on confirmation.';
+          out.next_action = 'Say what the monitor is waiting for, in one short sentence.';
+          return out;
+        }
+      } else {
+        advanceItem(primaryItem());
+      }
+      const out = voiceSnapshot();
+      out.next_action = state.active
+        ? 'Confirm and say the next cue and its countdown in one short sentence, then stop.'
+        : 'Tell the wearer the cook is plated, then stop.';
+      return out;
+    }
+  });
+
+  safeRegister({
+    name: 'grill_set_paused',
+    description: 'Pause or resume the whole cook clock (countdowns, elapsed time, projections freeze together). paused true pauses, false resumes.',
+    inputSchema: {
+      type: 'object',
+      properties: { paused: { type: 'boolean', description: 'true to pause the cook, false to resume it.' } },
+      required: ['paused']
+    },
+    execute: (args) => {
+      if (!state.active) return voiceNoCook();
+      const want = !!(args && args.paused);
+      if (want !== isPaused()) togglePause();
+      const out = voiceSnapshot();
+      out.next_action = 'Confirm in one short sentence, then stop.';
+      return out;
+    }
+  });
+
+  safeRegister({
+    name: 'grill_reset_timer',
+    description: 'Put the current step\'s countdown back to its full length (flip coach only), the same as RESET TIMER.',
+    inputSchema: { type: 'object', properties: {} },
+    execute: () => {
+      if (!state.active || pitItem() || !primaryItem()) {
+        return { error: true, message: 'There is no flip-coach countdown to reset right now.', next_action: 'Say so in one short sentence, then stop.' };
+      }
+      resetTimer();
+      const out = voiceSnapshot();
+      out.next_action = 'Confirm the new countdown in one short sentence, then stop.';
+      return out;
+    }
+  });
+
+  safeRegister({
+    name: 'grill_end_cook',
+    description: 'End the live cook and go back to the food list. Destructive: pass confirm true only after the wearer clearly said to end or stop the cook.',
+    inputSchema: {
+      type: 'object',
+      properties: { confirm: { type: 'boolean', description: 'Must be true. The wearer has confirmed they want to end the cook.' } },
+      required: ['confirm']
+    },
+    execute: (args) => {
+      if (!state.active) return voiceNoCook();
+      if (!(args && args.confirm === true)) {
+        const out = voiceSnapshot(); out.error = true;
+        out.message = 'Not ended. Ask the wearer to confirm ending the cook, then call again with confirm true.';
+        out.next_action = 'Ask for confirmation in one short sentence.';
+        return out;
+      }
+      quitCook();
+      const out = voiceSnapshot();
+      out.next_action = 'Confirm the cook is ended in one short sentence, then stop.';
+      return out;
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', boot);

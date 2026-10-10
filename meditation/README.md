@@ -19,7 +19,19 @@ Open [http://localhost:8080](http://localhost:8080) in Chrome, then:
 
 - **Arrow keys** — move focus (D-pad)
 - **Enter** — activate focused element (EMG pinch)
-- **Escape** — back / pause during session
+- **Back gesture (thumb + middle finger)** — back / pause during session
+- **Voice (Meta AI)** — start, pause, resume or end a session by speaking (see below)
+
+## Voice (Meta AI)
+
+With WebMCP enabled on the glasses, Meta AI can drive the timer:
+
+- "Start a ten minute meditation."
+- "How long is left?"
+- "Pause." / "Resume."
+- "End the session."
+
+Voice control is additive — the D-pad path is unchanged — and it needs WebMCP enabled on the device (Developer Mode or rollout). Relaunch the app after enabling it.
 
 ## Screens
 

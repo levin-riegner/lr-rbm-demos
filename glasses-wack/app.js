@@ -631,6 +631,35 @@
 
   setFocus(0);
 
+  // ─── LIFECYCLE ───────────────────────────────────────────────────
+  // The three rAF loops and the wake lock are the only things that keep
+  // running on their own. Stop them while the page is hidden and put back
+  // whatever was live when it returns.
+  let hiddenResume = null;
+  const pauseForHidden = () => {
+    hiddenResume = {
+      webgl2:   !!glState.gl,
+      canvas2d: !!c2dState.raf,
+      gamepad:  !!gpState.raf,
+      wakelock: !!wlState.sentinel, // the browser drops it on hide; re-request on show
+    };
+    stopWebGL();
+    stopCanvas2D();
+    stopGamepad();
+  };
+  const resumeFromHidden = () => {
+    const r = hiddenResume;
+    hiddenResume = null;
+    if (!r) return;
+    if (r.webgl2)   runWebGL();
+    if (r.canvas2d) runCanvas2D();
+    if (r.gamepad)  runGamepad();
+    if (r.wakelock && !wlState.sentinel) runWakeLock();
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
+
   // Prime SpeechSynthesis voices (Chromium loads asynchronously)
   if ('speechSynthesis' in window) {
     window.speechSynthesis.onvoiceschanged = () => {};

@@ -137,7 +137,8 @@
   function navigateTo(screenId, opts) {
     opts = opts || {};
     if (opts.addToHistory !== false && state.currentScreen) {
-      state.history.push(state.currentScreen);
+      // remember the control that opened the next screen, so back lands on it
+      state.history.push({ screen: state.currentScreen, focus: focusKey(currentFocused()) });
     }
     Object.values(screens).forEach(function (el) { el.classList.add('hidden'); });
     screens[screenId].classList.remove('hidden');
@@ -148,12 +149,43 @@
 
   function navigateBack() {
     if (!state.history.length) return;
-    var prev = state.history.pop();
+    var entry = state.history.pop();
+    var prev = entry.screen;
     Object.values(screens).forEach(function (el) { el.classList.add('hidden'); });
     screens[prev].classList.remove('hidden');
     state.currentScreen = prev;
     onScreenEnter(prev);
     focusFirst(screens[prev]);
+    restoreFocus(screens[prev], entry.focus);
+  }
+
+  // Lists re-render on entry, so focus is remembered by what the element
+  // is (action + event / date), not by the element itself.
+  function currentFocused() {
+    var c = screens[state.currentScreen];
+    return c ? c.querySelector('.focusable.focused') : null;
+  }
+  function focusKey(el) {
+    if (!el) return null;
+    return {
+      action: el.getAttribute('data-action'),
+      id:     el.getAttribute('data-event-id'),
+      date:   el.getAttribute('data-date')
+    };
+  }
+  function restoreFocus(container, key) {
+    if (!key) return;
+    var els = focusables(container);
+    var match = els.find(function (el) {
+      return el.getAttribute('data-action') === key.action &&
+             el.getAttribute('data-event-id') === key.id &&
+             el.getAttribute('data-date') === key.date;
+    });
+    if (!match) return;
+    els.forEach(function (el) { el.classList.remove('focused'); });
+    match.classList.add('focused');
+    match.focus();
+    match.scrollIntoView({ block: 'nearest' });
   }
 
   function onScreenEnter(id) {
@@ -556,6 +588,25 @@
     state.animFrame = requestAnimationFrame(drawParticles);
   }
 
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  // The particle loop and the 10s clock refresh are the only things that
+  // keep running; stop both while the page is hidden and catch up on return.
+  function startLoops() {
+    if (!state.animFrame)     state.animFrame = requestAnimationFrame(drawParticles);
+    if (!state.clockInterval) state.clockInterval = setInterval(renderClock, 10000);
+  }
+  function stopLoops() {
+    if (state.animFrame) cancelAnimationFrame(state.animFrame);
+    state.animFrame = null;
+    if (state.clockInterval) clearInterval(state.clockInterval);
+    state.clockInterval = null;
+  }
+  function pauseForHidden()   { stopLoops(); }
+  function resumeFromHidden() { renderClock(); startLoops(); }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
+
   // ── Keyboard ──────────────────────────────────────────────────────────────
   document.addEventListener('keydown', function (e) {
     if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); moveFocus('down'); }
@@ -578,9 +629,8 @@
     canvas.width = 600; canvas.height = 600;
 
     initParticles();
-    drawParticles();
     renderClock();
-    state.clockInterval = setInterval(renderClock, 10000);
+    startLoops();
 
     navigateTo('ambient', { addToHistory: false });
 

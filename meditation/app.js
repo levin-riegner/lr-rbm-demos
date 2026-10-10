@@ -43,6 +43,7 @@
 
   var screens = {};
   var audioCtx = null;
+  var returnFocus = {}; // screen id -> the control that was focused when we left it
 
   function collectScreens() {
     document.querySelectorAll('.screen').forEach(function (s) {
@@ -56,6 +57,9 @@
     var addToHistory = options.addToHistory !== false;
     if (addToHistory && state.currentScreen && state.currentScreen !== screenId) {
       state.screenHistory.push(state.currentScreen);
+      var ae = document.activeElement;
+      returnFocus[state.currentScreen] =
+        ae && ae.classList && ae.classList.contains('focusable') ? ae : null;
     }
     Object.values(screens).forEach(function (s) { s.classList.add('hidden'); });
     if (screens[screenId]) {
@@ -73,7 +77,12 @@
       return;
     }
     if (state.screenHistory.length > 0) {
-      navigateTo(state.screenHistory.pop(), { addToHistory: false });
+      var prev = state.screenHistory.pop();
+      navigateTo(prev, { addToHistory: false });
+      // back lands on the control that opened the screen we just left
+      var el = returnFocus[prev];
+      returnFocus[prev] = null;
+      if (el && screens[prev] && screens[prev].contains(el) && !el.disabled) el.focus();
     } else {
       navigateTo('home', { addToHistory: false });
     }
@@ -318,6 +327,9 @@
     state.session.remainingSec = Math.max(0, state.session.startRemaining - Math.floor(elapsedMs / 1000));
     if (state.session.rafId) cancelAnimationFrame(state.session.rafId);
     state.session.rafId = null;
+    // nothing to count while paused — the tick restarts on resume
+    if (state.session.tickId) clearInterval(state.session.tickId);
+    state.session.tickId = null;
     var stage = document.querySelector('#session .session-stage');
     if (stage) stage.classList.add('paused');
     var pauseBtn = document.getElementById('pause-btn');
@@ -339,6 +351,8 @@
     var pauseBtn = document.getElementById('pause-btn');
     if (pauseBtn) { pauseBtn.textContent = 'Pause'; pauseBtn.dataset.action = 'pause'; }
     state.session.rafId = requestAnimationFrame(breathingFrame);
+    if (state.session.tickId) clearInterval(state.session.tickId);
+    state.session.tickId = setInterval(tickCountdown, 250);
   }
 
   function stopTimers() {
@@ -508,10 +522,127 @@
       }
     });
 
-    // Pause audio / animation if tab hidden — save battery
+    // Hidden page: a running session pauses (animation, countdown and tick
+    // all stop) and waits for the wearer to press Resume — by design, a
+    // breathing guide should not run while nobody is looking at it.
     document.addEventListener('visibilitychange', function () {
-      if (document.hidden && state.session.active && !state.session.paused) {
-        pauseSession();
+      if (document.hidden) pauseForHidden();
+    });
+  }
+
+  function pauseForHidden() {
+    if (state.session.active && !state.session.paused) pauseSession();
+  }
+
+  // ==================== WebMCP (Meta AI voice control) ====================
+  // Additive: the app works identically when document.modelContext is absent.
+  // Utterances: "start a ten minute meditation", "how long is left?",
+  // "pause", "resume", "end the session".
+  function liveRemainingSec() {
+    var s = state.session;
+    if (!s.active) return 0;
+    if (s.paused) return s.remainingSec;
+    return Math.max(0, s.startRemaining - Math.floor((performance.now() - s.startedAt) / 1000));
+  }
+  function voiceSnapshot() {
+    var s = state.session;
+    return {
+      screen: state.currentScreen,
+      pattern: 'box breathing (inhale 4s, hold 4s, exhale 4s, hold 4s)',
+      presets_min: [5, 10, 15, 20, 30],
+      session: s.active ? {
+        duration_min: s.durationMin,
+        remaining_sec: liveRemainingSec(),
+        paused: s.paused,
+        phase: CONFIG.phases[s.phaseIdx].name
+      } : null,
+      sessions_logged: state.data.history.length
+    };
+  }
+  function registerWebMcp() {
+    var ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        var r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, function (err) { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    safeRegister({
+      name: 'meditation_get_state',
+      description: 'Report whether a breathing session is running, its length, time remaining, current breath phase and pause state. Read-only.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: function () {
+        var out = voiceSnapshot();
+        out.next_action = 'Answer in one short, calm sentence, then stop.';
+        return out;
+      }
+    });
+
+    safeRegister({
+      name: 'meditation_start',
+      description: 'Start a box-breathing session of the given length in minutes (the on-screen presets are 5, 10, 15, 20 and 30; any whole number from 1 to 120 works). The only pattern is box breathing. Fails if a session is already running.',
+      inputSchema: {
+        type: 'object',
+        properties: { minutes: { type: 'integer', description: 'Session length in minutes, 1 to 120. Presets: 5, 10, 15, 20, 30.' } },
+        required: ['minutes']
+      },
+      execute: function (args) {
+        if (state.session.active) {
+          var busy = voiceSnapshot(); busy.error = true;
+          busy.message = 'A session is already running. End it first.';
+          busy.next_action = 'Say a session is already running, then stop.';
+          return busy;
+        }
+        var min = parseInt(args && args.minutes, 10);
+        if (isNaN(min) || min < 1 || min > 120) {
+          return { error: true, message: 'minutes must be a whole number from 1 to 120.', next_action: 'Ask how long the session should be, then call again.' };
+        }
+        startSession(min);
+        var out = voiceSnapshot();
+        out.next_action = 'Confirm the session has started in one short, calm sentence, then stop.';
+        return out;
+      }
+    });
+
+    safeRegister({
+      name: 'meditation_set_paused',
+      description: 'Pause or resume the running session. paused true pauses, false resumes (resuming restarts the breath cycle from Inhale, as the on-screen Resume does).',
+      inputSchema: {
+        type: 'object',
+        properties: { paused: { type: 'boolean', description: 'true to pause, false to resume.' } },
+        required: ['paused']
+      },
+      execute: function (args) {
+        if (!state.session.active) {
+          return { error: true, message: 'No session is running.', next_action: 'Say no session is running, then stop.' };
+        }
+        if (args && args.paused) pauseSession(); else resumeSession();
+        var out = voiceSnapshot();
+        out.next_action = 'Confirm in one short, calm sentence, then stop.';
+        return out;
+      }
+    });
+
+    safeRegister({
+      name: 'meditation_stop',
+      description: 'End the running session early and return home, the same as the End button. Sessions of 30 seconds or more are saved to history.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        if (!state.session.active) {
+          return { error: true, message: 'No session is running.', next_action: 'Say no session is running, then stop.' };
+        }
+        endSession();
+        var out = voiceSnapshot();
+        out.next_action = 'Confirm the session has ended in one short, calm sentence, then stop.';
+        return out;
       }
     });
   }
@@ -521,6 +652,7 @@
     collectScreens();
     setupEvents();
     loadData();
+    registerWebMcp();
     setTimeout(function () {
       navigateTo('home', { addToHistory: false });
     }, 50);

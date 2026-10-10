@@ -33,8 +33,25 @@ A hands-free cooking companion for the Meta Display glasses that walks you throu
 | Cook (done) | Enter on timer cell | Open `RESET STEP?` confirm |
 | Confirm | ◀ ▶ | Move between CANCEL / CONFIRM (CANCEL default) |
 | Timer alert | Enter on `GOT IT` | Dismiss + auto-check the step |
+| Confirm / Timer alert | Back gesture (thumb + middle finger) | Cancel the confirm (focus returns to the step) / dismiss the alert |
+| Recipe / Help | Back gesture (thumb + middle finger) | Back to Home |
+| Anywhere | Voice (Meta AI) | Ask for the next step, tick it off, or start / stop a timer — see below |
 
 Touch swipes mirror the arrow keys; Enter mirrors Tap on the actual hardware.
+
+---
+
+## Voice (Meta AI)
+
+With WebMCP enabled on the glasses, Meta AI can drive the open recipe:
+
+- "What's the next step?"
+- "Done with that step." / "Next step."
+- "Undo the last step."
+- "Start the pasta timer." / "Start the timer for step 2."
+- "Stop the boil timer."
+
+Voice control is additive — the D-pad path is unchanged — and it needs WebMCP enabled on the device (Developer Mode or rollout). Relaunch the app after enabling it. Voice can act on a recipe that is already open; pick the recipe with the D-pad.
 
 ---
 

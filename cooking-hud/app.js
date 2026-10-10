@@ -16,6 +16,7 @@ const state = {
   currentPhase: 'shop',
   timers: loadTimers(),       // [{ id, recipeId, stepId, label, recipeName, endTs, expired }]
   pendingConfirm: null,
+  confirmReturnEl: null,
   focusedEl: null,
   uiTickId: null,
 };
@@ -519,6 +520,15 @@ function startUiTick() {
   state.uiTickId = setInterval(uiTick, 250);
   uiTick();
 }
+function stopUiTick() {
+  if (!state.uiTickId) return;
+  clearInterval(state.uiTickId);
+  state.uiTickId = null;
+}
+/* Timers are stamped with endTs, so the 250ms tick is only a repaint:
+   stop it while the page is hidden and reconcile on the first tick back. */
+function pauseForHidden()   { stopUiTick(); }
+function resumeFromHidden() { startUiTick(); }
 function uiTick() {
   let didChange = false;
   state.timers.forEach(t => {
@@ -701,6 +711,7 @@ function askConfirm(eyebrow, msg, onYes) {
   $('#confirm-eyebrow').textContent = eyebrow;
   $('#confirm-msg').textContent = msg;
   state.pendingConfirm = onYes;
+  state.confirmReturnEl = state.focusedEl; // where to land when cancelled
   $('#confirm').classList.remove('hidden');
   // Default selection lands on CANCEL — destructive actions are safer
   // with the no-op highlighted.
@@ -709,9 +720,15 @@ function askConfirm(eyebrow, msg, onYes) {
 function closeConfirm(run) {
   $('#confirm').classList.add('hidden');
   const fn = state.pendingConfirm;
+  const back = state.confirmReturnEl;
   state.pendingConfirm = null;
+  state.confirmReturnEl = null;
   if (run && typeof fn === 'function') fn();
-  requestAnimationFrame(() => autoFocus());
+  requestAnimationFrame(() => {
+    // cancelling returns focus to the item that opened the confirm
+    if (!run && back && document.contains(back) && back.offsetParent !== null) setFocus(back);
+    else autoFocus();
+  });
 }
 
 /* ─────────── Toast ─────────── */
@@ -884,6 +901,10 @@ function bindEvents() {
     if (f && !f.disabled) setFocus(f);
   });
 
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       if (!$('#timer-alert').classList.contains('hidden')) {
@@ -1014,6 +1035,239 @@ function applyUrlState() {
   }
 }
 
+/* ---- WebMCP (Meta AI voice control) --------------------------------------
+   Additive: the app works identically when document.modelContext is absent.
+   Utterances: "what's next?", "done with that step", "undo the last step",
+   "start the pasta timer", "stop the boil timer". */
+
+/* the same thing the RESET TIMER confirm does once accepted */
+function voiceCancelTimer(t) {
+  if (t.expired) { dismissExpiredTimer(t.id); return; }
+  state.timers = state.timers.filter(x => x !== t);
+  saveTimers();
+  audio.uncheck();
+  renderTimerRail();
+  if (state.currentRecipe && state.currentPhase === 'cook') {
+    renderPhase('cook');
+    refreshPhaseTabs();
+    updatePhaseFooter();
+  }
+}
+/* the same thing the RESET STEP confirm does once accepted */
+function voiceResetStep(stepId) {
+  const r = state.currentRecipe;
+  if (!r) return;
+  setChecked(r.id, stepId, false);
+  audio.uncheck();
+  renderPhase(state.currentPhase);
+  refreshPhaseTabs();
+  updatePhaseFooter();
+  requestAnimationFrame(() => focusStep(stepId));
+}
+
+function registerWebMcp() {
+  const ctx = document.modelContext;
+  if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+  function safeRegister(tool) {
+    try {
+      const r = ctx.registerTool(tool);
+      if (r && typeof r.then === 'function') {
+        r.then(undefined, (err) => { console.error(tool.name + ' registration failed', err); });
+      }
+    } catch (err) {
+      console.error(tool.name + ' registration failed', err);
+    }
+  }
+
+  const itemLabel = (it) => it.text || it.item || '';
+
+  function timerInfo(t) {
+    return {
+      step: t.label, tag: t.tag || recipeShort(t.recipeName), recipe: t.recipeName,
+      remaining_sec: Math.max(0, Math.ceil((t.endTs - Date.now()) / 1000)),
+      expired: !!t.expired,
+    };
+  }
+  function snapshot() {
+    const r = state.currentRecipe;
+    const onRecipe = r && !$('#recipe').classList.contains('hidden');
+    const out = {
+      recipe: onRecipe ? r.name : null,
+      phase: onRecipe ? state.currentPhase : null,
+      timers: state.timers.map(timerInfo),
+    };
+    if (onRecipe) {
+      const items = r[state.currentPhase] || [];
+      out.steps = items.map((it, i) => ({
+        number: i + 1, text: itemLabel(it), done: isChecked(r.id, it.id),
+        has_timer: !!it.timerSec, timer_running: !!findActiveTimer(r.id, it.id),
+      }));
+      const nextOpen = out.steps.find(s => !s.done);
+      out.next_step = nextOpen ? nextOpen.text : null;
+    } else {
+      out.recipes = RECIPES.map(x => x.name);
+    }
+    return out;
+  }
+  function noRecipe() {
+    return { error: true, message: 'No recipe is open. Open one with the D-pad first.', next_action: 'Tell the wearer to open a recipe on screen, then stop.' };
+  }
+  function openRecipeState() {
+    return state.currentRecipe && !$('#recipe').classList.contains('hidden') ? state.currentRecipe : null;
+  }
+  /* "pasta", "boil" or "2" → a cook step that has a timer */
+  function resolveTimerStep(r, raw) {
+    const q = String(raw == null ? '' : raw).trim().toLowerCase();
+    const steps = r.cook || [];
+    if (!q) return null;
+    const n = parseInt(q, 10);
+    if (!isNaN(n) && String(n) === q) return steps[n - 1] || null;
+    return steps.find(s => s.timerSec && (
+      (s.tag && s.tag.toLowerCase() === q) ||
+      (s.tag && s.tag.toLowerCase().includes(q)) ||
+      itemLabel(s).toLowerCase().includes(q)
+    )) || null;
+  }
+
+  safeRegister({
+    name: 'cooking_get_state',
+    description: 'Report the open recipe, its current phase (shop, prep or cook), which steps are done, the next open step and any running timers. Read-only.',
+    inputSchema: { type: 'object', properties: {} },
+    annotations: { readOnlyHint: true },
+    execute: () => {
+      const out = snapshot();
+      out.next_action = 'Answer in one short sentence (the next step or the timers); do not read the whole list back.';
+      return out;
+    }
+  });
+
+  safeRegister({
+    name: 'cooking_next_step',
+    description: 'Mark the next open step of the current phase as done, the same as pressing Enter on it. On a cook step with a timer this starts the timer instead. When the phase is finished it moves to the next phase.',
+    inputSchema: { type: 'object', properties: {} },
+    execute: () => {
+      const r = openRecipeState();
+      if (!r) return noRecipe();
+      const items = r[state.currentPhase] || [];
+      const open = items.find(it => !isChecked(r.id, it.id));
+      let did;
+      if (open) {
+        if (state.currentPhase === 'cook' && open.timerSec) {
+          if (findActiveTimer(r.id, open.id)) {
+            did = 'timer already running for ' + itemLabel(open);
+          } else {
+            startStepTimer(open.id);
+            did = 'started timer for ' + itemLabel(open);
+          }
+        } else {
+          togglePhaseItem(open.id);
+          did = 'done: ' + itemLabel(open);
+        }
+      } else if (PHASES.indexOf(state.currentPhase) < PHASES.length - 1) {
+        nextPhase();
+        did = 'moved to ' + PHASE_LABEL[state.currentPhase];
+      } else {
+        did = 'recipe complete';
+      }
+      const out = snapshot();
+      out.did = did;
+      out.next_action = 'Confirm in one short sentence, naming the next open step if there is one, then stop.';
+      return out;
+    }
+  });
+
+  safeRegister({
+    name: 'cooking_previous_step',
+    description: 'Undo the most recently completed step of the current phase (un-check it). If that step has a running timer, the timer is cancelled instead.',
+    inputSchema: { type: 'object', properties: {} },
+    execute: () => {
+      const r = openRecipeState();
+      if (!r) return noRecipe();
+      const items = r[state.currentPhase] || [];
+      let did = null;
+      const running = state.currentPhase === 'cook'
+        ? items.slice().reverse().find(it => findActiveTimer(r.id, it.id)) : null;
+      if (running) {
+        voiceCancelTimer(findActiveTimer(r.id, running.id));
+        did = 'cancelled timer for ' + itemLabel(running);
+      } else {
+        const last = items.slice().reverse().find(it => isChecked(r.id, it.id));
+        if (last) {
+          if (state.currentPhase === 'cook' && last.timerSec) voiceResetStep(last.id);
+          else togglePhaseItem(last.id);
+          did = 'un-checked: ' + itemLabel(last);
+        }
+      }
+      const out = snapshot();
+      if (!did) { out.error = true; out.message = 'Nothing in this phase is checked yet.'; }
+      else out.did = did;
+      out.next_action = 'Confirm in one short sentence, then stop.';
+      return out;
+    }
+  });
+
+  safeRegister({
+    name: 'cooking_start_timer',
+    description: 'Start the built-in timer of a cook step in the open recipe. step is the step\'s tag (e.g. "boil", "pasta"), a word from its text, or its number in the cook list. The timer length is fixed by the recipe.',
+    inputSchema: {
+      type: 'object',
+      properties: { step: { type: 'string', description: 'Cook step tag, a word from its text, or its 1-based number.' } },
+      required: ['step']
+    },
+    execute: (args) => {
+      const r = openRecipeState();
+      if (!r) return noRecipe();
+      const step = resolveTimerStep(r, args && args.step);
+      if (!step || !step.timerSec) {
+        return { error: true, message: 'No timed cook step matches "' + (args && args.step) + '".', steps: (r.cook || []).filter(s => s.timerSec).map(s => s.tag || itemLabel(s)), next_action: 'Tell the wearer which timers exist, in one short sentence.' };
+      }
+      if (findActiveTimer(r.id, step.id)) {
+        const out = snapshot(); out.error = true; out.message = 'That timer is already running.';
+        out.next_action = 'Say it is already running, then stop.'; return out;
+      }
+      if (state.currentPhase !== 'cook') switchPhase('cook');
+      startStepTimer(step.id);
+      const out = snapshot();
+      out.started = timerInfo(findActiveTimer(r.id, step.id));
+      out.next_action = 'Confirm the timer and its length in one short sentence, then stop.';
+      return out;
+    }
+  });
+
+  safeRegister({
+    name: 'cooking_stop_timer',
+    description: 'Cancel a running timer (or dismiss one that has finished). step is the timer\'s tag or a word from its step; leave it empty when only one timer is running.',
+    inputSchema: {
+      type: 'object',
+      properties: { step: { type: 'string', description: 'Timer tag or a word from its step text. Optional when only one timer is running.' } }
+    },
+    execute: (args) => {
+      if (!state.timers.length) {
+        return { error: true, message: 'No timer is running.', next_action: 'Say there is no timer running, then stop.' };
+      }
+      const q = String(args && args.step || '').trim().toLowerCase();
+      let t = null;
+      if (!q) {
+        if (state.timers.length === 1) t = state.timers[0];
+        else return { error: true, message: 'More than one timer is running; say which.', timers: state.timers.map(timerInfo), next_action: 'Ask which timer, then call again with step.' };
+      } else {
+        t = state.timers.find(x => (x.tag || '').toLowerCase() === q)
+          || state.timers.find(x => (x.tag || '').toLowerCase().includes(q) || (x.label || '').toLowerCase().includes(q));
+      }
+      if (!t) {
+        return { error: true, message: 'No running timer matches "' + q + '".', timers: state.timers.map(timerInfo), next_action: 'Tell the wearer which timers are running, in one short sentence.' };
+      }
+      const info = timerInfo(t);
+      voiceCancelTimer(t);
+      const out = snapshot();
+      out.stopped = info;
+      out.next_action = 'Confirm in one short sentence, then stop.';
+      return out;
+    }
+  });
+}
+
 /* ─────────── Boot ─────────── */
 function boot() {
   // Restore see-through preference before first paint
@@ -1028,5 +1282,6 @@ function boot() {
     const r = RECIPES.find(x => x.id === state.timers[0].recipeId);
     if (r) state.currentRecipe = r;
   }
+  registerWebMcp();
 }
 boot();

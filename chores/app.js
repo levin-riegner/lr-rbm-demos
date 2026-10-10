@@ -94,6 +94,19 @@
     return state.checked[chore.id].size === chore.tasks.length;
   }
 
+  // one path for ticking a task, shared by the D-pad and voice
+  function setTaskChecked(chore, i, on) {
+    const set = state.checked[chore.id];
+    if (on) set.add(i); else set.delete(i);
+  }
+
+  function resetToday() {
+    state.index = 0;
+    state.ordered.clear();
+    CHORES.forEach(c => { state.checked[c.id] = new Set(); });
+    setScreen('intro');
+  }
+
   // ─────────── DOM refs ───────────
   const screens = {
     intro: document.getElementById('intro'),
@@ -141,12 +154,14 @@
   }
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' && !pdpEl.classList.contains('hidden')) {
+    // ◀ and the back gesture (Escape) both close the overlay one level
+    if ((e.key === 'ArrowLeft' || e.key === 'Escape') && !pdpEl.classList.contains('hidden')) {
       e.preventDefault(); dismissPDP(); return;
     }
-    if (e.key === 'ArrowLeft' && !loaderEl.classList.contains('hidden')) {
-      e.preventDefault(); dismissLoader(); return;
+    if ((e.key === 'ArrowLeft' || e.key === 'Escape') && !loaderEl.classList.contains('hidden')) {
+      e.preventDefault(); cancelLoader(); return;
     }
+    if (e.key === 'Escape') return;
     if (e.key === 'ArrowDown')    { e.preventDefault(); moveFocus(1); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); moveFocus(-1); }
     else if (e.key === 'ArrowLeft' && state.mode === 'chore') {
@@ -197,8 +212,7 @@
         `<span class="mark">${isChecked ? '✓' : `0${i + 1}`}</span>`;
       li.addEventListener('click', (e) => {
         e.preventDefault();
-        if (checkedSet.has(i)) checkedSet.delete(i);
-        else checkedSet.add(i);
+        setTaskChecked(chore, i, !checkedSet.has(i));
         renderChore(i);
       });
       tasksEl.appendChild(li);
@@ -210,7 +224,7 @@
       ordersLabel.style.display = 'none';
     } else {
       ordersLabel.style.display = '';
-      chore.supplies.forEach((item) => {
+      chore.supplies.forEach((item, si) => {
         const li = document.createElement('li');
         li.dataset.focusable = '';
         li.tabIndex = 0;
@@ -224,6 +238,7 @@
           e.preventDefault();
           state.ordered.add(key);
           renderChore();
+          overlayOpener = si; // so dismissing the overlay lands focus back here
           openWithLoader(item.label, item.emoji, item.price, item.desc);
         });
         ordersEl.appendChild(li);
@@ -285,6 +300,8 @@
 
   let loaderTicker  = null;
   let loaderTimeout = null;
+  let pendingLoad   = null; // the item the loader is working on, so a hidden page can restart it
+  let overlayOpener = null; // supply index that opened the loader / PDP
 
   function dismissLoader() {
     clearInterval(loaderTicker);
@@ -295,7 +312,22 @@
     loadBarEl.style.width = '0%';
   }
 
+  // back out of the loader (◀ / back gesture): forget the item, refocus its row
+  function cancelLoader() {
+    dismissLoader();
+    pendingLoad = null;
+    refocusOpener();
+  }
+
+  function refocusOpener() {
+    if (overlayOpener === null) { focusFirst(); return; }
+    const target = ordersEl.querySelectorAll('li[data-focusable]')[overlayOpener];
+    overlayOpener = null;
+    if (target) target.focus(); else focusFirst();
+  }
+
   function openWithLoader(label, emoji, price, desc) {
+    pendingLoad = { label, emoji, price, desc };
     loadItemEl.textContent  = label;
     loadMsgEl.textContent   = LOAD_MSGS[0];
     loadMsgEl.style.opacity = '1';
@@ -323,9 +355,26 @@
 
     loaderTimeout = setTimeout(() => {
       dismissLoader();
+      pendingLoad = null;
       openPDP(label, emoji, price, desc);
     }, LOAD_MS);
   }
+
+  // ─────────── Lifecycle (hidden page) ───────────
+  // The loader is the only recurring timer: stop it while hidden and
+  // replay it for the same item when the page comes back.
+  function pauseForHidden() {
+    if (pendingLoad) dismissLoader();
+  }
+  function resumeFromHidden() {
+    if (pendingLoad) {
+      const p = pendingLoad;
+      openWithLoader(p.label, p.emoji, p.price, p.desc);
+    }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
 
   // ─────────── Product detail overlay ───────────
   const pdpEl        = document.getElementById('pdp');
@@ -349,6 +398,7 @@
   function dismissPDP() {
     pdpEl.classList.add('hidden');
     pdpConfirmEl.classList.remove('show');
+    refocusOpener();
   }
 
   pdpBuyEl.addEventListener('click', () => {
@@ -377,13 +427,7 @@
     const action = el.dataset.action;
 
     if (action === 'start')   { setScreen('chore'); renderChore(); return; }
-    if (action === 'restart') {
-      state.index = 0;
-      state.ordered.clear();
-      CHORES.forEach(c => { state.checked[c.id] = new Set(); });
-      setScreen('intro');
-      return;
-    }
+    if (action === 'restart') { resetToday(); return; }
 
     if (state.mode !== 'chore') return;
 
@@ -401,6 +445,134 @@
     setScreen('done');
   }
 
+  // ---- WebMCP (Meta AI voice control) --------------------------------------
+  // Additive: the app works identically when document.modelContext is absent.
+  // Utterances: "what's left on my chores?", "mark scrub the toilet done",
+  // "I finished the laundry", "uncheck mop the floor", "reset today's chores".
+  function registerWebMcp() {
+    const ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        const r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, (err) => { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    function snapshot() {
+      const current = CHORES[state.index];
+      return {
+        screen: state.mode,
+        current_chore: state.mode === 'chore' ? current.title : null,
+        chores: CHORES.map(c => ({
+          title: c.title,
+          complete: isChoreComplete(c),
+          tasks: c.tasks.map((t, i) => ({ name: t, done: state.checked[c.id].has(i) }))
+        }))
+      };
+    }
+
+    // "scrub the toilet" → one task; "laundry" → every task of that chore.
+    // Tasks of the chore on screen win over the same words elsewhere.
+    function resolveItem(raw) {
+      const q = String(raw).trim().toLowerCase();
+      if (!q) return [];
+      const hits = [];
+      const order = [CHORES[state.index]].concat(CHORES.filter((_, i) => i !== state.index));
+      for (const c of order) {
+        c.tasks.forEach((t, i) => {
+          if (t.toLowerCase().includes(q) || q.includes(t.toLowerCase())) hits.push({ chore: c, i });
+        });
+        if (hits.length) return hits;
+      }
+      for (const c of CHORES) {
+        if (c.id === q || c.title.toLowerCase().includes(q)) {
+          return c.tasks.map((_, i) => ({ chore: c, i }));
+        }
+      }
+      return [];
+    }
+
+    function applyItems(args, on) {
+      const list = String(args && args.items || '').split(',').map(s => s.trim()).filter(Boolean);
+      if (!list.length) {
+        return { error: true, message: 'Say which task or chore, e.g. "scrub the toilet" or "laundry".', next_action: 'Ask the wearer which task, then call again.' };
+      }
+      const unknown = [];
+      let last = null;
+      list.forEach((raw) => {
+        const hits = resolveItem(raw);
+        if (!hits.length) { unknown.push(raw); return; }
+        hits.forEach(h => { setTaskChecked(h.chore, h.i, on); last = h; });
+      });
+      if (last) {
+        // show the chore that changed, the same way the D-pad would get there
+        state.index = CHORES.indexOf(last.chore);
+        if (state.mode !== 'chore') setScreen('chore');
+        renderChore(last.i);
+      }
+      const out = snapshot();
+      out.unknown_items = unknown;
+      out.next_action = last
+        ? 'Confirm what changed in one short sentence, then stop.'
+        : 'Tell the wearer nothing matched, in one short sentence.';
+      if (!last) out.error = true;
+      return out;
+    }
+
+    safeRegister({
+      name: 'chores_get_state',
+      description: 'Report today\'s chores: which chore is on screen and which tasks are done or still open. Read-only.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: () => {
+        const out = snapshot();
+        out.next_action = 'Summarise what is left in one short sentence; do not read every task back.';
+        return out;
+      }
+    });
+
+    safeRegister({
+      name: 'chores_complete',
+      description: 'Tick off tasks or whole chores. items is a comma-separated list of task names (e.g. "scrub the toilet") or chore names (e.g. "laundry", which ticks all its tasks). Returns the new state.',
+      inputSchema: {
+        type: 'object',
+        properties: { items: { type: 'string', description: 'Comma-separated task or chore names to mark done.' } },
+        required: ['items']
+      },
+      execute: (args) => applyItems(args, true)
+    });
+
+    safeRegister({
+      name: 'chores_uncomplete',
+      description: 'Un-tick tasks or whole chores that were marked done by mistake. items is a comma-separated list of task or chore names. Returns the new state.',
+      inputSchema: {
+        type: 'object',
+        properties: { items: { type: 'string', description: 'Comma-separated task or chore names to mark not done.' } },
+        required: ['items']
+      },
+      execute: (args) => applyItems(args, false)
+    });
+
+    safeRegister({
+      name: 'chores_reset_today',
+      description: 'Clear every tick and reorder and go back to the start screen, the same as the Start over button.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: () => {
+        resetToday();
+        const out = snapshot();
+        out.next_action = 'Confirm the reset in one short sentence, then stop.';
+        return out;
+      }
+    });
+  }
+
   // ─────────── Init ───────────
   setScreen('intro');
+  registerWebMcp();
 })();

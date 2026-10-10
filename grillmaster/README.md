@@ -113,9 +113,11 @@ No side-by-side pair to compare before you can act, and no caption underneath ex
 | Fire · Help · Food · Taste | ▲ / ▼ | Move down the list of choices |
 | Any question | Enter | Answer it and go to the next one |
 | Any question | ◀ | Step back one question |
+| Any question | Back gesture (thumb + middle finger) | Step back one question, same as ◀ |
 | Plan | ▲ / ▼ | Move between + ADD and FIRE IT UP |
 | Fire | ▲ / ▼ | Move down the three stacked actions |
 | Fire | Enter | Show the steps, start/cancel the timer, or put the food on |
+| Anywhere | Voice (Meta AI) | Ask what to do now, confirm a cue, pause, reset the timer, end — see below |
 
 ### Grill (flip coach)
 
@@ -124,10 +126,13 @@ No side-by-side pair to compare before you can act, and no caption underneath ex
 | Coach | ◀ / ▶ | Walk the control row: END COOK · PAUSE · RESET TIMER · DONE |
 | Coach | ▲ / ▼ | Cycle the pro tip for what's on the fire |
 | Coach | Enter | Press the focused button — **DONE ✓** when a cue is due, **I DID IT ALREADY** to jump ahead |
+| Coach | Back gesture (thumb + middle finger) | Ask *END THIS COOK?* (KEEP COOKING focused) |
 | End confirm | ◀ / ▶ | Move between KEEP COOKING and END IT |
+| End confirm | Back gesture (thumb + middle finger) | KEEP COOKING |
 | Cue alert | Enter | Acknowledge the heads-up |
+| Cue alert | Back gesture (thumb + middle finger) | Acknowledge the heads-up |
 
-The control row is horizontal, so ◀ ▶ steer it — which leaves the vertical axis free for the tip and, more importantly, means no swipe can end a cook. **END COOK** is the only way out and it asks first.
+The control row is horizontal, so ◀ ▶ steer it — which leaves the vertical axis free for the tip and, more importantly, means no swipe can end a cook. **END COOK** and the back gesture are the only ways out, and both ask first.
 
 ### Smoke & BBQ (pit monitor)
 
@@ -136,12 +141,26 @@ The control row is horizontal, so ◀ ▶ steer it — which leaves the vertical
 | Monitor | ◀ / ▶ | Move across the control bar (MEAT · PIT · SPRITZ · TIP · PAUSE · END) |
 | Monitor | ▲ / ▼ | With MEAT or PIT selected, bump that temperature ±5°F |
 | Monitor | Enter | Activate the selected control (log spritz, cycle tip, confirm PULL, end) |
+| Monitor | Back gesture (thumb + middle finger) | Ask *END THIS COOK?* (KEEP COOKING focused) |
 | End confirm | ◀ / ▶ | Move between KEEP COOKING and END IT |
+| End confirm | Back gesture (thumb + middle finger) | KEEP COOKING |
 | Cue alert | Enter | Acknowledge the heads-up |
 
-On the monitor ◀ and ▶ belong to the control bar, so there is no back gesture mid-cook — the **END** field is the way out, and it asks first.
+On the monitor ◀ and ▶ belong to the control bar, so the ways out mid-cook are the **END** field and the back gesture — and both ask first.
 
 The countdown and thresholds do the work on their own; your inputs just tell the coach what the fire and the meat are actually doing.
+
+## Voice (Meta AI)
+
+With WebMCP enabled on the glasses, Meta AI can run the live cook hands-free:
+
+- "What do I do now?" / "How long until the flip?"
+- "I flipped it." / "Done." (confirms the current cue; confirms PULL on the pit)
+- "Pause the cook." / "Resume."
+- "Put the timer back." (resets the current beat's countdown)
+- "End this cook." (Meta AI asks you to confirm first)
+
+Voice control is additive — the D-pad path is unchanged — and it needs WebMCP enabled on the device (Developer Mode or rollout). Relaunch the app after enabling it. Setting up a cook (mode, fire, food, doneness) stays on the D-pad.
 
 ## Screenshots
 
