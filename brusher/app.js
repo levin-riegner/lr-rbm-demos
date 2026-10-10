@@ -227,14 +227,28 @@
     }
   }
 
-  function attachSensor() {
-    if (sensorAttached) return;
-    sensorAttached = true;
+  // Named no-op so it can be removed with the same reference.
+  function onOrientationNoop() {}
+
+  // Stable listener references: added on attach / visible, removed on hidden.
+  function addMotionListeners() {
     window.addEventListener('devicemotion', onMotion, { passive: true });
     if (typeof DeviceOrientationEvent !== 'undefined') {
       // Best-effort orient permission for any future use; we only rely on motion.
-      window.addEventListener('deviceorientation', () => {}, { passive: true });
+      window.addEventListener('deviceorientation', onOrientationNoop, { passive: true });
     }
+  }
+  function removeMotionListeners() {
+    window.removeEventListener('devicemotion', onMotion);
+    if (typeof DeviceOrientationEvent !== 'undefined') {
+      window.removeEventListener('deviceorientation', onOrientationNoop);
+    }
+  }
+
+  function attachSensor() {
+    if (sensorAttached) return;
+    sensorAttached = true;
+    addMotionListeners();
     setSensorPill('warn', 'WAIT…');
     // If after 1.5s no motion event arrived, assume keyboard-only.
     setTimeout(() => {
@@ -482,7 +496,36 @@
     brushTotal.textContent = String(totalStrokes);
     brushPace.textContent = elapsed > 1 ? `${(totalStrokes / elapsed).toFixed(2)} /s` : '— /s';
   }
-  setInterval(() => { if (phase === 'brush') renderBrushMetrics(); }, 250);
+  // One stable interval handle; stopped while the page is hidden. Elapsed
+  // time is derived from performance.now(), so it stays accurate across pauses.
+  let metricsTimer = null;
+  function startMetricsTimer() {
+    if (metricsTimer !== null) return;
+    metricsTimer = setInterval(() => { if (phase === 'brush') renderBrushMetrics(); }, 250);
+  }
+  function stopMetricsTimer() {
+    if (metricsTimer === null) return;
+    clearInterval(metricsTimer);
+    metricsTimer = null;
+  }
+  startMetricsTimer();
+
+  // ─── Page visibility ───────────────────────────────────────────
+  function pauseForHidden() {
+    stopMetricsTimer();
+    if (sensorAttached) removeMotionListeners();
+  }
+  function resumeFromHidden() {
+    if (sensorAttached) {
+      prevAbove.x = prevAbove.y = prevAbove.z = false;
+      addMotionListeners();
+    }
+    renderBrushMetrics();
+    startMetricsTimer();
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
 
   // ─── Button & key wiring ───────────────────────────────────────
   document.addEventListener('click', (e) => {
@@ -517,6 +560,19 @@
   // Five-key navigation: ↑ ↓ ← → ⏎. No other inputs (matches glasses remote).
   document.addEventListener('keydown', (e) => {
     const permOpen = !permOverlay.classList.contains('hidden');
+
+    if (e.key === 'Escape') {
+      // Back gesture: dismiss whichever overlay is open. No-op otherwise.
+      if (permOpen) {
+        e.preventDefault();
+        permOverlay.classList.add('hidden');
+        setSensorPill('warn', 'KEYS');
+      } else if (phase === 'between') {
+        e.preventDefault();
+        commitNextZone();
+      }
+      return;
+    }
 
     if (e.key === 'Enter') {
       e.preventDefault();

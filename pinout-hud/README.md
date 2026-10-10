@@ -39,6 +39,13 @@ A heads-up display for Meta Display glasses that keeps the four things you need 
 | Reference HUD | ◀ | Move focus to HOME button |
 | Focus Mode | ▲ ▼ | Step pin |
 | Focus Mode | ◀ | Exit Focus Mode |
+| ESP32 list / Custom pin count | Back gesture (thumb + middle finger) | Back to Home, focus on the option you came from |
+| Wire-colour assign | Back gesture (thumb + middle finger) | Back to the ESP32 list, focus on the board you picked |
+| Label grid | Back gesture (thumb + middle finger) | Previous pin's wire-colour step (or pin count on pin 1) |
+| Wire-colour step | Back gesture (thumb + middle finger) | Back to this pin's label grid |
+| Reference HUD | Back gesture (thumb + middle finger) | Back to Home |
+| Focus Mode | Back gesture (thumb + middle finger) | Exit Focus Mode |
+| EXIT BUILD? dialog | Back gesture (thumb + middle finger) | Cancel, focus returns to EXIT |
 
 Browser preview maps **arrow keys** to swipes and **Enter / Space** to tap so the whole app rehearses at a desk.
 

@@ -52,6 +52,26 @@ function saveFavorites() {
   localStorage.setItem(STORE_KEY, JSON.stringify(favorites));
 }
 
+// Shared mutation path — used by the D-pad handlers and the WebMCP tools,
+// so a voice change re-renders exactly like a button press.
+function addFavorite(tz) {
+  if (!favorites.includes(tz)) favorites.push(tz);
+  saveFavorites();
+  render();
+}
+function removeFavorite(tz) {
+  favorites = favorites.filter((t) => t !== tz);
+  saveFavorites();
+  render();
+}
+
+// Case-insensitive lookup against the built-in catalog.
+function findCity(name) {
+  const q = String(name || "").trim().toLowerCase();
+  if (!q) return null;
+  return CITIES.find((c) => c.name.toLowerCase() === q) || null;
+}
+
 // ---------------- time helpers ----------------
 // Returns {h, m, s, ampm} for a tz, plus offset hours vs. local.
 function partsFor(tz, now) {
@@ -179,9 +199,7 @@ function onKey(e) {
         render();
       } else {
         // remove this favorite
-        favorites = favorites.filter((tz) => tz !== favs[homeIdx].tz);
-        saveFavorites();
-        render();
+        removeFavorite(favs[homeIdx].tz);
       }
     } else { return; }
   } else {
@@ -190,11 +208,10 @@ function onKey(e) {
     else if (k === "ArrowUp") { pickerIdx = (pickerIdx - 1 + CITIES.length) % CITIES.length; render(); }
     else if (k === "Enter") {
       const tz = CITIES[pickerIdx].tz;
-      if (favorites.includes(tz)) favorites = favorites.filter((t) => t !== tz);
-      else favorites.push(tz);
-      saveFavorites();
-      render();
-    } else if (k === "ArrowLeft") {
+      if (favorites.includes(tz)) removeFavorite(tz);
+      else addFavorite(tz);
+    } else if (k === "ArrowLeft" || k === "Escape") {
+      // ◀ or the back gesture: close the picker
       screen = "home";
       render();
     } else { return; }
@@ -204,6 +221,100 @@ function onKey(e) {
 
 document.addEventListener("keydown", onKey);
 
-// tick every second
-render();
-setInterval(render, 1000);
+// ---------------- lifecycle ----------------
+// tick every second while the page is visible; times are computed from
+// the wall clock on every render, so nothing drifts while paused.
+let clockTimer = null;
+function startClock() {
+  if (clockTimer !== null) return;
+  render();
+  clockTimer = setInterval(render, 1000);
+}
+function stopClock() {
+  if (clockTimer !== null) clearInterval(clockTimer);
+  clockTimer = null;
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) stopClock(); else startClock();
+});
+
+startClock();
+
+// ---- WebMCP (Meta AI voice control) --------------------------------------
+// Additive: the app works identically when document.modelContext is absent.
+function registerWebMcp() {
+  const ctx = document.modelContext;
+  if (!ctx || typeof ctx.registerTool !== "function") return;
+
+  function safeRegister(tool) {
+    try {
+      const r = ctx.registerTool(tool);
+      if (r && typeof r.then === "function") {
+        r.then(undefined, (err) => { console.error(tool.name + " registration failed", err); });
+      }
+    } catch (err) {
+      console.error(tool.name + " registration failed", err);
+    }
+  }
+
+  function snapshot() {
+    const now = new Date();
+    return favCities().map((c) => {
+      const p = partsFor(c.tz, now);
+      return { city: c.name, time: `${p.h}:${p.m} ${p.ampm}`, offset: offsetLabel(c.tz, now) };
+    });
+  }
+
+  function unknownCity(name) {
+    return {
+      error: true,
+      message: `"${name}" is not in the city list.`,
+      available_cities: CITIES.map((c) => c.name).join(", "),
+      next_action: "Tell the wearer the city is not available and name a few of the available cities, then stop.",
+    };
+  }
+
+  safeRegister({
+    name: "worldclock_get_state",
+    description: "Report the wearer's favorite cities and the current local time in each.",
+    inputSchema: { type: "object", properties: {} },
+    annotations: { readOnlyHint: true },
+    execute: () => ({
+      favorites: snapshot(),
+      next_action: "Read the times back in one short sentence, then stop.",
+    }),
+  });
+
+  safeRegister({
+    name: "worldclock_add_city",
+    description: "Add a city to the favorites list by name (case-insensitive, must be one of the 20 built-in cities). Returns the new favorites list.",
+    inputSchema: {
+      type: "object",
+      properties: { name: { type: "string", description: "City name, e.g. Tokyo or New York." } },
+      required: ["name"],
+    },
+    execute: (args) => {
+      const city = findCity(args && args.name);
+      if (!city) return unknownCity(args && args.name);
+      addFavorite(city.tz);
+      return { favorites: snapshot(), next_action: "Confirm the city was added in one short sentence, then stop." };
+    },
+  });
+
+  safeRegister({
+    name: "worldclock_remove_city",
+    description: "Remove a city from the favorites list by name (case-insensitive). Returns the new favorites list.",
+    inputSchema: {
+      type: "object",
+      properties: { name: { type: "string", description: "City name, e.g. Tokyo or New York." } },
+      required: ["name"],
+    },
+    execute: (args) => {
+      const city = findCity(args && args.name);
+      if (!city) return unknownCity(args && args.name);
+      removeFavorite(city.tz);
+      return { favorites: snapshot(), next_action: "Confirm the city was removed in one short sentence, then stop." };
+    },
+  });
+}
+registerWebMcp();

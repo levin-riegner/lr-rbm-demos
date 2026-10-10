@@ -5,7 +5,7 @@
    D-pad map (browser):
      ArrowUp/Down/Left/Right  → swipes
      Enter / Space            → tap
-     Escape                   → back / exit
+     Escape (back gesture)    → back one level / dismiss
    ═══════════════════════════════════════════════════════════ */
 
 const WT_SEEN_KEY      = 'pinout.walkthrough.seen';
@@ -27,6 +27,11 @@ const state = {
   /* Reference focus mode */
   refFocusOn: false,
   refSelected: 0,
+
+  /* Where focus should land when the back gesture returns somewhere */
+  homeReturnEl: null,       /* home button that opened the current flow */
+  lastEsp32Id: null,        /* board picked from the ESP32 list */
+  confirmReturnEl: null,    /* control that opened the confirm overlay */
 };
 
 /* ─────────── DOM helpers ─────────── */
@@ -94,6 +99,12 @@ function goHome() {
   showScreen('home');
   renderHome();
 }
+/* Back to home with focus restored to the button that started the flow */
+function goBackHome() {
+  const el = state.homeReturnEl;
+  goHome();
+  if (el) requestAnimationFrame(() => { if (el.offsetParent !== null) setFocus(el); });
+}
 
 /* ─────────── Home ─────────── */
 function renderHome() {
@@ -115,9 +126,19 @@ function openEsp32List() {
   `).join('');
   showScreen('esp32-list');
 }
+/* Back to the board list with focus on the board that was picked */
+function backToEsp32List() {
+  const id = state.lastEsp32Id;
+  openEsp32List();
+  if (id) requestAnimationFrame(() => {
+    const item = $(`#model-list .model-item[data-id="${id}"]`);
+    if (item) setFocus(item);
+  });
+}
 function selectEsp32(id) {
   const tpl = ESP32_TEMPLATES.find(t => t.id === id);
   if (!tpl) return;
+  state.lastEsp32Id = id;
   state.activeBoard = {
     name: tpl.name,
     eyebrow: tpl.eyebrow,
@@ -372,15 +393,22 @@ function askConfirm(eyebrow, msg, onYes) {
   $('#confirm-eyebrow').textContent = eyebrow;
   $('#confirm-msg').textContent = msg;
   state.pendingConfirm = onYes;
+  state.confirmReturnEl = state.focusedEl;
   $('#confirm').classList.remove('hidden');
   requestAnimationFrame(() => setFocus($('#confirm-yes')));
 }
 function closeConfirm(run) {
   $('#confirm').classList.add('hidden');
   const fn = state.pendingConfirm;
+  const returnEl = state.confirmReturnEl;
   state.pendingConfirm = null;
+  state.confirmReturnEl = null;
   if (run && typeof fn === 'function') fn();
-  requestAnimationFrame(() => autoFocus());
+  /* Dismissed: focus goes back to the control that opened the dialog */
+  requestAnimationFrame(() => {
+    if (!run && returnEl && returnEl.offsetParent !== null) setFocus(returnEl);
+    else autoFocus();
+  });
 }
 
 /* ─────────── Toast ─────────── */
@@ -544,15 +572,16 @@ function handleReferenceKey(e) {
   return false;
 }
 
+/* Back gesture: one level up (or dismiss), focus returning to the opener */
 function handleEscape() {
   if (!$('#confirm').classList.contains('hidden')) { closeConfirm(false); return; }
   if (!$('#focus-overlay').classList.contains('hidden')) { exitFocus(); return; }
   if (!$('#reference').classList.contains('hidden')) { goHome(); return; }
-  if (!$('#color-assign').classList.contains('hidden')) { openEsp32List(); return; }
+  if (!$('#color-assign').classList.contains('hidden')) { backToEsp32List(); return; }
   if (!$('#custom-color').classList.contains('hidden')) { backFromColor(); return; }
   if (!$('#custom-label').classList.contains('hidden')) { backFromLabel(); return; }
-  if (!$('#custom-count').classList.contains('hidden')) { goHome(); return; }
-  if (!$('#esp32-list').classList.contains('hidden')) { goHome(); return; }
+  if (!$('#custom-count').classList.contains('hidden')) { goBackHome(); return; }
+  if (!$('#esp32-list').classList.contains('hidden')) { goBackHome(); return; }
 }
 
 function handleAction(action, el) {
@@ -560,19 +589,19 @@ function handleAction(action, el) {
     /* Walkthrough */
     case 'wt-next':           advanceWalkthrough(); break;
     case 'wt-skip':           finishWalkthrough(); break;
-    case 'show-walkthrough':  showWalkthrough(); break;
+    case 'show-walkthrough':  state.homeReturnEl = el; showWalkthrough(); break;
 
     /* Home */
-    case 'go-home':           goHome(); break;
-    case 'go-esp32':          openEsp32List(); break;
-    case 'go-custom':         openCustomCount(); break;
+    case 'go-home':           goBackHome(); break;
+    case 'go-esp32':          state.homeReturnEl = el; openEsp32List(); break;
+    case 'go-custom':         state.homeReturnEl = el; openCustomCount(); break;
 
     /* ESP32 list */
     case 'select-esp32':      selectEsp32(el.dataset.id); break;
 
     /* Color assign */
     case 'ca-cycle':          cyclePinColor(parseInt(el.dataset.idx, 10)); break;
-    case 'ca-back':           openEsp32List(); break;
+    case 'ca-back':           backToEsp32List(); break;
     case 'ca-finalize':       finalizeBoard(); break;
 
     /* Custom count */
@@ -607,7 +636,18 @@ function handleAction(action, el) {
    • One slow glowing "current" pulse travels each trace on its own loop
    The traces sit only in regions the HUD content doesn't occupy
    (mostly the left ~140px gutter and screen corners) so they never
-   compete with the active content for attention. */
+   compete with the active content for attention.
+   The loop is paused while the page is hidden (see boot); the pulse
+   position is derived from the frame timestamp, so it never drifts. */
+let bgFrame = null;   /* the frame() closure, once initBgCanvas has run */
+let bgRaf   = null;   /* current requestAnimationFrame handle */
+function startBgCanvas() {
+  if (bgRaf === null && bgFrame) bgRaf = requestAnimationFrame(bgFrame);
+}
+function stopBgCanvas() {
+  if (bgRaf !== null) cancelAnimationFrame(bgRaf);
+  bgRaf = null;
+}
 function initBgCanvas() {
   const c = document.getElementById('bg-canvas');
   if (!c) return;
@@ -715,9 +755,10 @@ function initBgCanvas() {
       ctx.fill();
     }
 
-    requestAnimationFrame(frame);
+    bgRaf = requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+  bgFrame = frame;
+  startBgCanvas();
 }
 
 function hexToRgba(hex, a) {
@@ -803,10 +844,17 @@ function applyUrlState() {
   return false;
 }
 
+/* ─────────── Lifecycle ─────────── */
+function pauseForHidden()  { stopBgCanvas(); }
+function resumeFromHidden() { startBgCanvas(); }
+
 /* ─────────── Boot ─────────── */
 function boot() {
   initBgCanvas();
   bindEvents();
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
 
   const saved = loadActiveBoard();
   if (saved) state.activeBoard = saved;

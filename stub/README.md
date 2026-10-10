@@ -62,8 +62,24 @@ Anything you'd photograph as a private bookmark and then wish you could un-photo
 | Detail | ▼ | Delete… |
 | Delete confirm | Enter | Delete for good |
 | Delete confirm | ◀ | Keep it |
+| Any sub-screen | Back gesture (thumb + middle finger) | Same as ◀ on that screen — back one level |
+| Anywhere | Voice (Meta AI) | "What stubs do I have?", "Find my valet ticket", "Delete stub 247" |
 
 All inputs that exist on the device: D-pad arrows + Enter. No keyboard, no on-screen tap targets, no `×` close button — the controls map directly to what the glasses can do.
+
+---
+
+## Voice (Meta AI)
+
+The app registers WebMCP tools (`document.modelContext`) so Meta AI can drive it by voice. Things a wearer can say:
+
+- "What stubs do I have saved?"
+- "Find my valet ticket"
+- "Show me the coat check stub"
+- "Do I have a locker number?"
+- "Delete stub 247"
+
+Finding a stub moves the carousel to the first match; deleting goes through the same delete path as the D-pad. Voice control requires WebMCP to be enabled on the device (Developer Mode or rollout) and the app relaunched afterwards. Without it the app works exactly as before with the D-pad alone.
 
 ---
 

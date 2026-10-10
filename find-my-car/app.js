@@ -54,6 +54,15 @@
       const el = document.activeElement;
       if (el && el.matches('[data-focusable]')) { e.preventDefault(); el.click(); }
     }
+    else if (e.key === 'Escape') {
+      // Back gesture: leave the nav screen and return focus to the control
+      // that opened it.
+      if (state.mode === 'nav') {
+        e.preventDefault();
+        leaveNav();
+        if (!navigateBtn.hidden) navigateBtn.focus();
+      }
+    }
   });
 
   // ---- Storage ----
@@ -203,39 +212,70 @@
     attachOrientationListener();
   }
 
+  // Named handler so hidden/visible can remove and re-add the same reference.
+  function onOrientation(e) {
+    // webkitCompassHeading: iOS, already relative to true north, clockwise
+    // alpha: 0..360 relative to device coord frame; many browsers = 0 at north (inverted axis)
+    let h = null;
+    if (typeof e.webkitCompassHeading === 'number') {
+      h = e.webkitCompassHeading;
+    } else if (typeof e.alpha === 'number') {
+      h = (360 - e.alpha) % 360;
+    }
+    if (h != null) {
+      state.heading = h;
+      updateNavUI();
+    }
+  }
+
   function attachOrientationListener() {
     if (!('DeviceOrientationEvent' in window)) {
       showBanner(navBanner, 'Compass sensors unavailable on this device. Arrow direction may be absolute only.');
       return;
     }
-    const handler = (e) => {
-      // webkitCompassHeading: iOS, already relative to true north, clockwise
-      // alpha: 0..360 relative to device coord frame; many browsers = 0 at north (inverted axis)
-      let h = null;
-      if (typeof e.webkitCompassHeading === 'number') {
-        h = e.webkitCompassHeading;
-      } else if (typeof e.alpha === 'number') {
-        h = (360 - e.alpha) % 360;
-      }
-      if (h != null) {
-        state.heading = h;
-        updateNavUI();
-      }
-    };
-    state.orientationHandler = handler;
-    window.addEventListener('deviceorientationabsolute', handler, true);
-    window.addEventListener('deviceorientation', handler, true);
+    if (state.orientationHandler) return;
+    state.orientationHandler = onOrientation;
+    window.addEventListener('deviceorientationabsolute', onOrientation, true);
+    window.addEventListener('deviceorientation', onOrientation, true);
     enableCompass.hidden = true;
   }
 
-  function stopCompass() {
+  function detachOrientationListener() {
     if (state.orientationHandler) {
       window.removeEventListener('deviceorientationabsolute', state.orientationHandler, true);
       window.removeEventListener('deviceorientation', state.orientationHandler, true);
       state.orientationHandler = null;
     }
+  }
+
+  function stopCompass() {
+    detachOrientationListener();
     state.heading = null;
   }
+
+  // ---- Page visibility ----
+  // While hidden: release the GPS watch and compass listeners but keep the
+  // nav screen, saved spot and last reading. Re-arm on visible if they were
+  // active. Permission is never requested here, only re-attached if granted.
+  let hiddenWatchActive = false;
+  let hiddenCompassActive = false;
+  function pauseForHidden() {
+    hiddenWatchActive = state.watchId != null;
+    hiddenCompassActive = state.orientationHandler != null;
+    stopWatch();
+    detachOrientationListener();
+  }
+  function resumeFromHidden() {
+    const watch = hiddenWatchActive, compass = hiddenCompassActive;
+    hiddenWatchActive = false;
+    hiddenCompassActive = false;
+    if (state.mode !== 'nav') return;
+    if (watch) startWatch();
+    if (compass) attachOrientationListener();
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
 
   async function requestOrientationPermission() {
     try {

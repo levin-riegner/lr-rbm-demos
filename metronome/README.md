@@ -36,14 +36,31 @@ Rendering is tuned for the panel's 30Hz refresh: all beat-driven animations use 
 | Tempo step (focus on row) | Swipe ▼ | Jump to NEXT button |
 | Time / Subdivision | ▲ ▼ | Move between rows (3-col / 2-col grid) |
 | Time / Subdivision | ◀ ▶ | Move between columns |
-| Time / Subdivision | Enter / tap tile | Auto-select + advance |
+| Time / Subdivision | Enter on tile | Auto-select + advance |
 | Playing (full) | ▲ ▼ | Focus expand-icon / STOP / EDIT |
 | Playing (full) | ◀ ▶ | Nudge BPM ±1 |
 | Playing (full) | EDIT | Return to TEMPO step with NOD pre-focused |
-| Playing (any) | Tap expand-icon | Toggle compact ↔ full mode |
+| Playing (any) | Enter on expand-icon | Toggle compact ↔ full mode |
 | Playing (compact) | Swipe ▼ anywhere | Expand back to full mode |
+| Playing | Back gesture (thumb + middle finger) | Stop the metronome and return home |
+| Wizard steps | Back gesture (thumb + middle finger) | Return to Home |
+| Any | Voice (Meta AI) | Set tempo / time signature, start, stop, or ask the current state — see below |
 
 Horizontal swipes mirror ◀ ▶ for BPM on the home and play screens.
+
+---
+
+## Voice (Meta AI)
+
+The app registers WebMCP tools so Meta AI can drive it hands-free. Try:
+
+- "Set the tempo to 120."
+- "Make it a bit faster." (Meta AI reads the current BPM, then sets a new one)
+- "Switch to three-four."
+- "Start the metronome." / "Stop the metronome."
+- "What tempo is the metronome on?"
+
+Every voice change goes through the same functions as the D-pad, so the screen updates and the setting is saved. Voice control requires **WebMCP to be enabled on the device** (Developer Mode or the staged rollout); relaunch the app after enabling it. Without WebMCP the app behaves exactly as before.
 
 ---
 

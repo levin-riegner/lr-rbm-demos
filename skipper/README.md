@@ -49,8 +49,12 @@ Two shapes, and that is the whole app.
 | Boat card | ▼ | Back to the menu |
 | MAYDAY | ◀ ▶ or ⏎ | Page between HOW / SAY THIS / IF NO ANSWER |
 | MAYDAY | ▼ | Back to the emergency list |
+| Emergency list | Back gesture (thumb + middle finger) | Back to home |
+| Step flow / Boat card | Back gesture (thumb + middle finger) | Back to the menu |
+| Checklist | Back gesture (thumb + middle finger) | Cancel editing if a value row is open, otherwise back to home |
+| MAYDAY | Back gesture (thumb + middle finger) | Back to the emergency list |
 
-Home is the root, so ◀ there does nothing.
+Home is the root, so ◀ and the back gesture there do nothing.
 
 Content screens move on ◀ ▶ rather than ▲ ▼ on purpose. It costs a little familiarity on the checklists and it buys the thing that matters: **▲ is wired to the emergency index from every content screen in the app**, so help is one press away instead of "back out, scroll down, open". ▲ is never swallowed by a mode — it works mid-edit on a value row too.
 

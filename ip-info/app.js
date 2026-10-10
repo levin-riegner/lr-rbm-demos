@@ -325,6 +325,23 @@
     });
   }
 
+  // ==================== LIFECYCLE ====================
+  // The "Updated Xs ago" ticker only runs while the page is visible. It is
+  // derived from state.fetchedAt on every tick, so it is exact on resume.
+  function startTicker() {
+    if (tickerId !== null) return;
+    updateRelativeLabel();
+    tickerId = setInterval(updateRelativeLabel, 10000);
+  }
+
+  function stopTicker() {
+    if (tickerId !== null) clearInterval(tickerId);
+    tickerId = null;
+  }
+
+  function pauseForHidden()  { stopTicker(); }
+  function resumeFromHidden() { startTicker(); }
+
   // ==================== INIT ====================
   function init() {
     collectScreens();
@@ -332,7 +349,10 @@
     loadInitial();
 
     // Auto-update relative timestamp every 10s
-    tickerId = setInterval(updateRelativeLabel, 10000);
+    startTicker();
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) pauseForHidden(); else resumeFromHidden();
+    });
 
     setTimeout(function () {
       focusFirst(screens.home);

@@ -43,6 +43,7 @@
 
   var screens = {};
   var refreshTimer = null;
+  var fetchCtrl = null; // in-flight price request; aborted when the page is hidden
 
   function collectScreens() {
     document.querySelectorAll('.screen').forEach(function (s) {
@@ -115,7 +116,13 @@
 
   function navigateBack() {
     if (state.screenHistory.length > 0) {
-      navigateTo(state.screenHistory.pop(), { addToHistory: false });
+      var target = state.screenHistory.pop();
+      navigateTo(target, { addToHistory: false });
+      // Back gesture: land focus on the card that opened the detail screen
+      if (target === 'home' && state.selectedCoinId && screens.home) {
+        var card = screens.home.querySelector('.coin-card[data-coin-id="' + state.selectedCoinId + '"]');
+        if (card) card.focus();
+      }
     }
   }
 
@@ -167,12 +174,26 @@
     showLoading(state.prices == null);
     clearError();
 
-    return fetch(CONFIG.api.url)
+    // One abortable request at a time: hidden-page teardown and the WebMCP
+    // execute deadline (opts.signal) can both cancel it.
+    var ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
+    var init = {};
+    if (ctrl) {
+      init.signal = ctrl.signal;
+      if (opts.signal) {
+        if (opts.signal.aborted) ctrl.abort();
+        else opts.signal.addEventListener('abort', function () { ctrl.abort(); });
+      }
+    }
+    fetchCtrl = ctrl;
+
+    return fetch(CONFIG.api.url, init)
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
       })
       .then(function (data) {
+        if (fetchCtrl === ctrl) fetchCtrl = null;
         state.prices = data;
         state.lastFetched = Date.now();
         saveCache();
@@ -181,7 +202,14 @@
         return data;
       })
       .catch(function (err) {
+        if (fetchCtrl === ctrl) fetchCtrl = null;
         showLoading(false);
+        if (err && err.name === 'AbortError') {
+          // cancelled (page hidden / deadline): not an error for the wearer,
+          // restore the previous status quietly and let the caller decide
+          setStatus(state.lastFetched ? formatTimestamp(new Date(state.lastFetched)) : 'Offline');
+          throw err;
+        }
         setError(err.message || 'Network error');
         setStatus('Offline');
         throw err;
@@ -366,6 +394,32 @@
     }
   }
 
+  // ==================== LIFECYCLE ====================
+  function pauseForHidden() {
+    stopAutoRefresh();
+    if (fetchCtrl) fetchCtrl.abort();
+  }
+
+  function resumeFromHidden() {
+    if (state.currentScreen !== 'home') return;
+    // cache-aware: only hits the network if the 30s cache went stale while hidden
+    fetchPrices()
+      .then(function () { renderCoinList(); })
+      .catch(function () { /* error already shown */ });
+    startAutoRefresh();
+  }
+
+  // Re-render whichever screen is on the lens after a state change that did
+  // not come from the D-pad (WebMCP). Same renderers the D-pad path uses.
+  function renderCurrent() {
+    if (state.currentScreen === 'detail') renderDetail();
+    else renderCoinList();
+  }
+
+  function setFavorite(id, on) {
+    if (isFav(id) !== !!on) toggleFav(id);
+  }
+
   // ==================== ACTIONS ====================
   function handleAction(action, element) {
     switch (action) {
@@ -441,12 +495,142 @@
       }
     });
 
-    // Pause refresh when tab is hidden to save battery
+    // Pause refresh (and any in-flight request) when hidden; resume on visible
     document.addEventListener('visibilitychange', function () {
-      if (document.hidden) {
-        stopAutoRefresh();
-      } else if (state.currentScreen === 'home') {
-        startAutoRefresh();
+      if (document.hidden) pauseForHidden(); else resumeFromHidden();
+    });
+  }
+
+  // ---- WebMCP (Meta AI voice control) --------------------------------------
+  // Additive: the app works identically when document.modelContext is absent.
+  function coinsBySymbols(list) {
+    var known = [], unknown = [];
+    String(list || '').split(',').forEach(function (raw) {
+      var q = raw.trim().toLowerCase();
+      if (!q) return;
+      var coin = COINS.find(function (c) {
+        return c.symbol.toLowerCase() === q || c.name.toLowerCase() === q || c.id === q;
+      });
+      if (coin) { if (known.indexOf(coin) === -1) known.push(coin); }
+      else unknown.push(raw.trim());
+    });
+    return { known: known, unknown: unknown };
+  }
+
+  function pricesSnapshot() {
+    var prices = state.prices || {};
+    return COINS.map(function (c) {
+      var p = prices[c.id] || {};
+      return {
+        symbol: c.symbol,
+        name: c.name,
+        price_usd: (p.usd == null) ? null : p.usd,
+        change_24h_pct: (p.usd_24h_change == null) ? null : Math.round(p.usd_24h_change * 100) / 100,
+        favorite: isFav(c.id),
+      };
+    });
+  }
+
+  function stateResult(next) {
+    return {
+      coins: pricesSnapshot(),
+      favorites: state.favorites.map(function (id) {
+        var c = COINS.find(function (x) { return x.id === id; });
+        return c ? c.symbol : id;
+      }).join(', '),
+      last_updated: state.lastFetched ? new Date(state.lastFetched).toISOString() : null,
+      next_action: next,
+    };
+  }
+
+  function registerWebMcp() {
+    var ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        var r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, function (err) { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    var SYMBOLS = COINS.map(function (c) { return c.symbol; }).join(', ');
+
+    function applyFavorites(args, on) {
+      var found = coinsBySymbols(args && args.symbols);
+      if (!found.known.length) {
+        return {
+          error: true,
+          message: 'No known coins in "' + (args && args.symbols) + '". Available: ' + SYMBOLS + '.',
+          next_action: 'Tell the wearer which coins are tracked, then stop.',
+        };
+      }
+      found.known.forEach(function (c) { setFavorite(c.id, on); });
+      renderCurrent();
+      var res = stateResult('Confirm the change in one short sentence, then stop.');
+      if (found.unknown.length) res.ignored = found.unknown.join(', ');
+      return res;
+    }
+
+    safeRegister({
+      name: 'crypto_get_state',
+      description: 'Report the tracked coins with their USD price, 24h change percentage and whether each is a favorite, plus when prices were last updated.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: function () {
+        return stateResult('Answer the wearer in one short sentence using these numbers, then stop.');
+      }
+    });
+
+    safeRegister({
+      name: 'crypto_add_favorite',
+      description: 'Add one or more coins to the favorites list. Returns the new state.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          symbols: { type: 'string', description: 'Comma-separated coin symbols or names, e.g. "BTC, ETH". Tracked: ' + SYMBOLS + '.' }
+        },
+        required: ['symbols']
+      },
+      execute: function (args) { return applyFavorites(args, true); }
+    });
+
+    safeRegister({
+      name: 'crypto_remove_favorite',
+      description: 'Remove one or more coins from the favorites list. Returns the new state.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          symbols: { type: 'string', description: 'Comma-separated coin symbols or names, e.g. "BTC, ETH". Tracked: ' + SYMBOLS + '.' }
+        },
+        required: ['symbols']
+      },
+      execute: function (args) { return applyFavorites(args, false); }
+    });
+
+    safeRegister({
+      name: 'crypto_refresh',
+      description: 'Fetch fresh prices from CoinGecko now (bypasses the 30s cache) and return the updated state.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function (args, meta) {
+        var signal = meta && meta.signal;
+        return fetchPrices({ force: true, signal: signal })
+          .then(function () {
+            renderCurrent();
+            return stateResult('Tell the wearer prices are refreshed, in one short sentence, then stop.');
+          })
+          .catch(function (err) {
+            if (err && err.name === 'AbortError') throw err; // cancelled: nothing to act on
+            return {
+              error: true,
+              message: 'Could not refresh prices: ' + (err && err.message ? err.message : 'network error'),
+              next_action: 'Tell the wearer the refresh failed and that the last known prices are still shown, then stop.',
+            };
+          });
       }
     });
   }
@@ -457,6 +641,7 @@
     setupEvents();
     loadFavs();
     loadCache();
+    registerWebMcp();
     setTimeout(function () {
       navigateTo('home', { addToHistory: false });
     }, 50);

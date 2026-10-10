@@ -6,10 +6,17 @@
 
 // ─── Navigation stack ───────────────────────────────────────
 const screenStack = [];
+// Element that was focused on each screen when a sub-screen was opened, so
+// Back can return focus to the control that opened it.
+const focusStack = [];
 
 function navigateTo(id) {
   const current = screenStack[screenStack.length - 1];
-  if (current) document.getElementById(current).classList.add('hidden');
+  if (current) {
+    const curEl = document.getElementById(current);
+    focusStack.push(curEl.contains(document.activeElement) ? document.activeElement : null);
+    curEl.classList.add('hidden');
+  }
   screenStack.push(id);
   const next = document.getElementById(id);
   next.classList.remove('hidden');
@@ -24,7 +31,9 @@ function navigateBack() {
   const prev = screenStack[screenStack.length - 1];
   const el = document.getElementById(prev);
   el.classList.remove('hidden');
-  focusFirst(el);
+  const opener = focusStack.pop();
+  if (opener && el.contains(opener)) opener.focus();
+  else focusFirst(el);
 }
 
 function focusFirst(screen) {
@@ -432,6 +441,7 @@ function renderApis() {
     ['Picture in Picture',  'pictureInPictureEnabled' in document],
     ['WebXR',               'xr' in navigator],
     ['MIDI',                'requestMIDIAccess' in navigator],
+    ['WebMCP',              'modelContext' in document],
   ];
 
   const ok = checks.filter(c => c[1]).length;
@@ -537,7 +547,7 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
     if (current && current.click) current.click();
   } else if (e.key === 'Backspace' || e.key === 'Escape') {
-    // Backspace is the documented back input; Escape kept for desktop testing.
+    // Escape is the glasses' back gesture; Backspace kept for desktop testing.
     e.preventDefault();
     navigateBack();
   }

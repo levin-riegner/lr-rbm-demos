@@ -56,7 +56,7 @@ You'll see a PIN on the glasses view; type it on the phone view; the glasses vie
 - `ArrowDown` / `ArrowRight` — focus next element
 - `ArrowUp` / `ArrowLeft` — focus previous
 - `Enter` / `Space` — activate
-- `Escape` / `Backspace` — "Back" (unpair / retry)
+- Back gesture (thumb + middle finger) (`Backspace` on desktop) — "Back" (unpair / retry)
 
 ### Config
 

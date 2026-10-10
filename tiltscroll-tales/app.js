@@ -65,7 +65,9 @@
     typeof DeviceOrientationEvent !== 'undefined' &&
     typeof DeviceOrientationEvent.requestPermission === 'function';
 
+  let orientationAttached = false;
   const attachOrientation = () => {
+    orientationAttached = true;
     window.addEventListener('deviceorientation', onOrientation, { passive: true });
     status.textContent = 'CALIBRATING…';
   };
@@ -179,9 +181,34 @@
       if (!flashTimer) status.textContent = `Δ ${off}°`;
     }
 
-    requestAnimationFrame(animate);
+    rafId = requestAnimationFrame(animate);
   };
-  requestAnimationFrame(animate);
+  let rafId = 0;
+  function startLoop() {
+    if (rafId) return;
+    rafId = requestAnimationFrame(animate);
+  }
+  function stopLoop() {
+    if (!rafId) return;
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+  startLoop();
+
+  // ─── Page visibility ───────────────────────────────────────────
+  // Stop the render loop and the tilt listener while hidden; re-arm on
+  // visible. Scroll position, calibration and text size are kept.
+  function pauseForHidden() {
+    stopLoop();
+    if (orientationAttached) window.removeEventListener('deviceorientation', onOrientation);
+  }
+  function resumeFromHidden() {
+    if (orientationAttached) window.addEventListener('deviceorientation', onOrientation, { passive: true });
+    startLoop();
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
 
   // ─── Page navigation ───────────────────────────────────────────
   const goToPage = (i) => {

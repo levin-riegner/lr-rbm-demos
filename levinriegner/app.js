@@ -33,6 +33,18 @@
     twTimers = [];
   }
 
+  /* Page hidden mid-typing: stop the timers and settle every line on the
+     current screen to its full text, so nothing is left half-typed with a
+     cursor when the wearer comes back. */
+  function finishTW() {
+    clearTW();
+    var container = screens[state.screen];
+    if (!container) return;
+    container.querySelectorAll('.tw').forEach(function (el) {
+      if (el.dataset.twText) el.textContent = el.dataset.twText;
+    });
+  }
+
   function typewrite(el, text, onDone, speed) {
     if (!el) return;
     speed = speed || TW_BASE;
@@ -515,7 +527,14 @@
   function bindKeyboard() {
     document.addEventListener('keydown', function (e) {
       var key = e.key;
-      if (key === 'Escape' || key === 'Backspace') { e.preventDefault(); back(); return; }
+      if (key === 'Escape' || key === 'Backspace') {
+        e.preventDefault();
+        /* back gesture: dismiss the contact overlay first, then go back a screen */
+        var flash = document.getElementById('contact-flash');
+        if (flash && !flash.classList.contains('hidden')) { handleAction('flash-dismiss'); return; }
+        back();
+        return;
+      }
 
       /* ── HOME — Up/Down between buttons, Enter activates ── */
       if (state.screen === 'home') {
@@ -685,6 +704,21 @@
       if (ctx && ctx.state === 'suspended') ctx.resume();
     }
 
+    /* page hidden: silence the synth; only resume what we suspended ourselves */
+    var pausedByUs = false;
+    function pause() {
+      if (ctx && ctx.state === 'running') {
+        pausedByUs = true;
+        try { ctx.suspend(); } catch (e) { /* ignore */ }
+      }
+    }
+    function resume() {
+      if (ctx && pausedByUs) {
+        pausedByUs = false;
+        try { ctx.resume(); } catch (e) { /* ignore */ }
+      }
+    }
+
     /* primitive: pitched tone with envelope */
     function tone(freq, dur, opts) {
       if (!enabled || !ctx) return;
@@ -823,7 +857,7 @@
     }
 
     return {
-      init: init, unlock: unlock,
+      init: init, unlock: unlock, pause: pause, resume: resume,
       homeBtn: homeBtn, rainbowBurst: rainbowBurst, tick: tick,
       backChirp: backChirp, tabSwitch: tabSwitch, workItem: workItem,
       serviceTile: serviceTile, transitionBloom: transitionBloom,
@@ -833,6 +867,17 @@
   })();
 
   /* ── intro animation (8s rainbow particle reveal) ─────── */
+  /* rAF handle + frame closure so the intro can be paused while the page
+     is hidden; elapsed time is wall-clock (ts - t0) so it stays accurate */
+  var intro = { raf: null, frame: null, done: false };
+  function pauseIntro() {
+    if (intro.raf !== null) cancelAnimationFrame(intro.raf);
+    intro.raf = null;
+  }
+  function resumeIntro() {
+    if (!intro.done && intro.frame && intro.raf === null) intro.raf = requestAnimationFrame(intro.frame);
+  }
+
   function runIntro(onComplete) {
     var overlay = document.getElementById('intro');
     var canvas  = document.getElementById('intro-canvas');
@@ -1142,15 +1187,18 @@
       }
 
       if (el >= T5) {
+        intro.done = true;
+        intro.raf = null;
         overlay.style.display = 'none';
         onComplete();
         return;
       }
 
-      requestAnimationFrame(frame);
+      intro.raf = requestAnimationFrame(frame);
     }
 
-    requestAnimationFrame(frame);
+    intro.frame = frame;
+    intro.raf = requestAnimationFrame(frame);
   }
 
   /* ══════════════════════════════════════════════════
@@ -1168,7 +1216,17 @@
       fxCanvas.width  = 600;
       fxCanvas.height = 600;
       fxCtx = fxCanvas.getContext('2d');
-      requestAnimationFrame(tick);
+      resume();
+    }
+
+    /* page hidden: stop the particle loop; resume restarts it with a fresh dt */
+    function pause() {
+      if (rafH !== null) cancelAnimationFrame(rafH);
+      rafH = null;
+      lastTs = 0;
+    }
+    function resume() {
+      if (rafH === null && fxCtx) rafH = requestAnimationFrame(tick);
     }
 
     /* edge fade — keep particles inside the magical safe zone */
@@ -1439,6 +1497,8 @@
 
     return {
       init: init,
+      pause: pause,
+      resume: resume,
       burst: burst,
       rainbowBurst: rainbowBurst,
       swirl: swirl,
@@ -1498,6 +1558,28 @@
     });
   }
 
+  /* ── lifecycle ───────────────────────────────────────────
+     Everything that loops (home particle canvas, FX particles, the
+     intro, typewriter timers, the synth) stops while the page is
+     hidden and comes back on visible. Logical state is untouched. */
+  function pauseForHidden() {
+    finishTW();
+    if (state.rafHandle) {
+      cancelAnimationFrame(state.rafHandle);
+      state.rafHandle = null;
+    }
+    FX.pause();
+    pauseIntro();
+    FX_AUDIO.pause();
+  }
+
+  function resumeFromHidden() {
+    if (state.screen === 'home' && ctx && intro.done && !state.rafHandle) drawCanvas();
+    FX.resume();
+    resumeIntro();
+    FX_AUDIO.resume();
+  }
+
   /* ── init ────────────────────────────────────────────── */
   function init() {
     /* hide all screens — restored selectively after intro */
@@ -1511,6 +1593,9 @@
     bindFX();
     FX.init();
     FX_AUDIO.init();
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) pauseForHidden(); else resumeFromHidden();
+    });
     /* unlock audio on first user gesture (browsers gate AudioContext) */
     var unlockOnce = function () {
       FX_AUDIO.unlock();

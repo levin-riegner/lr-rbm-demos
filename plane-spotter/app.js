@@ -242,6 +242,32 @@
     render();
   }
 
+  // Page visibility: while hidden, drop the orientation listener, the GPS
+  // watch and the poll interval but keep running/demo/position/aircraft
+  // state. Re-arm on visible. Permission is never re-requested here.
+  var hiddenPaused = false;
+  var hiddenGeoActive = false;
+  function pauseForHidden() {
+    if (!state.running) return;
+    hiddenPaused = true;
+    hiddenGeoActive = state.geoWatchId != null;
+    detachOrientation();
+    stopGeo();
+  }
+  function resumeFromHidden() {
+    if (!hiddenPaused) return;
+    hiddenPaused = false;
+    var geo = hiddenGeoActive;
+    hiddenGeoActive = false;
+    if (!state.running) return;
+    attachOrientation();
+    if (geo) startGeo();
+    if (state.userLat != null) ensurePolling();
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
+
   function calibrate() {
     if (state.yaw != null) state.yawOffset = state.yaw;
     if (state.pitch != null) state.pitchOffset = state.pitch;

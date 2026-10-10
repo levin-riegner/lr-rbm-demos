@@ -125,6 +125,7 @@
   //  SCREEN SWITCHING
   // ===========================================================
   function showScreen(name) {
+    if (state.screen === 'scanning' && name !== 'scanning') stopScanTimers();
     state.screen = name;
     SCREENS.forEach(function (id) {
       var el = document.getElementById(id);
@@ -248,7 +249,34 @@
   // ===========================================================
   //  RENDER — scanning (auto-advances to confirm)
   // ===========================================================
-  var scanTimer = null;
+  var SCAN_STEPS = ['CAPTURING…', 'READING TEXT…', 'PARSING TAG…'];
+  var scanTimer = null;       // one-shot: advance to confirm
+  var scanStatusTick = null;  // interval: cycle the status label
+  var scanEndsAt = 0;         // wall-clock deadline so a hidden pause stays accurate
+  var scanStep = 0;
+
+  function stopScanTimers() {
+    clearTimeout(scanTimer);
+    clearInterval(scanStatusTick);
+    scanTimer = null;
+    scanStatusTick = null;
+  }
+
+  function startScanTimers() {
+    stopScanTimers();
+    var statusEl = document.getElementById('scan-status');
+    if (statusEl) statusEl.textContent = SCAN_STEPS[scanStep];
+    // cycle the status label so the OCR feels stepwise
+    scanStatusTick = setInterval(function () {
+      scanStep = (scanStep + 1) % SCAN_STEPS.length;
+      if (statusEl) statusEl.textContent = SCAN_STEPS[scanStep];
+    }, 380);
+    scanTimer = setTimeout(function () {
+      stopScanTimers();
+      if (state.screen === 'scanning') showScreen('confirm');
+    }, Math.max(0, scanEndsAt - Date.now()));
+  }
+
   function renderScanning() {
     // pick the next demo stub deterministically
     var idx = state.poolIdx % DEMO_POOL.length;
@@ -262,21 +290,9 @@
     };
     state.poolIdx = (state.poolIdx + 1) % DEMO_POOL.length;
 
-    // cycle the status label so the OCR feels stepwise
-    var statusEl = document.getElementById('scan-status');
-    var steps = ['CAPTURING…', 'READING TEXT…', 'PARSING TAG…'];
-    var s = 0;
-    if (statusEl) statusEl.textContent = steps[s];
-    var statusTick = setInterval(function () {
-      s = (s + 1) % steps.length;
-      if (statusEl) statusEl.textContent = steps[s];
-    }, 380);
-
-    clearTimeout(scanTimer);
-    scanTimer = setTimeout(function () {
-      clearInterval(statusTick);
-      if (state.screen === 'scanning') showScreen('confirm');
-    }, CONFIG.scanDurationMs);
+    scanStep = 0;
+    scanEndsAt = Date.now() + CONFIG.scanDurationMs;
+    startScanTimers();
   }
 
   // ===========================================================
@@ -355,6 +371,9 @@
   // ===========================================================
   function onKey(e) {
     var k = e.key;
+    // Escape is the glasses' back gesture: on every sub-screen it does what
+    // ◀ does there (back one level). On the home screens it is left alone.
+    var back = (k === 'Escape');
 
     if (state.screen === 'home-empty') {
       if (k === 'Enter' || k === ' ') { startCapture(); e.preventDefault(); }
@@ -384,7 +403,7 @@
       if (k === 'Enter' || k === ' ') {
         showScreen('scanning');
         e.preventDefault();
-      } else if (k === 'ArrowLeft') {
+      } else if (k === 'ArrowLeft' || back) {
         goHome();
         e.preventDefault();
       }
@@ -393,8 +412,8 @@
 
     if (state.screen === 'scanning') {
       // No input — auto-advances. Allow ◀ to bail out.
-      if (k === 'ArrowLeft') {
-        clearTimeout(scanTimer);
+      if (k === 'ArrowLeft' || back) {
+        stopScanTimers();
         state.pending = null;
         goHome();
         e.preventDefault();
@@ -410,7 +429,7 @@
         // retake
         showScreen('capture');
         e.preventDefault();
-      } else if (k === 'ArrowLeft') {
+      } else if (k === 'ArrowLeft' || back) {
         state.pending = null;
         goHome();
         e.preventDefault();
@@ -419,7 +438,7 @@
     }
 
     if (state.screen === 'detail') {
-      if (k === 'ArrowLeft' || k === 'Enter' || k === ' ') {
+      if (k === 'ArrowLeft' || k === 'Enter' || k === ' ' || back) {
         goHome();
         e.preventDefault();
       } else if (k === 'ArrowDown') {
@@ -433,7 +452,7 @@
       if (k === 'Enter' || k === ' ') {
         deleteStub();
         e.preventDefault();
-      } else if (k === 'ArrowLeft') {
+      } else if (k === 'ArrowLeft' || back) {
         showScreen('detail');
         e.preventDefault();
       }
@@ -465,6 +484,178 @@
   function tickClock() {
     var el = document.getElementById('clock-empty');
     if (el) el.textContent = fmtClock(new Date());
+  }
+  var clockTimer = null;
+  function startClock() {
+    if (clockTimer) return;
+    tickClock();
+    clockTimer = setInterval(tickClock, 1000);
+  }
+  function stopClock() {
+    clearInterval(clockTimer);
+    clockTimer = null;
+  }
+
+  // ===========================================================
+  //  LIFECYCLE — nothing ticks while the page is hidden
+  // ===========================================================
+  function pauseForHidden() {
+    stopClock();
+    stopScanTimers();
+  }
+  function resumeFromHidden() {
+    startClock();
+    // The scan deadline is wall-clock based, so a scan interrupted by a
+    // hidden page picks up exactly where it should be (or finishes now).
+    if (state.screen === 'scanning') startScanTimers();
+  }
+
+  // ===========================================================
+  //  WebMCP (Meta AI voice control)
+  //  Additive: the app works identically when document.modelContext
+  //  is absent. Tools call the same functions the D-pad path uses.
+  // ===========================================================
+  function stubSummary(s) {
+    return {
+      category: s.category,
+      code: s.code,
+      location: s.location,
+      captured: fmtAgo(s.capturedAt),
+    };
+  }
+
+  function captureInProgress() {
+    return state.screen === 'scanning' || state.screen === 'confirm';
+  }
+
+  function findStubs(query) {
+    var q = String(query || '').replace(/[\s·#\-]/g, '').toLowerCase();
+    if (!q) return [];
+    return state.stubs.filter(function (s) {
+      var cat  = String(s.category || '').replace(/[\s·#\-]/g, '').toLowerCase();
+      var code = String(s.code || '').replace(/[\s·#\-]/g, '').toLowerCase();
+      return cat.indexOf(q) !== -1 || code.indexOf(q) !== -1;
+    });
+  }
+
+  // Move the carousel to a stub — the same path ◀ ▶ use (set index, render).
+  function goToStub(id) {
+    var idx = state.stubs.findIndex(function (s) { return s.id === id; });
+    if (idx < 0) return false;
+    state.carIdx = idx;
+    showScreen('home');
+    return true;
+  }
+
+  function registerWebMcp() {
+    var ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        var r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, function (err) { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    safeRegister({
+      name: 'stub_get_state',
+      description: 'List the saved stubs (coat check, valet, locker, raffle tickets and similar) with their category, code and location, newest first, plus which screen the app is on.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: function () {
+        return {
+          screen: state.screen,
+          count: state.stubs.length,
+          stubs: state.stubs.map(stubSummary),
+          next_action: state.stubs.length
+            ? 'Tell the wearer what is saved in one short sentence, then stop.'
+            : 'Tell the wearer there are no saved stubs, then stop.',
+        };
+      }
+    });
+
+    safeRegister({
+      name: 'stub_find',
+      description: 'Find saved stubs whose category (e.g. valet, coat check, locker) or code (e.g. 247, A-19) contains the query, and show the first match on screen. Returns all matches.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Category name or code text to look for, e.g. "valet" or "247". Case-insensitive partial match.' }
+        },
+        required: ['query']
+      },
+      execute: function (args) {
+        var query = args && args.query;
+        if (!query || !String(query).trim()) {
+          return { error: true, message: 'query is required', next_action: 'Ask the wearer what to look for.' };
+        }
+        if (captureInProgress()) {
+          return { error: true, message: 'A capture is in progress.', next_action: 'Tell the wearer to save or cancel the capture first, then stop.' };
+        }
+        if (!state.stubs.length) {
+          return { error: true, message: 'No stubs are saved.', next_action: 'Tell the wearer there are no saved stubs, then stop.' };
+        }
+        var matches = findStubs(query);
+        if (!matches.length) {
+          return { error: true, message: 'No stub matches "' + query + '".', count: 0, next_action: 'Tell the wearer nothing matched, then stop.' };
+        }
+        goToStub(matches[0].id);
+        return {
+          count: matches.length,
+          showing: stubSummary(matches[0]),
+          matches: matches.map(stubSummary),
+          next_action: 'Read the shown stub\'s category and code in one short sentence, then stop.',
+        };
+      }
+    });
+
+    safeRegister({
+      name: 'stub_delete',
+      description: 'Delete a saved stub by its exact code (e.g. 247, A-19). Only call this when the wearer explicitly asked to delete it. Returns the remaining stubs.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          code: { type: 'string', description: 'The exact code printed on the stub to delete, e.g. "247" or "A-19". Case-insensitive.' }
+        },
+        required: ['code']
+      },
+      execute: function (args) {
+        var code = args && args.code;
+        var norm = function (c) { return String(c || '').replace(/[\s·#\-]/g, '').toLowerCase(); };
+        if (!code || !norm(code)) {
+          return { error: true, message: 'code is required', next_action: 'Ask the wearer which stub code to delete.' };
+        }
+        if (captureInProgress()) {
+          return { error: true, message: 'A capture is in progress.', next_action: 'Tell the wearer to save or cancel the capture first, then stop.' };
+        }
+        var matches = state.stubs.filter(function (s) { return norm(s.code) === norm(code); });
+        if (!matches.length) {
+          return { error: true, message: 'No stub has code "' + code + '".', next_action: 'Tell the wearer nothing matched, then stop.' };
+        }
+        if (matches.length > 1) {
+          return {
+            error: true,
+            message: matches.length + ' stubs share code "' + code + '".',
+            matches: matches.map(stubSummary),
+            next_action: 'Tell the wearer several stubs share that code and to delete it from the carousel, then stop.',
+          };
+        }
+        var target = matches[0];
+        state.detailId = target.id;
+        deleteStub(); // same function the Enter key calls on the delete screen
+        return {
+          deleted: stubSummary(target),
+          count: state.stubs.length,
+          stubs: state.stubs.map(stubSummary),
+          next_action: 'Confirm the deletion in one short sentence, then stop.',
+        };
+      }
+    });
   }
 
   // ===========================================================
@@ -527,9 +718,12 @@
     restore();
     document.addEventListener('keydown', onKey);
     document.addEventListener('click', onClick);
-    tickClock();
-    setInterval(tickClock, 1000);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) pauseForHidden(); else resumeFromHidden();
+    });
+    startClock();
     if (!applyUrlState()) startCapture();
+    registerWebMcp();
   }
 
   if (document.readyState === 'loading') {

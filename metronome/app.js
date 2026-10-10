@@ -36,6 +36,7 @@
     currentSubdiv: 0,
     nextTickTime: 0,
     schedulerTimer: null,
+    hiddenPaused: false,
     audioCtx: null,
     masterGain: null,
     tapTimes: [],
@@ -168,6 +169,7 @@
     // fully audible before the metronome begins clicking.
     state.nextTickTime = state.audioCtx.currentTime + 0.28;
     state.playing = true;
+    state.hiddenPaused = false;
     showScreen('playing');
     renderPlaying();
     scheduler();
@@ -175,6 +177,7 @@
 
   function stopMetronome() {
     state.playing = false;
+    state.hiddenPaused = false;
     if (state.schedulerTimer !== null) {
       clearTimeout(state.schedulerTimer);
       state.schedulerTimer = null;
@@ -193,9 +196,55 @@
 
   function restartScheduler() {
     if (!state.playing) return;
+    if (state.hiddenPaused) return; // resumes from resumeFromHidden()
     clearTimeout(state.schedulerTimer);
     state.currentBeat = 0;
     state.currentSubdiv = 0;
+    state.nextTickTime = state.audioCtx.currentTime + 0.05;
+    scheduler();
+  }
+
+  // ===========================================================
+  //  PAGE VISIBILITY
+  //  Hidden: stop the click scheduler (and mute clicks already queued in
+  //  the lookahead) and drop the NOD listener. Logical state — playing,
+  //  tempo, beat position, NOD active — is kept and resumed on visible.
+  // ===========================================================
+  function pauseForHidden() {
+    if (nod.active && nod.handler) {
+      window.removeEventListener('deviceorientation', nod.handler);
+    }
+    if (!state.playing) return;
+    state.hiddenPaused = true;
+    if (state.schedulerTimer !== null) {
+      clearTimeout(state.schedulerTimer);
+      state.schedulerTimer = null;
+    }
+    if (state.masterGain && state.audioCtx) {
+      var t = state.audioCtx.currentTime;
+      state.masterGain.gain.cancelScheduledValues(t);
+      state.masterGain.gain.setValueAtTime(state.masterGain.gain.value, t);
+      state.masterGain.gain.linearRampToValueAtTime(0.0001, t + 0.02);
+    }
+  }
+
+  function resumeFromHidden() {
+    if (nod.active && nod.handler) {
+      // Re-seed the smoother so the first sample after the gap isn't a "nod".
+      nod.smoothed = null;
+      nod.prevSmoothed = null;
+      nod.dir = 0;
+      window.addEventListener('deviceorientation', nod.handler);
+    }
+    if (!state.hiddenPaused) return;
+    state.hiddenPaused = false;
+    if (!state.playing || !state.audioCtx) return;
+    if (state.audioCtx.state === 'suspended') state.audioCtx.resume();
+    if (state.masterGain) {
+      var t = state.audioCtx.currentTime;
+      state.masterGain.gain.cancelScheduledValues(t);
+      state.masterGain.gain.setValueAtTime(state.volume, t);
+    }
     state.nextTickTime = state.audioCtx.currentTime + 0.05;
     scheduler();
   }
@@ -768,6 +817,120 @@
   }
 
   // ===========================================================
+  //  WebMCP (Meta AI voice control)
+  //  Additive: the app works identically when document.modelContext is
+  //  absent. Every tool routes through the same functions the D-pad uses
+  //  (handleAction / adjustBpm / setTimeSig) so the screen re-renders.
+  // ===========================================================
+  function timeSigLabel() {
+    return state.beatsPerMeasure + (state.beatsPerMeasure >= 6 ? '/8' : '/4');
+  }
+  function mcpState(nextAction) {
+    return {
+      playing: state.playing,
+      bpm: state.bpm,
+      beats_per_measure: state.beatsPerMeasure,
+      time_signature: timeSigLabel(),
+      note_value: state.noteValue,
+      screen: state.screen,
+      next_action: nextAction || 'Confirm in one short sentence, then stop.'
+    };
+  }
+
+  function registerWebMcp() {
+    var ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        var r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, function (err) { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    safeRegister({
+      name: 'metronome_get_state',
+      description: 'Report whether the metronome is playing, plus the current tempo in BPM, time signature and note subdivision.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: function () {
+        return mcpState('Tell the wearer the tempo and whether it is playing in one short sentence, then stop.');
+      }
+    });
+
+    safeRegister({
+      name: 'metronome_set_tempo',
+      description: 'Set the tempo in beats per minute (whole number from ' + CONFIG.bpmMin + ' to ' + CONFIG.bpmMax + '). Takes effect immediately, even while playing.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          bpm: { type: 'integer', description: 'Beats per minute, ' + CONFIG.bpmMin + ' to ' + CONFIG.bpmMax + '. Values outside the range are clamped.' }
+        },
+        required: ['bpm']
+      },
+      execute: function (args) {
+        var n = parseInt(args && args.bpm, 10);
+        if (isNaN(n)) {
+          return { error: true, message: 'bpm must be a whole number from ' + CONFIG.bpmMin + ' to ' + CONFIG.bpmMax + '.', next_action: 'Ask the wearer for a tempo, then call metronome_set_tempo again.' };
+        }
+        var target = Math.max(CONFIG.bpmMin, Math.min(CONFIG.bpmMax, n));
+        if (target !== state.bpm) {
+          playUI('tick');
+          adjustBpm(target - state.bpm); // same path as the ±1/±10 buttons
+        }
+        return mcpState();
+      }
+    });
+
+    safeRegister({
+      name: 'metronome_set_time_signature',
+      description: 'Set the beats per measure: 2, 3, 4 or 5 (x/4) or 6 or 7 (x/8). Takes effect immediately, even while playing.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          beats: { type: 'integer', description: 'Beats per measure, a whole number from 2 to 7.' }
+        },
+        required: ['beats']
+      },
+      execute: function (args) {
+        var n = parseInt(args && args.beats, 10);
+        if (isNaN(n) || n < 2 || n > 7) {
+          return { error: true, message: 'beats must be a whole number from 2 to 7.', next_action: 'Ask the wearer for the beats per measure, then call metronome_set_time_signature again.' };
+        }
+        playUI('select');
+        setTimeSig(n); // same path as the time-signature tiles
+        if (state.playing) { renderPlaying(); restartScheduler(); }
+        else renderHome();
+        return mcpState();
+      }
+    });
+
+    safeRegister({
+      name: 'metronome_start',
+      description: 'Start the metronome clicking at the current tempo, time signature and subdivision. No-op if already playing.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        if (!state.playing) handleAction('quick-start'); // same as the START button
+        return mcpState();
+      }
+    });
+
+    safeRegister({
+      name: 'metronome_stop',
+      description: 'Stop the metronome and return to the home screen. No-op if not playing.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        if (state.playing) handleAction('toggle-play'); // same as the STOP button
+        return mcpState();
+      }
+    });
+  }
+
+  // ===========================================================
   //  EVENT WIRING
   // ===========================================================
   function setupEvents() {
@@ -845,6 +1008,10 @@
     setupEvents();
     setupSwipe();
     applyStateParam();
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) pauseForHidden(); else resumeFromHidden();
+    });
+    registerWebMcp();
   }
 
   if (document.readyState === 'loading') {

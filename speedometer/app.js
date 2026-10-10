@@ -221,6 +221,40 @@
     renderSpeed();
   }
 
+  // Page visibility: release the sensor listeners and the sim rAF loop while
+  // hidden, keep speed/top-speed state, and re-arm on visible if active.
+  var hiddenSensor = false;
+  var hiddenSim = false;
+  function pauseForHidden() {
+    hiddenSensor = state.sensorRunning;
+    hiddenSim = state.simRunning;
+    if (state.sensorRunning) {
+      window.removeEventListener('devicemotion', onDeviceMotion);
+      window.removeEventListener('deviceorientation', onDeviceOrientation);
+    }
+    if (state.simRafId) {
+      cancelAnimationFrame(state.simRafId);
+      state.simRafId = 0;
+    }
+  }
+  function resumeFromHidden() {
+    var sensor = hiddenSensor, sim = hiddenSim;
+    hiddenSensor = false;
+    hiddenSim = false;
+    if (sensor && state.sensorRunning) {
+      state.lastTs = 0;
+      window.addEventListener('devicemotion', onDeviceMotion);
+      window.addEventListener('deviceorientation', onDeviceOrientation);
+    }
+    if (sim && state.simRunning && !state.simRafId) {
+      state.lastTs = 0;
+      state.simRafId = requestAnimationFrame(simTick);
+    }
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
+
   function handleAction(action) {
     if (action === 'toggle-sensor') toggleSensor();
     else if (action === 'toggle-sim') toggleSim();

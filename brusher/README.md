@@ -24,6 +24,7 @@ A heads-up **brush coach** for Meta Display glasses. It counts your toothbrush s
 | Where | Input | Result |
 | --- | --- | --- |
 | Intro | Enter | Begin (request motion access on iOS, then start calibration) |
+| Permission overlay | Back gesture (thumb + middle finger) | Dismiss without granting — continue with the keyboard fallback |
 | Calibration | Head motion | Counts strokes on the dominant axis until 10, then auto-advances |
 | Calibration | ▼ | Fake-stroke (keyboard fallback when there's no IMU) |
 | Calibration | ▲ | Reset the calibration counter |
@@ -34,6 +35,7 @@ A heads-up **brush coach** for Meta Display glasses. It counts your toothbrush s
 | Brushing | ◀ | Previous zone |
 | Brushing | ▶ | Skip to next zone |
 | Brushing | ▲ | Re-calibrate |
+| Zone-complete popover | Back gesture (thumb + middle finger) | Dismiss early and move on to the next zone |
 | Done | ◀ ▶ | Choose BRUSH AGAIN ↔ RE-CALIBRATE |
 | Done | Enter | Confirm the focused option |
 

@@ -100,10 +100,28 @@
     }
   }
 
+  var listening = false;
+
   function startListening() {
+    listening = true;
     window.addEventListener('deviceorientation', onOrientation);
     setStatus('listening');
   }
+
+  // Page visibility: drop the sensor listener while hidden, re-add the same
+  // reference on visible if listening was active. Never re-prompts.
+  function pauseForHidden() {
+    if (listening) window.removeEventListener('deviceorientation', onOrientation);
+  }
+  function resumeFromHidden() {
+    if (listening) {
+      currentZone = 'C';
+      window.addEventListener('deviceorientation', onOrientation);
+    }
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
 
   function bootstrapPermission() {
     var Orient = window.DeviceOrientationEvent;

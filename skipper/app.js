@@ -24,8 +24,9 @@
    drill, ▲ goes straight to the MAYDAY script — which is what
    the drill text tells you to do.
 
-   No ESC, no ×, no tap targets, no typing: the device has none of
-   those. Values are set with ◀▶ wheels.
+   No ×, no tap targets, no typing: the device has none of those.
+   Values are set with ◀▶ wheels. The back gesture (thumb + middle
+   finger) arrives as the Escape key and mirrors ▼ / ◀ "back".
    ───────────────────────────────────────────────────────────── */
 
 (() => {
@@ -529,7 +530,7 @@
      a lat/long read off the lens is the difference between a
      rescue that goes straight to you and one that searches. */
 
-  function startGeo() {
+  function startGeo(keepFix) {
     if (state.geoWatch !== null) return;
     if (!navigator.geolocation) {
       state.geo = { state: 'off', text: '' };
@@ -537,9 +538,13 @@
       return;
     }
     // repaint immediately so the first frame says ACQUIRING rather
-    // than showing the no-GPS fallback for as long as the fix takes
-    state.geo = { state: 'wait', text: '' };
-    if (state.screen === 'mayday') renderMayday();
+    // than showing the no-GPS fallback for as long as the fix takes.
+    // When re-arming after the page was hidden, keep the last good fix
+    // on screen instead of flashing back to ACQUIRING.
+    if (!(keepFix && state.geo.state === 'ok')) {
+      state.geo = { state: 'wait', text: '' };
+      if (state.screen === 'mayday') renderMayday();
+    }
     state.geoWatch = navigator.geolocation.watchPosition(
       (p) => {
         state.geo = { state: 'ok', text: formatPos(p.coords.latitude, p.coords.longitude) };
@@ -674,12 +679,28 @@
     }
   }
 
+  /* The back gesture (Escape) goes back exactly one level, the same
+     way ▼ / ◀ do on each screen. Home is the root: nothing to do. */
+  function handleBack() {
+    switch (state.screen) {
+      case 'sos':    buildHome(); show('home'); return;
+      case 'steps':  backToMenu(); return;
+      case 'check':
+        if (state.editing) { state.editing = false; paintCheck(); }
+        else { buildHome(); show('home'); }
+        return;
+      case 'card':   backToMenu(); return;
+      case 'mayday': state.sosIdx = 0; buildSos(); show('sos'); return;
+    }
+  }
+
   const KEYMAP = {
     ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
     Enter: 'ok', ' ': 'ok',
   };
 
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); handleBack(); return; }
     const k = KEYMAP[e.key];
     if (!k) return;
     e.preventDefault();
@@ -758,7 +779,33 @@
   buildHome();
   show('home');
 
-  tickClock();
-  setInterval(tickClock, 15000);
+  /* ═══════════════════ LIFECYCLE ═══════════════════
+     The status-bar clock and the GPS receiver stop while the page is
+     hidden and come back on visible. tickClock reads the wall clock,
+     so the countdown is exact on resume; the GPS watch is only
+     re-armed if the MAYDAY screen is still the one on the lens. */
+  let clockTimer = null;
+  function startClock() {
+    if (clockTimer !== null) return;
+    tickClock();
+    clockTimer = setInterval(tickClock, 15000);
+  }
+  function stopClock() {
+    if (clockTimer !== null) clearInterval(clockTimer);
+    clockTimer = null;
+  }
+  function pauseForHidden() {
+    stopClock();
+    stopGeo();
+  }
+  function resumeFromHidden() {
+    startClock();
+    if (state.screen === 'mayday') startGeo(true);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
+
+  startClock();
   applyStateParam();
 })();

@@ -19,7 +19,22 @@ Open [http://localhost:8080](http://localhost:8080) in Chrome, then:
 
 - **Arrow keys** - move focus (D-pad)
 - **Enter** - activate / open detail (EMG pinch)
-- **Escape** - back
+- **Back gesture (thumb + middle finger)** - back to the coin list, focus returns to the coin you opened
+- **Voice (Meta AI)** - ask for prices, add / remove favorites, refresh — see below
+
+## Voice (Meta AI)
+
+With WebMCP enabled, Meta AI can drive the tracker by voice. Try:
+
+- "What's Bitcoin at?"
+- "Which of my coins are up today?"
+- "Add Solana and Chainlink to my favorites."
+- "Remove ETH from favorites."
+- "Refresh the prices."
+
+Coins are matched by symbol or name (BTC, ETH, SOL, ADA, DOT, LINK, AVAX, MATIC); unknown names are reported back rather than guessed.
+
+> Voice control requires WebMCP to be enabled on the device (Developer Mode or rollout). Relaunch the app after enabling it. Without it the app behaves exactly as before — D-pad only.
 
 ## Screens
 

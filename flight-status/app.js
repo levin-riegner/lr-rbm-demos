@@ -382,8 +382,24 @@
   // ===========================================================
   //  KEY HANDLING — arrows + enter only
   // ===========================================================
+  // Back gesture on the glasses arrives as the Escape key: step back one
+  // level through the wizard, or leave the status screen for home.
+  function onBack() {
+    switch (state.screen) {
+      case 'step-airline': showScreen('home'); return true;
+      case 'step-number':  showScreen('step-airline'); return true;
+      case 'step-date':    state.digitIdx = 3; showScreen('step-number'); return true;
+      case 'status':       showScreen('home'); return true;
+    }
+    return false;
+  }
+
   function onKey(e) {
     var k = e.key;
+    if (k === 'Escape') {
+      if (onBack()) e.preventDefault();
+      return;
+    }
     if (state.screen === 'home') {
       var card = document.getElementById('last-card');
       var hasLast = card && !card.classList.contains('hidden');
@@ -670,12 +686,31 @@
     return false;
   }
 
+  // ===========================================================
+  //  LIFECYCLE — the clock only ticks while the page is visible.
+  //  tickClock reads the wall clock, so nothing drifts while paused.
+  // ===========================================================
+  var clockTimer = null;
+  function startClock() {
+    if (clockTimer !== null) return;
+    tickClock();
+    clockTimer = setInterval(tickClock, 1000);
+  }
+  function stopClock() {
+    if (clockTimer !== null) clearInterval(clockTimer);
+    clockTimer = null;
+  }
+  function pauseForHidden()  { stopClock(); }
+  function resumeFromHidden() { startClock(); }
+
   function init() {
     document.addEventListener('keydown', onKey);
     document.addEventListener('click', onClick);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) pauseForHidden(); else resumeFromHidden();
+    });
     setupSwipe();
-    tickClock();
-    setInterval(tickClock, 1000);
+    startClock();
     if (!applyUrlState()) showScreen('home');
   }
 

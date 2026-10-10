@@ -246,6 +246,21 @@ function stopStream() {
   if (state.timer) { clearInterval(state.timer); state.timer = null; }
 }
 
+/* ---------- lifecycle: no ticking while the page is hidden ---------- *
+   The stream interval is stopped when the display goes dark and resumed
+   only if it was running before (not in a ?state= screenshot freeze).
+*/
+let streamPausedForHidden = false;
+function pauseForHidden() {
+  if (state.timer) { stopStream(); streamPausedForHidden = true; }
+}
+function resumeFromHidden() {
+  if (streamPausedForHidden) { streamPausedForHidden = false; startStream(); }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pauseForHidden(); else resumeFromHidden();
+});
+
 /* ---------- controls ---------- */
 function onLeft() {
   if (state.mode === 'live') {

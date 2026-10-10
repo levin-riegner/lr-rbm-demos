@@ -290,7 +290,7 @@
       if (deckEl) deckEl.querySelector('.deck-bar').style.setProperty('--play-pct', d.playPct.toFixed(1) + '%');
     });
 
-    requestAnimationFrame(animateBeats);
+    beatRaf = requestAnimationFrame(animateBeats);
   }
 
   // ===========================================================
@@ -337,16 +337,49 @@
   }
 
   // ===========================================================
+  //  LIFECYCLE — the simulated Pro DJ Link feed (clock, telemetry
+  //  interval, beat rAF loop) is torn down while the page is hidden
+  //  and brought back up on visible. Everything is driven from
+  //  performance.now() / Date, so the timeline stays wall-clock
+  //  accurate across a pause.
+  // ===========================================================
+  var clockTimer     = null;
+  var telemetryTimer = null;
+  var beatRaf        = null;
+
+  function startFeed() {
+    if (clockTimer === null) {
+      tickClock();
+      clockTimer = setInterval(tickClock, 15000);
+    }
+    if (telemetryTimer === null) {
+      tickTelemetry();
+      telemetryTimer = setInterval(tickTelemetry, 200);
+    }
+    if (beatRaf === null) beatRaf = requestAnimationFrame(animateBeats);
+  }
+
+  function stopFeed() {
+    if (clockTimer !== null) clearInterval(clockTimer);
+    if (telemetryTimer !== null) clearInterval(telemetryTimer);
+    if (beatRaf !== null) cancelAnimationFrame(beatRaf);
+    clockTimer = telemetryTimer = beatRaf = null;
+  }
+
+  function pauseForHidden()  { stopFeed(); }
+  function resumeFromHidden() { startFeed(); }
+
+  // ===========================================================
   //  BOOT
   //  No keyboard / touch listeners — this is a read-only HUD.
   // ===========================================================
   function boot() {
     applyStateParam();
     renderAll();
-    tickClock();
-    setInterval(tickClock, 15000);
-    setInterval(tickTelemetry, 200);
-    requestAnimationFrame(animateBeats);
+    startFeed();
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) pauseForHidden(); else resumeFromHidden();
+    });
   }
 
   if (document.readyState === 'loading') {

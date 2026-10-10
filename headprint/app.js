@@ -194,11 +194,20 @@
     lastOrient.gamma = e.gamma || 0;
   }
 
+  // Stable listener references: added on attach / visible, removed on hidden.
+  function addSensorListeners() {
+    window.addEventListener('devicemotion', onMotion, { passive: true });
+    window.addEventListener('deviceorientation', onOrient, { passive: true });
+  }
+  function removeSensorListeners() {
+    window.removeEventListener('devicemotion', onMotion);
+    window.removeEventListener('deviceorientation', onOrient);
+  }
+
   function attachSensor() {
     if (sensorAttached) return;
     sensorAttached = true;
-    window.addEventListener('devicemotion', onMotion, { passive: true });
-    window.addEventListener('deviceorientation', onOrient, { passive: true });
+    addSensorListeners();
     setSensorPill('warn', 'WAIT…');
     setTimeout(() => { if (!usingSensor) setSensorPill('warn', 'KEYS'); }, 1500);
   }
@@ -411,6 +420,28 @@
     if (s === 'ready')      capReadyEl.classList.remove('hidden');
   }
 
+  // One stable handle per capture timer so they can be stopped exactly once
+  // (page hidden, back gesture) and resumed where the flow left off.
+  let countdownTimer = null;   // setInterval during the 3-2-1 countdown
+  let recordTimer = null;      // setInterval sampling the sensor for RECORD_MS
+  let chainTimer = null;       // setTimeout between gestures / reps
+  let chainFn = null;          // continuation the chainTimer would run
+  function clearCaptureTimers() {
+    if (countdownTimer !== null) { clearInterval(countdownTimer); countdownTimer = null; }
+    if (recordTimer !== null)    { clearInterval(recordTimer);    recordTimer = null; }
+    if (chainTimer !== null)     { clearTimeout(chainTimer);      chainTimer = null; }
+    chainFn = null;
+  }
+  function chainAfter(ms, fn) {
+    if (chainTimer !== null) clearTimeout(chainTimer);
+    chainFn = fn;
+    chainTimer = setTimeout(() => {
+      chainTimer = null;
+      chainFn = null;
+      fn();
+    }, ms);
+  }
+
   function startGesture() {
     ensureSensorThen(() => runCountdownThenRecord());
   }
@@ -420,10 +451,12 @@
     let n = COUNTDOWN_S;
     capCountdownNum.textContent = String(n);
     beeps.tick();
-    const tickInt = setInterval(() => {
+    if (countdownTimer !== null) clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
       n -= 1;
       if (n <= 0) {
-        clearInterval(tickInt);
+        clearInterval(countdownTimer);
+        countdownTimer = null;
         beeps.go();
         recordGesture();
       } else {
@@ -438,11 +471,13 @@
     captureBuffer = { ax: [], ay: [], az: [], alpha: [], beta: [], gamma: [], t: [] };
 
     const start = performance.now();
-    const interval = setInterval(() => {
+    if (recordTimer !== null) clearInterval(recordTimer);
+    recordTimer = setInterval(() => {
       const t = performance.now();
       const elapsed = t - start;
       if (elapsed >= RECORD_MS) {
-        clearInterval(interval);
+        clearInterval(recordTimer);
+        recordTimer = null;
         finishGesture();
         return;
       }
@@ -466,7 +501,7 @@
     showState('captured');
     beeps.captured();
 
-    setTimeout(() => {
+    chainAfter(CAPTURED_MS, () => {
       captureGestureIdx += 1;
       if (captureGestureIdx >= GESTURES.length) {
         finishRep();
@@ -474,7 +509,7 @@
         renderCurrentGesture();
         startGesture(); // chain through gestures without manual confirms
       }
-    }, CAPTURED_MS);
+    });
   }
 
   function finishRep() {
@@ -497,8 +532,56 @@
 
     // More reps to capture: brief pause + auto-continue
     renderCurrentGesture();
-    setTimeout(() => startGesture(), 400);
+    chainAfter(400, () => startGesture());
   }
+
+  // Abort an in-flight capture session (back gesture): stop every timer,
+  // drop the partial rep, and return to the menu. Already-saved reps and
+  // the profile itself are kept, exactly as if the page had been reloaded.
+  function cancelCaptureSession() {
+    clearCaptureTimers();
+    captureBuffer = null;
+    captureRepData = {};
+    captureSessionReps = [];
+    showState('ready');
+    rebuildMenu();
+    setPhase('menu');
+    beeps.nav();
+  }
+
+  // ─── Page visibility ───────────────────────────────────────────
+  // While hidden: release the sensor listeners and stop any capture timer.
+  // On visible: re-add the same listener references (no re-prompt) and pick
+  // the capture flow back up — an interrupted countdown/recording restarts
+  // for the same gesture; an interrupted between-gesture pause just continues.
+  let captureInterrupted = null; // null | 'gesture' | 'chain'
+  let interruptedChainFn = null;
+  function pauseForHidden() {
+    if (sensorAttached) removeSensorListeners();
+    captureInterrupted = null;
+    interruptedChainFn = null;
+    if (phase !== 'capture') return;
+    if (countdownTimer !== null || recordTimer !== null) {
+      captureInterrupted = 'gesture';
+    } else if (chainTimer !== null) {
+      captureInterrupted = 'chain';
+      interruptedChainFn = chainFn;
+    }
+    clearCaptureTimers();
+  }
+  function resumeFromHidden() {
+    if (sensorAttached) addSensorListeners();
+    const kind = captureInterrupted;
+    const fn = interruptedChainFn;
+    captureInterrupted = null;
+    interruptedChainFn = null;
+    if (phase !== 'capture') return;
+    if (kind === 'gesture') startGesture();
+    else if (kind === 'chain' && fn) fn();
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
 
   function finishTrainingSession() {
     const p = profileById(activeProfileId);
@@ -821,6 +904,13 @@
     const permOpen = !permOverlay.classList.contains('hidden');
     if (permOpen) {
       if (e.key === 'Enter') { e.preventDefault(); requestSensorPermission(); }
+      else if (e.key === 'Escape') {
+        // Back gesture: dismiss without granting; the waiting flow is dropped.
+        e.preventDefault();
+        permOverlay.classList.add('hidden');
+        pendingAfterPerm = null;
+        beeps.nav();
+      }
       return;
     }
 
@@ -828,13 +918,32 @@
       if (e.key === 'ArrowUp')      { e.preventDefault(); moveOverlay(-1); }
       else if (e.key === 'ArrowDown'){ e.preventDefault(); moveOverlay(+1); }
       else if (e.key === 'Enter')   { e.preventDefault(); activateOverlay(); }
-      else if (e.key === 'ArrowLeft'){ e.preventDefault(); closeProfileOverlay(); beeps.nav(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'Escape'){ e.preventDefault(); closeProfileOverlay(); beeps.nav(); }
       return;
     }
     if (!confirmOverlay.classList.contains('hidden')) {
       if (e.key === 'ArrowUp' || e.key === 'ArrowLeft')   { e.preventDefault(); moveConfirm(-1); }
       else if (e.key === 'ArrowDown' || e.key === 'ArrowRight'){ e.preventDefault(); moveConfirm(+1); }
       else if (e.key === 'Enter') { e.preventDefault(); activateConfirm(); }
+      else if (e.key === 'Escape') {
+        // Back gesture: same as CANCEL.
+        e.preventDefault();
+        confirmOverlay.classList.add('hidden');
+        pendingDeleteId = null;
+        beeps.nav();
+      }
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      // Back gesture: one level up. Menu is the root — nothing to do there.
+      if (phase === 'naming') {
+        e.preventDefault(); beeps.nav(); rebuildMenu(); setPhase('menu');
+      } else if (phase === 'capture') {
+        e.preventDefault(); cancelCaptureSession();
+      } else if (phase === 'result') {
+        e.preventDefault(); resultPrimaryAction();
+      }
       return;
     }
 

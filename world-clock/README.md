@@ -18,6 +18,21 @@ A tiny world-clock for the Meta Ray-Ban Display glasses. See the live local time
 | Picker | `▲` `▼` | Scroll the city list                     |
 | Picker | `Enter` | Toggle the highlighted city as a favorite |
 | Picker | `◀`     | Back to home                             |
+| Picker | Back gesture (thumb + middle finger) | Back to home |
+| Anywhere | Voice (Meta AI) | Ask for the time in a city, or add / remove a favorite — see below |
+
+## Voice (Meta AI)
+
+With WebMCP enabled, Meta AI can drive the clock by voice. Try:
+
+- "What time is it in my cities?"
+- "Add Tokyo to my world clock."
+- "Add London and remove New York."
+- "Take Sydney off the list."
+
+City names must match one of the 20 built-in cities (case doesn't matter); if a name isn't in the list, Meta AI will tell you which cities are available.
+
+> Voice control requires WebMCP to be enabled on the device (Developer Mode or rollout). Relaunch the app after enabling it. Without it the app behaves exactly as before — D-pad only.
 
 ## Running locally
 

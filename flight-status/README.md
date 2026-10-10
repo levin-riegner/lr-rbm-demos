@@ -38,6 +38,10 @@ All mock data is deterministic — the same airline + flight + date hash always 
 | Status (full) | Enter | Back to home |
 | Status (compact) | ◀ ▶ | Cycle compact main → seat → carousel |
 | Status (compact) | ▼ or Enter | Expand current view |
+| Airline picker | Back gesture (thumb + middle finger) | Back to home |
+| Flight number | Back gesture (thumb + middle finger) | Back to airline picker |
+| Date | Back gesture (thumb + middle finger) | Back to flight number |
+| Status | Back gesture (thumb + middle finger) | Back to home |
 
 Touch swipes mirror the arrow keys on the status screen (left/right toggles view; up collapses, down expands).
 

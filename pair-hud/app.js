@@ -92,6 +92,9 @@
       retry: function () {
         clearTimeout(reconnectTimer);
         if (ws) {
+          // Detach first so the old socket's close can't schedule a second
+          // reconnect behind the one we are about to open.
+          ws.onopen = ws.onmessage = ws.onclose = ws.onerror = null;
           try {
             ws.close();
           } catch (e) {
@@ -101,6 +104,13 @@
         manualClose = false;
         reconnectDelay = 1000;
         connect();
+      },
+      isAlive: function () {
+        return (
+          !!ws &&
+          (ws.readyState === WebSocket.OPEN ||
+            ws.readyState === WebSocket.CONNECTING)
+        );
       },
     };
   }
@@ -170,26 +180,35 @@
   })();
 
   var pinTtlTimer = null;
-  function startPinTtlCountdown(ttlMs) {
-    stopPinTtlCountdown();
-    var expiresAt = Date.now() + ttlMs;
-    function tick() {
-      var remainMs = Math.max(0, expiresAt - Date.now());
-      var m = Math.floor(remainMs / 60000);
-      var s = Math.floor((remainMs % 60000) / 1000);
-      pinTtlEl.textContent =
-        'Expires in ' +
-        m +
-        ':' +
-        String(s).padStart(2, '0');
-      if (remainMs <= 0) stopPinTtlCountdown();
-    }
-    tick();
-    pinTtlTimer = setInterval(tick, 1000);
+  var pinExpiresAt = 0; // wall-clock deadline; survives a hidden-page pause
+  function tickPinTtl() {
+    var remainMs = Math.max(0, pinExpiresAt - Date.now());
+    var m = Math.floor(remainMs / 60000);
+    var s = Math.floor((remainMs % 60000) / 1000);
+    pinTtlEl.textContent =
+      'Expires in ' +
+      m +
+      ':' +
+      String(s).padStart(2, '0');
+    if (remainMs <= 0) stopPinTtlCountdown();
   }
-  function stopPinTtlCountdown() {
+  function runPinTtlTimer() {
+    if (pinTtlTimer || !pinExpiresAt) return;
+    tickPinTtl();
+    if (pinExpiresAt) pinTtlTimer = setInterval(tickPinTtl, 1000);
+  }
+  function pausePinTtlTimer() {
     if (pinTtlTimer) clearInterval(pinTtlTimer);
     pinTtlTimer = null;
+  }
+  function startPinTtlCountdown(ttlMs) {
+    stopPinTtlCountdown();
+    pinExpiresAt = Date.now() + ttlMs;
+    runPinTtlTimer();
+  }
+  function stopPinTtlCountdown() {
+    pausePinTtlTimer();
+    pinExpiresAt = 0;
     pinTtlEl.textContent = '';
   }
 
@@ -376,6 +395,29 @@
       default:
         break;
     }
+  });
+
+  // --------- Lifecycle (hidden page) -------------------------------------
+  //
+  // The WebSocket is deliberately kept open while the page is hidden: the
+  // server tears the room down (PIN + pairing) the moment the glasses socket
+  // closes, so closing on hidden would force a re-pair on every wake. Only
+  // the countdown interval stops; on return the clock is reconciled and a
+  // socket that died while hidden is reconnected at once instead of waiting
+  // out the backoff.
+
+  function pauseForHidden() {
+    pausePinTtlTimer();
+  }
+
+  function resumeFromHidden() {
+    runPinTtlTimer();
+    if (conn && !conn.isAlive()) conn.retry();
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) pauseForHidden();
+    else resumeFromHidden();
   });
 
   // --------- Boot --------------------------------------------------------
