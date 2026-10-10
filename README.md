@@ -1,8 +1,10 @@
-# Meta Ray-Ban Display Glasses demos by L+R
+# Ray-Ban Meta Display glasses concept applications by L+R
 
-A collection of demo web apps for the [Meta Ray-Ban Display glasses](https://wearables.developer.meta.com/docs).
+Explore a curated showcase of demo web apps bridging emerging wearable tech with real-world utility, bringing imagination to life on [Meta Ray-Ban Display glasses](https://wearables.developer.meta.com/docs).
 
-Each app is a small, self-contained web project designed for the 600x600 display and D-pad navigation. Built by [L+R](https://levinriegner.com) to explore what's possible on the glasses.
+[DisplayGlasses.dev](https://displayglasses.dev) is a resource by L+R which includes a simulator for the Ray-Ban Meta Display glasses and a [getting started guide](https://displayglasses.dev/docs).
+
+Built by the team at [L+R](https://levinriegner.com).
 
 Every demo self-hosts its fonts, works offline through a service worker, and handles the glasses' back gesture. Demos marked 🎙 register [WebMCP](https://github.com/facebook/meta-wearables-webapp) tools so you can drive them by talking to Meta AI (requires WebMCP enabled on the device).
 

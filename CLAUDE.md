@@ -91,8 +91,8 @@ Match the **`flight-status/README.md`** template when adding or rewriting a per-
 
 The repo-root README is the front door. Keep its sections and order:
 
-1. Title + one-line pitch with link to Meta docs
-2. One paragraph explaining the format (600×600, D-pad, L+R)
+1. Title `# Ray-Ban Meta Display glasses concept applications by L+R` + the showcase pitch paragraph (links to Meta docs)
+2. The DisplayGlasses.dev paragraph (simulator + getting started guide), the `Built by the team at L+R.` line, and the one-line note on fonts/offline/back gesture with the 🎙 legend. This copy is the developer's; don't reword it.
 3. `## Hosted demos` — grouped tables (Primary / Secondary / Proof of concept / Testing) with Source, Live (`https://rbm-demos.lnr.io/<app-name>/`), Case study and Preview columns. One row per demo folder. **Agents should not invent `github.com/user-attachments/…` preview URLs.** Use a `screenshots/*.png` path or `—`.
 4. `## Simulator` — short description + live link + bulleted feature list
 5. `## Running an app locally` — generic `python3 -m http.server 8080` snippet
