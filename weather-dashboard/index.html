@@ -79,5 +79,13 @@
 
   </div>
   <script src="app.js"></script>
+<script>
+  // Offline support: network-first service worker (see sw.js). No-op where unsupported.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
+</script>
 </body>
 </html>

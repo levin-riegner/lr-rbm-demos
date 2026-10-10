@@ -217,6 +217,14 @@
       </div>
       <div class="data">Press <kbd>Enter</kbd> to start live readout</div>
     </div>
+
+    <div class="row" data-id="webmcp">
+      <div class="row-head">
+        <div class="name"><span class="idx">05</span>WEBMCP</div>
+        <div class="status" data-state="IDLE">IDLE</div>
+      </div>
+      <div class="data">Press <kbd>Enter</kbd> to check document.modelContext</div>
+    </div>
   </div>
 
   <footer>
@@ -539,8 +547,62 @@
     startMotionListeners();
   };
 
+  // ─── 05 WEBMCP ──────────────────────────────────────────────────
+  const webmcpRow = rows[4];
+
+  const runWebmcp = () => {
+    const available = 'modelContext' in document;
+    if (!available) {
+      setStatus(webmcpRow, 'FAIL');
+      setData(webmcpRow, fmt({ available: 'false', error: 'document.modelContext missing' }));
+      return;
+    }
+    const ctx = document.modelContext;
+    setStatus(webmcpRow, 'PASS');
+    setData(webmcpRow, fmt({
+      available: 'true',
+      registerTool: typeof (ctx && ctx.registerTool),
+      getTools: typeof (ctx && ctx.getTools)
+    }));
+  };
+
+  // ─── LIFECYCLE: stop live tests while the page is hidden ───────
+  let motionPausedForHidden = false;
+
+  const pauseForHidden = () => {
+    // One-shot captures are abandoned (same as pressing Stop on them).
+    if (micState.running) {
+      stopMic();
+      setStatus(micRow, 'IDLE');
+      setData(micRow, 'Stopped');
+    }
+    if (camState.stream) {
+      stopCam();
+      camPreview.classList.remove('show');
+      setStatus(camRow, 'IDLE');
+      setData(camRow, 'Stopped');
+    }
+    // The live sensor readout is paused and re-armed on return.
+    if (motionState.running) {
+      stopMotion();
+      motionPausedForHidden = true;
+    }
+    if (beepCtx && beepCtx.state === 'running') beepCtx.suspend().catch(() => {});
+  };
+
+  const resumeFromHidden = () => {
+    if (motionPausedForHidden) {
+      motionPausedForHidden = false;
+      startMotionListeners();
+    }
+  };
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
+
   // ─── KEY HANDLING ───────────────────────────────────────────────
-  const runners = { mic: runMic, cam: runCam, geo: runGeo, motion: runMotion };
+  const runners = { mic: runMic, cam: runCam, geo: runGeo, motion: runMotion, webmcp: runWebmcp };
   const stoppers = { mic: stopMic, cam: stopCam, motion: stopMotion };
 
   document.addEventListener('keydown', (e) => {
@@ -567,6 +629,14 @@
 
   setFocus(0);
 })();
+</script>
+<script>
+  // Offline support: network-first service worker (see sw.js). No-op where unsupported.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
 </script>
 </body>
 </html>

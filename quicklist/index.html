@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=600, height=600, initial-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Hands-free running list for the Meta Ray-Ban Display glasses. Voice: confirm changes in one short sentence; never read the whole list back unless asked.">
+  <meta name="mrbd-web-app-capable" content="yes">
+  <title>Quicklist</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <link rel="stylesheet" href="styles.css" />
+<script defer src="https://cloud.umami.is/script.js" data-website-id="be32beae-a2a9-423f-b55d-e646ec260f93"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- =================================================================
+       LIST · home
+       Items (open first, then done), then two action rows.
+       Rows are rendered into #list-rows by app.js.
+       ================================================================= -->
+  <section id="list" class="screen hidden">
+    <header class="topbar">
+      <span class="brand-mark">✓</span>
+      <span class="brand-text">QUICKLIST</span>
+      <span class="topbar-counter mono" id="list-counter">0 / 0 done</span>
+    </header>
+
+    <div class="list-body" id="list-body">
+      <div class="empty-pitch hidden" id="empty-pitch">
+        <div class="empty-title">Nothing<br>on the list.</div>
+        <p class="empty-blurb">Groceries, errands, packing. Add items here or say
+          <em>"add coffee and eggs to my list"</em> to Meta&nbsp;AI.</p>
+      </div>
+
+      <div class="rows" id="list-rows" role="list"></div>
+
+      <div class="actions">
+        <button class="row row-action focusable" id="act-add" data-action="add" type="button">
+          <span class="row-glyph">+</span>
+          <span class="row-label">ADD ITEM</span>
+        </button>
+        <button class="row row-action focusable" id="act-clear" data-action="clear" type="button">
+          <span class="row-glyph">⌫</span>
+          <span class="row-label">CLEAR DONE</span>
+          <span class="row-note mono hidden" id="clear-note">nothing done yet</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="hint-bar">
+      <span class="hint-keys"><span class="key">▲</span><span class="key">▼</span> MOVE</span>
+      <span class="hint-keys"><span class="key">ENTER</span> TOGGLE</span>
+      <span class="hint-keys"><span class="key">◀</span> REMOVE</span>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       ADD · one text input. On the glasses, activating the input opens
+       the handwriting/voice composer; on desktop you type.
+       ================================================================= -->
+  <section id="add" class="screen hidden">
+    <header class="topbar">
+      <span class="brand-mark">+</span>
+      <span class="brand-text">ADD ITEM</span>
+    </header>
+
+    <form class="add-form" id="add-form" autocomplete="off">
+      <label class="add-label" for="add-input">New item</label>
+      <input class="add-input focusable" id="add-input" type="text" name="item"
+             placeholder="e.g. coffee, eggs" autocomplete="off" autocapitalize="sentences"
+             spellcheck="false" enterkeyhint="done" />
+      <p class="add-help">Separate several items with commas.</p>
+    </form>
+
+    <div class="hint-bar">
+      <span class="hint-keys"><span class="key">ENTER</span> SAVE</span>
+      <span class="hint-keys"><span class="key">BACK</span> CANCEL</span>
+    </div>
+  </section>
+
+</div>
+<script src="app.js"></script>
+<script>
+  // Offline support: network-first service worker (see sw.js). No-op where unsupported.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
+</script>
+</body>
+</html>

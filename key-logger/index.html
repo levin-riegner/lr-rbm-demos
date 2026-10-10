@@ -407,9 +407,21 @@
           metaEl.dataset.holding = '1';
         }
 
-        requestAnimationFrame(frame);
+        rafId = requestAnimationFrame(frame);
       }
-      requestAnimationFrame(frame);
+
+      // ───── Lifecycle: no render loop or audio while hidden ───
+      let rafId = null;
+      function startLoop() {
+        if (rafId !== null) return;
+        lastFrame = performance.now();
+        rafId = requestAnimationFrame(frame);
+      }
+      function stopLoop() {
+        if (rafId !== null) cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      startLoop();
 
       // ───── Visual triggers per event ────────────────────────
       function punch(scale) {
@@ -564,7 +576,37 @@
 
       window.addEventListener('keydown', onKeyDown, true);
       window.addEventListener('keyup',   onKeyUp,   true);
+
+      // ───── Visibility: pause everything while the page is hidden ───
+      function pauseForHidden() {
+        stopLoop();
+        // A held Enter never gets its keyup while hidden — release it now
+        // so the sustained pad can't keep sounding in the background.
+        if (hold.active) {
+          hold.active = false;
+          enterDownAt = 0;
+          stopPad(0.05);
+          delete metaEl.dataset.holding;
+          metaEl.innerHTML = '&nbsp;';
+        }
+        if (ac && ac.state === 'running') ac.suspend().catch(() => {});
+      }
+      function resumeFromHidden() {
+        startLoop();
+        // The AudioContext is resumed lazily by audio() on the next key press.
+      }
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) pauseForHidden(); else resumeFromHidden();
+      });
     })();
   </script>
+<script>
+  // Offline support: network-first service worker (see sw.js). No-op where unsupported.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    });
+  }
+</script>
 </body>
 </html>
