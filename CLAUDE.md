@@ -69,7 +69,7 @@ A folder at the root is **a demo** if it contains `index.html`. Anything else (`
 - **Favicon:** raster PNG only (`favicon.png`, 512×512), themed to the app's accent color, referenced via `<link rel="icon" type="image/png" href="favicon.png">` right after `<title>`. Never SVG — SVG favicons are unsupported on-device. See the `rbm-demo-favicon` skill.
 - **Web-app meta tags:** every demo's `<head>` includes a non-empty, app-specific `<meta name="description" content="…">` and `<meta name="mrbd-web-app-capable" content="yes">`. Meta AI reads the title and description, so put voice guardrails there when the app has WebMCP tools.
 - **WebMCP (optional, encouraged):** when an app has obvious spoken commands, register tools per the `rbm-webmcp` skill. Tools call the same functions the D-pad path uses. `quicklist/` and `tally-counter/` are the reference implementations.
-- **Byline:** `<sub>Made by <name> at [L+R](https://www.levinriegner.com).</sub>` at the bottom of the per-app README.
+- **Byline:** `<sub>Made by <name> at [L+R](https://www.levinriegner.com).</sub>` at the bottom of the per-app README, or `Made by the team at [L+R](…)` when there is no single author. Never "Made by L+R at L+R".
 - **Analytics:** every demo's `index.html` includes a Umami tracking tag in `<head>`. The same shared `data-website-id` is used across all demos (Umami attributes hits per URL path under `rbm-demos.lnr.io`). When adding a new demo, copy the `<script defer src="https://cloud.umami.is/script.js" data-website-id="...">` line verbatim from any existing `index.html`.
 
 ## Per-app README template

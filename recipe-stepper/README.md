@@ -149,4 +149,4 @@ recipe-stepper/
 
 ---
 
-<sub>Made by L+R at [L+R](https://www.levinriegner.com).</sub>
+<sub>Made by the team at [L+R](https://www.levinriegner.com).</sub>

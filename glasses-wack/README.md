@@ -83,4 +83,4 @@ glasses-wack/
 
 ---
 
-<sub>Made by Claude at [L+R](https://www.levinriegner.com).</sub>
+<sub>Made by the team at [L+R](https://www.levinriegner.com).</sub>

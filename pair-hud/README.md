@@ -324,4 +324,4 @@ No `sw.js` or `fonts/` yet: the HUD is driven by a live socket, so an offline sh
 
 ---
 
-<sub>Made by L+R at [L+R](https://www.levinriegner.com).</sub>
+<sub>Made by the team at [L+R](https://www.levinriegner.com).</sub>
