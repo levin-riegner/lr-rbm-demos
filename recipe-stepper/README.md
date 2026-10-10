@@ -2,6 +2,8 @@
 
 A hands-free recipe walkthrough for the Meta Ray-Ban Display glasses. It paginates a recipe one step at a time at 32px, navigated by lateral D-pad input only. Long steps are auto-split across pages so nothing overflows the 600×600 viewport, and Meta AI can open recipes and move between steps by voice.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Frecipe-stepper%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -59,6 +61,18 @@ Voice navigation moves by whole step (the full step text is returned even when t
 | <img src="screenshots/preview.png" width="300"> |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Recipe Stepper to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Recipe Stepper` and this URL:
+
+```
+https://rbm-demos.lnr.io/recipe-stepper/
+```
 
 ## Running locally
 

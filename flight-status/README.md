@@ -4,6 +4,8 @@ A heads-up display for Meta Display glasses that surfaces the four things you ac
 
 > 📖 **Case study:** [levinriegner.com/work/flight-status](https://www.levinriegner.com/work/flight-status/)
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fflight-status%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -75,6 +77,18 @@ Touch swipes mirror the arrow keys on the status screen (left/right toggles view
 | ![Compact main](screenshots/compact-main.png) | ![Compact seat](screenshots/compact-seat.png) | ![Compact carousel](screenshots/compact-carousel.png) |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Flight Status to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Flight Status` and this URL:
+
+```
+https://rbm-demos.lnr.io/flight-status/
+```
 
 ## Running locally
 

@@ -61,7 +61,7 @@ For each warranted change:
 
 - **Adding a demo:** insert one row in alphabetical position of the `### Secondary demos — Works in progress!` table (unless the summary you were given names another group).
   - Display label: read `<title>…</title>` from `<app>/index.html`. If empty, title-case the folder name (e.g. `pentatonic-solo` → `Pentatonic Solo`). Pitch: one short clause from the app's `<meta name="description">`.
-  - Columns: `[code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/<app>)`, `[open](https://rbm-demos.lnr.io/<app>/)`, `—` for case study, and `—` for preview unless `<app>/screenshots/preview.png` exists (then `<img src="<app>/screenshots/preview.png" width="120">`).
+  - Columns: `[code](https://github.com/levin-riegner/lr-rbm-demos/tree/main/<app>)`, `[open](https://rbm-demos.lnr.io/<app>/)`, Simulator `[open](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2F<app>%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10)`, Glasses `[QR](https://github.com/levin-riegner/lr-rbm-demos/tree/main/<app>#add-to-your-glasses)` if `<app>/README.md` contains `## Add to your glasses` else `—`, `—` for case study, and `—` for preview unless `<app>/screenshots/preview.png` exists (then `<img src="<app>/screenshots/preview.png" width="120">`).
 - **Removing a demo:** remove the matching row.
 - **Simulator change:** add or remove one bullet in the `## Simulator` features list, mirroring the language and tense of existing bullets.
 - **Preserve special cases verbatim.** `teleprompter` has two entries (`(admin)` and `(glasses)`) — do **not** collapse them.

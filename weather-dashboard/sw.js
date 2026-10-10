@@ -9,7 +9,6 @@ var PRECACHE = [
   "./",
   "./app.js",
   "./favicon.png",
-  "./qr-publish.png",
   "./styles.css"
 ];
 

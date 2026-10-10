@@ -2,6 +2,8 @@
 
 See DJ runs on **Pro DJ Link**, Pioneer DJ's networking protocol that connects CDJs, XDJs, and DJM mixers over a standard Ethernet cable so every device on the booth can share data in real time. Once the glasses are on the network, the display shows song title, artist, live BPM, playing status, a downbeat-aware four-step beat indicator, and pitch-fader position for each media player. **MASTER** and **SYNC** tags show which deck is driving tempo and which is following. Four channel faders render as vertical strips so you can see at a glance which channels are live on the mixer. The crossfader displays its exact position and flips amber the moment it leaves center, flagging when the room is being fed by one deck only.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fsee-dj%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 **No controls, no input, no interaction required. You drive the gear. See DJ just shows you what it is doing.**
 
 > 📖 **Case study:** [levinriegner.com/work/see-dj](https://www.levinriegner.com/work/see-dj/)
@@ -89,6 +91,18 @@ This is a passive read-only HUD — the DJ drives the gear, the glasses just rep
 | ![Cue](screenshots/cue.png) | ![Pitched](screenshots/pitched.png) |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds See DJ to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `See DJ` and this URL:
+
+```
+https://rbm-demos.lnr.io/see-dj/
+```
 
 ## Running locally
 

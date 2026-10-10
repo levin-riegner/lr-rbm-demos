@@ -3,6 +3,8 @@
 A heads-up **brush coach** for Meta Display glasses. It counts your toothbrush strokes from head motion, calibrates itself in ten brushes, then walks you through the eight zones of your teeth on a big anatomical mouth diagram — so you actually finish the two-minute routine the dentist keeps asking about.
 
 > 📖 **Case study:** [levinriegner.com/work/brush-coach](https://www.levinriegner.com/work/brush-coach/)
+
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fbrusher%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 > 🌐 **Live demo:** [rbm-demos.lnr.io/brusher](https://rbm-demos.lnr.io/brusher/)
 
 ---
@@ -64,6 +66,18 @@ The phase pill (top-right) shows where you are; the SENSOR pill shows whether th
 | ![Done — 144 strokes in 2:23, 1.01 / s](screenshots/done.png) |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Brusher · Brush Coach to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Brusher · Brush Coach` and this URL:
+
+```
+https://rbm-demos.lnr.io/brusher/
+```
 
 ## Running locally
 

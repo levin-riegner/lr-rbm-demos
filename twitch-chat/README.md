@@ -2,6 +2,8 @@
 
 A heads-up display that streams **your Twitch chat in really large type** onto the Meta Display lens, so you can keep glancing at it while your hands are on the controller. Connects anonymously over IRC — no OAuth, no API key, no tokens to copy onto the device.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Ftwitch-chat%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -53,6 +55,18 @@ A heads-up display that streams **your Twitch chat in really large type** onto t
 | ![Paused](screenshots/paused.png) | ![Mention](screenshots/mention.png) |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Twitch Chat HUD to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Twitch Chat HUD` and this URL:
+
+```
+https://rbm-demos.lnr.io/twitch-chat/
+```
 
 ## Running locally
 

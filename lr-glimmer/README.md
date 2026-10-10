@@ -4,6 +4,8 @@ A Tamagotchi-inspired virtual companion for Meta Display glasses that lives at t
 
 > 📖 **Case study:** [levinriegner.com/work/glimmer](https://www.levinriegner.com/work/glimmer/)
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Flr-glimmer%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -89,6 +91,18 @@ The companion grows through five stages as it ages. Each stage unlocks a new vis
 | ![EGG stage](screenshots/stage-egg.png) | ![SPRITE stage](screenshots/stage-sprite.png) | ![DRONE stage](screenshots/stage-drone.png) | ![ORACLE stage](screenshots/stage-oracle.png) | ![ARCHON stage](screenshots/stage-archon.png) |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds GLIMMER · A Peripheral Companion to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `GLIMMER · A Peripheral Companion` and this URL:
+
+```
+https://rbm-demos.lnr.io/lr-glimmer/
+```
 
 ## Running locally
 

@@ -2,6 +2,8 @@
 
 A Meta Ray-Ban Display glasses webapp that points at the nearest aircraft. It uses OpenSky Network for state vectors, geolocation for the wearer's position, and `DeviceOrientationEvent` for head tracking. The marker rotates and translates in real time so the wearer can turn their head and see the bracket "lock" when they are looking at the plane.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fplane-spotter%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 Web-based, vanilla JS on the client, with a small Node proxy for the OpenSky API.
 
 ---
@@ -42,6 +44,18 @@ On a desktop without `DeviceOrientationEvent` the readouts and marker show real 
 | <img src="screenshots/preview.png" width="300"> |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Plane Spotter to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Plane Spotter` and this URL:
+
+```
+https://rbm-demos.lnr.io/plane-spotter/
+```
 
 ## Running locally
 

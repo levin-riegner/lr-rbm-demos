@@ -2,6 +2,8 @@
 
 A skipper's coach for the **Poseidon Blu Water 170**, built for the case where the lens is your *only* source of information all day. No manual in the locker, no phone in a dry bag, no crew who has done this before. The operator briefs you on the boat in person, so the app skips the handover and starts where you're on your own: the last look before you cast off, then starting, driving, anchoring, both ways of docking, shutting down — and eleven emergency drills that are always one press away.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fskipper%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -67,6 +69,18 @@ Touchpad swipes mirror the arrow keys throughout; a tap without travel is ⏎.
 > Not captured yet. Every screen is reachable deterministically via `?state=…`, so the block below produces the full set in one pass.
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Skipper to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Skipper` and this URL:
+
+```
+https://rbm-demos.lnr.io/skipper/
+```
 
 ## Running locally
 

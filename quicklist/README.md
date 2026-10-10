@@ -2,6 +2,8 @@
 
 A hands-free running list for the Meta Ray-Ban Display glasses — groceries, errands, packing. Big rows you can tick off with a pinch, text entry through the glasses' own handwriting/voice composer, and **Meta AI voice control** via WebMCP: say *"add coffee and eggs to my list"* and the row appears on the lens. It is the repo's reference implementation for WebMCP tools, composer-based text entry, offline use (service worker + self-hosted fonts) and lifecycle handling.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fquicklist%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -70,6 +72,18 @@ The app reads a `?state=…` URL parameter so each screen can be captured determ
 Routed states are never written to `localStorage`, so capturing them does not disturb a real list.
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Quicklist to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Quicklist` and this URL:
+
+```
+https://rbm-demos.lnr.io/quicklist/
+```
 
 ## Running locally
 

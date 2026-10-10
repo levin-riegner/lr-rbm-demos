@@ -2,6 +2,8 @@
 
 Live USD prices and 24h change for 8 major cryptocurrencies on the Meta Ray-Ban Display glasses, powered by the free **CoinGecko** API (no API key). Glance at the list, open a coin for the detail view, star your favorites, and ask Meta AI for prices by voice.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fcrypto-tracker%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -51,6 +53,18 @@ Coins are matched by symbol or name (BTC, ETH, SOL, ADA, DOT, LINK, AVAX, MATIC)
 No screenshots yet. The app has no `?state=` routing; a plain capture of the Home screen is the only deterministic state.
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Crypto Tracker to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Crypto Tracker` and this URL:
+
+```
+https://rbm-demos.lnr.io/crypto-tracker/
+```
 
 ## Running locally
 

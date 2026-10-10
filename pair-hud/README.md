@@ -2,6 +2,8 @@
 
 A **research prototype** for the Meta wearables web app toolkit. A Node WebSocket server pairs a phone browser to a Meta Ray-Ban Display glasses web app with a 4-digit PIN (Netflix-style), then lets the phone push text live to the HUD. It is **not** a production pattern. It exists to answer open questions from the Meta team about whether WebSocket push is viable, how phone ↔ glasses pairing could work without native identity, and what breaks in practice. See [Research questions](#research-questions) under Notes.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fpair-hud%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -40,6 +42,18 @@ The phone side (`mobile.html`) is an ordinary touch page: PIN entry, presets and
 No screenshots yet. The app has no `?state=` routing; the screen shown depends on the live WebSocket state.
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Pair HUD to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Pair HUD` and this URL:
+
+```
+https://rbm-demos.lnr.io/pair-hud/
+```
 
 ## Running locally
 

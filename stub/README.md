@@ -2,6 +2,8 @@
 
 A "photo notes" app for the Meta Display glasses — for the ephemeral receipts of daily life. **Snap the coat-check tag, the valet ticket, the locker number, the raffle stub.** The capture never goes to your camera roll. It lives in this app until you delete it.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fstub%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 Designed for the 600×600 lens, driven by the D-pad. The camera lives on the right temple, so the capture screen highlights the **top-left quadrant** of the display — that's the sweet spot where a tag held in front of the wearer lands centered in the camera frame.
 
 ---
@@ -104,6 +106,18 @@ Finding a stub moves the carousel to the first match; deleting goes through the 
 | ![Detail](screenshots/detail.png) | ![Delete](screenshots/delete.png) |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Stub to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Stub` and this URL:
+
+```
+https://rbm-demos.lnr.io/stub/
+```
 
 ## Running locally
 

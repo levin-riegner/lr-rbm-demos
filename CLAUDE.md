@@ -47,6 +47,7 @@ The L+R simulator (additive waveguide blend over a real-world background) is hos
     ├── sw.js                # network-first service worker for offline use
     ├── fonts/               # self-hosted WOFF2 + fonts.css
     ├── favicon.png          # raster only (512×512), never SVG
+    ├── qr-glasses.png       # QR of the Meta AI "add web app" deep link, generated (see below)
     ├── README.md            # follow the template
     └── screenshots/         # optional, generated via ?state= URL routing
 ```
@@ -78,14 +79,17 @@ Match the **`flight-status/README.md`** template when adding or rewriting a per-
 1. `# <App Name>`
 2. One-paragraph pitch
 3. Optional `> 📖 **Case study:**` line linking to `levinriegner.com/work/…`
-4. `## What it does` — bullet list of features
-5. `## Controls` — markdown table with columns `Where | Input | Result`. Only document inputs that exist on the device. The back gesture row reads `Back gesture` (never `Esc`); a voice row reads `Voice (Meta AI)`.
-6. Optional `## Voice (Meta AI)` — example utterances, and a note that WebMCP must be enabled on the device (Developer Mode or rollout) and the app relaunched.
-7. `## Screenshots` — grouped tables, sourced from `screenshots/*.png`
-8. `## Running locally` — `npx serve -l <port> <app-name>` snippet
-9. `### Regenerating screenshots` — gated by a `> 🛠️ **Developer tooling only.**` callout so readers know Chrome is a dev-time tool, not a runtime dep. Use the `?state=…` headless Chrome loop.
-10. `## Files` — short tree of the app folder
-11. `<sub>Made by … at [L+R](https://www.levinriegner.com).</sub>`
+4. The try-it line, verbatim apart from the folder name:
+   `> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2F<app>%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)`
+5. `## What it does` — bullet list of features
+6. `## Controls` — markdown table with columns `Where | Input | Result`. Only document inputs that exist on the device. The back gesture row reads `Back gesture` (never `Esc`); a voice row reads `Voice (Meta AI)`.
+7. Optional `## Voice (Meta AI)` — example utterances, and a note that WebMCP must be enabled on the device (Developer Mode or rollout) and the app relaunched.
+8. `## Screenshots` — grouped tables, sourced from `screenshots/*.png`
+9. `## Add to your glasses` — the `qr-glasses.png` image, the manual path in the Meta AI app (**Devices → Display Glasses settings → App connections → Web apps → Add a web app**), the app name and the live URL in a code block. Copy the block from `tally-counter/README.md`. The QR encodes `fb-viewapp://web_app_deep_link?appName=<title>&appUrl=<live url>` (both URL-encoded); generate it with the `qrcode` Python package, border 2, box size 8.
+10. `## Running locally` — `npx serve -l <port> <app-name>` snippet
+11. `### Regenerating screenshots` — gated by a `> 🛠️ **Developer tooling only.**` callout so readers know Chrome is a dev-time tool, not a runtime dep. Use the `?state=…` headless Chrome loop.
+12. `## Files` — short tree of the app folder
+13. `<sub>Made by … at [L+R](https://www.levinriegner.com).</sub>`
 
 ## Top-level `README.md` structure (preserve this)
 
@@ -93,7 +97,7 @@ The repo-root README is the front door. Keep its sections and order:
 
 1. Title `# Ray-Ban Meta Display glasses concept applications by L+R` + the showcase pitch paragraph (links to Meta docs)
 2. The DisplayGlasses.dev paragraph (simulator + getting started guide), the `Built by the team at L+R.` line, and the one-line note on fonts/offline/back gesture with the 🎙 legend. This copy is the developer's; don't reword it.
-3. `## Hosted demos` — grouped tables (Primary / Secondary / Proof of concept / Testing) with Source, Live (`https://rbm-demos.lnr.io/<app-name>/`), Case study and Preview columns. One row per demo folder. **Agents should not invent `github.com/user-attachments/…` preview URLs.** Use a `screenshots/*.png` path or `—`.
+3. `## Hosted demos` — grouped tables (Primary / Secondary / Proof of concept / Testing) with columns `Demo | Source | Live | Simulator | Glasses | Case study | Preview`. One row per demo folder. Live is `https://rbm-demos.lnr.io/<app-name>/`; Simulator is `[open](https://displayglasses.dev/?url=<live url, URL-encoded>&pos=center&size=60&bright=100&bg=hiking&bg-dark=10)`; Glasses is `[QR](https://github.com/levin-riegner/lr-rbm-demos/tree/main/<app-name>#add-to-your-glasses)` when the app README has that section, else `—`. **Agents should not invent `github.com/user-attachments/…` preview URLs.** Use a `screenshots/*.png` path or `—`.
 4. `## Simulator` — short description + live link + bulleted feature list
 5. `## Running an app locally` — generic `python3 -m http.server 8080` snippet
 6. `## License`

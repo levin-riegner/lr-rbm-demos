@@ -4,6 +4,8 @@ A hands-free cooking companion for the Meta Display glasses that walks you throu
 
 > 📖 **Case study:** [levinriegner.com/work/cooking-hud](https://www.levinriegner.com/work/cooking-hud/)
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fcooking-hud%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -72,6 +74,18 @@ Voice control is additive — the D-pad path is unchanged — and it needs WebMC
 | ![Shop](screenshots/shop.png) | ![Prep](screenshots/prep.png) | ![Cook with timer rail](screenshots/cook.png) |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Cooking HUD to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Cooking HUD` and this URL:
+
+```
+https://rbm-demos.lnr.io/cooking-hud/
+```
 
 ## Running locally
 

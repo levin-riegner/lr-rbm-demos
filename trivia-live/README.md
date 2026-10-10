@@ -2,6 +2,8 @@
 
 A live trivia quiz for the Meta Ray-Ban Display glasses, powered by the free **Open Trivia DB** API (no API key). Pick a category and difficulty, answer ten timed multiple-choice questions on the D-pad, and let Meta AI read questions and relay your answers by voice.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Ftrivia-live%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -62,6 +64,18 @@ Tools: `trivia_get_state` (read-only, never exposes the answer of an open questi
 | <img src="screenshots/preview.png" width="300"> |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Trivia Live to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Trivia Live` and this URL:
+
+```
+https://rbm-demos.lnr.io/trivia-live/
+```
 
 ## Running locally
 

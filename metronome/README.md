@@ -3,6 +3,8 @@
 A hands-free metronome for Meta Display glasses — set tempo, time signature, and subdivision in three large, single-question steps, then either keep the full readout up or collapse it to a **single 64px strip** at the top of the lens so the rest of your view stays clear. Tap a button, **tap your foot**, or **nod your head** to dial in BPM.
 
 > 📖 **Case study:** [levinriegner.com/work/metronome](https://www.levinriegner.com/work/metronome/)
+
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fmetronome%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 > 🚀 **Live demo:** [rbm-demos.lnr.io/metronome](https://rbm-demos.lnr.io/metronome/)
 
 ---
@@ -85,6 +87,18 @@ Every voice change goes through the same functions as the D-pad, so the screen u
 | ![Playing — full](screenshots/playing-full.png) | ![Playing — compact](screenshots/playing-small.png) |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Metronome to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Metronome` and this URL:
+
+```
+https://rbm-demos.lnr.io/metronome/
+```
 
 ## Running locally
 

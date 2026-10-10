@@ -2,6 +2,8 @@
 
 A thumb-controlled pentatonic solo synth for the Meta Ray-Ban Display glasses. Locked to **B minor pentatonic** — the key David Gilmour solos in on *Comfortably Numb* — so every press is in-scale. Tap a key, the note rings out for ~3.5 seconds; tap a new key and the previous note fades.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fpentatonic-solo%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -36,6 +38,18 @@ Hold doesn't matter — each press auto-rings for a few seconds. A new press qui
 | Black void, white straight scope line. | Chromatic note readout, thick rainbow waveform, prism particles bursting from the active pad. |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Comfortable Thumb. to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Comfortable Thumb.` and this URL:
+
+```
+https://rbm-demos.lnr.io/pentatonic-solo/
+```
 
 ## Running locally
 

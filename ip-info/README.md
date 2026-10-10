@@ -2,6 +2,8 @@
 
 Shows your public IP and geolocation details on the Meta Ray-Ban Display glasses, from the free **ipapi.co** API (no API key). One screen, seven cards, and a Copy IP action for when you need the address somewhere else.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fip-info%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -37,6 +39,18 @@ The app is a single screen with nothing to go back to, so the Back gesture is le
 | <img src="screenshots/preview.png" width="300"> |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds IP Info to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `IP Info` and this URL:
+
+```
+https://rbm-demos.lnr.io/ip-info/
+```
 
 ## Running locally
 

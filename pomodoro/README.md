@@ -2,6 +2,8 @@
 
 A pomodoro focus timer for the Meta Ray-Ban Display glasses: 25-min work / 5-min break cycles, with a 15-min long break after every 4 work sessions. A stats screen tracks completed sessions and total focus time, and Meta AI can start, pause, skip and reset the timer by voice.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fpomodoro%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -55,6 +57,18 @@ Every tool goes through the same functions the buttons call, so the countdown, p
 No screenshots yet. The app has no `?state=` routing; a plain capture of the Home screen is the only deterministic state.
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Pomodoro to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Pomodoro` and this URL:
+
+```
+https://rbm-demos.lnr.io/pomodoro/
+```
 
 ## Running locally
 

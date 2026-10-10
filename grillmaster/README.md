@@ -2,6 +2,8 @@
 
 A hands-free grilling, smoking, and BBQ coach for the [Meta Ray-Ban Display glasses](https://wearables.developer.meta.com/docs). Your hands are on the tongs, greasy and full, and your phone is useless in the sun. Grillmaster lives in the corner of your eye instead. It runs three cooks that are genuinely different jobs, and coaches each one the way it actually wants to be cooked.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fgrillmaster%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 > 🚀 **Live demo:** [rbm-demos.lnr.io/grillmaster](https://rbm-demos.lnr.io/grillmaster/)
 
 ## Opening it
@@ -185,6 +187,18 @@ Reproducible via `?state=` URL routing (see below).
 | BBQ monitor · ribs (time) | Plated | Temp guide |
 | --- | --- | --- |
 | ![Monitor BBQ](screenshots/monitor-bbq.png) | ![Done](screenshots/done.png) | ![Guide](screenshots/guide.png) |
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Grillmaster to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Grillmaster` and this URL:
+
+```
+https://rbm-demos.lnr.io/grillmaster/
+```
 
 ## Running locally
 

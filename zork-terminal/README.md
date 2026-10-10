@@ -4,6 +4,8 @@ A wearable-sized tribute to early-1980s text adventures, built for the 600×600 
 
 > 📖 **Case study:** [levinriegner.com/work/zork-i-tribute](https://www.levinriegner.com/work/zork-i-tribute/)
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fzork-terminal%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -74,6 +76,18 @@ Tools: `zork_get_state` (read-only: room, description, items, inventory, score, 
 | ![All Actions panel](screenshots/04-more.png) |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds ZORK I — Great Underground Empire to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `ZORK I — Great Underground Empire` and this URL:
+
+```
+https://rbm-demos.lnr.io/zork-terminal/
+```
 
 ## Running locally
 

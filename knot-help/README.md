@@ -2,6 +2,8 @@
 
 A heads-up display for Meta Display glasses that teaches **six famous knots** — bowline, figure-8, clove hitch, monkey's fist, trucker's hitch, and constrictor. Each knot has its own iconic tagline (KING OF KNOTS, STRONGEST BINDING, …), a strength rating, and a step-by-step walkthrough alongside a real illustrated diagram sourced from Wikimedia Commons.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fknot-help%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -94,6 +96,18 @@ All knot diagrams are sourced from **Wikimedia Commons** and used under the lice
 | Constrictor | [Constrictor-ABOK-1249.jpg](https://commons.wikimedia.org/wiki/File:Constrictor-ABOK-1249.jpg) | Wikimedia contributors | CC BY-SA 3.0 |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Knot Helpful to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Knot Helpful` and this URL:
+
+```
+https://rbm-demos.lnr.io/knot-help/
+```
 
 ## Running locally
 

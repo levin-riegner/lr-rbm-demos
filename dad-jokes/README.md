@@ -2,6 +2,8 @@
 
 A heads-up display for Meta Display glasses that fetches a random dad joke from [icanhazdadjoke.com](https://icanhazdadjoke.com/) and serves it on a cream paper card. One joke at a time, big enough to read at a glance — press ▶ for the next, ▼ when you need to groan.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fdad-jokes%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -59,6 +61,18 @@ The app registers three WebMCP tools on `document.modelContext` (`jokes_get_stat
 | ![Short joke](screenshots/03-short-joke.png) | ![Long joke](screenshots/02-long-joke.png) |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Dad Jokes to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Dad Jokes` and this URL:
+
+```
+https://rbm-demos.lnr.io/dad-jokes/
+```
 
 ## Running locally
 

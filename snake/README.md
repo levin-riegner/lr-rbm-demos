@@ -2,6 +2,8 @@
 
 Classic Snake for the Meta Ray-Ban Display glasses, drawn on a canvas sized for the 600×600 lens and steered with the D-pad. Eat, grow, wrap around the edges, and chase the local high-score table.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fsnake%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -41,6 +43,18 @@ Classic Snake for the Meta Ray-Ban Display glasses, drawn on a canvas sized for 
 | <img src="screenshots/preview.png" width="300"> |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Snake to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Snake` and this URL:
+
+```
+https://rbm-demos.lnr.io/snake/
+```
 
 ## Running locally
 

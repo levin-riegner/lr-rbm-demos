@@ -2,6 +2,8 @@
 
 A 5-day forecast for five preset cities on the Meta Ray-Ban Display glasses, powered by the free **Open-Meteo** API (no API key). Pick a city and a day with the D-pad, or ask Meta AI for the weather and watch the lens update.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fweather-dashboard%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 ---
 
 ## What it does
@@ -53,6 +55,18 @@ The app registers three WebMCP tools on `document.modelContext` (`weather_get_st
 No screenshots yet. The app has no `?state=` routing.
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Weather Dashboard to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Weather Dashboard` and this URL:
+
+```
+https://rbm-demos.lnr.io/weather-dashboard/
+```
 
 ## Running locally
 

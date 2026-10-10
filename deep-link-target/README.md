@@ -2,6 +2,8 @@
 
 One half of a two-app pair that demonstrates cross-app navigation on the Meta Ray-Ban Display glasses. This app is the **destination**: it accepts a `?screen=<name>` query param, renders the matching view, and shows how it was reached so the hop is visible during testing. It pairs with the launcher app.
 
+> ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fdeep-link-target%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
 Pair: [`deep-link-launcher/`](../deep-link-launcher/)
 
 ---
@@ -35,6 +37,18 @@ The `Back` button is focused on load. The app does not handle the Back gesture i
 | ![Target app screen with arrived caption](screenshots/preview.png) |
 
 ---
+
+## Add to your glasses
+
+Scan this with your phone to open the Meta AI app and add the demo to your Ray-Ban Meta Display glasses:
+
+<img src="qr-glasses.png" width="160" alt="QR code that adds Target App to your glasses">
+
+Or add it by hand in the Meta AI app: **Devices → Display Glasses settings → App connections → Web apps → Add a web app**, with the name `Target App` and this URL:
+
+```
+https://rbm-demos.lnr.io/deep-link-target/
+```
 
 ## Running locally
 
