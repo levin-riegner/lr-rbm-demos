@@ -35,7 +35,8 @@ All mock data is deterministic — the same airline + flight + date hash always 
 | Date | Enter | Show status |
 | Status (full) | ◀ ▶ | Cycle main → seat → carousel |
 | Status (full) | ▲ | Collapse to compact |
-| Status (full) | Enter | Back to home |
+| Status (full) | ▼ | Back to home |
+| Status (full) | Enter | Refresh — re-roll the mock data, stay on the current view |
 | Status (compact) | ◀ ▶ | Cycle compact main → seat → carousel |
 | Status (compact) | ▼ or Enter | Expand current view |
 | Airline picker | Back gesture (thumb + middle finger) | Back to home |

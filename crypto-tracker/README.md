@@ -1,26 +1,34 @@
-# Crypto Tracker - Meta Display Glasses WebApp
+# Crypto Tracker
 
-Live USD prices and 24h change for 8 major cryptocurrencies, powered by the free **CoinGecko** API (no API key).
+Live USD prices and 24h change for 8 major cryptocurrencies on the Meta Ray-Ban Display glasses, powered by the free **CoinGecko** API (no API key). Glance at the list, open a coin for the detail view, star your favorites, and ask Meta AI for prices by voice.
 
-## How to run (Chrome)
+---
 
-```bash
-cd examples/crypto-tracker
-python3 -m http.server 8080
-```
+## What it does
 
-Open [http://localhost:8080](http://localhost:8080) in Chrome, then:
+- **8-coin list.** BTC, ETH, SOL, ADA, DOT, LINK, AVAX and MATIC, each with price, a colored 24h change badge and a favorite star. Two tabs filter the list: **All** and **Favorites**.
+- **Detail view.** Symbol, name, large price, change badge, and a stat grid (Price, 24h Change, Last Updated) with an Add / Remove Favorite button.
+- **Auto-refresh.** Prices refresh every **30 s** while the Home screen is showing; the timer stops on Detail and while the page is hidden, and any in-flight request is aborted.
+- **Cached and offline-friendly.** The last response is kept in memory and in `localStorage` (`mdg_crypto_tracker`); the network is only hit when the cache is more than 30 s old. Favorites persist in `localStorage` (`mdg_crypto_tracker_favs`). A network-first service worker caches the app shell.
+- **Voice via Meta AI.** Four WebMCP tools (`crypto_*`) report prices, add or remove favorites and force a refresh. They call the same functions the D-pad uses, so the lens re-renders as Meta AI acts.
 
-1. Press **Cmd+Shift+M** to toggle the device toolbar
-2. Set a **custom viewport of 600 x 600**
-3. Refresh the page
+---
 
 ## Controls
 
-- **Arrow keys** - move focus (D-pad)
-- **Enter** - activate / open detail (EMG pinch)
-- **Back gesture (thumb + middle finger)** - back to the coin list, focus returns to the coin you opened
-- **Voice (Meta AI)** - ask for prices, add / remove favorites, refresh — see below
+| Where | Input | Result |
+| --- | --- | --- |
+| Home | ▲ ▼ ◀ ▶ | Move focus through the All / Favorites tabs, the coin cards and the Refresh button |
+| Home | Enter (on a tab) | Switch between All and Favorites |
+| Home | Enter (on a coin) | Open the coin's detail view |
+| Home | Enter (on Refresh / Retry) | Fetch fresh prices now, bypassing the 30 s cache |
+| Detail | ▲ ▼ ◀ ▶ | Move focus between the back arrow, Add / Remove Favorite and Back |
+| Detail | Enter (on Add / Remove Favorite) | Toggle the coin's favorite star |
+| Detail | Enter (on ← or Back) | Return to the coin list |
+| Detail | Back gesture (thumb + middle finger) | Return to the coin list; focus lands on the coin you opened |
+| Anywhere | Voice (Meta AI) | See **Voice (Meta AI)** below |
+
+---
 
 ## Voice (Meta AI)
 
@@ -36,25 +44,63 @@ Coins are matched by symbol or name (BTC, ETH, SOL, ADA, DOT, LINK, AVAX, MATIC)
 
 > Voice control requires WebMCP to be enabled on the device (Developer Mode or rollout). Relaunch the app after enabling it. Without it the app behaves exactly as before — D-pad only.
 
-## Screens
+---
 
-- **Home** - 8-coin list with price + 24h change badge + favorite star; tabs for **All** / **Favorites**
-- **Detail** - symbol, name, large price, change badge, and stat grid (Price, 24h Change, Last Updated); toggle favorite
+## Screenshots
 
-## API
+No screenshots yet. The app has no `?state=` routing; a plain capture of the Home screen is the only deterministic state.
+
+---
+
+## Running locally
+
+The app is a single static HTML/CSS/JS bundle — no build step.
+
+```bash
+npx serve -l 3101 crypto-tracker
+# then open http://localhost:3101
+```
+
+### Regenerating screenshots
+
+> 🛠️ **Developer tooling only.** The app itself has zero Chrome dependency — it's vanilla HTML/CSS/JS that runs in the Ray-Ban Meta Display's built-in browser. The block below is just the local recipe used on a Mac to refresh the PNGs in `screenshots/`.
+
+```bash
+npx serve -l 3101 crypto-tracker &
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+mkdir -p crypto-tracker/screenshots
+"$CHROME" --headless --disable-gpu --hide-scrollbars \
+  --window-size=600,600 --virtual-time-budget=4000 \
+  --screenshot="crypto-tracker/screenshots/home.png" \
+  "http://localhost:3101/"
+```
+
+---
+
+## Notes
+
+### API
 
 Single call: `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,cardano,polkadot,chainlink,avalanche-2,matic-network&vs_currencies=usd&include_24hr_change=true&include_last_updated_at=true`
 
-- Auto-refresh every **30s** while on the Home screen (paused on Detail or when tab is hidden)
-- Response cached in memory and `localStorage` (`mdg_crypto_tracker`); network only hit when cache is >30s old
+- Auto-refresh every **30 s** while on the Home screen (paused on Detail or when the page is hidden)
+- Response cached in memory and `localStorage` (`mdg_crypto_tracker`); network only hit when the cache is >30 s old
 - Favorites persisted in `localStorage` (`mdg_crypto_tracker_favs`)
+
+---
 
 ## Files
 
 ```
 crypto-tracker/
-  index.html   # Home + Detail screens
-  styles.css   # dark theme, coin card, change badge, skeleton, tabs
-  app.js       # fetch + cache + render, auto-refresh, favorites, D-pad
-  vercel.json  # static rewrites
+├── index.html      # Home + Detail screens, service-worker registration
+├── styles.css      # dark theme, coin card, change badge, skeleton, tabs
+├── app.js          # fetch + cache + render, auto-refresh, favorites, D-pad, WebMCP tools
+├── sw.js           # network-first service worker
+├── favicon.png     # app icon
+└── vercel.json     # static rewrites
 ```
+
+---
+
+<sub>Made by L+R at [L+R](https://www.levinriegner.com).</sub>

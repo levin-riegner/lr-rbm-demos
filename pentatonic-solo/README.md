@@ -1,39 +1,88 @@
 # Comfortable Thumb.
 
-A thumb-controlled pentatonic solo synth for the Ray-Ban Meta Display. Locked to **B minor pentatonic** — the key David Gilmour solos in on *Comfortably Numb* — so every press is in-scale. Tap a key, the note rings out for ~3.5 seconds; tap a new key and the previous note fades.
+A thumb-controlled pentatonic solo synth for the Meta Ray-Ban Display glasses. Locked to **B minor pentatonic** — the key David Gilmour solos in on *Comfortably Numb* — so every press is in-scale. Tap a key, the note rings out for ~3.5 seconds; tap a new key and the previous note fades.
 
-| | |
-|---|---|
-| ![Idle state](screenshots/idle.png) | ![Playing — D3, b3, rainbow scope + particles](screenshots/playing.png) |
-| **Idle** — black void, white straight scope line. | **Playing** — chromatic note readout, thick rainbow waveform, prism particles bursting from the active pad. |
+---
+
+## What it does
+
+- **Five notes on five inputs.** The four D-pad directions and Enter map to B, D, E, F# and A. Hold does not matter — each press auto-rings; a new press quick-fades the previous note (mono voice).
+- **Gilmour-ish synth.** Web Audio API: sawtooth + slightly detuned square per voice, a lowpass with a wah-style attack sweep, soft saturation and a 430 ms tape-delay loop with feedback.
+- **Prism visuals.** The pressed pad bursts 36 rainbow particles on a full-screen canvas and trickles sparkles while the note rings. The scope shows a thin white line at rest and a thick red-to-violet waveform while playing. The note readout shows pitch and scale degree (e.g. `D3`, `b3`).
+- **Lifecycle-clean.** When the page is hidden the voice is silenced, the audio graph is suspended (delay tail included) and both canvas loops stop; they resume on return. Losing window focus also silences the note.
+- **Play-along sheet.** The Notes section below has the full *Comfortably Numb* vocal lines and both guitar solos written as scale notes, plus a backing track link.
+
+---
 
 ## Controls
 
-Five keys map to the five notes of B minor pentatonic:
+| Where | Input | Result |
+| --- | --- | --- |
+| Anywhere | ▼ | Play **B** (root, degree 1) |
+| Anywhere | ◀ | Play **D** (b3) |
+| Anywhere | ▲ | Play **E** (4) |
+| Anywhere | ▶ | Play **F#** (5) |
+| Anywhere | Enter | Play **A** (b7, highest) |
 
-| Key      | Note  | Scale degree |
-|----------|-------|--------------|
-| ↓ Down   | **B**  | 1   (root)   |
-| ← Left   | **D**  | b3           |
-| ↑ Up     | **E**  | 4            |
-| → Right  | **F#** | 5            |
-| ⏎ Enter  | **A**  | b7           |
+Hold doesn't matter — each press auto-rings for a few seconds. A new press quick-fades the previous note. The app is a single screen, so the Back gesture is left to the system.
 
-Hold doesn't matter — each press auto-rings for a few seconds. A new press quick-fades the previous note.
+---
 
-## Play along
+## Screenshots
 
-Backing track (Comfortably Numb without the guitar) — click to open on YouTube:
+| Idle (`/`) | Playing (`?demo=left`) |
+| --- | --- |
+| ![Idle state](screenshots/idle.png) | ![Playing — D3, b3, rainbow scope + particles](screenshots/playing.png) |
+| Black void, white straight scope line. | Chromatic note readout, thick rainbow waveform, prism particles bursting from the active pad. |
+
+---
+
+## Running locally
+
+The app is a single static HTML/CSS/JS bundle — no build step.
+
+```bash
+npx serve -l 4222 pentatonic-solo
+# then open http://localhost:4222
+```
+
+Add `?demo=down` (or `left`, `up`, `right`, `enter`) to the URL to auto-play a note 600 ms after load — handy for screenshots.
+
+### Regenerating screenshots
+
+> 🛠️ **Developer tooling only.** The app itself has zero Chrome dependency — it's vanilla HTML/CSS/JS that runs in the Ray-Ban Meta Display's built-in browser. The block below is just the local recipe used on a Mac to refresh the PNGs in `screenshots/`.
+
+The app reads a `?demo=<slot>` parameter instead of `?state=`; the idle shot is a plain load:
+
+```bash
+npx serve -l 4222 pentatonic-solo &
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+"$CHROME" --headless --disable-gpu --hide-scrollbars \
+  --window-size=600,600 --virtual-time-budget=1500 \
+  --screenshot="pentatonic-solo/screenshots/idle.png" \
+  "http://localhost:4222/"
+"$CHROME" --headless --disable-gpu --hide-scrollbars \
+  --window-size=600,600 --virtual-time-budget=2500 \
+  --autoplay-policy=no-user-gesture-required \
+  --screenshot="pentatonic-solo/screenshots/playing.png" \
+  "http://localhost:4222/?demo=left"
+```
+
+---
+
+## Notes
+
+### Play along
+
+Backing track (Comfortably Numb without the guitar) — opens on YouTube:
 
 <a href="https://www.youtube.com/watch?v=wec4h8koJ1Q&list=RDwec4h8koJ1Q" target="_blank" rel="noopener noreferrer">
   <img src="https://img.youtube.com/vi/wec4h8koJ1Q/maxresdefault.jpg" alt="▶ Comfortably Numb — backing track (opens in a new tab)" width="600"/>
 </a>
 
-Press play, then follow the notes below. Each parenthesized group is the notes for the preceding syllables. Notes are written as their letter names — match them to the keys in the table above.
+Press play, then follow the notes below. Each parenthesized group is the notes for the preceding syllables. Notes are written as their letter names — match them to the inputs in the Controls table above.
 
----
-
-### Verse 1 (Roger Waters)
+#### Verse 1 (Roger Waters)
 
 Hel-lo (B — B)
 
@@ -59,7 +108,7 @@ Just the (B — B) ba-sic facts (A — A — F#)
 
 Can you (B — B) show me (A — A) where it hurts? (F# — F# — F#)
 
-### Chorus 1 (David Gilmour)
+#### Chorus 1 (David Gilmour)
 
 There is (A — A) no pain (F# — F#) you are (E — D) re-ced-ing (E — F# — D)
 
@@ -81,7 +130,7 @@ This is (D — D) not how (D — D) I am (B — A)
 
 I (F#) have (F#) be-come (F# — F#) com-fort-a-bly (F# — F# — E — D) numb (D)
 
-### First Guitar Solo (pentatonic adjusted)
+#### First Guitar Solo (pentatonic adjusted)
 
 - **Phrase 1:** D — F# — A
 - **Phrase 2:** F# — E — D — E — F#
@@ -93,7 +142,7 @@ I (F#) have (F#) be-come (F# — F#) com-fort-a-bly (F# — F# — E — D) numb
 - **Phrase 8:** A — D — E — F# — A — B — A
 - **Phrase 9:** D — B — A — F# — E — D — D
 
-### Verse 2 (Roger Waters)
+#### Verse 2 (Roger Waters)
 
 O.K. (B — B)
 
@@ -111,7 +160,7 @@ That'll keep you (B — B — B — B) go-ing through (A — A — A) the show (
 
 Come on (B — B) it's time (A — A) to go (F# — F#)
 
-### Chorus 2 (David Gilmour)
+#### Chorus 2 (David Gilmour)
 
 There is (A — A) no pain (F# — F#) you are (E — D) re-ced-ing (E — F# — D)
 
@@ -137,7 +186,7 @@ The dream (B — B) is gone (A — F# — F#)
 
 I (F#) have (F#) be-come (F# — F#) com-fort-a-bly (F# — F# — E — D) numb (D)
 
-### Second Guitar Solo / Outro (pentatonic adjusted)
+#### Second Guitar Solo / Outro (pentatonic adjusted)
 
 Bends are noted but the synth doesn't pitch-bend — play the target note instead.
 
@@ -154,12 +203,26 @@ Bends are noted but the synth doesn't pitch-bend — play the target note instea
 - **Phrase 11:** B (bend to D) — A — F# — E — D — B
 - **Phrase 12:** D — E (bend to F#) — E — D — B
 
----
+### Under the hood
 
-## Under the hood
-
-- **Synth:** Web Audio API. Each note is a sawtooth + slightly detuned square through a per-voice lowpass with a wah-ish attack sweep (900→3200→1600 Hz), into a soft-saturation waveshaper and a 430ms tape-delay loop with feedback for Gilmour space.
+- **Synth:** Web Audio API. Each note is a sawtooth + slightly detuned square through a per-voice lowpass with a wah-ish attack sweep (700→2400→1100 Hz), into a soft-saturation waveshaper and a 430 ms tape-delay loop with feedback for Gilmour space.
 - **Visuals:** A full-screen canvas with `mix-blend-mode: screen` bursts 36 rainbow particles from the pressed pad and trickles sparkles while the note rings. The scope shows a thin white line at rest and a thick red→violet waveform when ringing.
 - **Stack:** Vanilla HTML/CSS/JS, no dependencies. Built for the Ray-Ban Meta Display 600×600 viewport.
 
-Local dev server: `npx serve -l 4222 pentatonic-solo` (or use the `pentatonic-solo` entry in `.claude/launch.json`). Add `?demo=down` (or `left`, `up`, `right`, `enter`) to the URL to auto-play a note 600ms after load — handy for screenshots.
+---
+
+## Files
+
+```
+pentatonic-solo/
+├── index.html      # header prism, stage + scope, 5-pad layout, service-worker registration
+├── styles.css      # black void, spotlight stage, pad grid, ringing states
+├── app.js          # Web Audio synth, particle + scope loops, key mapping, ?demo= helper
+├── sw.js           # network-first service worker
+├── favicon.png     # app icon
+└── screenshots/    # idle.png, playing.png
+```
+
+---
+
+<sub>Made by L+R at [L+R](https://www.levinriegner.com).</sub>

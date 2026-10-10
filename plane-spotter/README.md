@@ -1,19 +1,62 @@
 # Plane Spotter
 
-Meta Display Glasses webapp that points an arrow at the nearest aircraft. Uses OpenSky Network for state vectors, geolocation for the user's position, and `DeviceOrientationEvent` for head tracking. The arrow rotates and translates in real time so the wearer can turn their head and see the bracket "lock" when they're looking at the plane.
+A Meta Ray-Ban Display glasses webapp that points at the nearest aircraft. It uses OpenSky Network for state vectors, geolocation for the wearer's position, and `DeviceOrientationEvent` for head tracking. The marker rotates and translates in real time so the wearer can turn their head and see the bracket "lock" when they are looking at the plane.
 
-Web-based, vanilla JS, no build step.
+Web-based, vanilla JS on the client, with a small Node proxy for the OpenSky API.
 
-## Prerequisites
+---
+
+## What it does
+
+- **HUD scope.** A circular field-of-view view (±60°) with N/E/S/W ticks, a crosshair and a horizon line that rolls with head tilt. The nearest aircraft is a ▲ glyph at its true angular position; outside the FOV it pins to the rim as a ➤ arrow pointing toward the target. Within 8° the scope and marker switch to the on-target state.
+- **Readouts.** Callsign (or ICAO24), distance, altitude, speed and bearing, refreshed every 15 s from `/api/aircraft` within a 50 km radius.
+- **Start / Stop.** Start requests orientation permission where the platform asks for it, opens a geolocation watch and attaches the orientation listener; Stop tears all of it down. Status in the header reads Idle, Locating, Live, Demo, Demo*, No planes, GPS err, Net err, Denied.
+- **Demo mode.** Toggles synthetic aircraft from the server (`?demo=1`); with no GPS fix it falls back to a San Francisco position so the scope works on a laptop.
+- **Calibrate.** Captures the current yaw and pitch as zero offsets — useful on devices where `alpha` is not true-north absolute.
+- **Lifecycle-clean.** While the page is hidden the orientation listener, GPS watch and poll interval are dropped and re-armed on return; permission is never re-requested. `watchPosition` always has a matching `clearWatch`.
+
+---
+
+## Controls
+
+| Where | Input | Result |
+| --- | --- | --- |
+| Home | ▶ or ▼ | Move focus to the next button (Start / Stop → Demo → Calibrate, wrapping) |
+| Home | ◀ or ▲ | Move focus to the previous button |
+| Home | Enter (on Start) | Request sensor permission where needed, then start locating and polling |
+| Home | Enter (on Stop) | Stop sensors, polling and clear the readouts |
+| Home | Enter (on Demo) | Toggle synthetic demo aircraft on / off |
+| Home | Enter (on Calibrate) | Zero the yaw / pitch offsets at the current head pose |
+| Running | Back gesture (thumb + middle finger) | Stop (same as the Stop button) |
+| Running | Head turn / tilt (`deviceorientation`) | Marker tracks the aircraft; horizon rolls with tilt; bracket locks within 8° |
+| Running | Location (`geolocation` watch) | Updates the wearer's position used for distance, bearing and elevation |
+
+On a desktop without `DeviceOrientationEvent` the readouts and marker show real aircraft data, but the head-relative direction is fixed.
+
+---
+
+## Screenshots
+
+| HUD |
+| --- |
+| <img src="screenshots/preview.png" width="300"> |
+
+---
+
+## Running locally
+
+This app has a Node server (`server.js`) that proxies OpenSky, so it is run with `npm start` rather than a plain static server.
+
+### Prerequisites
 
 - **Node.js 18+** — `node --version`
 - **An OpenSky Network OAuth2 client** — free, see "Get OpenSky credentials" below
-- **`cloudflared`** — only if you want to load the webapp on a phone or the glasses (see "Run on a phone or glasses")
+- **`cloudflared`** — only if you want to load the webapp on a phone or the glasses (see "Run on a phone or glasses" in Notes)
   ```bash
   brew install cloudflared
   ```
 
-## Get OpenSky credentials
+### Get OpenSky credentials
 
 The free anonymous OpenSky endpoint is severely rate-limited and effectively unusable. You need an OAuth2 client.
 
@@ -21,7 +64,7 @@ The free anonymous OpenSky endpoint is severely rate-limited and effectively unu
 2. Account → API Client → create a new client
 3. Copy the `clientId` and `clientSecret`
 
-## Setup
+### Setup
 
 From this directory:
 
@@ -34,17 +77,35 @@ EOF
 
 `.env` is gitignored. Without it the app still runs but only returns synthetic demo planes.
 
-## Run locally (laptop browser)
+### Run
 
 ```bash
 npm start
+# then open http://localhost:3000
 ```
 
-Open http://localhost:3000. Use arrow keys to navigate the D-pad UI; press Enter on **Start**.
+Use the arrow keys to move focus and Enter on **Start**. For full pitch/yaw response you need a device with `DeviceOrientationEvent` (a phone or the glasses).
 
-For full pitch/yaw response you need a device with `DeviceOrientationEvent` (a phone or the glasses). On a desktop the readouts and arrow show real aircraft data, but the head-relative direction is fixed.
+### Regenerating screenshots
 
-## Run on a phone or glasses (Cloudflare Tunnel)
+> 🛠️ **Developer tooling only.** The app itself has zero Chrome dependency — it's vanilla HTML/CSS/JS that runs in the Ray-Ban Meta Display's built-in browser. The block below is just the local recipe used on a Mac to refresh the PNGs in `screenshots/`.
+
+The app has no `?state=` routing; a single capture of the idle HUD is enough:
+
+```bash
+npm start &
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+"$CHROME" --headless --disable-gpu --hide-scrollbars \
+  --window-size=600,600 --virtual-time-budget=2000 \
+  --screenshot="plane-spotter/screenshots/preview.png" \
+  "http://localhost:3000/"
+```
+
+---
+
+## Notes
+
+### Run on a phone or glasses (Cloudflare Tunnel)
 
 The phone can't reach `localhost`, and the glasses won't load anything that isn't HTTPS. A Cloudflare quick tunnel exposes the local server over HTTPS without signup, DNS, or port forwarding:
 
@@ -64,13 +125,13 @@ PORT=3030 npm run tunnel    # override if 3000 is busy
 
 Open the URL on your phone, or scan `qr-tunnel.png`. The URL is also saved to `.tunnel-url`. `Ctrl-C` stops both child processes together.
 
-### Caveats
+Caveats:
 
 - **The tunnel URL is publicly reachable.** Anyone who learns it can hit `/api/aircraft` (uses your OpenSky quota) and `/`. Trycloudflare URLs are random per session but they're not a security boundary. Run `/passcode-for-testing` first if you want a 3-digit gate.
 - **The URL changes every run.** For a stable URL, register a free Cloudflare account and use a named tunnel (`cloudflared tunnel create`, `cloudflared tunnel route dns`).
 - **You must keep `npm run tunnel` running.** Closing the terminal or sleeping the laptop drops the tunnel.
 
-## How it works
+### How it works
 
 ```
 Browser (phone or glasses)
@@ -107,27 +168,14 @@ When the target is inside FOV (default ±60°) the plane glyph (▲) sits at its
 
 `Calibrate` captures current yaw/pitch as zero offsets — useful on devices where `alpha` isn't true-north absolute.
 
-## Endpoints
+### Endpoints
 
 - `GET /` — webapp
 - `GET /api/aircraft?lat=<deg>&lon=<deg>&radius=<km>&demo=<0|1>` — up to 20 nearest aircraft, each enriched with `distance` (m), `bearing` (deg from North), `elevation` (deg above horizontal)
 
 `source` in the response: `opensky` (live), `opensky-cache` (within 10s TTL), `demo` (`demo=1` requested), `demo-fallback` (live failed; `error` field has details).
 
-## Files
-
-| File | Purpose |
-|---|---|
-| `index.html`, `app.js`, `styles.css` | 600x600 dark UI, D-pad nav, geolocation + orientation, HUD scope rendering |
-| `server.js` | Local Node HTTP server with `.env` auto-loader |
-| `lib/opensky.js` | OAuth2 + OpenSky proxy + math, shared by `server.js` and `api/aircraft.js` |
-| `api/aircraft.js` | Optional Vercel serverless wrapper around `lib/opensky.js` (see "Vercel deployment" below) |
-| `scripts/tunnel.js` | Spawns `node server.js` + `cloudflared tunnel`, generates `qr-tunnel.png` |
-| `vercel.json` | Vercel config — `framework: null`, function timeout 25s |
-| `.env` | OpenSky credentials (gitignored) |
-| `.vercelignore` | Excludes `server.js` and `.env` from Vercel uploads |
-
-## Vercel deployment (optional, demo data only)
+### Vercel deployment (optional, demo data only)
 
 The Vercel scaffolding is left in place but not currently deployed. It serves the static webapp fine, but **`/api/aircraft` cannot return live data from Vercel** — OpenSky firewalls Vercel's serverless egress IP ranges at the TCP layer. A `/api/diag` endpoint deployed in both `iad1` and `fra1` confirmed:
 
@@ -155,7 +203,7 @@ The `error` field of the API response will surface the OpenSky failure so you ca
 { "source": "demo-fallback", "error": "OpenSky auth: fetch failed / cause=UND_ERR_CONNECT_TIMEOUT", ... }
 ```
 
-## Tear-down
+### Tear-down
 
 To stop everything cleanly:
 
@@ -163,3 +211,31 @@ To stop everything cleanly:
 - **Generated artifacts** — `rm .tunnel-url qr-tunnel.png`
 - **Vercel project** (if you deployed) — `printf 'y\n' | vercel project rm <project-name>` then `rm -rf .vercel`. Releases the alias and deletes deployments + env vars.
 - **OpenSky credentials** — revoke at https://opensky-network.org → Account → API Client if you want to invalidate them. Otherwise just delete `.env`.
+
+---
+
+## Files
+
+```
+plane-spotter/
+├── index.html          # 600×600 HUD: scope, callsign, readouts, Start / Demo / Calibrate, service-worker registration
+├── styles.css          # dark UI, scope ring, marker + on-target states
+├── app.js              # D-pad nav, geolocation + orientation, HUD scope rendering, polling, lifecycle
+├── sw.js               # network-first service worker (never caches /api/)
+├── favicon.png         # app icon
+├── server.js           # local Node HTTP server with .env auto-loader
+├── lib/opensky.js      # OAuth2 + OpenSky proxy + math, shared by server.js and api/aircraft.js
+├── api/aircraft.js     # optional Vercel serverless wrapper around lib/opensky.js
+├── scripts/tunnel.js   # spawns node server.js + cloudflared tunnel, generates qr-tunnel.png
+├── package.json        # npm start / npm run tunnel
+├── vercel.json         # Vercel config — framework: null, function timeout 25s
+├── .gitignore          # .env, tunnel artifacts
+├── .vercelignore       # excludes server.js and .env from Vercel uploads
+└── screenshots/        # preview.png
+```
+
+`.env` (OpenSky credentials) is created locally and gitignored.
+
+---
+
+<sub>Made by L+R at [L+R](https://www.levinriegner.com).</sub>
