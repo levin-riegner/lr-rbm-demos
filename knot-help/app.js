@@ -259,6 +259,15 @@
   // ── input ──
   function handleKey(e) {
     const k = e.key;
+    // Back gesture: leave the knot and return to the menu. On the menu
+    // itself there is nothing to go back to, so the system handles it.
+    if (k === 'Escape') {
+      if (state.screen === 'intent') return;
+      e.preventDefault();
+      showScreen('intent');
+      renderMenu();
+      return;
+    }
     if (state.screen === 'intent') {
       if (k === 'ArrowUp') {
         state.menuIdx = (state.menuIdx - 1 + KNOT_MENU.length) % KNOT_MENU.length;
@@ -322,4 +331,134 @@
   renderMenu();
   showScreen('intent');
   applyStateParam();
+
+  // ---- WebMCP (Meta AI voice control) --------------------------------------
+  // Additive: the app works identically when document.modelContext is absent.
+  // Utterances: "show me how to tie a bowline", "next step", "go back a step",
+  // "which knot am I on?", "open the clove hitch".
+  function stripTags(s) { return String(s || '').replace(/<[^>]+>/g, ''); }
+
+  function knotNames() {
+    return KNOT_MENU.map((it) => KNOTS[it.key].name.toLowerCase()).join(', ');
+  }
+
+  function resolveKnot(name) {
+    const q = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!q) return -1;
+    for (let i = 0; i < KNOT_MENU.length; i++) {
+      const key = KNOT_MENU[i].key;
+      const k = KNOTS[key];
+      const hay = [key, k.name].map((s) => s.toLowerCase().replace(/[^a-z0-9]/g, ''));
+      if (hay.some((h) => h === q || h.includes(q) || q.includes(h))) return i;
+    }
+    return -1;
+  }
+
+  function knotSnapshot(nextAction) {
+    const out = { screen: state.screen };
+    if (state.screen === 'intent') {
+      out.knots = knotNames();
+      out.focused_knot = KNOTS[KNOT_MENU[state.menuIdx].key].name;
+    } else {
+      const knot = KNOTS[state.knotKey];
+      out.knot = knot.name;
+      out.tagline = knot.tag;
+      out.total_steps = knot.steps.length;
+      if (state.screen === 'learn') {
+        const step = knot.steps[state.stepIdx];
+        out.step = state.stepIdx + 1;
+        out.instruction = stripTags(step.text);
+        out.tip = step.tip;
+      } else {
+        out.done = true;
+      }
+    }
+    out.next_action = nextAction;
+    return out;
+  }
+
+  function registerWebMcp() {
+    const ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        const r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, (err) => { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    safeRegister({
+      name: 'knots_get_state',
+      description: 'Report which screen is open, the knot being learned, the current step number and its instruction and tip, or the list of available knots on the menu.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: function () {
+        return knotSnapshot('Tell the wearer the current step (or the knot list) in one or two short sentences, then stop.');
+      }
+    });
+
+    safeRegister({
+      name: 'knots_open',
+      description: 'Open a knot tutorial at step 1. Knots: bowline, figure eight, clove hitch, monkey\'s fist, trucker\'s hitch, constrictor. Returns the first step.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Knot name as spoken, e.g. "bowline" or "clove hitch".' }
+        },
+        required: ['name']
+      },
+      execute: function (args) {
+        const idx = resolveKnot(args && args.name);
+        if (idx < 0) {
+          return { error: true, message: 'Unknown knot.', knots: knotNames(), next_action: 'Offer these knots and call knots_open again.' };
+        }
+        state.menuIdx = idx;
+        goLearn(); // same path as Enter on the menu, so the screen re-renders
+        return knotSnapshot('Read step 1 aloud in one short sentence, then stop.');
+      }
+    });
+
+    safeRegister({
+      name: 'knots_next_step',
+      description: 'Advance to the next step of the open knot (after the last step, shows the success card). Returns the new step.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        if (state.screen === 'intent') {
+          return { error: true, message: 'No knot is open.', knots: knotNames(), next_action: 'Ask which knot to open, then call knots_open.' };
+        }
+        if (state.screen === 'done') {
+          return knotSnapshot('Tell the wearer the knot is finished, then stop.');
+        }
+        advanceStep(); // same as the ▶ key
+        return knotSnapshot(state.screen === 'done'
+          ? 'Tell the wearer the knot is complete, then stop.'
+          : 'Read the new step aloud in one short sentence, then stop.');
+      }
+    });
+
+    safeRegister({
+      name: 'knots_previous_step',
+      description: 'Go back one step of the open knot (from step 1 returns to the menu). Returns the new step.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        if (state.screen === 'intent') {
+          return { error: true, message: 'No knot is open.', knots: knotNames(), next_action: 'Ask which knot to open, then call knots_open.' };
+        }
+        if (state.screen === 'done') {
+          state.stepIdx = 0; showScreen('learn'); renderLearn(); // same as ◀ on the success card
+        } else {
+          backStep(); // same as the ◀ key
+        }
+        return knotSnapshot(state.screen === 'intent'
+          ? 'Tell the wearer they are back at the knot menu, then stop.'
+          : 'Read the step aloud in one short sentence, then stop.');
+      }
+    });
+  }
+  registerWebMcp();
 })();

@@ -219,7 +219,14 @@
       return;
     }
 
+    openSocket(channel);
+  }
+
+  // Opens (or re-opens) the IRC transport for `channel` without touching the
+  // message history — used by connect() and by the resume-from-hidden path.
+  function openSocket(channel) {
     closeSocket();
+    setStatus('', 'CONNECTING');
 
     let ws;
     try {
@@ -248,6 +255,8 @@
     });
 
     ws.addEventListener('close', () => {
+      if (state.socket !== ws) return; // closed on purpose (hidden / switch / leave)
+      state.socket = null;
       if (state.channel) {
         setStatus('error', 'DISCONNECTED');
         scheduleReconnect();
@@ -257,9 +266,39 @@
     });
 
     ws.addEventListener('error', () => {
+      if (state.socket !== ws) return;
       setStatus('error', 'CONNECTION ERROR');
     });
   }
+
+  // ── Lifecycle: drop the transport while hidden, restore on visible ──
+  // The channel and the visible history are kept; only the socket (or the
+  // demo feed's timer) is stopped so nothing runs while the page is hidden.
+  let suspended = null; // { demo: boolean } while hidden, else null
+  function pauseForHidden() {
+    if (suspended || state.screen !== 'chat' || !state.channel) return;
+    suspended = { demo: !!state.demoTimer };
+    if (state.reconnectTimer) { clearTimeout(state.reconnectTimer); state.reconnectTimer = null; }
+    if (state.socket) {
+      const ws = state.socket;
+      state.socket = null;
+      try { ws.close(); } catch (_) {}
+    }
+    stopDemoStream();
+  }
+  function resumeFromHidden() {
+    const s = suspended;
+    suspended = null;
+    if (!s || state.screen !== 'chat' || !state.channel) return;
+    if (state.demoMode) {
+      if (s.demo) startDemoStream();
+      return;
+    }
+    openSocket(state.channel);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
 
   function closeSocket() {
     if (state.reconnectTimer) { clearTimeout(state.reconnectTimer); state.reconnectTimer = null; }
@@ -290,7 +329,9 @@
     }
     if (m.cmd === 'JOIN') {
       setStatus('live', 'LIVE');
-      $('feed-empty').classList.remove('hidden');
+      // Only show the placeholder when there is no history (a resume after
+      // the page was hidden keeps the messages already on screen).
+      $('feed-empty').classList.toggle('hidden', state.messages.length > 0);
       return;
     }
     if (m.cmd === 'PRIVMSG') {
@@ -673,6 +714,7 @@
       if (k === 'ArrowUp')        { e.preventDefault(); scrollBy(-80); }
       else if (k === 'ArrowDown') { e.preventDefault(); scrollBy(+80); }
       else if (k === 'ArrowLeft') { e.preventDefault(); leaveChat(); }
+      else if (k === 'Escape')    { e.preventDefault(); leaveChat(); } // back gesture
       else if (k === 'ArrowRight'){ e.preventDefault(); cycleSize(); }
       else if (k === 'Enter' || k === ' ') { e.preventDefault(); resumeLive(); }
     }

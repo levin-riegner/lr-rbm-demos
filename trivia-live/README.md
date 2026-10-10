@@ -15,7 +15,22 @@ Open [http://localhost:8080](http://localhost:8080) in Chrome, press **Cmd+Shift
 
 - **Arrow keys** — move focus (D-pad)
 - **Enter** — activate focused element (EMG pinch)
-- **Escape** — back to Start screen
+- **Back gesture (thumb + middle finger)** — back to Start screen (also cancels a question fetch)
+- **Voice (Meta AI)** — start a quiz, hear the question, answer by letter or text (see below)
+
+## Voice (Meta AI)
+
+With WebMCP enabled on the glasses the app registers tools on `document.modelContext`, so Meta AI can run a round hands-free. Example utterances:
+
+- "Start a science quiz on hard"
+- "Read me the question"
+- "The answer is B"
+- "It's Paris"
+- "Play again"
+
+Tools: `trivia_get_state` (read-only, never exposes the answer of an open question), `trivia_start` (category and difficulty optional), `trivia_answer` (letter or option text — the page scores it, Meta AI only relays the result). Each one calls the same functions the D-pad uses, so the screen updates as Meta AI acts.
+
+> WebMCP must be enabled on the device (Developer Mode or rollout) and the app relaunched after enabling it. Without it the app works exactly as before, D-pad only.
 
 ## Gameplay
 

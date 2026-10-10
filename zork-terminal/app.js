@@ -127,18 +127,25 @@ let skipRequested = false;
 const TW_SPEED_FAST = 4;   // ms/char during normal output
 const TW_SPEED_TITLE = 0;  // titles are instant
 
+// Plain-text copy of everything printed since the last command echo, so the
+// WebMCP tools can hand Meta AI the same output the wearer sees.
+let turnLines = [];
+
 function println(text = "") {
   printQueue.push({ kind: "line", text: String(text) });
+  turnLines.push(String(text));
   schedulePump();
 }
 
 function printlnHTML(html) {
   printQueue.push({ kind: "html", html });
+  turnLines.push(String(html).replace(/<[^>]+>/g, ""));
   schedulePump();
 }
 
 function printEcho(cmd) {
   printQueue.push({ kind: "echo", text: String(cmd) });
+  turnLines = [];
   schedulePump();
 }
 
@@ -189,14 +196,17 @@ async function pump() {
 
 // Uses MessageChannel to dodge background-tab setTimeout throttling, and
 // progresses by elapsed real time rather than tick count — feels smooth at
-// any frame rate.
+// any frame rate. While the page is hidden the loop parks itself (no message
+// is re-posted) and picks up where it left off on visibilitychange.
+let twResume = null; // resumes the parked typewriter line, set only while hidden
+
 function typewriteLine(text) {
   const div = document.createElement("div");
   div.className = "line typing";
   outputEl.appendChild(div);
   scrollToBottom();
   const charsPerSec = 220;  // quick — about 4.5ms/char
-  const t0 = performance.now();
+  let t0 = performance.now();
   let i = 0;
   return new Promise((resolve) => {
     const ch = new MessageChannel();
@@ -206,6 +216,11 @@ function typewriteLine(text) {
         div.classList.remove("typing");
         scrollToBottom();
         resolve();
+        return;
+      }
+      if (document.hidden) {
+        const pausedAt = performance.now();
+        twResume = () => { t0 += performance.now() - pausedAt; ch.port2.postMessage(0); };
         return;
       }
       const elapsed = performance.now() - t0;
@@ -227,6 +242,16 @@ function typewriteLine(text) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function scrollToBottom() { outputEl.scrollTop = outputEl.scrollHeight; }
+
+// Lifecycle: the typewriter is the only recurring loop; it parks itself while
+// hidden (see typewriteLine) and is released here.
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && twResume) {
+    const resume = twResume;
+    twResume = null;
+    resume();
+  }
+});
 
 
 // Tap-anywhere-to-skip the typewriter
@@ -1313,18 +1338,24 @@ function openMorePanel() {
   const first = moreList.querySelector(".chip");
   if (first) setTimeout(() => first.focus({ preventScroll: true }), 0);
 }
-function closeMorePanel() {
+function closeMorePanel(restoreOpener) {
   morePanel.classList.add("hidden");
+  if (restoreOpener) {
+    // Dismissed without choosing: return focus to the MORE… chip that opened it.
+    const chips = secondaryRow.querySelectorAll(".chip");
+    const opener = chips[chips.length - 1];
+    if (opener) { setTimeout(() => opener.focus({ preventScroll: true }), 0); return; }
+  }
   // Return focus to the main screen's primary chip.
   focusPrimaryChip();
 }
-mpClose.addEventListener("click", closeMorePanel);
+mpClose.addEventListener("click", () => closeMorePanel());
 
-// Esc closes the MORE panel.
+// Back gesture (Escape) closes the MORE panel and refocuses the chip that opened it.
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !morePanel.classList.contains("hidden")) {
     e.preventDefault();
-    closeMorePanel();
+    closeMorePanel(true);
   }
 });
 
@@ -1375,6 +1406,112 @@ function boot() {
     document.removeEventListener("pointerdown", onFirstGesture);
   };
   document.addEventListener("pointerdown", onFirstGesture, { once: false });
+
+  registerWebMcp();
+}
+
+
+// ── WebMCP (Meta AI voice control) ────────────────────────────
+// Additive: the app works identically when document.modelContext is absent.
+// Utterances: "where am I?", "open the mailbox", "go north", "take the lamp",
+// "what's in my inventory?" — every command runs through parseAndExecute,
+// exactly like a chip tap, so the CRT prints the result.
+
+function roomDescriptionText() {
+  const r = room();
+  if (r.dark && !(carrying("lantern") && state.flags.lanternOn)) {
+    return "It is pitch black. You are likely to be eaten by a grue.";
+  }
+  const desc = typeof r.desc === "function" ? r.desc(state)
+             : (r.desc && r.desc.dyn ? r.desc.dyn(state) : r.desc);
+  return String(desc || "");
+}
+
+function visibleItemNames() {
+  const r = room();
+  return (r.items || [])
+    .filter(id => !ITEMS[id].fixed && id !== "egg")
+    .map(id => ITEMS[id].short);
+}
+
+function zorkSnapshot(nextAction) {
+  const out = {
+    started: !state.flags.awaitingStart,
+    game_over: !!state.flags.gameOver,
+    location: room().short,
+    score: state.score,
+    moves: state.moves,
+    last_output: turnLines.join("\n"),
+  };
+  if (!state.flags.awaitingStart) {
+    out.room_description = roomDescriptionText();
+    out.items_here = visibleItemNames().join(", ");
+    out.inventory = state.inventory.map(id => ITEMS[id].short).join(", ");
+    const ctx = computeActions();
+    out.suggested_commands = (ctx.primary ? [ctx.primary] : []).concat(ctx.secondary).join(", ");
+  }
+  out.next_action = nextAction;
+  return out;
+}
+
+function registerWebMcp() {
+  const ctx = document.modelContext;
+  if (!ctx || typeof ctx.registerTool !== "function") return;
+
+  function safeRegister(tool) {
+    try {
+      const r = ctx.registerTool(tool);
+      if (r && typeof r.then === "function") {
+        r.then(undefined, (err) => { console.error(tool.name + " registration failed", err); });
+      }
+    } catch (err) {
+      console.error(tool.name + " registration failed", err);
+    }
+  }
+
+  safeRegister({
+    name: "zork_get_state",
+    description: "Report the current room, its description, visible items, inventory, score, moves, the last game output and the commands currently offered on screen. Does not change the game.",
+    inputSchema: { type: "object", properties: {} },
+    annotations: { readOnlyHint: true },
+    execute: function () {
+      return zorkSnapshot(state.flags.awaitingStart
+        ? "Tell the wearer the game is waiting to begin; call zork_command with \"begin\" to start."
+        : "Describe where the wearer is in one or two short sentences, then stop.");
+    }
+  });
+
+  safeRegister({
+    name: "zork_command",
+    description: "Run one text-adventure command through the game parser, e.g. \"look\", \"go north\", \"take lamp\", \"open mailbox\", \"inventory\", \"begin\" (start), \"restart\". Returns the game's output text.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: { type: "string", description: "A full game command as the wearer said it, e.g. \"go north\" or \"take lamp\"." }
+      },
+      required: ["text"]
+    },
+    execute: function (args) {
+      const text = String((args && args.text) || "").trim();
+      if (!text) {
+        return { error: true, message: "No command given.", next_action: "Ask the wearer what to do, then call zork_command again." };
+      }
+      if (state.flags.awaitingStart) {
+        turnLines = [];
+        startGame(); // same as the BEGIN chip
+        if (/^(begin|start|play)$/i.test(text)) {
+          return zorkSnapshot("Read the opening room description aloud, then stop.");
+        }
+      }
+      // If a previous turn is still typing, this one simply queues behind it.
+      ensureAudio();
+      sfxChip();
+      parseAndExecute(text); // the exact parser the chips use
+      return zorkSnapshot(state.flags.gameOver
+        ? "Read the output aloud and tell the wearer the game is over (say \"restart\" to play again), then stop."
+        : "Read the game's output aloud as written, in a few short sentences, then stop.");
+    }
+  });
 }
 
 boot();

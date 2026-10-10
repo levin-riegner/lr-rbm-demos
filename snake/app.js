@@ -247,13 +247,55 @@
     gameLoop = setInterval(tick, TICK_MS);
   }
 
-  function gameOver() {
-    running = false;
-    gameStarted = false;
+  function stopLoop() {
     if (gameLoop) {
       clearInterval(gameLoop);
       gameLoop = null;
     }
+  }
+
+  // Back gesture while playing: stop the game and return to the menu,
+  // focusing the New Game button that started it.
+  function quitToMenu() {
+    stopLoop();
+    running = false;
+    gameStarted = false;
+    homeScreen.inert = false;
+    gameOverOverlay.classList.add('hidden');
+    setHomeNavVisible(true);
+    const newGameBtn = homeNav.querySelector('.nav-item.primary');
+    if (newGameBtn) newGameBtn.focus();
+  }
+
+  // Back gesture on the Game Over overlay: dismiss it and return to the menu.
+  function dismissGameOver() {
+    gameOverOverlay.classList.add('hidden');
+    homeScreen.inert = false;
+    setHomeNavVisible(true);
+    layoutCanvas();
+    drawIdle();
+    const newGameBtn = homeNav.querySelector('.nav-item.primary');
+    if (newGameBtn) newGameBtn.focus();
+  }
+
+  // Lifecycle: pause the game loop while the page is hidden, resume on visible.
+  let pausedByHidden = false;
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      if (running && gameLoop) {
+        stopLoop();
+        pausedByHidden = true;
+      }
+    } else if (pausedByHidden) {
+      pausedByHidden = false;
+      if (running && !gameLoop) gameLoop = setInterval(tick, TICK_MS);
+    }
+  });
+
+  function gameOver() {
+    running = false;
+    gameStarted = false;
+    stopLoop();
 
     const best = getBestScore();
     addScore(score);
@@ -302,6 +344,22 @@
   }
 
   // --- Input ---
+  // Back gesture (Escape): leave the current level — running game → menu,
+  // Game Over overlay → menu, High Scores → home.
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (running) {
+      e.preventDefault();
+      quitToMenu();
+    } else if (!gameOverOverlay.classList.contains('hidden')) {
+      e.preventDefault();
+      dismissGameOver();
+    } else if (!scoresScreen.classList.contains('hidden')) {
+      e.preventDefault();
+      goHomeFromScores();
+    }
+  });
+
   document.addEventListener('keydown', function (e) {
     if (!running) return;
 

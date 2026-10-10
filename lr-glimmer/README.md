@@ -35,6 +35,9 @@ A Tamagotchi-inspired virtual companion for Meta Display glasses that lives at t
 | Menu | RESUME | Close menu, return to companion |
 | Menu | RENAME COMPANION | Edit companion name |
 | Menu | NEW COMPANION | Abandon current, start adoption flow |
+| Menu / About | Back gesture (thumb + middle finger) | Close the overlay and return focus to MENU |
+| Rename screen | Back gesture (thumb + middle finger) | Cancel and return to the companion |
+| Onboarding | Back gesture (thumb + middle finger) | Previous step |
 | Naming screen | Type | Edit name directly (max 14 chars, auto-uppercase) |
 | Naming screen | RANDOM | Roll a random luminous-entity name from the built-in pool |
 | Dead screen | D-pad Up | Move focus to ADOPT NEW COMPANION button |

@@ -235,6 +235,12 @@
     } else if (k === 'ArrowLeft') {
       e.preventDefault();
       handleBack();
+    } else if (k === 'Escape') {
+      // Back gesture: step back one level. On the title screen there is
+      // nothing to go back to, so let the system handle it.
+      if (screen === 'title') return;
+      e.preventDefault();
+      handleBack();
     } else if (k === 'ArrowUp') {
       e.preventDefault();
       if (screen === 'menu') moveMenu(-1);

@@ -30,8 +30,26 @@ A wearable-sized tribute to early-1980s text adventures, built for the 600×600 
 | Secondary row | ◀ on leftmost chip | Wrap to rightmost chip of previous row |
 | Primary | ▼ / swipe down | Jump to first secondary chip on the left |
 | MORE… panel | Enter | Run focused command, close panel, refocus primary |
+| MORE… panel | Back gesture (thumb + middle finger) | Close the panel without running anything, refocus MORE… |
+| Anywhere | Voice (Meta AI) | Speak a game command or ask where you are (see below) |
 
 Touch swipes mirror the arrow keys everywhere — primary, secondary, and the MORE panel grid share one navigation model.
+
+---
+
+## Voice (Meta AI)
+
+With WebMCP enabled on the glasses the app registers tools on `document.modelContext`, so Meta AI can play alongside the chips. Example utterances:
+
+- "Where am I?"
+- "Open the mailbox"
+- "Go north"
+- "Take the lamp"
+- "What am I carrying?"
+
+Tools: `zork_get_state` (read-only: room, description, items, inventory, score, last output, and the commands currently on the chips) and `zork_command` (one full command such as "go north" or "take lamp"). Spoken commands run through the exact same parser the chips use, so the CRT prints the result and the chip bar re-ranks as usual. The tool descriptions never contain puzzle solutions.
+
+> WebMCP must be enabled on the device (Developer Mode or rollout) and the app relaunched after enabling it. Without it the app works exactly as before, chips only.
 
 ---
 

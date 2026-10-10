@@ -53,9 +53,29 @@
   let pendingName = state.name;
   let pendingEgg = null;
 
-  // Decay runs 10× slower when the tab is hidden so the pet survives longer play sessions
+  // Decay runs 10× slower when the tab is hidden so the pet survives longer play sessions.
+  // Lifecycle: every interval stops while the page is hidden; on return the hidden time
+  // is replayed at the slow rate from timestamps (see catchUpHidden), then loops resume.
   let appVisible = !document.hidden;
-  document.addEventListener('visibilitychange', () => { appVisible = !document.hidden; });
+  let walkAnimWasRunning = false;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      appVisible = false;
+      if (started) stopGameLoops();
+      walkAnimWasRunning = !!walkAnimTimer;
+      stopWalkAnimations();
+    } else {
+      if (started) {
+        catchUpHidden();     // runs with appVisible === false → 0.1× decay, as before
+        appVisible = true;
+        startGameLoops();
+        render();
+      } else {
+        appVisible = true;
+      }
+      if (walkAnimWasRunning) { walkAnimWasRunning = false; startWalkAnimations(); }
+    }
+  });
 
   function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
   function load() { try { return JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { return null; } }
@@ -278,6 +298,7 @@
     refreshPalette();
     save();
     markWalked();
+    walkOrigin = null;
     stopWalkAnimations();
     $('walk').classList.add('hidden');
     startGame();
@@ -444,14 +465,38 @@
     refreshPalette();
     catchUpOffline();
     tick();
-    setInterval(tick, TICK_MS);
-    setInterval(animate, FRAME_MS);
-    setInterval(emoteCheck, 6000);
-    setInterval(maybeRandomEvent, 14000);
+    startGameLoops();
 
     render();
     say('SYSTEM ONLINE');
     focusFirstAction();
+  }
+
+  // ───────── Game loops (one stable handle each) ─────────
+  let tickTimer = null, animTimer = null, emoteTimer = null, eventTimer = null;
+  function startGameLoops() {
+    if (tickTimer) return;
+    tickTimer  = setInterval(tick, TICK_MS);
+    animTimer  = setInterval(animate, FRAME_MS);
+    emoteTimer = setInterval(emoteCheck, 6000);
+    eventTimer = setInterval(maybeRandomEvent, 14000);
+  }
+  function stopGameLoops() {
+    if (tickTimer)  { clearInterval(tickTimer);  tickTimer  = null; }
+    if (animTimer)  { clearInterval(animTimer);  animTimer  = null; }
+    if (emoteTimer) { clearInterval(emoteTimer); emoteTimer = null; }
+    if (eventTimer) { clearInterval(eventTimer); eventTimer = null; }
+  }
+  // Replay the ticks that would have run while hidden (at the hidden 0.1× rate,
+  // because appVisible is still false when this is called). Capped like
+  // catchUpOffline so a very long absence cannot wipe the companion out.
+  function catchUpHidden() {
+    const now = Date.now();
+    const maxHiddenMs = 2 * 60 * 60 * 1000;
+    const elapsed = Math.min(Math.max(0, now - state.lastTick), maxHiddenMs);
+    const ticks = Math.floor(elapsed / TICK_MS);
+    for (let i = 0; i < ticks; i++) advance();
+    if (ticks > 0) { state.lastTick = now; save(); }
   }
 
   function focusFirstAction() {
@@ -460,8 +505,40 @@
     if (first) first.focus();
   }
 
+  // ───────── Back gesture (Escape) ─────────
+  // One level back: ABOUT → menu, menu → companion (focus on MENU), rename/help
+  // walk screens → companion, onboarding → previous step. On the companion
+  // screen itself (nothing open) the system handles it.
+  let walkOrigin = null; // 'rename' | 'help' | 'reset' while a menu-launched walk screen is open
+  function returnToGameFromWalk() {
+    walkOrigin = null;
+    stopWalkAnimations();
+    $('walk').classList.add('hidden');
+    document.querySelectorAll('.walk-screen').forEach(s => s.classList.remove('hidden'));
+    $('game').classList.remove('hidden');
+    render();
+    document.querySelector('.act-menu.focusable')?.focus();
+  }
+  function handleBack(e) {
+    if (!$('about').classList.contains('hidden')) {
+      e.preventDefault(); closeAbout(); return;
+    }
+    if (menuOpen) {
+      e.preventDefault(); closeMenu();
+      document.querySelector('.act-menu.focusable')?.focus();
+      return;
+    }
+    if (!$('walk').classList.contains('hidden')) {
+      if (walkOrigin === 'help' || walkOrigin === 'rename') { e.preventDefault(); returnToGameFromWalk(); return; }
+      if (walkStep > 0) { e.preventDefault(); walkBack(); }
+      return;
+    }
+  }
+
   // ───────── Keyboard / D-pad routing ─────────
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { handleBack(e); return; }
+
     // WALK
     if (!$('walk').classList.contains('hidden')) {
       const focusables = currentWalkFocusables();
@@ -557,6 +634,7 @@
     }
     if (action === 'rename') {
       closeMenu();
+      walkOrigin = 'rename';
       $('game').classList.add('hidden');
       pendingName = state.name;
       pendingEgg = state.eggVariant;
@@ -572,6 +650,7 @@
     }
     if (action === 'help') {
       closeMenu();
+      walkOrigin = 'help';
       $('game').classList.add('hidden');
       walkStep = 0;
       $('walk').dataset.step = '0';
@@ -604,6 +683,7 @@
       state.generation = nextGen;
 
       // Show egg selection walkthrough
+      walkOrigin = 'reset';
       $('game').classList.add('hidden');
       pendingName = oldName;
       pendingEgg = oldVariant;

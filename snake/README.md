@@ -14,6 +14,7 @@ npx serve .
 
 - **Arrow keys** — change direction
 - **D-pad / EMG swipe gestures** — navigate menus and control the snake on-device
+- **Back gesture (thumb + middle finger)** — stop a running game and return to the menu; dismiss the Game Over panel; leave High Scores
 
 ## Notes
 

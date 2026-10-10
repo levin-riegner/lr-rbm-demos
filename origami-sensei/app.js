@@ -941,6 +941,141 @@
     renderMenu();
     showScreen('menu');
     setupEvents();
+    registerWebMcp();
+  }
+
+  // ===========================================================
+  //  WebMCP (Meta AI voice control)
+  //  Additive: the app works identically when document.modelContext is absent.
+  //  Utterances: "teach me the crane", "open the paper plane", "next step",
+  //  "go back a step", "what step am I on?".
+  // ===========================================================
+  function stripTags(s) { return String(s || '').replace(/<[^>]+>/g, ''); }
+
+  function modelNames() {
+    return MODELS.map(function (m) { return m.name.toLowerCase(); }).join(', ');
+  }
+
+  function resolveModel(name) {
+    var q = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!q) return -1;
+    for (var i = 0; i < MODELS.length; i++) {
+      var hay = [MODELS[i].key, MODELS[i].name].map(function (s) {
+        return s.toLowerCase().replace(/[^a-z0-9]/g, '');
+      });
+      for (var j = 0; j < hay.length; j++) {
+        if (hay[j] === q || hay[j].indexOf(q) !== -1 || q.indexOf(hay[j]) !== -1) return i;
+      }
+    }
+    return -1;
+  }
+
+  function origamiSnapshot(nextAction) {
+    var out = { screen: state.screen };
+    if (state.screen === 'menu') {
+      out.models = modelNames();
+      out.focused_model = MODELS[state.menuIdx].name;
+    } else {
+      var m = MODELS[state.modelIdx];
+      out.model = m.name;
+      out.difficulty = m.difficulty;
+      out.total_steps = m.steps.length;
+      if (state.screen === 'fold') {
+        var step = m.steps[state.stepIdx];
+        out.step = state.stepIdx + 1;
+        out.fold_type = step.type;
+        out.instruction = stripTags(step.text);
+      } else {
+        out.done = true;
+      }
+    }
+    out.next_action = nextAction;
+    return out;
+  }
+
+  function registerWebMcp() {
+    var ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        var r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, function (err) { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    safeRegister({
+      name: 'origami_get_state',
+      description: 'Report which screen is open, the model being folded, the current step number with its fold type and instruction, or the list of available models on the menu.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: function () {
+        return origamiSnapshot('Tell the wearer the current step (or the model list) in one or two short sentences, then stop.');
+      }
+    });
+
+    safeRegister({
+      name: 'origami_open',
+      description: 'Open an origami model at step 1. Models: paper cup, paper hat, paper plane, heart, fortune teller, crane. Returns the first step.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Model name as spoken, e.g. "crane" or "paper plane".' }
+        },
+        required: ['name']
+      },
+      execute: function (args) {
+        var idx = resolveModel(args && args.name);
+        if (idx < 0) {
+          return { error: true, message: 'Unknown model.', models: modelNames(), next_action: 'Offer these models and call origami_open again.' };
+        }
+        state.menuIdx = idx;
+        startModel(idx); // same path as Enter on the menu, so the screen re-renders
+        return origamiSnapshot('Read step 1 aloud in one short sentence, then stop.');
+      }
+    });
+
+    safeRegister({
+      name: 'origami_next_step',
+      description: 'Advance to the next fold of the open model (after the last fold, shows the completion card). Returns the new step.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        if (state.screen === 'menu') {
+          return { error: true, message: 'No model is open.', models: modelNames(), next_action: 'Ask which model to open, then call origami_open.' };
+        }
+        if (state.screen === 'done') {
+          return origamiSnapshot('Tell the wearer the model is finished, then stop.');
+        }
+        nextStep(); // same as the ▶ key
+        return origamiSnapshot(state.screen === 'done'
+          ? 'Tell the wearer the model is complete, then stop.'
+          : 'Read the new step aloud in one short sentence, then stop.');
+      }
+    });
+
+    safeRegister({
+      name: 'origami_previous_step',
+      description: 'Go back one fold of the open model (from step 1 returns to the menu). Returns the new step.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        if (state.screen === 'menu') {
+          return { error: true, message: 'No model is open.', models: modelNames(), next_action: 'Ask which model to open, then call origami_open.' };
+        }
+        if (state.screen === 'done') {
+          // Same as FOLD AGAIN on the completion card: restart at step 1.
+          startModel(state.modelIdx);
+        } else {
+          prevStep(); // same as the ◀ key
+        }
+        return origamiSnapshot(state.screen === 'menu'
+          ? 'Tell the wearer they are back at the model menu, then stop.'
+          : 'Read the step aloud in one short sentence, then stop.');
+      }
+    });
   }
 
   if (document.readyState === 'loading') {

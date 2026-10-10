@@ -26,6 +26,7 @@ A heads-up display that streams **your Twitch chat in really large type** onto t
 | Chat | ▲ | Scroll up (auto-pauses live feed) |
 | Chat | ▼ | Scroll down |
 | Chat | ◀ | Back to channel picker |
+| Chat | Back gesture (thumb + middle finger) | Back to channel picker |
 | Chat | ▶ | Cycle text size (small / default / huge) |
 | Chat | Enter | Resume live + snap to newest message |
 

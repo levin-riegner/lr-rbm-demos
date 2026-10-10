@@ -47,7 +47,10 @@
       score: 0,
       selectedIdx: -1,      // user's choice for current q (-1 if timeout)
       answered: false,
-      timer: null,
+      timer: null,          // 1 s UI interval (stopped while the page is hidden)
+      deadline: null,       // wall-clock ms when the current question times out
+      advanceTimer: null,   // feedback → next question one-shot
+      loader: null,         // AbortController for the in-flight question fetch
       remaining: 0,
       results: [],          // per-question result: { question, yourIdx, correctIdx, answers, isCorrect }
     },
@@ -79,11 +82,19 @@
   }
 
   function navigateBack() {
-    // In this app, Escape always goes back to Start (reset)
+    // In this app, the back gesture always goes back to Start (reset)
     stopTimer();
     clearFeedback();
+    abortLoad();
     state.screenHistory = [];
     navigateTo('start', { addToHistory: false });
+  }
+
+  function abortLoad() {
+    if (state.quiz.loader) {
+      try { state.quiz.loader.abort(); } catch (e) { /* ignore */ }
+      state.quiz.loader = null;
+    }
   }
 
   // ==================== FOCUS ====================
@@ -166,7 +177,7 @@
   }
 
   // ==================== API ====================
-  function fetchQuestions() {
+  function fetchQuestions(signal) {
     var url = CONFIG.api.baseUrl
       + '?amount=' + CONFIG.quiz.amount
       + '&category=' + state.selection.categoryId
@@ -175,7 +186,7 @@
 
     navigateTo('loading', { addToHistory: false });
 
-    return fetch(url)
+    return fetch(url, signal ? { signal: signal } : undefined)
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
@@ -241,9 +252,20 @@
   }
 
   // ==================== QUIZ ====================
-  function startQuiz() {
-    fetchQuestions()
+  // Returns a promise that settles once the quiz screen (or error screen) is
+  // showing. `signal` (optional) aborts the fetch, e.g. a WebMCP deadline.
+  function startQuiz(signal) {
+    abortLoad();
+    var ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
+    state.quiz.loader = ctrl;
+    if (ctrl && signal) {
+      if (signal.aborted) ctrl.abort();
+      else signal.addEventListener('abort', function () { ctrl.abort(); });
+    }
+    return fetchQuestions(ctrl ? ctrl.signal : undefined)
       .then(function (questions) {
+        if (ctrl && state.quiz.loader !== ctrl) return; // superseded or aborted
+        state.quiz.loader = null;
         state.quiz.questions = questions;
         state.quiz.index = 0;
         state.quiz.score = 0;
@@ -251,6 +273,12 @@
         navigateTo('quiz', { addToHistory: false });
       })
       .catch(function (err) {
+        if (ctrl && state.quiz.loader !== ctrl) return; // superseded or aborted
+        state.quiz.loader = null;
+        if (err && err.name === 'AbortError') {
+          if (state.currentScreen === 'loading') navigateTo('start', { addToHistory: false });
+          return;
+        }
         showError(err && err.message ? err.message : 'Failed to load questions');
       });
   }
@@ -302,26 +330,58 @@
     if (first) first.focus();
   }
 
+  // The countdown is wall-clock based (deadline timestamp); the 1 s interval
+  // only refreshes the UI, so it can be paused while the page is hidden and
+  // reconciled on resume without drifting.
   function startTimer(seconds) {
     stopTimer();
     state.quiz.remaining = seconds;
+    state.quiz.deadline = Date.now() + seconds * 1000;
     updateTimerUI();
-    state.quiz.timer = setInterval(function () {
-      state.quiz.remaining -= 1;
-      updateTimerUI();
-      if (state.quiz.remaining <= 0) {
-        stopTimer();
-        handleTimeout();
-      }
-    }, 1000);
+    resumeTimer();
   }
 
-  function stopTimer() {
+  function timerTick() {
+    if (state.quiz.deadline == null) return;
+    state.quiz.remaining = Math.max(0, Math.ceil((state.quiz.deadline - Date.now()) / 1000));
+    updateTimerUI();
+    if (state.quiz.remaining <= 0) {
+      stopTimer();
+      handleTimeout();
+    }
+  }
+
+  function resumeTimer() {
+    if (state.quiz.timer || state.quiz.deadline == null || document.hidden) return;
+    state.quiz.timer = setInterval(timerTick, 1000);
+  }
+
+  function pauseTimer() {
     if (state.quiz.timer) {
       clearInterval(state.quiz.timer);
       state.quiz.timer = null;
     }
   }
+
+  function stopTimer() {
+    pauseTimer();
+    state.quiz.deadline = null;
+    if (state.quiz.advanceTimer) {
+      clearTimeout(state.quiz.advanceTimer);
+      state.quiz.advanceTimer = null;
+    }
+  }
+
+  // Lifecycle: freeze the UI interval while hidden; on return, reconcile the
+  // countdown against the wall clock (timing out if the deadline passed).
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      pauseTimer();
+    } else if (state.quiz.deadline != null && !state.quiz.answered) {
+      timerTick();
+      resumeTimer();
+    }
+  });
 
   function updateTimerUI() {
     var total = CONFIG.quiz.perQuestionSeconds;
@@ -361,7 +421,7 @@
     });
 
     showFeedback(isCorrect ? 'correct' : 'wrong');
-    setTimeout(advance, CONFIG.quiz.feedbackMs);
+    state.quiz.advanceTimer = setTimeout(advance, CONFIG.quiz.feedbackMs);
   }
 
   function handleTimeout() {
@@ -379,7 +439,7 @@
     });
 
     showFeedback('timeout');
-    setTimeout(advance, CONFIG.quiz.feedbackMs);
+    state.quiz.advanceTimer = setTimeout(advance, CONFIG.quiz.feedbackMs);
   }
 
   function highlightAnswers(q, chosenIdx) {
@@ -411,6 +471,7 @@
   }
 
   function advance() {
+    state.quiz.advanceTimer = null;
     clearFeedback();
     state.quiz.index += 1;
     if (state.quiz.index >= state.quiz.questions.length) {
@@ -575,6 +636,9 @@
           e.preventDefault();
           break;
         case 'Escape':
+          // Back gesture: return to Start. On Start itself there is nothing
+          // to go back to, so leave the event to the system.
+          if (state.currentScreen === 'start') break;
           navigateBack();
           e.preventDefault();
           break;
@@ -590,6 +654,202 @@
     setTimeout(function () {
       navigateTo('start', { addToHistory: false });
     }, 50);
+    registerWebMcp();
+  }
+
+  // ==================== WebMCP (Meta AI voice control) ====================
+  // Additive: the app works identically when document.modelContext is absent.
+  // Utterances: "start a science quiz on hard", "read me the question",
+  // "the answer is B", "it's Paris", "play again".
+  var LETTERS = ['A', 'B', 'C', 'D'];
+
+  function categoryNames() {
+    return CATEGORIES.map(function (c) { return c.name.toLowerCase(); }).join(', ');
+  }
+
+  function resolveCategory(name) {
+    var q = String(name || '').toLowerCase().replace(/[^a-z]/g, '');
+    if (!q) return null;
+    for (var i = 0; i < CATEGORIES.length; i++) {
+      var n = CATEGORIES[i].name.toLowerCase();
+      if (n === q || n.indexOf(q) === 0 || q.indexOf(n) !== -1) return CATEGORIES[i];
+    }
+    return null;
+  }
+
+  function resolveDifficulty(name) {
+    var q = String(name || '').toLowerCase().replace(/[^a-z]/g, '');
+    if (!q) return null;
+    for (var i = 0; i < DIFFICULTIES.length; i++) {
+      if (DIFFICULTIES[i].id === q || q.indexOf(DIFFICULTIES[i].id) !== -1) return DIFFICULTIES[i];
+    }
+    return null;
+  }
+
+  // Current state as Meta AI should see it. Never includes the correct answer
+  // of an unanswered question — the page scores, the model only relays.
+  function triviaSnapshot(nextAction) {
+    var cat = CATEGORIES.find(function (c) { return c.id === state.selection.categoryId; });
+    var out = {
+      screen: state.currentScreen,
+      category: cat ? cat.name : '',
+      difficulty: state.selection.difficulty,
+    };
+    var best = state.highScores[hsKey(state.selection.categoryId, state.selection.difficulty)];
+    out.best_score = (best != null) ? best + '/' + CONFIG.quiz.amount : null;
+    if (state.currentScreen === 'quiz') {
+      var q = state.quiz.questions[state.quiz.index];
+      if (q) {
+        out.question_number = state.quiz.index + 1;
+        out.total_questions = state.quiz.questions.length;
+        out.question = q.question;
+        out.options = q.answers.map(function (a, i) { return LETTERS[i] + ': ' + a; }).join(' | ');
+        out.seconds_left = state.quiz.deadline != null
+          ? Math.max(0, Math.ceil((state.quiz.deadline - Date.now()) / 1000)) : 0;
+        out.answered = state.quiz.answered;
+        out.score = state.quiz.score;
+      }
+    } else if (state.currentScreen === 'results') {
+      out.final_score = state.quiz.score + '/' + state.quiz.questions.length;
+      out.review = state.quiz.results.map(function (r, i) {
+        return (i + 1) + '. ' + (r.isCorrect ? 'correct' : 'wrong (' + r.answers[r.correctIdx] + ')');
+      }).join('; ');
+    } else if (state.currentScreen === 'error') {
+      var errEl = document.getElementById('error-message');
+      out.error_message = errEl ? errEl.textContent : 'Could not load questions';
+    } else if (state.currentScreen === 'loading') {
+      out.loading = true;
+    } else {
+      out.categories = categoryNames();
+      out.difficulties = DIFFICULTIES.map(function (d) { return d.id; }).join(', ');
+    }
+    out.next_action = nextAction;
+    return out;
+  }
+
+  function registerWebMcp() {
+    var ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        var r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, function (err) { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    safeRegister({
+      name: 'trivia_get_state',
+      description: 'Report the current screen and, during a quiz, the current question with its four options (A-D), seconds left and score. Never reveals the answer of an open question.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: function () {
+        var next = state.currentScreen === 'quiz'
+          ? 'Read the question and the four options aloud once, then stop and wait for the wearer to answer.'
+          : 'Summarise the state in one short sentence, then stop.';
+        return triviaSnapshot(next);
+      }
+    });
+
+    safeRegister({
+      name: 'trivia_start',
+      description: 'Start a new 10-question quiz. Optional category (general, science, history, geography, film, sports) and difficulty (easy, medium, hard); omitted values keep the current selection. Returns the first question.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          category: { type: 'string', description: 'One of: general, science, history, geography, film, sports. Optional.' },
+          difficulty: { type: 'string', description: 'One of: easy, medium, hard. Optional.' }
+        }
+      },
+      execute: function (args, opts) {
+        var signal = opts && opts.signal;
+        var catArg = args && args.category;
+        var diffArg = args && args.difficulty;
+        if (catArg) {
+          var cat = resolveCategory(catArg);
+          if (!cat) {
+            return { error: true, message: 'Unknown category.', categories: categoryNames(), next_action: 'Offer these categories and call trivia_start again.' };
+          }
+          state.selection.categoryId = cat.id;
+        }
+        if (diffArg) {
+          var diff = resolveDifficulty(diffArg);
+          if (!diff) {
+            return { error: true, message: 'Unknown difficulty.', difficulties: 'easy, medium, hard', next_action: 'Offer these difficulties and call trivia_start again.' };
+          }
+          state.selection.difficulty = diff.id;
+        }
+        saveData();
+        stopTimer();
+        clearFeedback();
+        state.screenHistory = [];
+        return startQuiz(signal).then(function () {
+          if (state.currentScreen === 'quiz') {
+            return triviaSnapshot('Read the question and the four options aloud once, then stop and wait for the wearer to answer.');
+          }
+          var snap = triviaSnapshot('Tell the wearer the questions could not load, then stop.');
+          snap.error = true;
+          snap.message = snap.error_message || 'Could not load questions';
+          return snap;
+        });
+      }
+    });
+
+    safeRegister({
+      name: 'trivia_answer',
+      description: 'Answer the current question with an option letter (A, B, C or D) or the option text. The page scores it and returns whether it was correct.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          answer: { type: 'string', description: 'Option letter A-D, or the option text as spoken.' }
+        },
+        required: ['answer']
+      },
+      execute: function (args) {
+        if (state.currentScreen !== 'quiz') {
+          return { error: true, message: 'No question is open.', next_action: 'Call trivia_start to begin a quiz, or trivia_get_state.' };
+        }
+        if (state.quiz.answered) {
+          return { error: true, message: 'This question is already answered; the next one appears shortly.', next_action: 'Call trivia_get_state for the next question.' };
+        }
+        var q = state.quiz.questions[state.quiz.index];
+        var raw = String((args && args.answer) || '').trim();
+        var idx = -1;
+        var letter = raw.toUpperCase().replace(/[^A-D]/g, '');
+        if (raw.length <= 2 && letter.length === 1) idx = LETTERS.indexOf(letter);
+        if (idx < 0) {
+          var norm = raw.toLowerCase();
+          for (var i = 0; i < q.answers.length; i++) {
+            var a = q.answers[i].toLowerCase();
+            if (a === norm) { idx = i; break; }
+          }
+          if (idx < 0) {
+            for (var j = 0; j < q.answers.length; j++) {
+              var b = q.answers[j].toLowerCase();
+              if (b.indexOf(norm) !== -1 || norm.indexOf(b) !== -1) { idx = j; break; }
+            }
+          }
+        }
+        if (idx < 0) {
+          return { error: true, message: 'That did not match an option.', options: q.answers.map(function (a, k) { return LETTERS[k] + ': ' + a; }).join(' | '), next_action: 'Ask the wearer to pick A, B, C or D, then call trivia_answer again.' };
+        }
+        handleAnswer(idx); // same path as Enter on a focused answer; the page scores it
+        var r = state.quiz.results[state.quiz.results.length - 1];
+        return {
+          chosen: LETTERS[idx] + ': ' + q.answers[idx],
+          correct: !!(r && r.isCorrect),
+          correct_answer: q.answers[q.correctIdx],
+          score: state.quiz.score,
+          question_number: state.quiz.index + 1,
+          total_questions: state.quiz.questions.length,
+          next_action: 'Tell the wearer whether they were right in one short sentence, then stop. The next question appears automatically; call trivia_get_state to read it.'
+        };
+      }
+    });
   }
 
   if (document.readyState === 'loading') {

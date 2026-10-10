@@ -27,6 +27,24 @@ A heads-up display for Meta Display glasses that teaches **six famous knots** �
 | Learn | ▼ | Jump to last step |
 | Success | ◀ | Restart the same knot |
 | Success | Enter or ▶ | Back to the menu |
+| Learn / Success | Back gesture (thumb + middle finger) | Back to the menu |
+| Anywhere | Voice (Meta AI) | Open a knot, step forward/back, or ask where you are (see below) |
+
+---
+
+## Voice (Meta AI)
+
+With WebMCP enabled on the glasses the app registers tools on `document.modelContext`, so Meta AI can drive it hands-free. Example utterances:
+
+- "Show me how to tie a bowline"
+- "Open the clove hitch"
+- "Next step"
+- "Go back a step"
+- "Which knot am I on?"
+
+Tools: `knots_get_state` (read-only), `knots_open`, `knots_next_step`, `knots_previous_step`. Each one calls the same functions the D-pad uses, so the screen updates as Meta AI acts.
+
+> WebMCP must be enabled on the device (Developer Mode or rollout) and the app relaunched after enabling it. Without it the app works exactly as before, D-pad only.
 
 ---
 
