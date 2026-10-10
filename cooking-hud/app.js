@@ -1037,8 +1037,9 @@ function applyUrlState() {
 
 /* ---- WebMCP (Meta AI voice control) --------------------------------------
    Additive: the app works identically when document.modelContext is absent.
-   Utterances: "what's next?", "done with that step", "undo the last step",
-   "start the pasta timer", "stop the boil timer". */
+   Utterances: "open the carbonara", "go to the cook phase", "what's next?",
+   "done with that step", "undo the last step", "start the pasta timer",
+   "stop the boil timer". */
 
 /* the same thing the RESET TIMER confirm does once accepted */
 function voiceCancelTimer(t) {
@@ -1111,7 +1112,26 @@ function registerWebMcp() {
     return out;
   }
   function noRecipe() {
-    return { error: true, message: 'No recipe is open. Open one with the D-pad first.', next_action: 'Tell the wearer to open a recipe on screen, then stop.' };
+    return { error: true, message: 'No recipe is open.', recipes: RECIPES.map(x => x.name), next_action: 'Ask which recipe to open, then call cooking_open_recipe with its name.' };
+  }
+  /* "carbonara", "Pasta Carbonara" or "soup" → one bundled recipe, or null */
+  function resolveRecipe(raw) {
+    const q = String(raw == null ? '' : raw).trim().toLowerCase();
+    if (!q) return { recipe: null, matches: [] };
+    const exact = RECIPES.find(r => r.name.toLowerCase() === q || r.id.toLowerCase() === q);
+    if (exact) return { recipe: exact, matches: [exact] };
+    const words = q.split(/\s+/);
+    const matches = RECIPES.filter(r => {
+      const hay = (r.name + ' ' + r.id.replace(/-/g, ' ')).toLowerCase();
+      return words.every(w => hay.includes(w));
+    });
+    return { recipe: matches.length === 1 ? matches[0] : null, matches };
+  }
+  /* "cook", "COOK", "cooking", "shopping" → a phase key, or null */
+  function resolvePhase(raw) {
+    const q = String(raw == null ? '' : raw).trim().toLowerCase();
+    if (!q) return null;
+    return PHASES.find(p => p === q || q.indexOf(p) === 0 || p.indexOf(q) === 0) || null;
   }
   function openRecipeState() {
     return state.currentRecipe && !$('#recipe').classList.contains('hidden') ? state.currentRecipe : null;
@@ -1138,6 +1158,64 @@ function registerWebMcp() {
     execute: () => {
       const out = snapshot();
       out.next_action = 'Answer in one short sentence (the next step or the timers); do not read the whole list back.';
+      return out;
+    }
+  });
+
+  safeRegister({
+    name: 'cooking_open_recipe',
+    description: 'Open one of the bundled recipes by name, the same as picking it on the home screen. name is case-insensitive and may be a unique part of the name ("carbonara", "soup"). It lands on the first phase with unfinished items. On an unknown or ambiguous name the result lists the available recipes.',
+    inputSchema: {
+      type: 'object',
+      properties: { name: { type: 'string', description: 'Recipe name or a unique part of it, e.g. "carbonara" or "sheet pan salmon".' } },
+      required: ['name']
+    },
+    execute: (args) => {
+      const q = args && args.name;
+      const res = resolveRecipe(q);
+      if (!res.recipe) {
+        const ambiguous = res.matches.length > 1;
+        return {
+          error: true,
+          message: ambiguous
+            ? 'More than one recipe matches "' + q + '"; say which.'
+            : 'No recipe matches "' + q + '".',
+          recipes: (ambiguous ? res.matches : RECIPES).map(x => x.name),
+          next_action: ambiguous
+            ? 'Ask which of the matching recipes, then call again.'
+            : 'Tell the wearer which recipes exist, in one short sentence.'
+        };
+      }
+      // a pending confirm belongs to the screen we are leaving
+      if (!$('#confirm').classList.contains('hidden')) closeConfirm(false);
+      openRecipe(res.recipe.id);   // the same function a recipe card calls
+      const out = snapshot();
+      out.opened = res.recipe.name;
+      out.next_action = 'Confirm the recipe and its phase in one short sentence, naming the next open step, then stop.';
+      return out;
+    }
+  });
+
+  safeRegister({
+    name: 'cooking_set_phase',
+    description: 'Switch the open recipe to a phase, the same as swiping left or right between the tabs. phase is one of shop, prep or cook. Progress in every phase is kept.',
+    inputSchema: {
+      type: 'object',
+      properties: { phase: { type: 'string', description: 'One of: shop, prep, cook.' } },
+      required: ['phase']
+    },
+    execute: (args) => {
+      const r = openRecipeState();
+      if (!r) return noRecipe();
+      const phase = resolvePhase(args && args.phase);
+      if (!phase) {
+        return { error: true, message: 'Unknown phase "' + (args && args.phase) + '".', phases: PHASES.slice(), next_action: 'Tell the wearer the phases are shop, prep and cook, then stop.' };
+      }
+      const same = phase === state.currentPhase;
+      if (!same) switchPhase(phase);
+      const out = snapshot();
+      out.did = same ? 'already on ' + PHASE_LABEL[phase] : 'moved to ' + PHASE_LABEL[phase];
+      out.next_action = 'Confirm the phase in one short sentence, naming the next open step if there is one, then stop.';
       return out;
     }
   });

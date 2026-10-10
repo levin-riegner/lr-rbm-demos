@@ -1973,7 +1973,8 @@ document.addEventListener('visibilitychange', () => {
 /* ---- WebMCP (Meta AI voice control) --------------------------------------
    Additive: the app works identically when document.modelContext is absent.
    Utterances: "what do I do now?", "I flipped it" / "done", "pause the
-   cook", "put the timer back", "end this cook". */
+   cook", "put the timer back", "meat's at 160, pit's at 230", "start the
+   preheat timer", "end this cook". */
 function voiceSnapshot() {
   const rem = preheatRem();
   const out = {
@@ -2106,6 +2107,98 @@ function registerWebMcp() {
       resetTimer();
       const out = voiceSnapshot();
       out.next_action = 'Confirm the new countdown in one short sentence, then stop.';
+      return out;
+    }
+  });
+
+  /* A spoken reading goes through bumpMeat / bumpPit — the same functions
+     the ▲▼ keys call — as a delta from the current value, so the history
+     (stall detection, ETA), the pit-drift alarm and the gauges all see it. */
+  safeRegister({
+    name: 'grill_log_temps',
+    description: 'Log thermometer readings on the pit monitor (smoke and bbq cooks), the same as dialling MEAT or PIT with the D-pad. Give pit, meat or both, in °F. Meat must be 32–250, pit 100–450. The flip coach (grill mode) estimates temperature and takes no readings.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        pit:  { type: 'number', description: 'Pit (grate) temperature in °F, 100 to 450. Optional.' },
+        meat: { type: 'number', description: 'Meat internal temperature in °F, 32 to 250. Optional.' }
+      }
+    },
+    execute: (args) => {
+      if (!state.active) return voiceNoCook();
+      const pit = pitItem();
+      if (!pit) {
+        const out = voiceSnapshot(); out.error = true;
+        out.message = 'The flip coach estimates temperature; readings are only logged on smoke and bbq cooks.';
+        out.next_action = 'Say so in one short sentence, then stop.';
+        return out;
+      }
+      const hasPit  = args && args.pit  != null && args.pit  !== '';
+      const hasMeat = args && args.meat != null && args.meat !== '';
+      if (!hasPit && !hasMeat) {
+        return { error: true, message: 'Give a pit temperature, a meat temperature, or both.', next_action: 'Ask which reading to log, then call again.' };
+      }
+      const pitF  = hasPit  ? Math.round(Number(args.pit))  : null;
+      const meatF = hasMeat ? Math.round(Number(args.meat)) : null;
+      if (hasPit && (!isFinite(pitF) || pitF < 100 || pitF > 450)) {
+        return { error: true, message: 'Pit temperature must be a number between 100 and 450 °F.', next_action: 'Ask the wearer to repeat the pit reading, then call again.' };
+      }
+      if (hasMeat && (!isFinite(meatF) || meatF < 32 || meatF > 250)) {
+        return { error: true, message: 'Meat temperature must be a number between 32 and 250 °F.', next_action: 'Ask the wearer to repeat the meat reading, then call again.' };
+      }
+      if (hasMeat && pit.noProbe) {
+        return { error: true, message: pit.name + ' is cooked by time and feel; there is no meat probe to log.', next_action: 'Say so in one short sentence, then stop.' };
+      }
+      if (pit.resting) {
+        const out = voiceSnapshot(); out.error = true;
+        out.message = 'The meat is pulled and resting; readings are no longer logged.';
+        out.next_action = 'Say how long the rest has left, then stop.';
+        return out;
+      }
+      const logged = {};
+      if (hasPit)  { bumpPit(pitF - pit.pitF);    logged.pit_f  = pit.pitF; }
+      if (hasMeat) { bumpMeat(meatF - pit.meatF); logged.meat_f = pit.meatF; }
+      const out = voiceSnapshot();
+      out.logged = logged;
+      out.next_action = out.pit_alarm
+        ? 'Confirm the readings and say the pit fix shown on screen, in one short sentence, then stop.'
+        : 'Confirm the readings and the ETA in one short sentence, then stop.';
+      return out;
+    }
+  });
+
+  /* Same as the START A … MIN TIMER row on the fire screen. The clock is
+     wall-time and keeps counting on whatever screen the wearer is on. */
+  safeRegister({
+    name: 'grill_start_preheat',
+    description: 'Start the preheat countdown for the chosen fuel (12–35 minutes depending on the fire), the same as START A … MIN TIMER on the fire screen. Needs mode and fire picked on screen first. If the fire is already READY this restarts the clock; if it is still counting it is left alone.',
+    inputSchema: { type: 'object', properties: {} },
+    execute: () => {
+      if (state.active) {
+        const out = voiceSnapshot(); out.error = true;
+        out.message = 'A cook is already running, so the fire is lit and the preheat clock is over.';
+        out.next_action = 'Say so in one short sentence, then stop.';
+        return out;
+      }
+      if (!state.mode || !state.fuel) {
+        return { error: true, message: 'No fire chosen yet. Pick the mode and the fire on screen first.', next_action: 'Tell the wearer to pick the mode and fire on screen, then stop.' };
+      }
+      const rem = preheatRem();
+      if (rem != null && rem > 0) {
+        const out = voiceSnapshot(); out.error = true;
+        out.message = 'The preheat clock is already counting.';
+        out.next_action = 'Say how long is left in one short sentence, then stop.';
+        return out;
+      }
+      startPreheat();
+      // the chip on the cook list and the plan is painted at render time,
+      // so repaint whichever of those the wearer is looking at
+      if (state.screen === 'cooks') { renderCooks(); refreshFocus(); }
+      else if (state.screen === 'plan') renderPlan();
+      const out = voiceSnapshot();
+      out.preheat_min = state.fuel.preheatMin || 15;
+      out.ready_when = state.fuel.ready;
+      out.next_action = 'Confirm the timer length in one short sentence, then stop.';
       return out;
     }
   });

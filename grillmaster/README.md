@@ -117,7 +117,7 @@ No side-by-side pair to compare before you can act, and no caption underneath ex
 | Plan | ▲ / ▼ | Move between + ADD and FIRE IT UP |
 | Fire | ▲ / ▼ | Move down the three stacked actions |
 | Fire | Enter | Show the steps, start/cancel the timer, or put the food on |
-| Anywhere | Voice (Meta AI) | Ask what to do now, confirm a cue, pause, reset the timer, end — see below |
+| Anywhere | Voice (Meta AI) | Ask what to do now, confirm a cue, log pit / meat temps, start the preheat, pause, reset the timer, end — see below |
 
 ### Grill (flip coach)
 
@@ -158,9 +158,11 @@ With WebMCP enabled on the glasses, Meta AI can run the live cook hands-free:
 - "I flipped it." / "Done." (confirms the current cue; confirms PULL on the pit)
 - "Pause the cook." / "Resume."
 - "Put the timer back." (resets the current beat's countdown)
+- "Meat's at 160, pit's at 230." / "Pit temp is 215." (logs the reading on the pit monitor — same as dialling MEAT or PIT — so the ETA, the stall call and the pit alarm all see it; out-of-range numbers are refused)
+- "Start the preheat timer." / "Light it." (starts your fuel's warm-up clock once mode and fire are picked)
 - "End this cook." (Meta AI asks you to confirm first)
 
-Voice control is additive — the D-pad path is unchanged — and it needs WebMCP enabled on the device (Developer Mode or rollout). Relaunch the app after enabling it. Setting up a cook (mode, fire, food, doneness) stays on the D-pad.
+Voice control is additive — the D-pad path is unchanged — and it needs WebMCP enabled on the device (Developer Mode or rollout). Relaunch the app after enabling it. Setting up a cook (mode, fire, food, doneness) stays on the D-pad; once the fire is picked, voice can start its preheat clock.
 
 ## Screenshots
 
