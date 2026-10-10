@@ -49,20 +49,26 @@
     options = options || {};
     var addToHistory = options.addToHistory !== false;
     if (addToHistory && state.currentScreen && state.currentScreen !== screenId) {
-      state.screenHistory.push(state.currentScreen);
+      // Remember the control that opened the sub-screen so Back can return focus to it.
+      state.screenHistory.push({ screen: state.currentScreen, focus: document.activeElement });
     }
     Object.values(screens).forEach(function (s) { s.classList.add('hidden'); });
     if (screens[screenId]) {
       screens[screenId].classList.remove('hidden');
       state.currentScreen = screenId;
       onScreenEnter(screenId);
-      focusFirst(screens[screenId]);
+      if (options.restoreFocus && options.restoreFocus.focus && screens[screenId].contains(options.restoreFocus)) {
+        options.restoreFocus.focus();
+      } else {
+        focusFirst(screens[screenId]);
+      }
     }
   }
 
   function navigateBack() {
     if (state.screenHistory.length > 0) {
-      navigateTo(state.screenHistory.pop(), { addToHistory: false });
+      var prev = state.screenHistory.pop();
+      navigateTo(prev.screen, { addToHistory: false, restoreFocus: prev.focus });
     }
   }
 
@@ -165,6 +171,31 @@
   function toggleTimer() {
     if (state.running) pauseTimer();
     else startTimer();
+  }
+
+  // Stop the countdown and put the current phase back to its full length.
+  function resetPhase() {
+    pauseTimer();
+    setPhase(state.phase);
+    updateStartPauseLabel();
+  }
+
+  // ---- Lifecycle: the 250 ms tick is the only recurring work. While the
+  // page is hidden the interval is stopped but `running` + `targetEndAt`
+  // are kept, so resuming re-syncs to the wall clock (and fires the phase
+  // transition if it elapsed while hidden).
+  function pauseForHidden() {
+    if (state.tickInterval) {
+      clearInterval(state.tickInterval);
+      state.tickInterval = null;
+    }
+  }
+
+  function resumeFromHidden() {
+    if (state.running && !state.tickInterval) {
+      state.tickInterval = setInterval(tick, 250);
+      tick();
+    }
   }
 
   function skipPhase() {
@@ -406,15 +437,127 @@
     });
   }
 
+  // ==================== WebMCP (Meta AI voice control) ====================
+  // Additive: the app works identically when document.modelContext is absent.
+  // Utterances: "start a focus session" / "pause the timer" / "how much time
+  // is left?" / "skip this break" / "reset the timer".
+  var MODE_TO_PHASE = { focus: 'work', work: 'work', short: 'break', 'break': 'break', long: 'long' };
+  var PHASE_TO_MODE = { work: 'focus', 'break': 'short', long: 'long' };
+
+  function remainingNow() {
+    return state.running ? Math.max(0, state.targetEndAt - Date.now()) : state.remainingMs;
+  }
+
+  function snapshot(next) {
+    var ms = remainingNow();
+    return {
+      mode: PHASE_TO_MODE[state.phase],
+      phase_label: phaseLabel(state.phase),
+      running: state.running,
+      remaining: formatMMSS(ms),
+      remaining_seconds: Math.ceil(ms / 1000),
+      session: Math.min(state.sessionIndex + 1, CONFIG.sessionsPerCycle),
+      sessions_per_cycle: CONFIG.sessionsPerCycle,
+      sessions_completed_total: state.stats.totalSessions,
+      next_action: next,
+    };
+  }
+
+  function registerWebMcp() {
+    var ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        var r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, function (err) { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    safeRegister({
+      name: 'pomodoro_get_state',
+      description: 'Report the current pomodoro mode (focus, short or long break), whether it is running, time remaining as MM:SS, and session progress.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: function () {
+        return snapshot('Tell the wearer the mode and time left in one short sentence, then stop.');
+      },
+    });
+
+    safeRegister({
+      name: 'pomodoro_start',
+      description: 'Start or resume the timer. Optionally switch mode first: "focus" (25 min), "short" (5 min break) or "long" (15 min break). Switching to a different mode restarts it at full length; the same mode just resumes.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          mode: { type: 'string', description: 'One of "focus", "short", "long". Omit to start/resume the current mode.' },
+        },
+      },
+      execute: function (args) {
+        var raw = args && typeof args.mode === 'string' ? args.mode.trim().toLowerCase() : '';
+        if (raw) {
+          var phase = MODE_TO_PHASE[raw];
+          if (!phase) {
+            return { error: true, message: 'Unknown mode "' + raw + '".', next_action: 'Offer "focus", "short" or "long" and call again.' };
+          }
+          if (phase !== state.phase) {
+            pauseTimer();
+            setPhase(phase);
+          }
+        }
+        startTimer();
+        return snapshot('Confirm the mode and time left in one short sentence, then stop.');
+      },
+    });
+
+    safeRegister({
+      name: 'pomodoro_pause',
+      description: 'Pause the running countdown, keeping the remaining time. No-op if already paused.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        pauseTimer();
+        return snapshot('Confirm the pause and time left in one short sentence, then stop.');
+      },
+    });
+
+    safeRegister({
+      name: 'pomodoro_reset',
+      description: 'Stop the timer and reset the current mode to its full length (25:00 focus, 05:00 short, 15:00 long). Does not clear statistics.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        resetPhase();
+        return snapshot('Confirm the reset in one short sentence, then stop.');
+      },
+    });
+
+    safeRegister({
+      name: 'pomodoro_skip',
+      description: 'Skip the current phase and move to the next one (focus -> break, break -> focus). Skipped focus sessions are not counted as completed. The next phase starts paused.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        skipPhase();
+        return snapshot('Confirm the new mode in one short sentence, then stop.');
+      },
+    });
+  }
+
   // ==================== INIT ====================
   function init() {
     collectScreens();
     setupEvents();
     loadData();
     applyPhaseTheme(state.phase);
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) pauseForHidden(); else resumeFromHidden();
+    });
     setTimeout(function () {
       navigateTo('home', { addToHistory: false });
     }, 50);
+    registerWebMcp();
   }
 
   if (document.readyState === 'loading') {

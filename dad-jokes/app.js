@@ -162,17 +162,21 @@
   // ===========================================================
   //  JOKE FETCH
   // ===========================================================
-  function fetchJoke() {
-    if (state.loading) return;
+  // Returns a promise that settles when the card has been updated (joke or
+  // offline message). `signal` is optional — the voice path forwards its
+  // deadline so a slow API can't hang the assistant.
+  function fetchJoke(signal) {
+    if (state.loading) return Promise.resolve();
     state.loading = true;
     setStatus('LOADING…', false);
     var card = document.getElementById('jokeCard');
     if (card) card.classList.add('loading');
 
-    fetch(CONFIG.apiUrl, {
+    return fetch(CONFIG.apiUrl, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
       cache: 'no-store',
+      signal: signal,
     })
       .then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -190,6 +194,7 @@
       })
       .catch(function (err) {
         console.error('joke fetch failed', err);
+        state.jokeId = null;
         applyJoke("Couldn't reach the joke vault.\nThe internet is having a moment.");
         setStatus('OFFLINE', true);
       })
@@ -382,6 +387,79 @@
     return true;
   }
 
+  // ===========================================================
+  //  WebMCP (Meta AI voice control)
+  //  Additive: the app works identically when document.modelContext is absent.
+  //  Utterances: "tell me a dad joke" / "another one" / "read that again"
+  //  / "that was terrible" (groan) / "how many have I heard?"
+  // ===========================================================
+  function jokeSnapshot(next) {
+    return {
+      joke: state.joke,
+      offline: !state.jokeId,
+      heard: state.heard,
+      groans: state.groans,
+      loading: state.loading,
+      next_action: next,
+    };
+  }
+
+  function registerWebMcp() {
+    var ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        var r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, function (err) { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    safeRegister({
+      name: 'jokes_get_state',
+      description: 'Report the joke currently on the card, whether it is an offline placeholder, and the HEARD / GROANS counters.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: function () {
+        return jokeSnapshot(state.jokeId
+          ? 'Read the joke aloud once, exactly as written, then stop.'
+          : 'Tell the wearer the joke could not be fetched, then stop.');
+      },
+    });
+
+    safeRegister({
+      name: 'jokes_next',
+      description: 'Fetch a new dad joke and show it on the card (same as the ANOTHER button). Returns the joke text.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function (args, opts) {
+        var signal = opts && opts.signal;
+        if (state.loading) {
+          return { error: true, message: 'A joke is already loading.', next_action: 'Call jokes_get_state next to read it.' };
+        }
+        return fetchJoke(signal).then(function () {
+          if (!state.jokeId) {
+            return { error: true, message: 'Could not reach the joke API.', next_action: 'Tell the wearer the joke vault is offline, then stop.' };
+          }
+          return jokeSnapshot('Read the joke aloud once, exactly as written, then stop.');
+        });
+      },
+    });
+
+    safeRegister({
+      name: 'jokes_groan',
+      description: 'Register a groan for the current joke (same as the GROAN button): sad trombone, screen shake, GROANS counter +1.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        doGroan();
+        return jokeSnapshot('Acknowledge the groan in one short sentence, then stop.');
+      },
+    });
+  }
+
   function init() {
     loadData();
     renderCounters();
@@ -396,6 +474,8 @@
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(fitJoke);
     }
+
+    registerWebMcp();
   }
 
   if (document.readyState === 'loading') {

@@ -19,7 +19,21 @@ Open [http://localhost:8080](http://localhost:8080) in Chrome, then:
 
 - **Arrow keys** — move focus between elements (D-pad)
 - **Enter** — activate focused element (EMG pinch)
-- **Escape** — back to previous screen
+- **Back gesture (thumb + middle finger)** — back to previous screen
+- **Voice (Meta AI)** — "What's the weather like?", "Switch to Tokyo", "Refresh the forecast" — see below
+
+## Voice (Meta AI)
+
+The app registers three WebMCP tools on `document.modelContext` (`weather_get_state`, `weather_set_city`, `weather_refresh`) so the wearer can drive it by talking to Meta AI. Things you can say:
+
+- "What's the weather like?" / "What's the forecast for the weekend?"
+- "Switch to Tokyo" / "Show me London"
+- "Refresh the forecast"
+- "Which cities can I pick?"
+
+`weather_set_city` only accepts the five presets and returns the list on an unknown name. Both the city switch and the refresh await the same Open-Meteo fetch the buttons trigger (with the assistant's deadline forwarded), so the spoken summary matches the screen. The app runs unchanged where `document.modelContext` is absent (desktop Chrome, the simulator, older firmware).
+
+> WebMCP must be enabled on the device (Developer Mode or rollout), and the app relaunched after enabling it — eligibility is decided once at launch.
 
 ## Screens
 

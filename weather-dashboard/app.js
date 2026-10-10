@@ -71,6 +71,7 @@
     },
     selectedDayIdx: 0,  // 0 = today (live current_weather), 1..4 = forecast day
     cache: {}, // { [cityId]: { data, timestamp } }
+    inflight: {}, // { [cityId]: Promise } — dedupes concurrent fetches for one city
   };
 
   var screens = {};
@@ -197,6 +198,7 @@
         return Promise.resolve(cached.data);
       }
     }
+    if (state.inflight[cacheKey]) return state.inflight[cacheKey];
 
     var url = CONFIG.api.baseUrl
       + '?latitude=' + city.lat
@@ -209,21 +211,25 @@
     setLoading(true);
     clearError();
 
-    return fetch(url)
+    var p = fetch(url, opts.signal ? { signal: opts.signal } : undefined)
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
       })
       .then(function (data) {
         state.cache[cacheKey] = { data: data, timestamp: Date.now() };
+        delete state.inflight[cacheKey];
         setLoading(false);
         return data;
       })
       .catch(function (err) {
+        delete state.inflight[cacheKey];
         setLoading(false);
         setError(err.message || 'Network error');
         throw err;
       });
+    state.inflight[cacheKey] = p;
+    return p;
   }
 
   // ==================== UI HELPERS ====================
@@ -367,10 +373,16 @@
     });
   }
 
-  function loadAndRenderWeather() {
-    var city = CITIES.find(function (c) { return c.id === state.data.selectedCityId; }) || CITIES[0];
+  function selectedCity() {
+    return CITIES.find(function (c) { return c.id === state.data.selectedCityId; }) || CITIES[0];
+  }
 
-    fetchWeather(city)
+  // Returns the fetch promise (resolves with the data, rejects on network
+  // error) so the voice path can await it. `opts.signal` is forwarded to fetch.
+  function loadAndRenderWeather(opts) {
+    var city = selectedCity();
+
+    return fetchWeather(city, opts)
       .then(function (data) {
         renderCurrent(city, data);
         renderForecast(city, data);
@@ -394,11 +406,21 @@
             }
           }
         }
+        return data;
       })
-      .catch(function () {
+      .catch(function (err) {
         var indicator = document.getElementById('status-indicator');
         if (indicator) indicator.textContent = 'Offline';
+        throw err;
       });
+  }
+
+  // Bust the cache for the current city and reload (the Refresh button).
+  function refreshWeather(opts) {
+    delete state.cache[state.data.selectedCityId];
+    state.selectedDayIdx = 0;
+    clearError();
+    return loadAndRenderWeather(opts);
   }
 
   // ==================== ACTIONS ====================
@@ -408,11 +430,7 @@
         navigateBack();
         break;
       case 'refresh':
-        // bust cache for current city and reload
-        delete state.cache[state.data.selectedCityId];
-        state.selectedDayIdx = 0;
-        clearError();
-        loadAndRenderWeather();
+        refreshWeather().catch(function () { /* indicator already shows Offline */ });
         break;
       case 'open-cities':
         navigateTo('cities');
@@ -454,7 +472,7 @@
 
   function onScreenEnter(screenId) {
     if (screenId === 'home') {
-      loadAndRenderWeather();
+      loadAndRenderWeather().catch(function () { /* indicator already shows Offline */ });
     } else if (screenId === 'cities') {
       renderCityList();
     }
@@ -509,6 +527,125 @@
     });
   }
 
+  // ==================== WebMCP (Meta AI voice control) ====================
+  // Additive: the app works identically when document.modelContext is absent.
+  // Utterances: "what's the weather like?" / "switch to Tokyo" / "show me
+  // London" / "refresh the forecast" / "which cities can I pick?"
+  function cityNames() {
+    return CITIES.map(function (c) { return c.name; }).join(', ');
+  }
+
+  function weatherSnapshot(next) {
+    var city = selectedCity();
+    var cached = state.cache[city.id];
+    var out = {
+      city: city.name + ', ' + city.country,
+      cities: cityNames(),
+      units: 'Celsius, km/h',
+      loading: state.isLoading,
+      next_action: next,
+    };
+    if (state.error) {
+      out.error = true;
+      out.message = 'Could not load weather: ' + state.error;
+      return out;
+    }
+    if (!cached || !cached.data) {
+      out.error = true;
+      out.message = 'No weather data loaded yet.';
+      return out;
+    }
+    var data = cached.data;
+    var cw = data.current_weather || {};
+    var info = wmo(cw.weathercode);
+    out.now = {
+      temperature: Math.round(cw.temperature),
+      condition: info.label,
+      wind_kmh: cw.windspeed != null ? Math.round(cw.windspeed) : null,
+      wind_direction: windDirection(cw.winddirection),
+    };
+    var daily = data.daily || {};
+    var days = [];
+    for (var i = 0; daily.time && i < daily.time.length && i < 5; i++) {
+      days.push({
+        day: i === 0 ? 'Today' : dayLabel(daily.time[i], city.tz),
+        condition: wmo(daily.weathercode[i]).label,
+        high: Math.round(daily.temperature_2m_max[i]),
+        low: Math.round(daily.temperature_2m_min[i]),
+      });
+    }
+    out.forecast = days;
+    out.selected_day = days[state.selectedDayIdx] ? days[state.selectedDayIdx].day : 'Today';
+    out.updated = Math.round((Date.now() - cached.timestamp) / 60000) + ' min ago';
+    return out;
+  }
+
+  function registerWebMcp() {
+    var ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        var r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, function (err) { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    var SUMMARIZE = 'Summarize the current conditions for the city in one short sentence (temperature is Celsius), then stop.';
+    var OFFLINE = 'Tell the wearer the weather could not be loaded, then stop.';
+
+    safeRegister({
+      name: 'weather_get_state',
+      description: 'Report the selected city, current temperature (Celsius), condition, wind, the 5-day forecast, and the list of preset cities.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: function () {
+        return weatherSnapshot(SUMMARIZE);
+      },
+    });
+
+    safeRegister({
+      name: 'weather_set_city',
+      description: 'Switch the dashboard to one of the preset cities (New York, London, Tokyo, Sydney, Paris) and load its weather. Returns the new conditions, or the preset list if the name is unknown.',
+      inputSchema: {
+        type: 'object',
+        properties: { name: { type: 'string', description: 'City name, e.g. "Tokyo". Must be one of the presets.' } },
+        required: ['name'],
+      },
+      execute: function (args, opts) {
+        var want = String(args && args.name != null ? args.name : '').trim().toLowerCase();
+        var city = CITIES.find(function (c) { return c.id === want || c.name.toLowerCase() === want; })
+          || CITIES.find(function (c) { return want && c.name.toLowerCase().indexOf(want) !== -1; });
+        if (!city) {
+          return { error: true, message: 'Unknown city "' + want + '".', cities: cityNames(), next_action: 'Offer the preset cities and call again.' };
+        }
+        state.data.selectedCityId = city.id;
+        state.selectedDayIdx = 0;
+        saveData();
+        // Same path as picking the city in the list: return home (which loads it).
+        if (state.currentScreen !== 'home') navigateBack();
+        return loadAndRenderWeather({ signal: opts && opts.signal })
+          .then(function () { return weatherSnapshot(SUMMARIZE); })
+          .catch(function () { return weatherSnapshot(OFFLINE); });
+      },
+    });
+
+    safeRegister({
+      name: 'weather_refresh',
+      description: 'Re-fetch the weather for the selected city, bypassing the 10-minute cache (same as the Refresh button). Returns the fresh conditions.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function (args, opts) {
+        return refreshWeather({ signal: opts && opts.signal })
+          .then(function () { return weatherSnapshot(SUMMARIZE); })
+          .catch(function () { return weatherSnapshot(OFFLINE); });
+      },
+    });
+  }
+
   // ==================== INIT ====================
   function init() {
     collectScreens();
@@ -517,6 +654,7 @@
     setTimeout(function () {
       navigateTo('home', { addToHistory: false });
     }, 50);
+    registerWebMcp();
   }
 
   if (document.readyState === 'loading') {

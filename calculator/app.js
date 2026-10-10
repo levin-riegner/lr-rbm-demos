@@ -72,6 +72,15 @@
       if (showingClock()) renderDisplay();
     }, 1000);
   }
+  function stopClockTimer() {
+    if (!clockTimer) return;
+    clearInterval(clockTimer);
+    clockTimer = null;
+  }
+  // Lifecycle: the 1 s clock tick is the only recurring work. Stop it while
+  // the page is hidden; repaint (fresh time) and restart on return.
+  function pauseForHidden() { stopClockTimer(); }
+  function resumeFromHidden() { renderDisplay(); ensureClockTimer(); }
 
   // ---- Audio (Braun-style synthesized clicks) ----
   let audioCtx = null;
@@ -279,8 +288,10 @@
   }
 
   // ---- Dispatch ----
-  function press(key) {
-    click(soundFor(key));
+  // apply(): one key's effect on state, no sound, no repaint. Shared by
+  // press() (D-pad / keyboard) and the voice path, which replays a whole
+  // expression through it before a single repaint.
+  function apply(key) {
     if (key !== 'ac' && key !== 'theme') state.userTouched = true;
     if (/^[0-9]$/.test(key)) {
       consumePendingClear();
@@ -298,10 +309,16 @@
       toggleSign();
     } else if (key === 'percent') {
       percent();
-    } else if (key === 'theme') {
+    }
+  }
+
+  function press(key) {
+    click(soundFor(key));
+    if (key === 'theme') {
       cycleTheme();
       return;
     }
+    apply(key);
     renderDisplay();
   }
 
@@ -401,10 +418,187 @@
   themeTag.addEventListener('focus', () => themeTag.classList.add('is-focused'));
   themeTag.addEventListener('blur',  () => themeTag.classList.remove('is-focused'));
 
+  // ---- WebMCP (Meta AI voice control) ----
+  // Additive: the app works identically when document.modelContext is absent.
+  // Utterances: "what's 12 times 4 plus 3?" / "divide 250 by 8" / "clear it"
+  // / "switch to the Casio theme" / "what's on the display?"
+
+  // "12 * 4 + 3" -> [{num:'12'},{op:'*'},{num:'4'},{op:'+'},{num:'3'}]
+  function tokenizeExpression(src) {
+    const s = String(src == null ? '' : src)
+      .replace(/[×xX]/g, '*')
+      .replace(/÷/g, '/')
+      .replace(/[−–]/g, '-')
+      .replace(/\s+/g, '');
+    const tokens = [];
+    let i = 0;
+    while (i < s.length) {
+      const ch = s[i];
+      if (/[0-9.]/.test(ch)) {
+        let j = i;
+        while (j < s.length && /[0-9.]/.test(s[j])) j++;
+        tokens.push({ num: s.slice(i, j) });
+        i = j;
+      } else if ('+-*/'.includes(ch)) {
+        tokens.push({ op: ch });
+        i++;
+      } else {
+        return null;
+      }
+    }
+    return tokens;
+  }
+
+  // Replays the expression key by key through apply(), exactly as if the
+  // wearer had typed it, so the on-screen display is the result.
+  function evaluateExpression(src) {
+    const bad = {
+      ok: false,
+      message: 'Could not read the expression. Use digits, one decimal point per number and + - * / (no parentheses or percent).',
+    };
+    const tokens = tokenizeExpression(src);
+    if (!tokens || tokens.length === 0) return bad;
+
+    // Shape: [-] number ( op [-] number )*
+    const seq = [];
+    let i = 0;
+    let expectNum = true;
+    while (i < tokens.length) {
+      if (expectNum) {
+        let neg = false;
+        if (tokens[i].op === '-') { neg = true; i++; }
+        const t = tokens[i];
+        if (!t || t.num == null || t.num === '.' || t.num.split('.').length > 2) return bad;
+        seq.push({ num: t.num, neg });
+        i++;
+        expectNum = false;
+      } else {
+        if (tokens[i].op == null) return bad;
+        seq.push({ op: tokens[i].op });
+        i++;
+        expectNum = true;
+      }
+    }
+    if (expectNum) return bad; // trailing operator
+
+    apply('ac');
+    seq.forEach((item) => {
+      if (item.op) { apply(item.op); return; }
+      for (const c of item.num) apply(c);
+      if (item.neg) apply('sign');
+    });
+    apply('=');
+    click('eq');
+    pulse(findByKey('='));
+    renderDisplay();
+    return { ok: !state.error, message: state.error ? 'Error (for example division by zero).' : '' };
+  }
+
+  function displaySnapshot(next) {
+    return {
+      display: resultEl.textContent,
+      expression: exprEl.textContent,
+      error: state.error,
+      theme: THEMES[themeIndex].id,
+      themes: THEMES.map(t => t.id).join(', '),
+      next_action: next,
+    };
+  }
+
+  function registerWebMcp() {
+    const ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        const r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, (err) => console.error(tool.name + ' registration failed', err));
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    safeRegister({
+      name: 'calc_get_state',
+      description: 'Report what the calculator display currently shows, the pending expression, whether it is in an error state, and the active theme.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: () => displaySnapshot('Tell the wearer what the display shows in one short sentence, then stop.'),
+    });
+
+    safeRegister({
+      name: 'calc_evaluate',
+      description: 'Type an arithmetic expression into the calculator and press =, so the answer shows on screen. Supports + - * / and decimals; evaluated strictly left to right like the on-screen calculator (no operator precedence, no parentheses). Returns the displayed result.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          expression: { type: 'string', description: 'Expression using digits, decimal points and + - * /, e.g. "12 * 4 + 3" or "250 / 8".' },
+        },
+        required: ['expression'],
+      },
+      execute: (args) => {
+        const r = evaluateExpression(args && args.expression);
+        if (!r.ok) {
+          const out = displaySnapshot(r.message.indexOf('Could not read') === 0
+            ? 'Ask the wearer to rephrase the calculation and call again.'
+            : 'Tell the wearer the calculation produced an error, then stop.');
+          out.error = true;
+          out.message = r.message;
+          return out;
+        }
+        return displaySnapshot('Say the result in one short sentence, then stop.');
+      },
+    });
+
+    safeRegister({
+      name: 'calc_clear',
+      description: 'Press AC: clear the display and any pending operation.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: () => {
+        pulse(findByKey('ac'));
+        press('ac');
+        return displaySnapshot('Confirm the display is cleared in one short sentence, then stop.');
+      },
+    });
+
+    safeRegister({
+      name: 'calc_set_theme',
+      description: 'Switch the calculator skin. Themes: "braun", "casio" (shows a clock when idle) or "ti83".',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Theme name: "braun", "casio" or "ti83".' },
+        },
+        required: ['name'],
+      },
+      execute: (args) => {
+        const want = String(args && args.name != null ? args.name : '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const idx = THEMES.findIndex(t => t.id === want);
+        if (idx < 0) {
+          const out = displaySnapshot('Offer the available themes and call again.');
+          out.error = true;
+          out.message = 'Unknown theme "' + want + '".';
+          return out;
+        }
+        click(soundFor('theme'));
+        pulse(themeTag);
+        themeIndex = idx;
+        applyTheme();
+        return displaySnapshot('Confirm the theme change in one short sentence, then stop.');
+      },
+    });
+  }
+
   // ---- Init ----
   applyTheme();
   ensureClockTimer();
   renderDisplay();
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseForHidden(); else resumeFromHidden();
+  });
   // Auto-focus the primary action so D-pad works immediately
   (findByKey('=') || getKeys()[0])?.focus();
+  registerWebMcp();
 })();

@@ -321,8 +321,28 @@
     renderPicker();
   }
 
+  // Back gesture from the stepper / finished / error screens: return to the
+  // picker with the recipe that was open still highlighted.
+  async function backToPicker() {
+    const title = state.title;
+    await showPicker();
+    const idx = state.pickerItems.findIndex(function (r) { return r.title === title; });
+    if (idx >= 0) {
+      state.pickerIndex = idx;
+      renderPicker();
+    }
+  }
+
   document.addEventListener('keydown', function (event) {
     const key = event.key;
+
+    if (key === 'Escape') {
+      if (els.picker.classList.contains('hidden') && els.loading.classList.contains('hidden')) {
+        event.preventDefault();
+        backToPicker();
+      }
+      return;
+    }
 
     if (!els.picker.classList.contains('hidden')) {
       if (key === 'ArrowDown' || key === 'ArrowRight') { event.preventDefault(); pickerMove(1); return; }
@@ -361,5 +381,190 @@
     if (!handled) await showPicker();
   }
 
+  // ---- WebMCP (Meta AI voice control) ----
+  // Additive: the app works identically when document.modelContext is absent.
+  // Utterances: "open the pancakes recipe" / "next step" / "go back a step" /
+  // "jump to step 6" / "what's the current step?"
+
+  function currentScreen() {
+    return SCREENS.find(function (key) { return !els[key].classList.contains('hidden'); }) || 'loading';
+  }
+
+  // Full text of a step (all of its pages joined), by 0-based step index.
+  function stepText(stepIndex) {
+    const parts = [];
+    state.pageMap.forEach(function (entry, i) {
+      if (entry.stepIndex === stepIndex) parts.push(state.pages[i]);
+    });
+    return parts.join(' ');
+  }
+
+  // Jump to the first page of a 0-based step; stepCount means "finished".
+  function goToStep(stepIndex) {
+    if (stepIndex >= state.stepCount) {
+      state.cursor = state.pages.length;
+    } else {
+      const first = state.pageMap.findIndex(function (entry) { return entry.stepIndex === stepIndex; });
+      state.cursor = first >= 0 ? first : 0;
+    }
+    renderCurrent();
+  }
+
+  function currentStepIndex() {
+    if (state.cursor >= state.pages.length) return state.stepCount; // finished
+    return state.pageMap[state.cursor].stepIndex;
+  }
+
+  function recipeNames() {
+    return state.pickerItems.map(function (r, i) { return (i + 1) + ': ' + r.title; }).join('; ');
+  }
+
+  function snapshot(next) {
+    const screen = currentScreen();
+    const out = { screen: screen, next_action: next };
+    if (screen === 'picker') {
+      out.recipes = recipeNames();
+      out.highlighted = state.pickerItems[state.pickerIndex] ? state.pickerItems[state.pickerIndex].title : null;
+    } else if (screen === 'stepper' || screen === 'finished') {
+      out.recipe = state.title;
+      out.total_steps = state.stepCount;
+      if (screen === 'finished') {
+        out.finished = true;
+      } else {
+        const stepIndex = currentStepIndex();
+        out.step = stepIndex + 1;
+        out.step_text = stepText(stepIndex);
+        out.is_last_step = stepIndex === state.stepCount - 1;
+      }
+    } else if (screen === 'error') {
+      out.error = true;
+      out.message = state.lastError;
+    }
+    return out;
+  }
+
+  async function ensurePickerItems(signal) {
+    if (state.pickerItems.length) return state.pickerItems;
+    const response = await fetch('recipes.json', { cache: 'no-store', signal: signal });
+    if (!response.ok) throw new Error('Request failed (' + response.status + ')');
+    const data = await response.json();
+    state.pickerItems = data.recipes || [];
+    return state.pickerItems;
+  }
+
+  function registerWebMcp() {
+    const ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        const r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, (err) => console.error(tool.name + ' registration failed', err));
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    const READ_STEP = 'Read only the current step aloud, then stop.';
+    const NO_RECIPE = 'Call recipe_open with a recipe name first.';
+
+    function requireStepper() {
+      const screen = currentScreen();
+      if (screen === 'stepper' || screen === 'finished') return null;
+      return { error: true, message: 'No recipe is open.', screen: screen, recipes: recipeNames(), next_action: NO_RECIPE };
+    }
+
+    safeRegister({
+      name: 'recipe_get_state',
+      description: 'Report which screen is showing, the open recipe, the current step number and its full text, or the list of available recipes on the picker.',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: () => snapshot(currentScreen() === 'stepper'
+        ? READ_STEP
+        : 'Tell the wearer what is on screen in one short sentence, then stop.'),
+    });
+
+    safeRegister({
+      name: 'recipe_open',
+      description: 'Open one of the bundled recipes by name (partial, case-insensitive match on the title) or by its 1-based number in the list, and show step 1. Returns the recipe title, step count and first step.',
+      inputSchema: {
+        type: 'object',
+        properties: { recipe: { type: 'string', description: 'Recipe name (e.g. "pancakes") or list number (e.g. "2").' } },
+        required: ['recipe'],
+      },
+      execute: async (args, opts) => {
+        const want = String(args && args.recipe != null ? args.recipe : '').trim().toLowerCase();
+        let items;
+        try { items = await ensurePickerItems(opts && opts.signal); }
+        catch (err) { return { error: true, message: 'Could not load the recipe list: ' + err.message, next_action: 'Tell the wearer the recipes could not be loaded, then stop.' }; }
+        let item = null;
+        if (/^\d+$/.test(want)) item = items[parseInt(want, 10) - 1] || null;
+        if (!item && want) {
+          item = items.find(function (r) { return r.id === want || r.title.toLowerCase() === want; })
+              || items.find(function (r) { return r.title.toLowerCase().indexOf(want) !== -1; })
+              || null;
+        }
+        if (!item) {
+          return { error: true, message: 'No recipe matches "' + want + '".', recipes: recipeNames(), next_action: 'Offer the recipe names and call again.' };
+        }
+        try { startWithRecipe(item); }
+        catch (err) { showError(err.message); return { error: true, message: err.message, next_action: 'Tell the wearer the recipe could not be opened, then stop.' }; }
+        return snapshot('Say the recipe name and step count, read step 1, then stop.');
+      },
+    });
+
+    safeRegister({
+      name: 'recipe_next_step',
+      description: 'Advance to the next step of the open recipe (after the last step, shows the "all steps complete" screen). Returns the new step text.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: () => {
+        const blocked = requireStepper();
+        if (blocked) return blocked;
+        if (currentScreen() === 'finished') {
+          return snapshot('Tell the wearer the recipe is already complete, then stop.');
+        }
+        goToStep(currentStepIndex() + 1);
+        return snapshot(currentScreen() === 'finished'
+          ? 'Tell the wearer all steps are complete, then stop.'
+          : READ_STEP);
+      },
+    });
+
+    safeRegister({
+      name: 'recipe_previous_step',
+      description: 'Go back to the previous step of the open recipe (from the finished screen, back to the last step). Returns the step text.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: () => {
+        const blocked = requireStepper();
+        if (blocked) return blocked;
+        goToStep(Math.max(0, currentStepIndex() - 1));
+        return snapshot(READ_STEP);
+      },
+    });
+
+    safeRegister({
+      name: 'recipe_go_to_step',
+      description: 'Jump to a specific step of the open recipe by its 1-based number. Returns that step text.',
+      inputSchema: {
+        type: 'object',
+        properties: { number: { type: 'integer', description: 'Step number, from 1 to the total number of steps.' } },
+        required: ['number'],
+      },
+      execute: (args) => {
+        const blocked = requireStepper();
+        if (blocked) return blocked;
+        const n = parseInt(args && args.number, 10);
+        if (isNaN(n) || n < 1 || n > state.stepCount) {
+          return { error: true, message: 'Step must be between 1 and ' + state.stepCount + '.', total_steps: state.stepCount, next_action: 'Ask which step and call again.' };
+        }
+        goToStep(n - 1);
+        return snapshot(READ_STEP);
+      },
+    });
+  }
+
   start();
+  registerWebMcp();
 })();

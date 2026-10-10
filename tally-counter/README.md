@@ -8,7 +8,7 @@ A heads-up hand-tally-counter for Meta Display glasses. One **big +1 target**, a
 
 ## What it does
 
-- **One-button counting.** The big **+1** button fills most of the lens; tap, click, or press Enter/Space/▶ to increment. A short Web-Audio click confirms each count without you having to look down.
+- **One-button counting.** The big **+1** button fills most of the lens; press Enter/Space/▶ to increment. A short Web-Audio click confirms each count without you having to look down.
 - **0000–9999 LED display.** Tabular amber digits with a ghost-`8888` back-layer, just like a 7-segment LCD. Tick flash on +1, dim flash on −1, red pulse if you hit the 9999 ceiling.
 - **−1 to correct miscounts.** Sits directly below +1 in the stack; a slightly lower-pitched click distinguishes it from +1 by ear.
 - **RESET with confirmation.** Destructive, so it's gated by a red-bordered "0042 → 0000" overlay with Cancel focused by default. A descending two-tone chime plays on confirm.
@@ -27,13 +27,31 @@ All audio is synthesised at runtime through the Web Audio API — no asset files
 | Anywhere | ◀ Left | −1 |
 | Anywhere | ▲ ▼ Up / Down | Move focus through +1 → −1 → RESET |
 | Anywhere | Enter / Space / ● | Activate the focused button |
-| Anywhere | Tap / click | Activate the tapped button |
 | Anywhere | R | Open the reset confirmation |
+| Anywhere | Voice (Meta AI) | "Add five", "What's my count?", "Reset the counter" — see below |
 | Reset confirm | ◀ ▶ / ▲ ▼ | Toggle CANCEL ↔ RESET |
 | Reset confirm | Enter / Space | Activate focused option |
-| Reset confirm | Esc | Close the overlay |
+| Reset confirm | Back gesture (thumb + middle finger) | Close the overlay and return focus to RESET |
 
-Every action has a focused button and a key shortcut — tapping a button is equivalent to pressing its key. There are no swipe gestures.
+Every action has a focused button and a key shortcut. There are no swipe gestures.
+
+---
+
+## Voice (Meta AI)
+
+The app registers three WebMCP tools (`tally_get_state`, `tally_add`, `tally_reset`) on `document.modelContext`, so the wearer can drive it by talking to Meta AI. This is the repo's smallest WebMCP example — one read-only state tool, one mutation with a single integer, one destructive action.
+
+Things you can say:
+
+- "Add one" / "Count that"
+- "Add five to the tally"
+- "Take two off"
+- "What's my count?"
+- "Reset the counter"
+
+Voice is additive: every action goes through the same functions the D-pad calls, so the LED display, click sounds and `localStorage` stay in sync. The app runs unchanged where `document.modelContext` is absent (desktop Chrome, the simulator, older firmware).
+
+> WebMCP must be enabled on the device (Developer Mode or rollout), and the app relaunched after enabling it — eligibility is decided once at launch.
 
 ---
 

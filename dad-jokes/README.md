@@ -23,11 +23,24 @@ A heads-up display for Meta Display glasses that fetches a random dad joke from 
 | --- | --- | --- |
 | Card | ▶ / ◀ / ▲ / Enter / Space | Next joke |
 | Card | ▼ / `G` | Groan (sad trombone + shake) |
-| Card | Tap anywhere on the joke card | Next joke |
-| Card | Tap `▶ ANOTHER` button | Next joke |
-| Card | Tap `🫠 GROAN` button | Groan |
+| Card | Voice (Meta AI) | "Tell me a dad joke", "Read that again", "That was terrible" — see below |
 
 Designed for the right-lens HUD: the whole panel is right-aligned (left padding 168px) so content lives in the right half of the 600×600 viewport.
+
+---
+
+## Voice (Meta AI)
+
+The app registers three WebMCP tools on `document.modelContext` (`jokes_get_state`, `jokes_next`, `jokes_groan`) so the wearer can drive it by talking to Meta AI. Things you can say:
+
+- "Tell me a dad joke" / "Another one"
+- "Read that again"
+- "That was terrible" (groan)
+- "How many jokes have I heard?"
+
+`jokes_next` awaits the same fetch the ▶ ANOTHER button triggers and forwards the assistant's deadline to it, so the card and the spoken joke always match. There is no "previous joke" or sound toggle in the app, so there are no tools for them. The app runs unchanged where `document.modelContext` is absent (desktop Chrome, the simulator, older firmware).
+
+> WebMCP must be enabled on the device (Developer Mode or rollout), and the app relaunched after enabling it — eligibility is decided once at launch.
 
 ---
 

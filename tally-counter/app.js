@@ -14,6 +14,7 @@
     masterGain: null,
     confirmOpen: false,
     lastFocus: null,
+    sinceTimer: null, // 30 s "since" refresh; stopped while the page is hidden
   };
 
   // ===========================================================
@@ -101,28 +102,34 @@
   // ===========================================================
   //  STATE MUTATIONS
   // ===========================================================
-  function inc() {
-    if (state.count >= CONFIG.countMax) {
-      flashWrap();
-      return;
+  // Single mutation path shared by the D-pad (±1) and voice (any amount).
+  function add(n) {
+    n = n | 0;
+    if (n === 0) return;
+    if (n > 0) {
+      if (state.count >= CONFIG.countMax) {
+        flashWrap();
+        return;
+      }
+      state.count = Math.min(CONFIG.countMax, state.count + n);
+      var firstSince = !state.sinceTs;
+      if (firstSince) state.sinceTs = Date.now();
+      playUpClick();
+      renderDigits(true, false);
+      if (firstSince) renderSince();
+      saveData();
+      flashBump();
+    } else {
+      if (state.count <= CONFIG.countMin) return;
+      state.count = Math.max(CONFIG.countMin, state.count + n);
+      playDownClick();
+      renderDigits(false, true);
+      saveData();
     }
-    state.count += 1;
-    var firstSince = !state.sinceTs;
-    if (firstSince) state.sinceTs = Date.now();
-    playUpClick();
-    renderDigits(true, false);
-    if (firstSince) renderSince();
-    saveData();
-    flashBump();
   }
 
-  function dec() {
-    if (state.count <= CONFIG.countMin) return;
-    state.count -= 1;
-    playDownClick();
-    renderDigits(false, true);
-    saveData();
-  }
+  function inc() { add(1); }
+  function dec() { add(-1); }
 
   function reset() {
     state.count = 0;
@@ -369,6 +376,100 @@
     return true;
   }
 
+  // ===========================================================
+  //  LIFECYCLE — the only recurring work is the 30 s "since" refresh.
+  //  Stop it while the page is hidden; re-render + restart on return.
+  // ===========================================================
+  function startSinceTimer() {
+    if (state.sinceTimer) return;
+    state.sinceTimer = setInterval(renderSince, 30000);
+  }
+  function stopSinceTimer() {
+    if (!state.sinceTimer) return;
+    clearInterval(state.sinceTimer);
+    state.sinceTimer = null;
+  }
+  function pauseForHidden() {
+    stopSinceTimer();
+  }
+  function resumeFromHidden() {
+    renderSince();
+    startSinceTimer();
+  }
+
+  // ===========================================================
+  //  WebMCP (Meta AI voice control)
+  //  Additive: the app works identically when document.modelContext is absent.
+  //  Utterances: "add one" / "add five" / "take one off" / "what's my count?"
+  //  / "reset the counter".
+  // ===========================================================
+  function registerWebMcp() {
+    var ctx = document.modelContext;
+    if (!ctx || typeof ctx.registerTool !== 'function') return;
+
+    function safeRegister(tool) {
+      try {
+        var r = ctx.registerTool(tool);
+        if (r && typeof r.then === 'function') {
+          r.then(undefined, function (err) { console.error(tool.name + ' registration failed', err); });
+        }
+      } catch (err) {
+        console.error(tool.name + ' registration failed', err);
+      }
+    }
+
+    function sinceLabel() {
+      var el = document.getElementById('sinceTime');
+      return el && state.sinceTs ? el.textContent : null;
+    }
+
+    safeRegister({
+      name: 'tally_get_state',
+      description: 'Report the current tally count and the HH:MM time counting started (null if nothing counted yet).',
+      inputSchema: { type: 'object', properties: {} },
+      annotations: { readOnlyHint: true },
+      execute: function () {
+        return {
+          count: state.count,
+          since: sinceLabel(),
+          next_action: 'Tell the wearer the count in one short sentence, then stop.'
+        };
+      }
+    });
+
+    safeRegister({
+      name: 'tally_add',
+      description: 'Add a number to the tally (default 1). Use a negative number to subtract. Count stays within 0-9999. Returns the new count.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          amount: { type: 'integer', description: 'How much to add. Defaults to 1. Negative subtracts.' }
+        }
+      },
+      execute: function (args) {
+        var n = parseInt(args && args.amount, 10);
+        if (isNaN(n)) n = 1;
+        add(n); // same function the D-pad calls, so the screen updates
+        return {
+          count: state.count,
+          since: sinceLabel(),
+          next_action: 'Confirm the new count in one short sentence, then stop.'
+        };
+      }
+    });
+
+    safeRegister({
+      name: 'tally_reset',
+      description: 'Reset the tally to 0 and clear the start time. Only call when the wearer explicitly asks to reset or start over.',
+      inputSchema: { type: 'object', properties: {} },
+      execute: function () {
+        if (state.confirmOpen) closeConfirm();
+        reset();
+        return { count: 0, since: null, next_action: 'Confirm the reset in one short sentence, then stop.' };
+      }
+    });
+  }
+
   function init() {
     loadData();
     renderDigits(false, false);
@@ -380,8 +481,12 @@
       var b = document.getElementById('bumpBtn');
       if (b) b.focus();
     }, 50);
-    // refresh "since" minute every 30s
-    setInterval(renderSince, 30000);
+    // refresh "since" minute every 30s (paused while hidden)
+    startSinceTimer();
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) pauseForHidden(); else resumeFromHidden();
+    });
+    registerWebMcp();
   }
 
   if (document.readyState === 'loading') {

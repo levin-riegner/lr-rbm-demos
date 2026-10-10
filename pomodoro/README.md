@@ -19,7 +19,22 @@ Open [http://localhost:8080](http://localhost:8080) in Chrome, then:
 
 - **Arrow keys** — move focus between buttons (D-pad)
 - **Enter** — activate focused button (EMG pinch)
-- **Escape** — back to previous screen
+- **Back gesture (thumb + middle finger)** — back to previous screen, focus returns to the button that opened it
+- **Voice (Meta AI)** — "Start a focus session", "Pause the timer", "How much time is left?" — see below
+
+## Voice (Meta AI)
+
+The app registers five WebMCP tools on `document.modelContext` (`pomodoro_get_state`, `pomodoro_start`, `pomodoro_pause`, `pomodoro_reset`, `pomodoro_skip`) so the wearer can drive it by talking to Meta AI. Things you can say:
+
+- "Start a focus session" / "Start a short break" / "Start a long break"
+- "Pause the timer" / "Resume"
+- "How much time is left?"
+- "Skip this break"
+- "Reset the timer"
+
+Every tool goes through the same functions the buttons call, so the countdown, phase colour and stats stay in sync. The app runs unchanged where `document.modelContext` is absent (desktop Chrome, the simulator, older firmware).
+
+> WebMCP must be enabled on the device (Developer Mode or rollout), and the app relaunched after enabling it — eligibility is decided once at launch.
 
 ## Screens
 

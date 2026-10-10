@@ -24,8 +24,23 @@ Then open `http://localhost:8765` in Chrome and set the DevTools viewport to 600
 | Picker   | Up / Down (or Left / Right) cycles, Enter selects |
 | Stepper  | Right advances (page, then step), Left goes back |
 | Finished | Left to review, Enter to go back to the picker |
+| Stepper / Finished / Error | Back gesture (thumb + middle finger) returns to the picker with the open recipe highlighted |
+| Any      | Voice (Meta AI) — "Open the pancakes recipe", "Next step", "Jump to step 6" — see below |
 
 `ArrowRight` simulates a neural band tap.
+
+## Voice (Meta AI)
+
+The app registers five WebMCP tools on `document.modelContext` (`recipe_get_state`, `recipe_open`, `recipe_next_step`, `recipe_previous_step`, `recipe_go_to_step`) so the wearer can cook without touching the D-pad. Things you can say:
+
+- "Open the pancakes recipe" / "Open recipe number 2"
+- "Next step" / "Go back a step"
+- "Jump to step 6"
+- "What's the current step?"
+
+Voice navigation moves by whole step (the full step text is returned even when the screen paginates it); the D-pad still walks page by page. The app runs unchanged where `document.modelContext` is absent (desktop Chrome, the simulator, older firmware).
+
+> WebMCP must be enabled on the device (Developer Mode or rollout), and the app relaunched after enabling it — eligibility is decided once at launch.
 
 ## Loading recipes
 
