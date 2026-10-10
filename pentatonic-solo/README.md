@@ -4,6 +4,8 @@ A thumb-controlled pentatonic solo synth for the Meta Ray-Ban Display glasses. L
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fpentatonic-solo%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: each note is synthesized with Web Audio, the scope draws the real analyser output, and the particles are canvas-only.
+
 ---
 
 ## What it does

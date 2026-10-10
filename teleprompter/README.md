@@ -2,6 +2,8 @@
 
 One-way remote teleprompter: a desktop React admin types messages that appear instantly on a Meta Display Glasses client via Socket.io.
 
+> 🔌 **Status: Working with live data.** Text reaches the lens over the app's own Express + Socket.io server (`server.js`), which has to be running and reachable from the glasses; nothing works offline, and the optional camera/mic stream in `glasses/app.js` needs `getUserMedia`, which the glasses browser does not expose to web apps.
+
 ## Run
 
 ```bash

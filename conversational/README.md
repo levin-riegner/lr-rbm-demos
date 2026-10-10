@@ -4,6 +4,8 @@ A simulated live-transcription HUD for the Meta Ray-Ban Display glasses. A frien
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fconversational%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🧪 **Status: Concept.** The interface and D-pad flow are real; the French "speech" is a scripted 24-sentence story in `app.js` revealed on a 460 ms timer, with hand-written English glosses, and no audio is captured or transcribed. See [Making it real](#making-it-real).
+
 ---
 
 ## What it does
@@ -35,6 +37,32 @@ A simulated live-transcription HUD for the Meta Ray-Ban Display glasses. A frien
 ## Screenshots
 
 No screenshots yet. The app reads a `?state=…` URL parameter so each screen can be captured deterministically: `live`, `translated`, `midstory`, `midstory-translated`, `scrollback`.
+
+---
+
+## Making it real
+
+**What's real today:**
+
+- The caption layout: word-by-word reveal anchored at the bottom of the lens, a two-sentence window with the older line faded, and the English gloss that grows only as far as the French has been "spoken".
+- Scrollback by word, snap-to-live, and pause.
+- The vocab library. Saved words persist in `localStorage` (`conversational.vocab.v1`) and stay underlined in the transcript.
+- Lifecycle: the stream stops while the page is hidden and resumes when it returns.
+- Offline loading through the service worker.
+
+**What's simulated:**
+
+- `STORY` in `app.js`: a hand-written list of French tokens, each paired with an English gloss. `advanceStream()` reveals one token every 460 ms and loops from the top forever. Nothing is listened to.
+- The translations: every gloss is typed by hand, so there is no dictionary or machine translation behind the subtitle.
+- The pacing: the 460 ms interval stands in for the rhythm of real speech.
+
+**How to make it real:**
+
+- Capture: the glasses browser exposes no microphone to web apps, so the page cannot record the friend. Audio has to come from a phone companion built with Meta's Device Access Toolkit (which can use the glasses' mics) or from the phone's own mic, streamed to a real-time speech-to-text service with word timestamps (Deepgram, AssemblyAI, Google Speech-to-Text or a streaming Whisper deployment). The companion pushes finalized words to the lens page over a WebSocket, and `advanceStream()` becomes a consumer of that feed instead of a timer. Effort: large.
+- Alternative capture through Meta AI: register a WebMCP tool such as `conversational_add_line(text)` so Meta AI can hand the page a sentence it just heard. This depends on Meta AI being willing to relay someone else's speech and gives sentence-level, not word-level, timing. Effort: small to try, uncertain in practice.
+- Translation: send each finalized sentence to a translation API (DeepL, Google Translate) on the backend for the subtitle, and look up individual words in a bilingual dictionary API for the scrollback glosses. Cache per sentence so a loop or scrollback costs nothing. Effort: medium.
+- Vocab: it is already stored on the device. Sync it to the backend or let the wearer dictate a note into a saved entry through the text composer. Effort: small.
+- Keep the scripted story as a built-in demo mode so the app still shows something with no companion connected. Effort: small.
 
 ---
 

@@ -4,6 +4,8 @@ A hands-free grilling, smoking, and BBQ coach for the [Meta Ray-Ban Display glas
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fgrillmaster%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the cook library is bundled in `data.js`, timers and cues run off a real cook clock, an in-progress cook persists in localStorage, and there is no thermometer probe, so pit and meat temperatures are the readings you dial in by hand while the grill coach's internal temp is a clock-based estimate and labeled as one.
+
 > 🚀 **Live demo:** [rbm-demos.lnr.io/grillmaster](https://rbm-demos.lnr.io/grillmaster/)
 
 ## Opening it

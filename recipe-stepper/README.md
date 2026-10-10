@@ -4,6 +4,8 @@ A hands-free recipe walkthrough for the Meta Ray-Ban Display glasses. It paginat
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Frecipe-stepper%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** The picker, the four bundled recipes in `recipes.json` (their `source` URLs are placeholders), pagination and the WebMCP tools all run on the glasses with no network; only the optional `?url=` extractor needs the `/api/extract` Vercel function with an `ANTHROPIC_API_KEY`, and it is not available on a plain static host.
+
 ---
 
 ## What it does

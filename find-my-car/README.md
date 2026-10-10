@@ -4,6 +4,8 @@ A parking-spot memory for the Meta Ray-Ban Display glasses. Pinch `Park Here` wh
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Ffind-my-car%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the spot is a real `navigator.geolocation` fix saved in `localStorage`, and the arrow is driven by a live `watchPosition` plus the device compass, with the distance and bearing computed on-device.
+
 ---
 
 ## What it does

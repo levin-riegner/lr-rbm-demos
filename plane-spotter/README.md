@@ -4,6 +4,8 @@ A Meta Ray-Ban Display glasses webapp that points at the nearest aircraft. It us
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fplane-spotter%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🔌 **Status: Working with live data.** Aircraft positions come from the OpenSky Network through the app's own Node proxy (`server.js`, OAuth2 client credentials in `.env`); the sensors and HUD math run on the glasses, but a plain static host has no `/api/aircraft`, so there the status reads Net err, and without credentials the proxy serves only a synthetic demo plane.
+
 Web-based, vanilla JS on the client, with a small Node proxy for the OpenSky API.
 
 ---

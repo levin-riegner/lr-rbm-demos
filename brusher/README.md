@@ -5,6 +5,9 @@ A heads-up **brush coach** for Meta Display glasses. It counts your toothbrush s
 > 📖 **Case study:** [levinriegner.com/work/brush-coach](https://www.levinriegner.com/work/brush-coach/)
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fbrusher%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
+
+> ✅ **Status: Working.** Stroke counting reads the glasses' own `devicemotion` sensor and every cue is synthesized with Web Audio, with no network involved; ▼ is only a keyboard fallback for laptops without an IMU.
+
 > 🌐 **Live demo:** [rbm-demos.lnr.io/brusher](https://rbm-demos.lnr.io/brusher/)
 
 ---

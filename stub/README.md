@@ -4,6 +4,8 @@ A "photo notes" app for the Meta Display glasses — for the ephemeral receipts 
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fstub%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🧪 **Status: Concept.** The interface and D-pad flow are real; the camera capture and OCR are simulated, and each "scan" returns the next entry from a built-in ticket pool in `app.js`. See [Making it real](#making-it-real).
+
 Designed for the 600×600 lens, driven by the D-pad. The camera lives on the right temple, so the capture screen highlights the **top-left quadrant** of the display — that's the sweet spot where a tag held in front of the wearer lands centered in the camera frame.
 
 ---
@@ -104,6 +106,29 @@ Finding a stub moves the carousel to the first match; deleting goes through the 
 | Saved stub detail | Delete confirmation |
 | --- | --- |
 | ![Detail](screenshots/detail.png) | ![Delete](screenshots/delete.png) |
+
+---
+
+## Making it real
+
+**What's real today:**
+- All seven screens and the D-pad flow: capture, scanning, confirm, carousel, detail and delete.
+- Persistence: saved stubs live in `localStorage` (`mdg_stub_v1`) and survive reloads; delete really removes them.
+- The WebMCP tools (`list`, `find`, `delete`) on `document.modelContext` operate on the same stored stubs the D-pad path uses.
+- Lifecycle: the scan timers stop while the page is hidden and finish on a wall-clock deadline when it returns.
+
+**What's simulated:**
+- No photo is taken. The capture screen is a framing guide; Enter goes straight to the scanning screen.
+- `DEMO_POOL` in `app.js` stands in for OCR of the camera frame. `renderScanning()` picks the next pool entry and `CONFIG.scanDurationMs` (1.2 s) plus the cycling `SCAN_STEPS` labels fake the recognition delay.
+- `SEED_STUBS` in `app.js` pre-populates the carousel on first run so the demo does not open empty.
+
+**How to make it real:**
+- The glasses browser exposes no camera or microphone API to web apps, so capture cannot happen in `index.html`. Two paths exist:
+  - **Meta AI vision plus WebMCP.** Register a `stub_save` tool that takes `category`, `code` and `location`. The wearer says "save this coat check tag"; Meta AI looks through the camera, reads the tag, and calls the tool. The app then skips the scanning screen and lands on confirm with real values. This keeps everything in the browser and needs only a new tool next to the existing three.
+  - **Phone companion.** A companion app built with Meta's Device Access Toolkit grabs a frame from the glasses camera, runs OCR on the phone (on-device text recognition, or Tesseract), and posts the result to the web app over a local WebSocket or by pushing a URL with the fields in the query string. More work, but it yields a stored image too.
+- Either way, replace `renderScanning()` with an await on the real result, keep the "no camera roll" promise by storing only the extracted fields (or a thumbnail in IndexedDB, never the gallery), and drop `SEED_STUBS` for production.
+- The category classifier is the softest part: a small keyword table (VALET, COAT, LOCKER, ROOM) over the OCR text covers the common cases before any model is involved.
+- Effort: small for the WebMCP route (one tool, one screen change), medium for the companion route.
 
 ---
 

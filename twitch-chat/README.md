@@ -4,6 +4,8 @@ A heads-up display that streams **your Twitch chat in really large type** onto t
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Ftwitch-chat%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🔌 **Status: Working with live data.** Chat comes from Twitch's anonymous IRC WebSocket (`wss://irc-ws.chat.twitch.tv`, no key); offline the picker loads but a real channel shows `DISCONNECTED` and retries every 3 s, and the `DEMO` and `ARIATHOME` picker entries are scripted fake feeds, not real channels.
+
 ---
 
 ## What it does

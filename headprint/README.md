@@ -4,6 +4,8 @@ A proof of concept for recognizing who is wearing the Meta Ray-Ban Display glass
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fheadprint%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Training and identification run on real `devicemotion` / `deviceorientation` samples from the glasses, with the feature extraction and 1-NN matching done on-device and profiles persisted in localStorage; it is a research sketch, not a security feature, but nothing in it is mocked.
+
 ---
 
 ## What it does

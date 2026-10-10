@@ -4,6 +4,8 @@ A speech-to-text idea catcher for the Meta Ray-Ban Display glasses. Start a take
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fperiff%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🧪 **Status: Concept.** The interface and D-pad flow are real; the speech-to-text depends on the browser's `SpeechRecognition` API, which the glasses browser does not expose (on the lens the transcript box falls back to typing), the 18-bar visualizer is random rather than audio-driven, and two sample Riffs are seeded on first launch. See [Making it real](#making-it-real).
+
 ---
 
 ## What it does
@@ -51,6 +53,28 @@ On the walkthrough and Home screens the Back gesture does nothing.
 | Preview |
 | --- |
 | <img src="screenshots/preview.png" width="300" alt="Periff record screen"> |
+
+---
+
+## Making it real
+
+**What's real today:**
+- The walkthrough, Home, Record, My Riffs and Riff detail screens, the confirm overlay and the spatial D-pad focus model.
+- Saving, listing, opening and deleting Riffs, persisted in `localStorage` under `periff.riffs.v1`.
+- The take timer, the hidden-page lifecycle (a take stops cleanly when the app leaves the lens) and the offline service worker.
+- In a desktop Chrome with a microphone, the `SpeechRecognition` path transcribes for real; that is where the "speak and watch it fill in" demo was recorded.
+
+**What's simulated:**
+- Speech-to-text on the glasses. `initRecognition()` in `app.js` uses `window.SpeechRecognition`, which the glasses browser does not expose (web apps there have no microphone API), and which in Chrome is itself a cloud service that needs a network connection. On the lens `startRecording()` takes the `enableTypingFallback()` branch and makes the transcript box `contentEditable`.
+- The 18-bar visualizer: `startVisualizer()` in `app.js` sets bar heights from `Math.random()` on a 90 ms interval. It animates whether or not any audio is captured.
+- The two starter Riffs: `seedRiffs()` in `app.js` fills the list on first launch so Home and My Riffs are never empty.
+
+**How to make it real:**
+- Capture speech through the device's own composer. Replace the `contentEditable` transcript box with a real `<textarea>`; on the glasses, focusing and activating it opens the handwriting/voice composer, and the app reads the committed text from the `input` / `change` event and saves it as a Riff. This is the smallest path and it works offline.
+- Or capture through Meta AI with WebMCP. Register a `periff_save_riff(text)` tool on `document.modelContext` (and a read-only `periff_list_riffs`), so the wearer can say "save this idea: ..." and Meta AI hands the transcribed text to the same `saveRiff()` the D-pad path uses. Add voice guardrails to the page `<title>` and `description`.
+- Drop the fake visualizer, or drive it from real levels only where an audio source exists (an `AnalyserNode` on a `getUserMedia` stream on desktop). On the glasses there is no stream to analyze, so show a static "composing" state instead of moving bars.
+- Remove `seedRiffs()` so a fresh install starts empty and the empty state is honest.
+- Effort: composer path small; WebMCP tool medium; visualizer and seed cleanup small.
 
 ---
 

@@ -4,6 +4,8 @@ A D-pad-driven smoke test for the web platform APIs that matter on the Meta Disp
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fglasses-wack%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** All twelve checks call the real browser API on the device and report PASS, FAIL or N/A from its actual answer; nothing is mocked and nothing needs a network.
+
 ## What it does
 
 - **VIBRATE** — fires a `[100, 50, 100, 50, 200]` pattern via `navigator.vibrate`.

@@ -4,6 +4,8 @@ A motion-sensor speed readout for the Meta Ray-Ban Display glasses. Press Start,
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fspeedometer%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: `Start` reads the device's real `devicemotion` / `deviceorientation` sensors and the top speed persists in `localStorage`; `Sim` is an explicit, labeled test mode, not a reading.
+
 ---
 
 ## What it does

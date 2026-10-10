@@ -4,6 +4,8 @@ A skipper's coach for the **Poseidon Blu Water 170**, built for the case where t
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fskipper%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the flows, drills and checklists are bundled content in `data.js`, progress and settings persist in `localStorage`, and the MAYDAY position comes from the device's own `navigator.geolocation`.
+
 ---
 
 ## What it does

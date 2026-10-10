@@ -4,6 +4,8 @@ A one-screen test harness for the browser APIs a web app can reach on the Meta R
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fglasses-api-test%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Each row calls the real browser API and reports what the device answers; a FAIL is a genuine result, and the microphone and camera rows are expected to fail on the glasses because the browser exposes no camera or microphone to web apps.
+
 ---
 
 ## What it does

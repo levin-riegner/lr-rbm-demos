@@ -4,6 +4,8 @@ One half of a two-app pair that demonstrates cross-app navigation on the Meta Ra
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fdeep-link-launcher%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Each button is a real browser navigation to `<target>?screen=<name>`; the default target is `http://localhost:8081/`, so on the glasses open the hosted launcher once with `?target=https://rbm-demos.lnr.io/deep-link-target/` to point it at the hosted target.
+
 Pair: [`deep-link-target/`](../deep-link-target/)
 
 ---

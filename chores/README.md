@@ -4,6 +4,8 @@ A step-by-step chore checklist for the Meta Ray-Ban Display glasses. Five househ
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fchores%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🧪 **Status: Concept.** The interface and D-pad flow are real; the Amazon search, product card and `Buy Now` purchase are a scripted loader and hard-coded product data in `app.js`, and nothing is ever bought. See [Making it real](#making-it-real).
+
 ---
 
 ## What it does
@@ -62,6 +64,32 @@ Voice control needs WebMCP enabled on the glasses (Developer Mode or rollout); r
 | Preview |
 | --- |
 | <img src="screenshots/preview.png" width="300" alt="Chore Orderer preview"> |
+
+---
+
+## Making it real
+
+**What's real today:**
+
+- The five chores, their task lists and the `Chore N of 5` flow. Ticking tasks, moving between chores and the Done summary all work.
+- The overlay plumbing: the loader can be cancelled, the product card opens and closes, and focus returns to the supply row that opened it.
+- The four `chores_*` WebMCP tools. Meta AI ticks and un-ticks tasks through the same functions as the D-pad.
+- Offline loading through the service worker.
+- Note that state lives in memory only. Reloading the page starts the day over.
+
+**What's simulated:**
+
+- `LOAD_MSGS` and `LOAD_MS` in `app.js`: the 3.6 s "Searching Amazon…" loader is a timer cycling through six canned messages. No request is made.
+- The `supplies` entries inside `CHORES` in `app.js`: emoji, blurb and price are hand-written. Each entry carries an Amazon `url`, but the app never opens or fetches it.
+- `Buy Now`: `pdpBuyEl` just shows a `Purchased` badge for 1.8 s and marks the row `✓`. There is no account, cart, payment or order.
+- The chore list itself is hard-coded. There is no household or calendar data behind it.
+
+**How to make it real:**
+
+- Live product data: Amazon's Product Advertising API (PA-API 5) needs an Associates account and signed requests, so put a small backend (for example a Vercel function) in front of it that returns name, image, price and availability for each ASIN in the `url` fields. The page fetches that endpoint, caches the result in `localStorage` and keeps the current card as its offline fallback. Effort: medium.
+- Real reorders: Amazon has no public checkout API for third-party apps, so a true one-pinch purchase needs a merchant with one (for example a Shopify Storefront API checkout, or a retailer's own ordering API) plus a saved payment method and address on the backend. The glasses only confirm; the server places the order. Alternatively hand the purchase off to the phone: the lens queues the item and a companion app (built with Meta's Device Access Toolkit, or a plain mobile web app on the same account) completes checkout. The glasses browser has no keyboard for card forms beyond the text composer, so checkout should never happen on the lens. Effort: large.
+- Persistent chores: store ticks and orders in `localStorage` so the day survives a reload, or sync them through a small backend so the household shares one list. Effort: small.
+- Voice reorders: add a `chores_reorder(item)` WebMCP tool that calls the same function the supply row does, so "reorder the toilet paper" works once the purchase path is real. Effort: small.
 
 ---
 

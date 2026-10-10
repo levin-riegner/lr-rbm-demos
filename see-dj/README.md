@@ -4,6 +4,8 @@ See DJ runs on **Pro DJ Link**, Pioneer DJ's networking protocol that connects C
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fsee-dj%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🧪 **Status: Concept.** The interface and D-pad flow are real; the deck, mixer and crossfader telemetry is a scripted 30-second timeline in `app.js`, not a Pro DJ Link feed. See [Making it real](#making-it-real).
+
 **No controls, no input, no interaction required. You drive the gear. See DJ just shows you what it is doing.**
 
 > 📖 **Case study:** [levinriegner.com/work/see-dj](https://www.levinriegner.com/work/see-dj/)
@@ -89,6 +91,28 @@ This is a passive read-only HUD — the DJ drives the gear, the glasses just rep
 | Deck B cued (channel dropped) | Pitched (Deck A +2.4 %, Deck B −1.8 %) |
 | --- | --- |
 | ![Cue](screenshots/cue.png) | ![Pitched](screenshots/pitched.png) |
+
+---
+
+## Making it real
+
+**What's real today:**
+- The HUD itself: two deck panels, four channel strips, the crossfader ribbon, the beat indicator and the END alert all render from a single state object (`DECKS` and `MIXER` in `app.js`).
+- The beat clock runs off `performance.now()` at the displayed BPM, so beat phase and the downbeat nudge are computed, not animated.
+- Lifecycle: the clock, telemetry interval and beat loop stop on `visibilitychange` and resume on return.
+- `?state=` routing for deterministic captures.
+
+**What's simulated:**
+- `DECKS` and `MIXER` in `app.js` are hard-coded starting values (track names, BPM, IPs, fader positions).
+- `tickTelemetry()` in `app.js` is a scripted timeline: the pitch ramp, the platter nudge, the crossfader move and the breathing channel faders are all functions of elapsed time. Nothing reads from a network.
+- Deck status, MASTER / SYNC tags and track progress never change except through `?state=`.
+
+**How to make it real:**
+- Pro DJ Link is UDP multicast on ports 50000–50002 on the booth's Ethernet subnet. The glasses browser cannot open UDP sockets, so a small bridge is required: run [`prolink-connect`](https://github.com/EvanPurkhiser/prolink-connect) (Node) on a laptop or Raspberry Pi plugged into the same switch as the CDJs and DJM, and have it publish deck and mixer state over a WebSocket or Server-Sent Events endpoint on the local Wi-Fi.
+- In `app.js`, replace `tickTelemetry()` with a socket handler that writes incoming status packets into `DECKS` and `MIXER` and calls the existing `renderDeck()` / `renderMixer()`. Track title and artist come from the rekordbox metadata query that `prolink-connect` already exposes; beat phase comes from the beat packets rather than the local clock.
+- Channel fader and crossfader positions are not in the standard CDJ status packet. The DJM-900NXS2 and newer broadcast them on the link; older mixers need a MIDI tap through the bridge. Keep CH3 / CH4 and the crossfader optional so the view degrades to deck-only telemetry.
+- Keep the scripted timeline as a fallback when no bridge is reachable, labeled as a demo, so the app still shows something at a trade show.
+- Effort: medium. The bridge and socket plumbing is a day or two; the HUD does not change.
 
 ---
 

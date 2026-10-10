@@ -4,6 +4,8 @@ A five-word Serbian vocabulary deck for the Meta Ray-Ban Display glasses. Study 
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fflashcards-serbian%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the five-word deck is bundled in `app.js`, the quiz is built and scored on-device, and the WebMCP tools drive the same functions as the D-pad.
+
 ---
 
 ## What it does

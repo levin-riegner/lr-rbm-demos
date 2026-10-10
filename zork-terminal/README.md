@@ -6,6 +6,8 @@ A wearable-sized tribute to early-1980s text adventures, built for the 600×600 
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fzork-terminal%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the world lives in `world.js`, the parser and chip ranking are local, and every sound effect is synthesized with Web Audio.
+
 ---
 
 ## What it does

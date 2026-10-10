@@ -4,6 +4,8 @@ A tiny world-clock for the Meta Ray-Ban Display glasses. See the live local time
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fworld-clock%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: times come from the browser's built-in `Intl` time-zone data and favorites persist in localStorage.
+
 ## What it does
 
 - Home screen lists your favorite cities with **live, DST-correct** local times (updated every second) and their offset from your own time zone.

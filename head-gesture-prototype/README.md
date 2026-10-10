@@ -4,6 +4,8 @@ A small experiment in using the head as an input on the Meta Ray-Ban Display gla
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fhead-gesture-prototype%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** The shake detector runs on real `deviceorientation` events from the glasses with no network; `server.js` is only a local static server, and the ◀ ▶ ▼ keys are a labeled simulation for desktops without a sensor.
+
 ---
 
 ## What it does

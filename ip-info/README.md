@@ -4,6 +4,8 @@ Shows your public IP and geolocation details on the Meta Ray-Ban Display glasses
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fip-info%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🔌 **Status: Working with live data.** The IP and geolocation come from the ipapi.co public API (no key); offline, the app shows the last result cached in `localStorage` if it is under 30 minutes old, otherwise an error with Retry.
+
 ---
 
 ## What it does

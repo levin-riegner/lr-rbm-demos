@@ -4,6 +4,8 @@ A box-breathing meditation timer for the Meta Ray-Ban Display glasses: an animat
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fmeditation%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the breathing guide and countdown are driven by timestamps, the completion tone is synthesized with Web Audio, and session history persists in localStorage.
+
 ---
 
 ## What it does

@@ -4,6 +4,8 @@ Live USD prices and 24h change for 8 major cryptocurrencies on the Meta Ray-Ban 
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fcrypto-tracker%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🔌 **Status: Working with live data.** Prices come from the CoinGecko public `/simple/price` endpoint (no API key, called straight from the browser); offline it shows the last prices cached in `localStorage`, or an error with a Retry button if nothing has been cached yet.
+
 ---
 
 ## What it does
@@ -74,6 +76,8 @@ The app is a single static HTML/CSS/JS bundle — no build step.
 npx serve -l 3101 crypto-tracker
 # then open http://localhost:3101
 ```
+
+No API key or server is needed: the page calls CoinGecko directly, so it only needs an internet connection for fresh prices.
 
 ### Regenerating screenshots
 

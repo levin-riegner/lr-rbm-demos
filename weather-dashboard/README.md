@@ -4,6 +4,8 @@ A 5-day forecast for five preset cities on the Meta Ray-Ban Display glasses, pow
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fweather-dashboard%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🔌 **Status: Working with live data.** Forecasts come from the Open-Meteo public API (no key); offline the shell loads from the service worker but the panel shows `Could not load weather` and the header flips to `Offline`, since the 10-minute cache is in memory only and does not survive a reload.
+
 ---
 
 ## What it does

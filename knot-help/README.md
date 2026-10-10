@@ -4,6 +4,8 @@ A heads-up display for Meta Display glasses that teaches **six famous knots** �
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fknot-help%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the six knots, their steps and the Wikimedia diagrams ship in the app, and the voice tools are optional WebMCP on top of the same D-pad flow.
+
 ---
 
 ## What it does

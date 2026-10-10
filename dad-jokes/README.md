@@ -4,6 +4,8 @@ A heads-up display for Meta Display glasses that fetches a random dad joke from 
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fdad-jokes%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🔌 **Status: Working with live data.** Every joke is fetched from the icanhazdadjoke.com public API (no key); offline the card shows a "Couldn't reach the joke vault" message with an OFFLINE badge, while the sounds and the `HEARD` / `GROANS` counters keep working.
+
 ---
 
 ## What it does

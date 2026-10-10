@@ -6,6 +6,8 @@ A heads-up display for Meta Display glasses that keeps the four things you need 
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fpinout-hud%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the four board templates and the label grid are bundled in `data.js`, custom boards are built on-device, and the active board persists in `localStorage`.
+
 ---
 
 ## What it does

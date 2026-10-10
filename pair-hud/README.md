@@ -4,6 +4,8 @@ A **research prototype** for the Meta wearables web app toolkit. A Node WebSocke
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fpair-hud%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🔌 **Status: Working with live data.** Pairing and push go through this folder's own Node WebSocket server (`server.js`, run with `npm start` and exposed with ngrok); without that server, including on the static hosted copy, the HUD stays on Connecting / Reconnecting and never shows a PIN.
+
 ---
 
 ## What it does

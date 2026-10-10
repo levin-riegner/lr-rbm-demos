@@ -4,6 +4,8 @@ A step-by-step paper-folding teacher for the Meta Ray-Ban Display glasses. Pick 
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Forigami-sensei%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the six models and their fold diagrams are bundled in `app.js` as inline SVG by design, and the sound cues are synthesized with Web Audio.
+
 ---
 
 ## What it does

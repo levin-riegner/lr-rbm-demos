@@ -4,6 +4,8 @@ The L+R studio portfolio reworked as a heads-up display for the Meta Ray-Ban Dis
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Flevinriegner%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs from the bundled `data.js`, the canvases and the Web Audio synth; the only network dependency is the project cover images, which load from L+R's web CDN and are hidden when they fail.
+
 ---
 
 ## What it does

@@ -6,6 +6,8 @@ A hands-free cooking companion for the Meta Display glasses that walks you throu
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fcooking-hud%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the 10 recipes are bundled in `data.js`, timers are timestamp-based and survive reloads, and progress persists in `localStorage`.
+
 ---
 
 ## What it does

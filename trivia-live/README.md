@@ -4,6 +4,8 @@ A live trivia quiz for the Meta Ray-Ban Display glasses, powered by the free **O
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Ftrivia-live%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🔌 **Status: Working with live data.** Questions come from the Open Trivia DB public API (no key); offline the Start screen still loads from the service worker, but starting a round shows `Could not load questions` with a Retry button, and only the high scores are local.
+
 ---
 
 ## What it does

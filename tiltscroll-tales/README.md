@@ -4,6 +4,8 @@ A four-chapter illustrated storybook for the Meta Ray-Ban Display glasses that s
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Ftiltscroll-tales%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the story is bundled in `index.html`, head tilt comes from the `deviceorientation` sensor, and the text size persists in localStorage.
+
 ---
 
 ## What it does

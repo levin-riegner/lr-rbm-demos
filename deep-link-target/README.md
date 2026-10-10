@@ -4,6 +4,8 @@ One half of a two-app pair that demonstrates cross-app navigation on the Meta Ra
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fdeep-link-target%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** The `?screen=` routing, the `document.referrer` readout and the return hop are all real browser behavior; the four screens carry placeholder copy by design, since the demo is about the navigation, not the content.
+
 Pair: [`deep-link-launcher/`](../deep-link-launcher/)
 
 ---

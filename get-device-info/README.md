@@ -4,6 +4,8 @@ A diagnostics page for the Meta Ray-Ban Display glasses' browser. Eight categori
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fget-device-info%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Every row is read live from the browser's own `navigator`, `screen`, `performance`, Battery, Storage and Geolocation APIs on the device; nothing is mocked and nothing leaves the glasses.
+
 ---
 
 ## What it does

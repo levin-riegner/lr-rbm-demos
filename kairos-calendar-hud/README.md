@@ -4,6 +4,8 @@ A glanceable calendar for the Meta Ray-Ban Display glasses. The home view is an 
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fkairos-calendar-hud%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🧪 **Status: Concept.** The interface and D-pad flow are real; the events are a hard-coded mock week in `calendar-data.js`, not a connected calendar account. See [Making it real](#making-it-real).
+
 ---
 
 ## What it does
@@ -49,6 +51,26 @@ Focus moves through controls in document order, so ◀ ▶ and ▲ ▼ are inter
 | <img src="screenshots/preview.png" width="300" alt="KAIROS ambient dashboard"> |
 
 No `?state=` routing; the single capture is the default ambient view.
+
+---
+
+## Making it real
+
+**What's real today:**
+- All four screens (ambient, agenda, detail, week), the D-pad navigation and the focus memory on back.
+- The clock, the NOW / NEXT / FREE card, the SOON / DONE badges, the countdowns and the imminence bar: all computed from the device clock against each event's start and end time.
+- The particle canvas, the 10 s clock refresh and the pause / resume lifecycle.
+
+**What's simulated:**
+- `CALENDAR_DATA` in `calendar-data.js`: 13 hard-coded events for 20–24 April 2026 stand in for the wearer's calendar. Nothing is fetched and nothing is written back.
+- Because the dates are fixed, TODAY and TOMORROW are empty on any other day; the week view has to be paged back to April 2026 to see events.
+
+**How to make it real:**
+- Replace `CALENDAR_DATA` with a fetch of the next 7 days from a real source: Google Calendar (`events.list` with `timeMin` / `timeMax`), Microsoft Graph (`/me/calendarView`), or a private ICS feed parsed in the browser. Map the response into the existing `{ id, title, type, date, startTime, endTime, location, attendeeCount }` shape so the renderers do not change.
+- Pick a sign-in path that works without a keyboard. Simplest: the wearer pastes a private ICS URL once through the text composer and the app stores it in `localStorage`. Cleaner: a small serverless proxy (for example a Vercel function) holds the OAuth refresh token and serves the app a JSON window, with the device paired by a short code typed on the phone.
+- Cache the fetched window in `localStorage` so the ambient screen paints instantly and offline; refresh on `visibilitychange` → visible and every few minutes while visible, and stop polling when hidden.
+- Optionally register WebMCP tools (`calendar_next_event`, `calendar_open_day`) so Meta AI can answer "what's next?" from the same data.
+- Effort: small for a read-only ICS feed; medium for Google or Microsoft OAuth through a proxy; large for write-back (accept, decline, create).
 
 ---
 

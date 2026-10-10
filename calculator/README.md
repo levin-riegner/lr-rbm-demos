@@ -4,6 +4,8 @@ A four-function calculator for the Meta Ray-Ban Display glasses, driven entirely
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fcalculator%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the arithmetic, key clicks and Casio clock are local, and the chosen theme persists in `localStorage`.
+
 ---
 
 ## What it does

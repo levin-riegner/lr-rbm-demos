@@ -6,6 +6,8 @@ A heads-up hand-tally-counter for Meta Display glasses. One **big +1 target**, a
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Ftally-counter%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: the count and since-timestamp persist in `localStorage`, the clicks are synthesized with Web Audio, and the WebMCP tools call the same functions the D-pad does.
+
 ---
 
 ## What it does

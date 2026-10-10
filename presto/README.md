@@ -4,6 +4,8 @@ A card-magic coach for the Meta Ray-Ban Display glasses. It walks a beginner thr
 
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fpresto%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 
+> 🧪 **Status: Concept.** The interface and D-pad flow are real; the Key Card routine is complete and playable, but the other two routines on the picker (*The Ambitious Card*, *The Lying Spectator*) are locked placeholders with no step content. See [Making it real](#making-it-real).
+
 ---
 
 ## What it does
@@ -41,6 +43,24 @@ On the title screen the Back gesture is left to the system.
 | Preview |
 | --- |
 | <img src="screenshots/preview.png" width="300" alt="Presto beat screen"> |
+
+---
+
+## Making it real
+
+**What's real today:**
+- The full title → picker → beat → reveal flow, driven by the D-pad, pinch and Back gesture.
+- *The Spectator's Card*: all seven beats (patter, secret, cue) are bundled in `KEY_CARD_ROUTINE` in `app.js` and the app genuinely steps through them. A beginner can perform the trick from the lens.
+- Web Audio stage chimes, offline service worker, self-hosted fonts.
+
+**What's simulated:**
+- The *Ambitious Card* and *Lying Spectator* rows in `index.html` are marked `locked`. `ROUTINES` in `app.js` has only the `key-card` entry, so there is nothing behind them; selecting one plays a dud tone.
+- The "cue gesture" is not recognized by the device. Each cue is a pinch (`Enter`) that the performer times with a natural gesture; the app cannot tell whether the gesture happened.
+
+**How to make it real:**
+- Write the two missing routines as step arrays in `ROUTINES` (same `{ phase, patter, secret, cue }` shape) and remove the `locked` class from their rows. No new platform work is needed.
+- To let the performer advance hands-free, register a WebMCP tool (`presto_next_beat`) so a quiet word to Meta AI moves the routine on; the glasses browser has no camera or microphone API, so true gesture recognition would need the EMG band's own pinch, which is what the app already uses.
+- Effort: small (content only for the two routines); small for the voice tool.
 
 ---
 

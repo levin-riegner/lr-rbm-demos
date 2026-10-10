@@ -7,6 +7,8 @@ A hands-free metronome for Meta Display glasses — set tempo, time signature, a
 > ▶ [Try it in the simulator](https://displayglasses.dev/?url=https%3A%2F%2Frbm-demos.lnr.io%2Fmetronome%2F&pos=center&size=60&bright=100&bg=hiking&bg-dark=10) · 👓 [Add it to your glasses](#add-to-your-glasses)
 > 🚀 **Live demo:** [rbm-demos.lnr.io/metronome](https://rbm-demos.lnr.io/metronome/)
 
+> ✅ **Status: Working.** Everything runs on the glasses with no network: clicks are synthesized with Web Audio, NOD reads the device's `deviceorientation` sensor behind an explicit toggle, and tempo, time signature and subdivision persist in localStorage.
+
 ---
 
 ## What it does
